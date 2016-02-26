@@ -1,0 +1,6 @@
+
+Please disregard the previous email(s) about this task.  {_RESPONDER_NAME_} already got to it.
+
+Task: {_WORKFLOW_TITLE_}
+
+

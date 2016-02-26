@@ -1,0 +1,8 @@
+
+You action is required for the following task.
+
+Task: {_WORKFLOW_TITLE_}
+
+Please click the following link to log in:
+
+{_URL_}

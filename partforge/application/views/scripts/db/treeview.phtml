@@ -1,0 +1,8 @@
+<?php
+    $this->layout()->title = 'Database Tables';
+    $this->layout()->setLayout('layout');
+    $this->layout()->scrollhold = true;
+    $treeview = new DBTreeView($this->queryvars,$this->navigator);
+    echo fetch_form_tag($treeview->fetchHtml());
+
+?>

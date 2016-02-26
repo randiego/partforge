@@ -1,0 +1,26 @@
+<?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/commentlistview.js?v=2" type="TEXT/JAVASCRIPT"></script>
+<?php
+    $this->layout()->title = 'List of Comments';
+    $BreadCrumbs = new BreadCrumbsManager();
+    $BreadCrumbs->newAnchor($this->navigator->getCurrentViewUrl(),$this->layout()->title);    
+    $this->layout()->setLayout('layout');
+    $this->layout()->scrollhold = true;
+    $html = $this->paginated_report_page->fetch_form_body_html('');
+    echo fetch_form_tag($html);
+?>
+
+<!-- The dialog widget -->
+<div id="blueimp-gallery-dialog" data-show="fade" data-hide="fade">
+    <!-- The gallery widget  -->
+    <div class="blueimp-gallery blueimp-gallery-carousel blueimp-gallery-controls"  data-transition-speed=100>
+        <div class="slides"></div>
+        <a class="prev">‹</a>
+        <a class="next">›</a>
+        <a class="play-pause"></a>
+        <ol class="indicator"></ol>
+    </div>
+</div>
+<script src="<?php echo $baseUrl;?>/jqueryextras/gallery-2.15.2/js/blueimp-gallery.min.js"></script>
+<script src="<?php echo $baseUrl;?>/jqueryextras/image-gallery/js/jquery.image-gallery.min.js"></script>
+

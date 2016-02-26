@@ -1,0 +1,126 @@
+<?php
+/**
+ *
+ * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
+ *
+ * Copyright (C) 2013-2015 Randall C. Black <randy@blacksdesign.com>
+ *
+ * This file is part of PartForge
+ *
+ * PartForge is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * PartForge is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PartForge.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @license GPL-3.0+ <http://spdx.org/licenses/GPL-3.0+>
+ */
+  
+  $onload = array();
+  if (!$this->layout()->show_in_any_window) {
+    $onload[] = "verifyCorrectWindow('PopupWin',false);";
+  }
+  if ($this->layout()->scrollhold) {
+    $scrollholdkey = empty($this->layout()->scrollholdkey) ? Zend_Controller_Front::getInstance()->getRequest()->getActionName() : $this->layout()->scrollholdkey;
+    $onload[] = "initScrollSaver('".$scrollholdkey."');";
+  } elseif (!$this->layout()->no_set_form_focus) {  // note: in IE 8, then two things are mutually exclusive
+    $onload[] = "set_default_focus();";
+  }
+  
+  $config = Zend_Registry::get('config');
+  $fake_date_warning = isset($config->fake_date) ? '<span class="fakedatestyle">FAKE DATE SET: '.$config->fake_date.'</span>&nbsp;' : '';
+  
+  $baseurl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();  
+  $ver = Zend_Registry::get('config')->cached_code_version;
+
+function addLink($controller, $action, $linkname, $linkdesc, &$links, $onclick='', $extra_params=array()) {
+	$request = Zend_Controller_Front::getInstance()->getRequest();
+	$id = (($request->getControllerName()==$controller) && ($request->getActionName()==$action)) ? 'navcurrent' : '';
+	$extra_params['resetview'] = '1';
+	$links[] = linkify( UrlCallRegistry::formatViewUrl($action,$controller,$extra_params),$linkname,$linkdesc,'',$onclick,'',$id);
+}  
+ 
+function addLinkIfIsAllowed(Zend_Acl $acl, $controller, $action, $linkname, $linkdesc, &$links) {
+	if ($acl->isAllowed($_SESSION['account']->getRole(),$controller,$action)) {
+		addLink($controller, $action, $linkname, $linkdesc, $links);
+	}
+}
+
+function fetchMenuLinks() {
+	$links = array();
+	$acl = Zend_Registry::get('customAcl');
+	addLinkIfIsAllowed($acl, 'struct', 'itemlistview', 'Parts', 'manage list of parts', $links);
+	addLinkIfIsAllowed($acl, 'struct', 'procedurelistview', 'Procedures', 'manage list of procedures', $links);
+	addLinkIfIsAllowed($acl, 'struct', 'commentlistview', 'Comments', 'view all comments and attachements', $links);
+	addLinkIfIsAllowed($acl, 'struct', 'partlistview', 'Definitions', 'manage part and procedure definitions', $links);
+	if (Zend_Registry::get('config')->show_analyze_page) {
+		addLinkIfIsAllowed($acl, 'struct', 'joinedexport', 'Analyze', 'Export and Correlate Data', $links);
+	}
+	addLinkIfIsAllowed($acl, 'user', 'listview', 'Users', 'manage all users', $links);
+	addLinkIfIsAllowed($acl, 'settings', 'listview', 'Settings', 'View / Edit system settings', $links);
+	addLinkIfIsAllowed($acl, 'user', 'manageaccount', 'My Account', 'change names, email, and password', $links);
+	if (Zend_Registry::get('config')->global_readonly) {
+		if (!LoginStatus::getInstance()->isValidUser()) {
+			addLink('user', 'login', 'Login', 'Login so you can add and edit.', $links,'',array('return_url' => self_url().'?'.$_SERVER['QUERY_STRING']));
+		} else {
+			addLink('user', 'logout', 'Logout', 'Logout of this account', $links,'return confirm(\'Logout?\');',array('return_url' => self_url().'?'.$_SERVER['QUERY_STRING']));
+		}
+	} else {
+		addLink('user', 'logout', 'Logout', 'Logout of this account', $links,'return confirm(\'Logout?\');');
+	}
+	return $links;
+}
+?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title><?php echo ($this->layout()->title ? $this->layout()->title.' - ' : '').$config->application_title;?></title>
+
+<?php echo fetchHtmlHeaderIncludes();?>
+
+<script type="text/javascript">
+var baseUrl = '<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>';
+$(document).ready(function () {
+	$( ".bd-button, .listrowlink, .minibutton2, .searchbutton" ).button();
+	var today=new Date();
+	var deltaTimeSec = today.getTime()/1000 - <?php echo script_time()?>;
+	if (Math.abs(deltaTimeSec)>10.0) {
+		$('#headmessages').append('<div class="pageBannerDiv">Client Time Error.  Server Timestamp is lagging by:'+(deltaTimeSec).toFixed(1)+' seconds.  If this message persists, please contact the system administartion to restart the server.  This message might also mean that your computer time is set incorrectly.</div>');
+	}
+	$('#headmessages').append('<?php echo fetchPageBannerDiv();?>');
+	$('#navlist').buttonset();
+});
+</script>
+
+</head>
+
+<body onLoad="<?php echo implode('',$onload);?>">
+<div class="main">
+<div id="logobar">
+	<div id="whoisloggedin"><?php echo $fake_date_warning.$_SESSION['account']->whoAmIHtml() ?></div>
+	<div class="logographic"><a href="<?php echo UrlCallRegistry::formatViewUrl('itemlistview','struct',array('resetview' => '1'));?>"><img title="<?php echo $config->application_title;?>" class="logoheadimage" src="<?php echo $baseurl.$config->logo_file;?>"></a></div>
+	<div id="headmessages"></div>
+	<div id="helpLink"><?php echo DBTableRowHelp::helpLinkIfPresent() ?></div>
+</div>
+
+<div>
+<a name="TopOfPageAnchor"></a>
+<div id="navlist">
+<?php echo implode("",fetchMenuLinks()) ?>
+</div>
+</div>
+
+<div class="textArea" id="pageTextAreaDiv">
+<?php echo $this->layout()->content ?>
+</div> 
+
+</div>
+</body>
+</html>

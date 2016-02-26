@@ -1,0 +1,8 @@
+
+Hello {_FULLNAME_},
+
+Your Login ID is '{_LOGINID_}'.
+
+Please click the following link to log in:
+
+{_URL_}

@@ -1,0 +1,221 @@
+<script type="text/javascript">
+var scrollPosKey = "<?php echo 'itemViewPanelPos'.$this->dbtable->itemversion_id;?>";
+var pdfViewUrl = "<?php echo $this->navigator->getCurrentViewUrl('itemviewpdf',null,array('itemversion_id' => $this->dbtable->itemversion_id, 'show_form_fields' => '_SHOWFORM_', 'show_text_fields' => '_SHOWTEXT_', 'show_event_stream' => '_SHOWEVENTS_'));?>";
+</script>
+<?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemview.js?v=7" type="TEXT/JAVASCRIPT"></script>
+
+<?php
+
+$title = $this->dbtable->getPageTypeTitleHtml().($this->dbtable->item_serial_number ? ' - '.TextToHtml($this->dbtable->item_serial_number) : '');
+$title_short = $this->dbtable->getPageTypeTitleHtml(true).($this->dbtable->item_serial_number ? ' - '.TextToHtml($this->dbtable->item_serial_number) : '');
+
+$this->dbtable->setFieldTypeForRecordLocator();
+
+$this->layout()->title = 'Item View: '.$title;
+$this->layout()->setLayout('layout');
+$this->layout()->scrollhold = true;
+
+$is_current_version = $this->dbtable->io__cached_current_itemversion_id==$this->dbtable->itemversion_id;
+$is_a_procedure = DBTableRowTypeVersion::isTypeCategoryAProcedure($this->dbtable->tv__typecategory_id);
+
+$html = '';
+$html_right = '';
+$html_head = '';
+
+$detailslinks = array();
+$menulinks = array();
+
+$return_url = $this->navigator->getCurrentViewUrl(null,null,array('itemversion_id' => $this->dbtable->itemversion_id));
+
+// offer to add another item under the right conditions...
+if (isset($this->queryvars['offer_more_url'])) {
+	$detailslinks[] = linkify($this->queryvars['offer_more_url'],'Enter Another...','Enter Another item like this one.','bd-button','','','AddAnotherID');
+}
+
+/*
+ * Do we offer the Edit button?
+ */
+if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'ui:itemlistview','show_addedit_item_button')) {
+	$allow_new_version = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'ui:itemedit',$is_a_procedure ? 'new_proc_version' : 'new_part_version');
+	$allow_edit_version = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'ui:itemedit',$is_a_procedure ? 'edit_proc_version' : 'edit_part_version');	
+	$show_new_version_button = $is_current_version && $allow_new_version;
+	
+	if ($show_new_version_button) {
+		// if this is the only operation we are allowed to do, then use the generic verb 'Edit'
+		$return_url_addit = $this->navigator->getCurrentViewUrl(null,null,array('itemobject_id' => $this->dbtable->itemobject_id));
+		$initialize = array();
+		// we initialize the effective date in the following special circumstances
+		$initialize['effective_date'] = ($_SESSION['account']->getRole()=='DataTerminal') || $is_a_procedure ? time_to_mysqldatetime(script_time()) : '';
+		$initialize['proxy_user_id'] =  ($_SESSION['account']->getRole()=='DataTerminal') ? $_SESSION['account']->user_id : LOGGED_IN_USER_IS_CREATOR;
+		$detailslinks[] = linkify( $this->navigator->getCurrentViewUrl('editview',null,array('table' => 'itemversion','itemversion_id' => $this->dbtable->itemversion_id, 'initialize' => $initialize, 'return_url' => $return_url_addit, 'resetview' => 1)),'Edit','Create New Version','bd-button','','','btn-new-version-id');
+	}
+}
+ 
+$BreadCrumbs = new BreadCrumbsManager();
+$BreadCrumbs->addCurrentUrl($return_url,$title_short);
+$html_head .= $BreadCrumbs->render($return_url,$title_short,3,'breadcrumbdiv fixed');
+
+$html_head .= '<div id="itemviewSearchBlock">
+					<input name="itemversion_id" TYPE="hidden" VALUE="'.$this->dbtable->itemversion_id.'">
+					<input id="search_string" class="inputboxclass" type="text" name="search_string">
+					<INPUT class="searchbutton" TYPE="submit" VALUE="Search" NAME="btnSearch">
+				</div>';
+
+if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'ui:nonterminalbling')) {
+	// let user copy a link to this page
+	$detailslinks[] = linkify('#','Link to Page','Copy of link to this page','bd-button',"window.prompt ('Copy to clipboard: Ctrl+C, Enter', '".$this->dbtable->absoluteUrl()."');");
+	// this is sneaky, but this link will actually work if the JS is not executed, but is normally overridden by the JS.
+	$pdf_url = $this->navigator->getCurrentViewUrl('itemviewpdf',null,array('itemversion_id' => $this->dbtable->itemversion_id));
+	$detailslinks[] = linkify($pdf_url,'PDF','Open a printable PDF view of this page','bd-button','','','pdfButton');
+}
+
+/*
+ * Get list of procedures that we are allowed to create from here and generate their Add Urls
+ */
+$procedure_records = getTypesThatReferenceThisType($this->dbtable->typeversion_id);
+// remove any obsolete ones
+foreach($procedure_records as $key => $record) {
+	if ($record['typedisposition']=='B') {
+		unset($procedure_records[$key]);
+	}
+}
+$current_ver_return_url = $this->navigator->getCurrentViewUrl(null,null,array('itemobject_id' => $this->dbtable->itemobject_id));
+foreach($procedure_records as $key => $record) {
+	$initialize = array($record['component_name'] => $this->dbtable->itemobject_id,'typeversion_id' => $record['typeversion_id']);
+	$procedure_records[$key]['add_url'] = $this->navigator->getCurrentViewUrl('editview','struct',array('table' => 'itemversion', 'itemversion_id' => 'new', 'return_url' => $current_ver_return_url, 'initialize' => $initialize, 'resetview' => 1));
+}
+
+
+if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'table:itemversion','add') and (count($procedure_records)>0)) {
+	// make sure we have only 1 add button per type
+	$out = array();
+	foreach($procedure_records as $record) {
+		$out[$record['add_url']] = 'Add '.$record['type_description'];
+	}
+	foreach($out as $url => $link_caption) {
+		$menulinks[] = linkify($url,$link_caption,$link_caption);
+	}
+}
+
+/*
+ * Build list of EventStream items
+*/
+
+$records = $this->streamrecords;
+list($lines,$references_by_typeobject_id) = EventStream::eventStreamRecordsToLines($records,$this->dbtable, $this->navigator);
+$layout_rows = EventStream::eventStreamLinesToHtml($this->dbtable,$lines,$this->navigator);
+$html_dashboard = EventStream::renderDashboardView($this->dbtable,$procedure_records, $references_by_typeobject_id);
+
+
+/*
+ * Create the Used On links
+*/
+$usedon = EventStream::getUsedOnEntries($references_by_typeobject_id);
+if (count($usedon)==1) {
+	$linkfields = reset($usedon);
+	$detailslinks[] = linkify($linkfields['url'],$linkfields['name'],$linkfields['title'],'used-on-button');
+} else if (count($usedon)>1) {
+	$used_on_links = array();
+	foreach($usedon as $itemobject_id => $linkfields) {
+		$used_on_links[] = linkify($linkfields['url'],$linkfields['name'],$linkfields['title'],'');
+	}
+	$detailslinks[] = '<button class="used-on-button jumpmenu">Used On...</button><ul><li>'.implode('</li><li>',$used_on_links).'</li></ul>';
+}
+
+
+if (!$is_current_version) {
+	$query_params = array();
+	$query_params['itemversion_id'] = $this->dbtable->io__cached_current_itemversion_id;
+	$view_url = $this->navigator->getCurrentViewUrl('itemview','',$query_params);
+	$version_view = linkify( $view_url, 'view current version', "View the current version of this item");
+	$html .= '<div class="itemview_notice">This is an older version of this item ('.$version_view.')</div>';
+}
+
+if (Zend_Registry::get('config')->config_for_testing) {
+	$html .= "<p>Most Recent Object ID = {$this->dbtable->io__cached_current_itemversion_id}".', /items/versions/'."{$this->dbtable->io__cached_current_itemversion_id}</p>";
+	$html .= "<p>This Object ID = {$this->dbtable->itemversion_id}".', /items/versions/'.$this->dbtable->itemversion_id.', /items/objects/'.$this->dbtable->itemobject_id."</p>";
+//	$query_params = array();
+//	$query_params['itemversion_id'] = $this->dbtable->io__cached_current_itemversion_id;
+//	$html .= '<IMG src="'.$this->navigator->getCurrentViewUrl('qrcode','',$query_params).'">';
+}
+
+$html .= '<div class="tablewrap">';
+
+$html .= '<div class="buttonrow">'.implode('&nbsp;',$detailslinks).'</div>';
+
+$fields_to_remove = array();
+
+$fieldlayout = $this->dbtable->getEditViewFieldLayout($this->dbtable->getEditFieldNames(array('')),$fields_to_remove,'itemview');
+
+
+
+if (!empty($fieldlayout)) {
+	$html .= ($join_name!='') ? $this->fetchJoinHeaderHtml($join_name, $target) : '';
+	$html .= '<div class="edittablewrapper"><table class="edittable">
+				 <col class="table_label_width">
+				 <col class="table_value_width">
+				 <col class="table_label_width">
+				 <col class="table_value_width">';
+		
+	// don't show fields as editable if editing of this record is not allowed
+	$editable = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'table:'.$this->dbtable->getTableName(),'edit')
+	&& !$this->dbtable->isEditOperationBlocked('save',$this->dbtable->getTableName());
+	$editable = false;
+
+	$this->dbtable->_navigator = $this->navigator; // need this for generating print view.
+	
+	$errormsg = array();
+	$this->dbtable->validateFields($this->dbtable->getSaveFieldNames(),$errormsg);	
+	
+	$html .= DBTableRowItemVersion::fetchItemVersionEditTableTR($fieldlayout, $this->dbtable, $errormsg, '', $editable);
+	$html .= '</table></div>
+		';    
+}
+$html .= '</div>';
+
+$add_links = array();
+if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'table:comment','add')) {
+	$add_links[] = linkify($this->navigator->getCurrentViewUrl('commenteditview','struct',array('table' => 'comment', 'comment_id' => 'new', 'return_url' => $return_url, 'initialize' => array('itemobject_id' => $this->dbtable->itemobject_id))), 'Add Comment or Attachments','add a new comment, photos, or documents','bd-button');
+}
+
+$html_right .= '<div class="bd-list-container"><ul class="bd-stream-list">';
+// in the following: style="position: relative; z-index: 10" seems to be absolutely necessary to get the menu to be on top in IE7
+// see http://www.brenelz.com/blog/squish-the-internet-explorer-z-index-bug/
+$html_right .= '<li class="bd-event-row" style="position: relative; z-index: 10; padding-bottom:0px;">
+		<div class="buttonrow">'.implode('&nbsp;',$add_links).(!empty($menulinks) ? '&nbsp;<button class="jumpmenu">Add New Procedure</button><ul><li>'.implode('</li><li>',$menulinks).'</li></ul>':'').'
+	   </div></li>';
+
+$html_right .= implode('',array_reverse($layout_rows));
+
+$html_right .= '</ul></div>';
+$html_page = '
+		'.$html_head.'
+    <div class="twocolleft twocolcol">
+      <div class="twocolbody twocolrow twocolscroll-y">
+			'.$html.$html_dashboard.'
+	  </div>
+	</div>
+	<div class="twocolright twocolcol">
+      <div id="rightpanel" class="twocolbody twocolrow twocolscroll-y">
+			'.$html_right.'
+	  </div>
+	</div>
+			
+	';
+echo fetch_form_tag($html_page);
+
+?>
+<!-- The dialog widget -->
+<div id="blueimp-gallery-dialog" data-show="fade" data-hide="fade">
+    <!-- The gallery widget  -->
+    <div class="blueimp-gallery blueimp-gallery-carousel blueimp-gallery-controls"  data-transition-speed=100>
+        <div class="slides"></div>
+        <a class="prev">‹</a>
+        <a class="next">›</a>
+        <a class="play-pause"></a>
+        <ol class="indicator"></ol>
+    </div>
+</div>
+<script src="<?php echo $baseUrl;?>/jqueryextras/gallery-2.15.2/js/blueimp-gallery.min.js"></script>
+<script src="<?php echo $baseUrl;?>/jqueryextras/image-gallery/js/jquery.image-gallery.min.js"></script>

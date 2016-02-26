@@ -1,0 +1,69 @@
+<?php
+
+/*
+ * Check out http://stackoverflow.com/questions/166221/how-can-i-upload-files-asynchronously-with-jquery?rq=1
+ * This demo is basically uploading a file via ajax
+ */
+
+?>
+
+
+<script type="text/javascript">
+
+function progressHandlingFunction(e){
+    if(e.lengthComputable){
+        $('progress').attr({value:e.loaded,max:e.total});
+    }
+}
+
+function completeHandler(e) {
+	alert('done.  DocumentID=' + e['document_id']);
+}
+
+$(document).ready(function() {
+	$(':file').change(function(){
+	    var file = this.files[0];
+	    name = file.name;
+	    size = file.size;
+	    type = file.type;
+	    //Your validation
+	});
+
+	$(':button').click(function(){
+	    var formData = new FormData($('form')[0]);
+	    $.ajax({
+	        url: '<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/types/documents?typeobject_id=42&format=json';?>',  //Server script to process data
+	        type: 'POST',
+	        xhr: function() {  // Custom XMLHttpRequest
+	            var myXhr = $.ajaxSettings.xhr();
+	            if(myXhr.upload){ // Check if upload property exists
+	                myXhr.upload.addEventListener('progress',progressHandlingFunction, false); // For handling the progress of the upload
+	            }
+	            return myXhr;
+	        },
+	        //Ajax events
+	       // beforeSend: beforeSendHandler,
+	        success: completeHandler,
+	      //  error: errorHandler,
+	        // Form data
+	        data: formData,
+	        //Options to tell jQuery not to process data or worry about content-type.
+	        cache: false,
+	        contentType: false,
+	        processData: false
+	    });
+	});	
+});
+
+
+
+
+</script>
+
+
+<form enctype="multipart/form-data">
+    <input name="files" type="file" />
+    <input type="button" value="Upload" />
+</form>
+<progress></progress>
+

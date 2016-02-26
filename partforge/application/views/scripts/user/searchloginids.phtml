@@ -1,0 +1,15 @@
+<?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/user/searchloginids.js?v=1" type="TEXT/JAVASCRIPT"></script>
+<script type="text/javascript">
+var lookupUrl = '<?php echo $this->navigator->getCurrentViewUrl('jsonsearchloginids');?>';
+</script>
+<?php
+
+$this->layout()->title = 'Search For Login ID';
+$this->layout()->setLayout('layoutdialog');
+
+$html = '';
+$html .= '<INPUT TYPE="hidden" NAME="login_id" VALUE="">';
+$html .= '<div class="name_search_box"><input style="width:600px;"  id="full_name" value=""></div>';
+
+echo fetch_form_page($this->layout()->title,$html,array('Cancel' => 'btnCancel'));

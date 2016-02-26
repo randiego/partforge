@@ -1,0 +1,36 @@
+<?php
+	$this->layout()->title = 'My Account Preferences';
+	$this->layout()->setLayout('layout');
+        
+	$html = '';
+	
+	$detailslinks = new EditLinks();
+
+	if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'user','changeprofile')) {
+		$detailslinks->add_item( $this->navigator->getCurrentHandlerUrl('btnEditProfile') ,"Edit", 'edit name, login, and email');
+	}
+	
+	$html .= '
+	 <h1>'.$this->layout()->title.'</h1>
+         <p>'.$detailslinks->buttons_html().'</p>
+          <table class="edittable">';
+          
+	$html .= fetchPrintTableTR( array('first_name','last_name','login_id'), $this->dbtable );
+	
+	$pwlink = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'user','changepassword') 
+			? '&nbsp;'.linkify($this->navigator->getCurrentHandlerUrl('btnEditPassword') ,"Change Password", 'change password for this account','minibutton2')
+			: '';
+	$html .= '<TR>
+		<TH>Password:</TH>
+		<TD>(not shown)'.$pwlink.'</TD>
+		</TR>
+		';
+	$html .= fetchPrintTableTR( array('email'), $this->dbtable );
+	
+	$html .= '
+          </table>
+	';
+	
+	echo $html;
+?>
+

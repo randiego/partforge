@@ -1,0 +1,1 @@
+This directory contains document files (attachements & photos) organized by year and user id.

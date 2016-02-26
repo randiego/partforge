@@ -1,0 +1,32 @@
+<?php
+
+$DBEditView = new DBEditView($this->dbtable);
+$DBEditView->edit_buffer_key = $this->edit_buffer_key;
+list($title,$linkified_title) = $DBEditView->getTitleHtmlArray();
+$this->layout()->title = $title;
+$this->layout()->setLayout('layoutdialog');
+$this->layout()->scrollhold = true;
+$this->layout()->scrollholdkey = $this->dbtable->getTableName();
+
+$this->layout()->navlist_array = $DBEditView->getNavLinks();
+
+$buttons = array();
+if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'table:'.$this->dbtable->getTableName(),'edit')
+		&& !$this->dbtable->isEditOperationBlocked('save',$this->dbtable->getTableName())) {
+	$buttons[] = '<input class="bd-button" type="submit" value="Save" name="btnOK">';
+	$buttons[] = '<input class="bd-button" type="submit" value="Cancel" name="btnCancel">';
+} else {
+	$buttons[] = '<input class="bd-button" type="submit" value="Close" name="btnCancel">';
+}
+
+$html = '';
+$html .= '<h1 class="dialogtitle">'.$linkified_title.'</h1>';
+$html .= $DBEditView->fetchHtml();
+$html .= '<p>'.implode('&nbsp;',$buttons).'</p>';
+
+echo '  <div class="dialogbody">
+		'.fetch_form_tag('
+				<div class="dialogcontent">'.$html.'
+				</div>
+				').'
+				</div>';

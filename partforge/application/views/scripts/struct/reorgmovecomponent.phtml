@@ -1,0 +1,82 @@
+<?php
+$config = Zend_Registry::get('config');
+$this->layout()->setLayout('layoutdialog');
+$this->layout()->show_in_any_window = true;
+$html = '';
+
+$html .= '<p class="bd-instruction-text">
+		This procedure will perform a batch move of components from one field to another field.  To use this function, you must have defined at least two components that have
+		a common type.  This procedure will only move components on items assigned to the current Type Version ID.  To move components on other versions of the definition, you will need
+		repeat this operation for the other versions.
+		</p>';
+
+$ready = false;
+
+$candidatetypes = $this->formtable->getMoveableComponentTypes();
+
+if (count($candidatetypes)>0) {
+	$this->formtable->setFieldAttribute('component_typeobject_id', 'options', $this->formtable->getMoveableComponentTypes());
+	$this->formtable->setFieldAttribute('component_typeobject_id','onchange_js',"document.theform.btnOnChange.value='typeobject';document.theform.submit();return false;");
+	
+	$html .= '<input type="hidden" name="typeversion_id" value="'.$this->formtable->typeversion_id.'" />';
+	$html .= '<input type="hidden" name="btnOnChange" value="" />';
+	
+	$html .= '<p>1. Select the component TYPE that you want to move: '.$this->formtable->formatInputTag('component_typeobject_id').'</p>';
+	
+	if (is_numeric($this->formtable->component_typeobject_id)) {
+		$this->formtable->setFieldAttribute('sourcename', 'options', $this->formtable->getMoveableComponentNames($this->formtable->component_typeobject_id));
+		$this->formtable->setFieldAttribute('sourcename','onchange_js',"document.theform.btnOnChange.value='sourcename';document.theform.submit();return false;");
+		
+		$this->formtable->setFieldAttribute('destname', 'options', $this->formtable->getMoveableComponentNames($this->formtable->component_typeobject_id));
+		$this->formtable->setFieldAttribute('destname','onchange_js',"document.theform.btnOnChange.value='destname';document.theform.submit();return false;");
+		
+		$html .= '<p>2. Select the field name that you want to move FROM: '.$this->formtable->formatInputTag('sourcename').'</p>';
+		$html .= '<p>3. Select the field name that you want to move TO: '.$this->formtable->formatInputTag('destname').'</p>';
+		
+		if ($this->formtable->sourcename && $this->formtable->destname && ($this->formtable->destname!=$this->formtable->sourcename)) {
+			$cantmoverecords = $this->formtable->getItemComponentsThatCannotBeMoved();
+			if (count($cantmoverecords)>0) {
+				$html .= '<p class="errorred">This operation cannot be performed because the following items have both the source component '.$this->formtable->sourcename.' and the destination component '.$this->formtable->destname.' set. </p>';
+				$items = array();
+				foreach($cantmoverecords as $cantmoverecord) {
+					$IV = new DBTableRowItemVersion();
+					$IV->getRecordById($cantmoverecord['itemversion_id']);
+					$items[] = linkify($IV->absoluteUrl(),$IV->getCoreDescription()).' ('.time_to_bulletdate(strtotime($IV->effective_date),false).')'; 
+				}
+				$html .= '<p class="errorred">'.implode('<br /> ',$items).'</p>';
+			} else {
+				// no apparent problems so far.  So it would be nice to see a little preview of how many will be moved.
+				$previewrecords = $this->formtable->getPreviewOfMove();
+				$itemstomove = array();
+				$itemsnomove = array();
+				foreach($previewrecords as $previewrecord) {
+					$IV = new DBTableRowItemVersion();
+					$IV->getRecordById($previewrecord['itemversion_id']);
+					$link = linkify($IV->absoluteUrl(),$IV->getCoreDescription()).' ('.time_to_bulletdate(strtotime($IV->effective_date),false).')';
+					if ($previewrecord['sourcecount']==1) {
+						$itemstomove[] = $link;
+					}
+					if ($previewrecord['destcount']==1) {
+						$itemsnomove[] = $link;
+					}
+				}
+				if (count($itemstomove)>0) {
+					$html .= '<p>Moves will occur on the following '.count($itemstomove).' serial numbers and versions:<br /><br /> '.implode('<br /> ',$itemstomove).'</p>';
+					$ready = true;
+				} else {
+					$html .= '<p>There are no serial numbers that have a source component ('.$this->formtable->sourcename.') set.</p>';
+				}
+				$html .= '<p>Items already in the destination that will not be moved: <b>'.count($itemsnomove).'</b></p>';
+			}
+		}
+	}
+} else {
+	$html .= '<p class="errorred">In order to move a component your definition needs to contain at least two components that can have the same type.  The currently selected Type Version ID ('.$this->formtable->typeversion_id.') does not have any overlaping components defined.</p>';
+}
+
+
+$buttons = array('Cancel' => 'btnCancel');
+if ($ready) $buttons = array_merge(array('Move Components' => 'btnOK'),$buttons);
+echo fetch_form_page($this->layout()->title,$html,$buttons);
+
+?>

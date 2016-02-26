@@ -1,0 +1,10 @@
+<?php
+$this->layout()->title = 'Edit My Account Profile';
+$this->layout()->setLayout('layoutdialog');
+
+$html = '';
+$html .= '<table class="edittable">';
+$html .= fetchEditTableTR(array(array('first_name'),array('last_name'),array('login_id'),array('email')),$this->dbtable);
+$html .= '</TABLE>';
+
+echo fetch_edit_page($this->layout()->title,$html);

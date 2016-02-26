@@ -1,0 +1,42 @@
+<script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/user/listofemails.js?v=1" type="TEXT/JAVASCRIPT"></script>
+<?php
+
+$this->layout()->setLayout('layoutdialog');
+$this->layout()->title = 'Email Addresses';
+
+$html = '';
+$html .= '<p><input class="bd-button" type="submit" name="btnDone" value="Done"></p>';
+$html .= '<h1 class="dialogtitle">'.$this->layout()->title.'</h1>';
+$html .= '<p>The following lists include only users who are enabled have have entered an email address.</p>';
+
+$html .= '<input type="hidden" name="form_action" value="">';
+$html .= '<input type="hidden" name="edit_id" value="">';
+
+
+
+$grouped_records = array();
+$ungrouped_records = array();
+foreach($this->records as $record) {
+	if ($record['user_enabled'] && $record['email']) {
+		$type = $record['user_type'];
+		if (!isset($grouped_records[$type])) $grouped_records[$type] = array();
+		$grouped_records[$type][] = $record['email'];
+		$ungrouped_records[] = $record['email'];
+	}
+}
+
+$UserDummy = new DBTableRowUser();
+
+foreach($grouped_records as $user_type => $email_records) {
+	$UserDummy->user_type = $user_type;
+	$type_text = $UserDummy->formatPrintField('user_type', false);
+	$html .= '<h3 style="margin-top:20px;">'.$type_text.' Users ('.mailto_link(implode(',',$email_records),'Send Email','','','bd-button').')</h3>';
+	$html .= '<p><textarea style="width:800px; height:150px;">'.implode('; ',$email_records).'</textarea></p>';
+}
+
+$html .= '<h3 style="margin-top:15px;">All Users ('.mailto_link(implode(',',$ungrouped_records),'Send Email','','','bd-button').')</h3>';
+$html .= '<p><textarea style="width:800px; height:150px;">'.implode('; ',$ungrouped_records).'</textarea></p>';
+
+echo fetch_form_page('',$html,array('Done' => 'btnDone'))
+?>
+

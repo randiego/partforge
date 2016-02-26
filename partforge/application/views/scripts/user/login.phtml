@@ -1,0 +1,48 @@
+<?php
+$this->layout()->title = 'Login';
+$this->layout()->setLayout('layoutlogin');
+$loginid = htmlentities($this->remembered_login);
+$passwd = htmlentities($this->remembered_cryptpw);
+$remember_checked = $this->remembered_login ? ' checked' : '';
+?>
+<p class="errorred"><?php echo (isset($this->params['msge']) || isset($this->params['msgi']) ? $_SESSION['msg'] : '');?></p>
+<form id="theform" method="POST" action="<?php echo self_url();?>" name="theform">
+<input type="hidden" name="form" value="">
+<div id="loginrightcolumn">
+<h2>Login to <?php echo Zend_Registry::get('config')->application_title;?>:</h2>	
+<table class="logintable">
+	<td align="right"><strong>Login ID:</strong></td>
+	<td><input style="width: 200px;" class="inputboxclass" type="text" name="loginid" value="<?php echo $loginid;?>" size="30"></td>
+</tr>
+<tr> 
+	<td align="right"><strong>Password:</strong></td>
+	<td><input style="width: 200px;" class="inputboxclass" type="password" name="password" value="<?php echo $passwd;?>" size="30"></td>
+</tr>
+<tr> 
+	 <td align="right">&nbsp;</td>
+	<td><?php echo '(<a href="'.$this->navigator->getCurrentHandlerUrl('btnForgot').'" title="Recover your Login ID or Password">Forgot your Login ID or Password?</a>)'; ?>
+	</td>
+</tr>
+<tr> 
+	 <td align="right">&nbsp;</td>
+	<td>
+	<input class="checkboxclass" type="checkbox" name="remember" value="1" <?php echo $remember_checked;?>> Remember Login ID on this computer
+	</td>
+</tr>
+<tr>
+	<td colspan="2" align="center"><input class="bd-button" type="submit" value="Login" name="btnLogin">
+	</td>
+</tr>
+</table>        
+<p>&nbsp;</p>
+<?php
+ if (Zend_Registry::get('config')->allow_self_register) {
+	 echo '<p><a class="bd-button" href="'.$this->navigator->getCurrentHandlerUrl('btnRegister','login','user').'" title="Request a new account">Register for a new account.</a></p>';
+ }
+ echo Zend_Registry::get('config')->login_html_message;
+?>
+</div>
+<p style="clear:left;"></p>
+
+
+</form>

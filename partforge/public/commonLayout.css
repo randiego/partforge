@@ -1,0 +1,1957 @@
+@charset "utf-8";
+/* CSS Document */
+
+
+
+body {
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:12px;
+	background-color:#FFF;
+	padding-top:0px;
+	margin:0px;
+}
+/* links */
+
+
+p {
+	margin-top: 0px;
+	margin-bottom: 10px;
+}
+
+/* headers */
+h1 {
+	margin-top: 0px;
+	color:#000;
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:18px;
+}
+h2 {
+	margin-top: 0px;
+	color:#000;
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:16px;
+}
+
+h2.editviewsubhead {
+	color:#000;
+	margin-top: 20px;
+	font-size:18px;
+	font-weight:bold;
+	/* padding-left:5px; */
+	border-bottom:2px solid #000;
+	padding-bottom:4px;
+	padding-top:3px;
+	background-color:#FFF; 
+/*	background-image:url(images/headerBg.jpg); */
+	width:735px;
+}
+
+h3 {
+	margin-top: 0px;
+	color:#000;
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:14px;
+}
+
+h3.itemview-proc-head {
+	margin-top: 20px;
+	margin-bottom: 5px;
+	padding: 0px;
+}
+
+#loginleftcolumn h3 {
+	color:#000;
+}
+
+h4 {
+	margin-top: 4px;
+	font-size:14px;
+	font-weight:bold;
+	/* line-height:2.0em; */
+	padding-left:5px;
+	border:1px solid #ccc;
+	/* background-color:#cedbec; */
+	background-image:url(images/headerBg.jpg);
+	width:735px;
+}
+h5 {
+	margin-top: 4px;
+	font-weight:bold;
+	font-size:14px;
+	background-color:#000;
+	color:#fff;
+	line-height:2.0em;
+	padding-left:5px;
+}
+
+del {
+	background: #fdd none repeat scroll 0 0;
+	color: red;
+	text-decoration: line-through;
+	opacity: 0.7;
+}
+
+ins {
+    background: #dfd none repeat scroll 0 0;
+    color: green;
+	text-decoration: underline;
+}
+
+#search_string {
+	width: 200px;
+}
+
+.firstbuttonrow, .catselectorrow {
+	margin-bottom: 10px;
+}
+
+div.top-shadow {
+	background:url(/images/menubg.png);
+	repeat-x scroll left top transparent;
+}
+/* main container that holds everything that needs a white background */
+div.main {
+	background-color:#fff;
+}
+
+div.interestdiv {
+	width: 510px;
+}
+
+#navcontainer ul
+{
+padding-left: 0;
+margin-left: 0;
+margin-top: 0px;
+margin-bottom: 20px;
+/* background-color:#fff; */
+background-image:url(images/navbar-bg2.jpg);
+color:#603;
+float: left;
+width: 100%;
+font-family:Verdana, Geneva, sans-serif;
+border-top:1px solid #333;
+border-bottom:1px solid #333;
+}
+
+#navcontainer ul li {
+	display: inline;
+	font-size:11px;
+	font-weight:bold;
+}
+
+#navcontainer ul li span { /* This is for the no navbar */
+padding: 0.5em 1em;
+/* background-color:#fff; */
+background-image:url(images/navbar-bg2.jpg);
+color:#603;
+text-decoration: none;
+float: left;
+}
+
+#navcontainer ul li a
+{
+padding: 0.5em 15px;
+/* background-color:#fff; */
+background-image:url(images/navbar-bg2.jpg);
+color:#603;
+text-decoration: none;
+
+float: left;
+/* border-right: 1px solid #333; */
+}
+
+
+
+#navcontainer ul li a:hover
+{
+/* background-color:#9cf; */
+background-image:url(images/navbar-bg.jpg);
+color:#603;
+}
+
+#navcontainer li a#navcurrent {
+	color:#F00;
+}
+
+#loginleftcolumn {
+	width:280px;
+	float:left;
+	border-right:1px solid #ccc;
+	padding-right:10px;
+}
+
+#loginrightcolumn {
+	margin-left:40px;
+	padding-left:15px;
+}
+
+#helpLink {
+	position: absolute;
+	right: 10px;
+	bottom: 10px;
+	font-family:Verdana, Geneva, sans-serif;
+}
+
+img.logoheadimage {
+	border:0;
+}
+
+#helpLink a {
+	color:#603;
+	text-decoration:none;
+}
+
+div.textArea {
+	padding-left:10px;
+	padding-bottom:20px;
+	padding-right:10px;
+	padding-top:10px;
+	clear:left;
+}
+div.textAreaPopup {
+	padding-left:15px;
+	padding-top:10px;
+	padding-bottom:20px;
+	padding-right:10px;
+}
+
+div.messagePanel {
+	width: 600px;
+	background-color:#FEE;
+	padding:10px;
+	margin-bottom: 15px;
+	margin-top: 15px;
+	border: 1px solid #000;
+}
+
+div.footer {
+	border-top:2px solid #990000;
+}
+div.bottom-shadow {
+	background-image:url(/images/shadow-bottom.jpg);
+}
+div.address {
+	color:#fff;
+	text-align:center;
+	line-height:1.25em;
+	padding-top:10px;
+	padding-left:15px;
+	padding-bottom:20px;
+}
+div.address a {
+	color:#fff;
+	text-decoration:none;
+}
+
+#whoisloggedin {
+	font-size: 10px;
+	padding-right: 10px;
+	padding-top: 10px;
+	position: absolute;
+	top: 0px;
+	right: 0px;
+	color:#000;
+}
+
+#travelbox {
+	border: 1px solid #999;
+	padding: 5px;
+}
+
+#travelboxedit .inputboxclass {
+	width: 100%;
+}
+
+.viewtextcontainer {
+	border: 1px solid #999;
+	padding: 5px;
+}
+
+/* table styles */
+
+/* login page table */
+
+table.logintable {
+	border: 1px solid #999;
+	font-size:12px;
+}
+
+
+
+table.logintable td {
+	padding:5px;
+}
+
+/* application table style */
+
+table.appTable {
+	border-collapse:collapse;
+	font-size:12px;
+}
+table.appTable td {
+	border:1px solid #ccc;
+	vertical-align:top;
+}
+table.appTable th {
+	border:1px solid #ccc;
+	background-color:#e8f2fc;
+}
+.appTableLeft {
+	padding:6px 5px 5px 3px;
+	text-align:right;
+}
+.appTableRight {
+	padding:3px 5px 5px 5px;
+}
+.appTableHeader1 {
+	font-weight:bold;
+	font-size:14px;
+	background-color:#e8f2fc;
+	text-align:center;
+	padding:8px;
+}
+.appTableHeader2 {
+	font-weight:bold;
+	font-size:14px;
+}
+.appTableHeader3 {
+	font-weight:bold;
+	font-style:italic;
+	font-size:12px;
+}
+.appTableHeader4 {
+	font-weight:bold;
+	font-style:italic;
+	font-size:12px;
+	color:#F00;
+}
+
+.appTableHeaderInstructions {
+	font-weight:bold;
+	font-style:italic;
+	font-size:12px;
+	width:500px;
+}
+
+/* reports table style */
+
+.sysreports {
+	width:600px;
+}
+
+.sysreports .title {
+	font-size:14px;
+	font-weight: bold;
+	margin-top: 20px;
+	margin-bottom: 10px;
+}
+
+.sysreports .subtitle {
+	color:#777;
+	font-weight:bold;
+	font-size:11px;
+	font-style:italic;
+}
+
+.sysreports .description {
+	font-size:12px;
+	margin-top: 5px;
+	margin-bottom: 15px;
+	font-style:italic;
+	margin-left: 20px;
+}
+
+.sysreports .controls {
+	margin-left: 20px;
+}
+
+
+/* list table style */
+
+table.withoddeven tr.odd {
+	background-color:#e8f2fc;
+}
+
+table.listtable, table.listtablegrouped {
+	font-size:12px;
+	border-collapse:collapse;
+	margin-bottom: 5px;
+}
+table.listtable td {
+	padding: 5px;
+	border:1px solid #ccc;
+	vertical-align:top;
+}
+
+table.listtable tr.rowlight, table.listtable tr.rowlight.recently_changed_row {
+	background-color: #FFA; 
+}
+
+table.listtable tr.recently_changed_row {
+	background-color: #F4F9FE; 
+}
+
+table.listtable tr.recently_changed_row td.em {
+	font-weight: bold; 
+}
+
+table.listtable tr.error_row, table.listtable tr.rowlight.error_row {
+	background-color: #fcc; 
+}
+
+table.listtable tr.definition_subactive {
+	opacity:0.4; 
+}
+
+table.listtable td.na {
+	background-color:#888;
+}
+
+table.listtable td.cell_error {
+	background-color: #fcc;
+}
+
+table.listtable td.sn_caption_cell {
+	width:100px;
+}
+
+table.listtablegrouped td {
+	padding: 5px;
+	border-right:1px solid #ccc;
+	border-left:1px solid #ccc;
+	vertical-align:top;
+}
+
+table.listtablegrouped tr.row_break td, table.listtablegrouped tr.row_bottom td {
+	border:0px;
+	padding:0px;
+	height:0px;
+	border-top:1px solid #ccc;
+}
+
+table.listtable th.studentName {
+	vertical-align:middle;
+}
+
+table.listtable th, table.listtablegrouped th {
+	padding:5px;
+	background-color:#e8f2fc;
+	border:1px solid #ccc;
+	vertical-align:bottom;
+	text-align:left;
+}
+
+table.listtable td.enumeration, table.listtablegrouped td.enumeration {
+	vertical-align:top;
+	font-weight:bold;	
+}
+
+/* subtable for document listing */
+
+table.listtable td table {
+	border-collapse:collapse;
+	font-size:12px;
+}
+
+table.listtable td table td {
+	padding: 3px;
+	border:none;
+	vertical-align:top;
+}
+
+table.listtable tr.trnotvisibletoapplicant td .appTableHeader3 {
+	color: #f00;
+}
+
+
+span.smallprint, span.paren {
+	color:#777;
+	font-weight:bold;
+	font-size:11px;
+	font-style:italic;
+}
+
+span.paren_red {
+	color:#f00;
+	font-weight:bold;
+	font-size:11px;
+	font-style:italic;
+}
+
+.edittablewrapper {
+	max-width: 720px;
+}
+
+.buttonrow {
+	margin-bottom:10px;
+	margin-top:2px;
+}
+
+table.edittable {
+	border-collapse:collapse;
+	font-size:12px;
+	max-width: 720px;
+	word-wrap: break-word;  /* want to make sure really long words don't blow out our table */
+}
+table.edittable input.fixed {
+	width: 300px;
+}
+
+table.edittable textarea.fixed {
+	width: 300px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+}
+table.edittable th {
+	font-weight: bold;
+/*	border:1px solid #999; */
+	border-bottom:1px solid #ccc;
+	border-top:1px solid #ccc;
+	border-left:1px solid #ccc;
+
+
+	vertical-align:top;
+	padding:8px 3px 5px 5px;
+	text-align:left;
+	background-color:#e8f2fc;
+}
+
+table.edittable td {
+/*	border:1px solid #999; */
+	border-bottom:1px solid #ccc;
+	border-top:1px solid #ccc;
+	border-right:1px solid #ccc;
+
+
+	vertical-align: top;
+	padding:8px 5px 5px 3px;
+	background-color:#e8f2fc;
+	font-size: 14px;
+}
+
+table.edittable.defheader td {
+	background-color:#eeeeee;
+}
+
+table.edittable.defheader th {
+	background-color:#eeeeee;
+}
+
+/* for showing headers in middle of table */
+table.edittable tr.editview_caption td {
+	border-width:0px;
+	font-style:italic;
+	font-weight:bold;
+	line-height: 1.5em;
+	padding-left: 0px;
+	padding-right: 0px;
+	padding-top: 10px;
+	background-color:#fff;
+}
+
+table.edittable tr.editview_caption td h2 {
+	border-width:0px;
+	font-style:italic;
+	font-weight:bold;
+	line-height: 1.5em;
+	padding-left: 0px;
+	padding-top: 10px;
+	background-color:#fff;
+	
+	font-size:18px;
+	font-weight:bold;
+	border-bottom:2px solid #000;
+	padding-bottom:2px;
+	padding-top:15px;
+	padding-left:0px;
+	margin-bottom:5px;
+	background-color:#FFF; 
+}
+
+table.edittable tr.editview_text td .editview_text_div td, table.edittable tr.editview_text td .editview_text_div th {
+	padding: 3px;
+	width: auto;
+	background-color:#fff;
+	border-width:0px;
+}
+
+table.edittable tr.proc_num_row td, table.edittable tr.proc_num_row th {
+	border-bottom: 0;
+	padding-bottom: 3px;
+}
+
+table.edittable tr.proc_num_row td .inputboxclass {
+	width:215px;
+}
+
+table.edittable tr.proc_name_row td, table.edittable tr.proc_name_row th {
+	border-top: 0;
+	padding-top: 3px;
+}
+
+
+/* for showing text in middle of table */
+table.edittable tr.editview_text > td {
+	border-width:0px;
+	padding-left: 0px;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	background-color:#fff;
+	width:735px;  /* This fix is needed because EI doesn't want to honor the widths from the <col> styling */
+}
+
+/* for controlling out of control image widths */
+table.edittable tr.editview_text .editview_text_div img.typedocument_image {
+	max-width: 730px; 
+	height: auto;
+}
+
+/* for the tinymce buttons... */
+
+.defaultSkin span.mce_dfimageupload {
+	background: rgba(0, 0, 0, 0) url("./scripts/tiny_mce/plugins/dfimageupload/img/painting.png") no-repeat scroll 0px 0px;
+}
+
+.defaultSkin a.mce_dfimageupload.mceButtonActive   {
+    background-color: #f0f0ee;
+    border: 1px solid #f0f0ee;
+    width: 23px;
+}
+
+.defaultSkin a.mce_dfimageupload.mceButtonSelected   {
+    background-color: #c2cbe0;
+    border: 1px solid #000;
+    width: 23px;
+}
+
+.defaultSkin a.mce_dfimageupload.mceButtonEnabled   {
+    background-color: #f0f0ee;
+    border: 1px solid #f0f0ee;
+    width: 23px;
+}
+
+.defaultSkin span.mceIcon.mce_dfimageupload {
+	width: 24px;
+}
+
+table.edittable tr.editview_head > td {
+	border-width:0px;
+	
+	font-size:18px;
+	font-weight:bold;
+	border-bottom:2px solid #000;
+	padding-bottom:4px;
+	padding-top:10px;
+	padding-left:0px;
+	margin-bottom:15px;
+	background-color:#FFF; 
+	width:735px;
+	
+}
+
+/* column tag styling to mainly manage widths */
+table.edittable .table_label_width {
+	width:120px;
+}
+
+table.edittable .table_value_width {
+	width:250px;
+}
+
+table.edittable .short_table_value_width {
+	width:150px;
+}
+
+table.edittable .table_value_maxwidth {
+	width:250px;
+}
+
+/* column tag styling to mainly manage widths for the typeeditor */
+
+table.edittable.defheader {
+	width: 600px;
+}
+
+table.edittable.defheader .table_label_width {
+	width:40%;
+}
+table.edittable.defheader .table_value_width {
+	width:10%;
+}
+
+.table_value_width .little_float_right {
+	float: right;
+    color: #777;
+    font-size: 11px;
+    font-style: italic;
+    text-align: right;
+}
+
+table.edittable .disabled_message {
+	float: right;
+    color: #FF0000;
+    font-size: 11px;
+    font-style: italic;
+}
+
+
+table.edittable .inputboxclass {
+	width: auto;
+	font-size: 14px;
+}
+
+table.edittable select.inputboxclass {
+	width: 220px;
+}
+
+table.edittable td.typeversion_id_cell .tm {
+	color:#777;
+	font-weight:bold;
+	font-size:11px;
+	font-style:italic;	
+}
+
+table.edittable td.effective_date_cell .date_label {
+	color:#777;
+	font-weight:bold;
+	font-size:11px;
+	font-style:italic;
+}
+
+table.edittable td.disposition_cell .tm {
+	color:#777;
+	font-weight:bold;
+	font-size:11px;
+	font-style:italic;
+}
+table.edittable td.disposition_cell .nm {
+	font-size:12px;
+	font-style:italic;
+}
+table.edittable td.disposition_cell .ds .disposition {
+	margin-bottom:2px;
+	display:inline-block;
+}
+
+table.documentlist {
+	border-collapse:collapse;	
+}
+
+table.documentlist td {
+	padding:2px 4px 2px 0px !important;
+}
+
+td.editlink_td {
+	text-align: right;
+	vertical-align: top;
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+
+td.editlink_td_left {
+	text-align: left;
+	vertical-align: top;
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+
+.dialogbutton {
+	margin-left:0px;
+	margin-right:10px;
+}
+
+.dialogbutton form {
+	display:inline;
+}
+
+.dialogbuttons {
+	padding-left:0px;
+	padding-right:0px;
+	padding-top:5px;
+	padding-bottom:5px;
+}
+
+.errorred {  
+	color: #FF0000; 
+}
+
+.fakedatestyle {
+	color: #FF0000;
+	background-color: #FFF;
+}
+
+a.listrowlink span.ui-button-text {
+	padding: 2px;
+	line-height: 1.0;
+}
+
+/* These are used as mini css only buttons on the typeedit form since I cant use the jquery .button() */
+
+a.bd-linkbtn {
+	background-color:#f6f6f6;
+	border:1px solid #DDDDDD;
+	color:#0073EA;
+	font-weight:bold;
+	font-size: 12px;
+	padding-left:2px;
+	padding-right:2px;
+	margin-top:3px;
+	margin-bottom:3px;
+}
+a.bd-linkbtn:link { 
+	text-decoration: none;
+	}
+a.bd-linkbtn:visited {
+	text-decoration: none;
+	}
+a.bd-linkbtn:hover { 
+	text-decoration: none;
+	}
+a.bd-linkbtn:active { 
+	text-decoration: none;
+}
+
+
+
+.ui-menu { 
+	position: absolute; 
+	z-index:1;  
+}
+
+li.ui-menu-item { 
+  /* This fixes the IE10 issue */
+  list-style-image: url(data:0);
+}
+
+a.minibutton2 span.ui-button-text {
+	font-size: 11px;
+	padding:2px;	
+}
+
+input.minibutton2 {
+	font-size: 11px;
+	padding: 1px 2px 1px 2px  !important; 
+	width: 50px;
+}
+
+a.minibutton2.switch_user_button {
+	border: 1px solid #cd0a0a;
+	color: #cd0a0a;
+	font-size: 12px;
+	font-weight: bold;
+}
+
+input.searchbutton {
+	margin-left: 2px;
+	margin-right: 0px;
+}
+
+
+.last_select {
+    background-color:#FFA;
+}
+
+.bd-event-row.event_afterglow_c .bd-event-content, .bd-event-row.event_afterglow_r .bd-event-content {
+	background-color:#FF8;
+	border-color:#FF8;
+	border-width:3px;
+}
+
+.current_selection {
+    background-color:#008;
+    color:#FFF;
+}
+
+.current_selection span.paren {
+	color:#FFF;
+}
+
+.current_selection a {
+	color:#FFF;
+}
+
+.layout_width {
+	width: 720px;
+}
+.itemview_notice {
+	font-size: 14px;
+	padding: 10px 10px 10px 10px;
+	font-weight: bold;
+	background-color:#FFC;
+	border: 1px solid #999999;
+	margin-top: 5px;
+	margin-bottom: 10px;
+}
+
+.itemview_notice.red {
+	background-color:#FCC;
+}
+
+.itemview_notice .changesinbox {
+	font-size: 12px;
+	margin-top: 10px;
+	margin-bottom: 0px;
+	font-weight: normal;
+}
+
+.itemview_notice .changesinbox h2 {
+	margin-top:20px;
+	font-weight: bold;
+	font-size: 12px;
+	font-style: italic;
+	color:#0073ea;
+}
+
+
+.notice_box {
+	width: 700px;
+	padding: 10px 10px 10px 10px;
+	font-weight: bold;
+	border: 1px solid #999999;
+	margin-top: 5px;
+	margin-bottom: 15px;
+}
+
+.notice_box.yellow {
+	background-color:#FFC;
+}
+
+.notice_box.red {
+	background-color:#FCC;
+}
+
+
+.event_error {
+	color:#ff0000;
+	border: 1px solid #999999;
+	padding: 2px 2px 2px 2px;
+	margin-top: 5px;
+	background-color: #eee;
+}
+
+
+.paginationline {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: normal;
+	color: #000;
+	text-align:left;
+	margin: 0px;
+	padding: 2px 0px 2px 0px;
+}
+
+.paginationline span.separator {
+	margin-left: 15px;
+	margin-right: 15px;
+	font-size: 16px;
+}
+
+.smallundertitleparen {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	color: #666666;
+	font-weight: normal;
+}
+.undertitleparen {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	color: #555;
+	font-weight: normal;
+}
+
+table.uploadprompt th {
+	font-weight: bold;
+	color: #306;
+	text-align: left;
+	white-space: nowrap;
+	padding: 2px;
+}
+table.uploadprompt td {
+	text-align: left;
+	padding: 2px;
+}
+
+
+.codeexample {
+	font-family: Courier New, Courier, mono;
+	background-color: #CCCCCC;
+	border: 1px solid #999999;
+	padding:5px;	
+}
+
+
+
+ul.ul_treeview > ul {
+    list-style-type: none;
+}
+
+
+ul.ul_treeview > ul > li > span {
+    font-weight: bold;
+    font-size:17px;
+}
+
+ul.ul_treeview > ul > li > ul {
+    list-style-type: none;
+}
+
+ul.ul_treeview > ul > li > ul > li {
+    margin-top:10px;
+    margin-bottom:10px;
+}
+
+ul.ul_treeview > ul > li > ul > li > span {
+    font-style:italic;
+    font-weight:bold;
+}
+
+ul.ul_treeview > ul > li > ul > li > ul {
+    margin-top:3px;
+    margin-bottom:3px;
+    
+}
+
+
+div#importlog {
+	background-color: #CCF;
+	border: 1px solid #999;
+	padding: 5px 5px 5px 5px;
+	margin-top:20px;
+	margin-bottom:20px;
+}
+
+div#importlog h1 {
+	margin-top: 0px;
+	color:#0073ea;
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:14px;	
+}
+
+.req_field {  
+	color: #FF0000; 
+}
+
+.field_locked_sym {
+	width: 16px;
+	height: 16px;
+	background-image: url("images/icon_padlock.gif");	
+	display:inline-block;
+	vertical-align:top;
+}
+
+p.req_field_para {
+	margin-top: 5px;
+	margin-bottom: 0px;
+	display:none;
+}
+
+.locked_field_para {
+	margin-top: 5px;
+	margin-bottom: 0px;
+	display:none;
+}
+
+/* list table style */
+
+table.sublisttable {
+	font-size:12px;
+	border-collapse:collapse;
+	margin-bottom: 10px;
+	max-width:720px;
+	width: 100%;
+}
+
+table.sublisttable tr.tr_header th {
+	background-color:#fff;
+	border-left: 0px;
+	border-right: 0px;
+	padding-top: 20px;
+}
+
+table.sublisttable td {
+	padding: 5px;
+	border:1px solid #999;
+	vertical-align:top;
+}
+
+table.sublisttable th {
+	padding:5px;
+	background-color:#e8f2fc;
+	border:1px solid #999;
+	vertical-align:bottom;
+	text-align:left;
+}
+
+table.sublisttable tr.faded_row td {
+	color:#555;
+	text-decoration: line-through;
+}
+
+table.sublisttable .person {
+	font-size:16px;
+	color: #0073ea;
+	margin-bottom: 2px;
+	margin-top: 0px;
+	padding-top: 0px;
+}
+
+table.sublisttable col.col1 {
+	width:130px;
+}
+table.sublisttable col.col2 {
+	
+}
+table.sublisttable col.col3 {
+	width:60px;
+}
+
+
+table.sublisttable .bd-dateline-edited {
+	color: #F00;
+	font-size:11px;
+	font-style: italic;
+	white-space: nowrap;
+	margin-top:5px;
+}
+
+
+#toc {
+	position:absolute;
+	top: 30%;
+	right: 10px;
+	width: 155px;
+	border: 1px solid #ccc;
+	padding-top: 3px;
+	padding-left:5px;
+	padding-bottom: 2px;
+	margin: 0px;
+	/* background-color:#e8f2fc; */
+	background-color:#f3f9fd;
+}
+
+#toc ul {
+	padding-left: 0px;
+	margin:0px;
+}
+
+#toc ul li {
+	 padding-bottom:3px;
+	 list-style:none;
+	 margin-left:0px;
+	/* margin: 0px; */
+}
+
+
+#helpBody h1 {
+	color:#000;
+	margin-top: 15px;
+	font-size:18px;
+	font-weight:bold;
+	padding-left:0px;
+	border-bottom:1px solid #888;
+	padding-bottom:4px;
+	padding-top:3px;
+}
+
+#helpBody h2 {
+	color:#000;
+	font-size:14px;
+	padding-left:0px;
+	padding-bottom:4px;
+	padding-top:3px;
+	font-style:italic;
+	font-weight:bold;
+	line-height:1.5em;	
+}
+
+img.mai_inline_img {
+	float:left;
+	margin: 10px;
+	width:200px;
+}
+
+.codestyle {
+	font-family:monospace;
+	font-weight: bold;
+}
+
+/* css for timepicker */
+.ui-timepicker-div .ui-widget-header { margin-bottom: 8px; }
+.ui-timepicker-div dl { text-align: left; }
+.ui-timepicker-div dl dt { height: 25px; margin-bottom: -25px; }
+.ui-timepicker-div dl dd { margin: 0 10px 10px 65px; }
+.ui-timepicker-div td { font-size: 90%; }
+.ui-tpicker-grid-label { background: none; border: none; margin: 0; padding: 0; }
+
+.bd-list-container {
+	padding: 0;
+	margin: 0;
+	font-size: 12px;
+	max-width: 740px;
+}
+
+ul.bd-stream-list {
+	list-style: none outside none;
+	margin: 0px;
+	position: relative;
+	clear:both;
+	padding:0 10px 0 0;
+}
+
+li.bd-event-row {
+	margin: 0px;	
+	padding: 0px 0px 8px 40px;
+	position: relative;
+}
+
+.unversioned_pop_div li.bd-event-row {
+	padding: 0px 0px 8px 10px;
+}
+
+.unversioned_pop_div li.bd-event-row.bd-type-change {
+	margin-bottom: 0px;
+}
+
+.unversioned_pop_div .bd-list-container {
+	 color: #000;
+ }
+
+li.bd-event-row.bd-event-indented .bd-event-content {
+	margin-left: 15px;
+	-moz-box-shadow: inset 3px 3px 3px #ccc;
+	-webkit-box-shadow: inset 3px 3px 3px #ccc;
+	box-shadow: inset 3px 3px 3px #ccc;
+}
+
+li.bd-event-row.bd-event-outdented .bd-event-content {
+  -moz-box-shadow:    3px 3px 5px #ccc;
+  -webkit-box-shadow: 3px 3px 5px #ccc;
+  box-shadow:         3px 3px 5px #ccc;	
+}
+
+li.bd-event-row.bd-event-indented .bd-indent-component-link {
+	margin-left: 15px;
+}
+
+li.bd-event-row.bd-type-change, li.bd-event-row.bd-type-def-change {
+	margin-bottom: 15px;
+}
+
+li.bd-event-row.bd-event-indented {
+	margin-bottom: 0px;
+}
+
+.bd-event-select-button {
+	position: absolute;
+	left: 0;
+	top: 5px;
+	margin-left:5px;
+	margin-top:0px;
+}
+
+.bd-event-content {
+	border:3px solid #559;
+	margin: 0;
+	padding: 5px 5px 5px 200px;
+	position: relative;
+	min-height: 32px;
+}
+
+.bd-event-row.bd-type-change .bd-event-content.bd-with-edit-date, .bd-event-row.bd-type-link-proc .bd-event-content.bd-with-edit-date, .bd-event-row.bd-type-def-change .bd-event-content.bd-with-edit-date {
+	min-height: 44px;
+}
+
+.bd-comment-input .bd-event-content {
+	padding: 0px;
+	
+}
+
+.bd-event-row textarea.inputboxclass {
+	width: 100%;
+	height: 100px;
+	margin: 0px 0px 5px 0px;
+	padding: 5px;
+	border:3px solid #559;
+	box-sizing: border-box;
+	-webkit-box-sizing:border-box;
+	-moz-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+}
+
+.bd-event-content .bd-edit {
+	float: right;
+	display: block;
+	width:auto;
+	height:auto;
+	margin: 4px 0px 8px 0px;
+}
+
+.bd-event-content .bd-edit a {
+	margin-left: 8px;
+}
+
+.bd-type-change .bd-event-content {
+	background-color: #FFC;
+	border: 1px solid #99F;
+}
+
+.bd-type-def-change .bd-event-content {
+	background-color: #e8f2fc;
+	border: 1px solid #99F;
+}
+.bd-type-def-change.draft-color .bd-event-content {
+	background-color: #FFC;
+}
+
+.bd-type-link-part .bd-event-content {
+	background-color: #EFFFF2;
+	border: 1px solid #99F;
+}
+
+.bd-type-link-proc .bd-event-content {
+	background-color: #EEF;
+	border: 1px solid #99F;
+}
+
+.bd-event-type {
+	position: absolute;
+	top: 5px;
+	left: 5px;
+	margin:0px;
+	width: 32px;
+	height: 32px;
+}
+
+.bd-dimmed .bd-event-content, .bd-dimmed .bd-indent-component-link {
+	opacity: 0.4;
+}
+
+div.bd-event-document {
+	font-size:11px;
+	font-weight: bold;
+	margin-bottom: 2px;
+}
+
+div.bd-event-document a {
+	text-decoration:none;
+	color:#0073ea;
+}
+
+div.bd-event-document a .size {
+	color:#777;
+	margin-left: 5px;
+	font-weight: normal;
+}
+
+
+.sublisttable .bd-dimmed {
+	opacity: 0.4;
+}
+
+.bd-type-comment .bd-event-type {
+	background-image: url(images/chat_baloon.png);
+}
+
+.bd-type-change .bd-event-type {
+	background-image: url(images/open_wrench.png);
+}
+
+.bd-type-def-change .bd-event-type {
+	background-image: url(images/definition_form_edit.png);
+}
+
+.bd-type-link-proc .bd-event-type {
+	background-image: url(images/chain_link.png);
+}
+
+.bd-type-link-part .bd-event-type {
+	background-image: url(images/chain_link.png);
+}
+
+.bd-event-whowhen {
+	position: absolute;
+	top: 5px;
+	left: 50px;
+}
+
+.bd-event-whowhen .bd-byline {
+	font-weight: bold;
+	font-size: 14px;
+	color: #01317E;
+	margin: 0px;
+	padding: 0px;
+	width: 140px;
+	overflow: hidden;
+	white-space: nowrap;
+	display: block;
+}
+
+.bd-event-whowhen .bd-dateline, .bd-event-whowhen .bd-dateline-edited {
+	margin: 0px;
+	padding: 0px;
+	color:#777;
+	font-weight:bold;
+	font-size:11px;
+}
+
+.bd-event-whowhen .bd-dateline-edited {
+	color:#F55;
+	font-style: italic;
+}
+
+.bd-dateline-edited a:link, .bd-dateline-edited a:visited, .bd-dateline-edited a:hover, .bd-dateline-edited a:active {
+	color: #F00;
+}
+
+.bd-event-message {
+	margin: 0;
+	padding: 0;
+}
+
+
+.bd-event-message ul {
+	list-style-type: disc;
+}
+
+.bd-event-message ul.changelist {
+	list-style-type: disc;
+	margin: 0 0 0 0;
+	padding: 0 0 0 12px;	
+}
+
+ul.bd-bullet_features {
+	list-style-type: disc;
+	margin: 0 0 0 0;
+	padding: 0 0 0 16px;
+}
+
+ul.bd-bullet_features li {
+	margin: 0 0 0 0;
+	padding: 0 0 0 0;
+}
+
+.bd-bullet_features {
+	font-size: 12px;
+}
+
+.bd-event-subcomments-container {
+	padding-top:10px;
+}
+
+.bd-event-subcomments-container ul.bd-event-subcomments {
+	list-style: none outside none;
+	margin: 0px;
+	position: relative;
+	clear:both;
+	padding:0;
+}
+
+ul.bd-event-subcomments li {
+	border-top: 1px solid #9999FF;
+	padding: 5px;
+}
+
+.bd-subcomment-when {
+	color:#666666;
+}
+
+.bd-subcomment-byline {
+	color: #01317E;
+    font-weight: bold;
+    padding-right: 5px;
+}
+
+
+.bd-event-message ul span.value {
+	font-weight: bold;
+	color: #01317E;
+}
+
+.bd-event-message.proc-component {
+	font-size: 12px;
+}
+
+.bd-event-message.proc-component ul li {
+	font-size: 12px;
+	margin-left: 0px;
+}
+.bd-event-message.proc-component ul {
+	margin-left: 0px;
+	padding-left: 10px;
+}
+
+
+.bd-event-message .chglistfooter {
+    color: #888;
+    font-weight: bold;	
+    font-style:italic;    
+}
+
+#htmleditorID {
+	width: 100%;
+	margin: 0px;
+}
+
+.bd-propeditor {
+	padding: 10px;
+}
+
+.bd-propeditor .de-propval {
+	width: 330px;
+}
+
+.bd-layout-outer-div {
+	width: 550px;
+}
+
+.bd-layout-frame {
+	box-sizing: border-box;
+	-webkit-box-sizing:border-box;
+	-moz-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+	border: 1px solid #DDDDDD;
+    clear: right;
+    overflow: auto;
+    position: relative;	
+    padding: 5px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    min-height:40px;
+}
+
+.bd-layout-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;	
+}
+
+.bd-layout-list .bd-layout-item-single, .bd-layout-list .bd-layout-item-double {
+    float: left;
+    margin: 3px 3px 3px 3px;
+    padding: 3px;	
+    border: 1px solid #DDD;
+    background-color: #E8F2FC;
+    position: relative;
+}
+
+.bd-instruction-text {
+	width: 600px;
+	color: #01317E;
+    font-weight: bold;
+	font-style:italic;    
+}
+
+.db-html-item {
+	height: auto;
+}
+
+.db-field-item {
+	height:40px;
+}
+
+.db-field-item .bd-bad-column-name {
+	color:#F00;
+}
+
+.bd-sorting .db-html-item, .bd-sorting .db-field-item {
+	height:40px;
+	overflow: hidden;
+}
+
+
+.bd-layout-list .bd-layout-item-single {
+	width: 230px;
+}
+
+.bd-layout-list .bd-layout-item-double {
+	width: 474px;
+}
+
+.bd-layout-frame .bd-sorting li {
+	border-color: #000;
+	background-color: #FEE; 
+}
+
+.bd-layout-frame li div.db-sizer-control {
+	display: none;
+	float: right;
+	width:50px;
+}
+
+.bd-layout-frame .bd-sorting li div.db-sizer-control {
+	display: block;
+}
+
+.bd-layout-frame li div.db-edit-control {
+	display: block;
+	float: right;
+	width:40px;
+}
+
+.bd-layout-frame .bd-sorting li div.db-edit-control {
+	display: none;
+}
+
+.bd-edit-page-headers {
+	margin-top: 2em;
+}
+
+.bd-edit-block {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.bd-edit-block ul li {
+	margin-top: 3px;
+	margin-bottom: 3px;
+}
+
+
+
+table.table-striped td {
+  padding: 5px;
+}
+
+table.table-striped .row {
+  zoom: 1;
+}
+.row:before, .row:after {
+  display: table;
+  content: "";
+}
+.row:after {
+  clear: both;
+}
+
+td.delete {
+  white-space: nowrap;
+}
+
+#logobar {
+	padding: 10px;
+	position: relative;
+	height: 52px;
+	background-color: #EEE;
+}
+
+#logobar .logographic {
+	left:10px; 
+	top: 10px; 
+	width: 290px; 
+	position: absolute;
+}
+
+#headmessages {
+	height: 60px; 
+	margin-left: 300px; 
+	margin-right: 250px; 
+	overflow-y: auto;
+}
+
+
+#headmessages div {
+	background-color: #F33;
+	color: #FFF;
+	border: 1px solid #999;
+	padding: 5px 5px 5px 5px;
+	margin-top:0px;
+	margin-bottom:10px;
+	font-weight: bold;
+	font-size:10px;
+}
+
+#headmessages div.yellow {
+	background-color: #FF3;
+	color: #000;
+}
+
+
+/* Generic pane rules */
+.twocolbody { margin: 0 }
+.twocolrow, .twocolcol { overflow: hidden; position: absolute; }
+.twocolrow { left: 0; right: 0; }
+.twocolcol { top: 150px; bottom: 0; }
+.twocolscroll-y { overflow-y: scroll; -webkit-overflow-scrolling: touch;}
+
+
+
+.twocolleft.twocolcol { margin-left: 0px; width: 50%; min-width:400px;}
+.twocolright.twocolcol { left: 51%; right: 0; min-width:500px;}
+.twocolbody.twocolrow { top: 0px; bottom: 0px; }
+
+
+#navlist {
+	margin-left: 10px;
+	margin-right: 310px;
+	overflow-y: visible;
+	overflow-x: hidden;
+	height: 50px;
+	-webkit-overflow-scrolling: touch;
+}
+
+#navcurrent {
+	text-decoration:underline;
+}
+
+.breadcrumbdiv.fixed {
+	position: absolute;
+	left: 10px;
+	top: 115px;	
+	margin-bottom: 0px;
+}
+
+.breadcrumbdiv {
+	padding-top: 5px;
+	padding-right: 0px;
+	font-weight: bold;
+	font-size:16px;	
+	margin-bottom: 10px;
+}
+
+h1 .breadcrumbdiv {
+	font-size:18px;	
+}
+
+.breadcrumbdiv a:link, .breadcrumbdiv a:visited, .breadcrumbdiv a:hover, .breadcrumbdiv a:active {
+	text-decoration:none; color: #0073EA;
+}
+
+.paginationGroup a:link, .paginationGroup a:visited, .paginationGroup a:hover, .paginationGroup a:active {
+	text-decoration:none; color: #0073EA;
+}
+
+.paginationGroup a, .paginationGroup span {
+	padding-left: 2px;
+	padding-right: 2px;
+}
+
+#itemviewSearchBlock {
+	position: absolute;
+	right: 10px;
+	top: 72px;
+}
+
+#HtmlEditorContainer {
+	padding:0px;
+	display: none;
+}
+
+#HtmlEditorContainer textarea {
+	width: 100%;
+}
+
+.disposition {
+	font-weight: bold;
+	padding: 3px;
+	font-variant:small-caps;
+	border-width: 1px;
+	border-style: solid;
+	white-space:nowrap;
+}
+
+.listtable .disposition {
+	display: inline-block;
+	width: 90px;
+	text-align: center;
+	text-decoration: none;
+	margin:2px;
+}
+
+.sublisttable .disposition {
+	font-weight: bold;
+	padding: 3px;
+	font-variant:small-caps;
+	border-width: 0px;
+	border-style: solid;
+}
+
+.disposition.Pass {
+	color: #080;
+	background-color: #FFF;
+	border-color: #080;
+}
+
+.disposition.Fail {
+	color: #F00;
+	background-color: #FFF;
+	border-color: #F00;
+}
+
+.disposition.Obsolete {
+	color: #F00;
+	background-color: #FFF;
+	border-color: #F00;
+}
+
+.disposition.Draft, .disposition.DefReview {
+	color: #00F;
+	background-color: #FFF;
+	border-color: #00F;
+}
+
+.disposition.Review  {
+	color: #BA610A;
+	background-color: #FFF;
+	border-color: #BA610A;
+}
+
+.disposition.SignedOff {
+	color: #080;
+	background-color: #FFF;
+	border-color: #080;
+}
+
+.disposition.InProcess {
+	color: #A80;
+	background-color: #FFF;
+	border-color: #A80;
+}
+
+.disposition.Black {
+	color: #000;
+	background-color: #FFF;
+	border-color: #000;
+}
+
+.disposition.Invalid {
+	color: #000;
+	background-color: #FFF;
+	border-color: #000;
+}
+
+.sublisttable .disposition {
+	font-weight: bold;
+	padding: 3px;
+	font-variant:small-caps;
+}
+
+.in-field-disposition .disposition {
+	margin-left: 10px;
+}
+
+.bd-event-content .bd-edit .disposition {
+	font-weight: bold;
+	padding: 2px;
+	font-variant:small-caps;
+}
+
+.bd-event-content .bd-edit .disposition.Pass {
+	color: #080;
+	background-color: #FFF;
+	border: 1px solid #080;
+}
+
+.bd-event-content .bd-edit .disposition.Fail {
+	color: #F00;
+	background-color: #FFF;
+	border: 1px solid #F00;
+}
+
+.bd-event-content .bd-edit .disposition.Review {
+	color: #BA610A;
+	background-color: #FFF;
+	border: 1px solid #BA610A;
+}
+
+a.bd-button, a.used-on-button, button.jumpmenu {
+	display: inline-block;
+	margin-top:-2px;
+}
+
+.buttonrow a.bd-button, .buttonrow a.used-on-button, .buttonrow button.jumpmenu {
+	margin-top:2px;
+}
+
+.firstbuttonrow .custom-combobox-input {
+	width: 130px;
+}
+
+.whats_new {
+	border: 1px solid #999;
+	padding: 10px 10px 10px 10px;
+	margin-top:20px;
+	margin-bottom:20px;
+	width:300px;
+	font-size:12px;
+	font-weight: bold;
+	background-color: #FFA;
+	box-shadow: 5px 5px 5px 0 rgba(0, 0, 0, 0.3);
+}
+
+
+.whats_new .close_link {
+	Helvetica,Arial,sans-serif;
+	font-weight: bold;
+	font-size:11px
+    display: block;
+    float: right;
+    height: auto;
+    margin: 0px 0px 4px 4px;
+    width: auto;	
+    background-color: #FFA;
+}
+
+.whats_new .close_link a {
+    color: #0073ea;
+    text-decoration: none;    	
+}
+
+table.edittable th.hidden_properties_array_cell, table.edittable td.hidden_properties_array_cell, 
+table.edittable th.hidden_components_array_cell, table.edittable td.hidden_components_array_cell {
+	background-color: #fcc;
+}
+
+th.hidden_properties_array_cell .paren, th.hidden_components_array_cell .paren {
+	color: #555;
+}
+
+table.edittable .cell_error {
+	background-color: #fcc;
+}
+
+table.edittable .cell_error .errorred {
+	font-size: 12px;
+}
+
+table.edittable .disposition_cell.cell_error .errorred {
+	margin-top: 6px;
+}
+
+table.edittable .cell_error .paren {
+	color: #555;
+}
+
+div#eventlog {
+	background-color: #FCC;
+	border: 1px solid #999;
+	padding: 5px 5px 5px 5px;
+	margin-top:20px;
+	margin-bottom:20px;
+}
+
+div#eventlog li > span {
+	padding-right:10px;
+	font-weight:bold;
+}
+
+dl.comment_tips dt {
+	font-family:"Courier New", Courier, monospace;	
+	font-weight:bold;
+	margin-top: 10px;
+}
+
+.comp_add_button_group {
+	border: 1px solid #ddd;;
+	background-color: #f6f6f6;
+	font-weight: bold;
+	font-size: 11px;
+}
+
+.comp_add_button_group div {
+	margin: 5px;
+}
+
+.comp_add_button_group div a {
+    color: #0073ea;
+    text-decoration: none;   	
+}

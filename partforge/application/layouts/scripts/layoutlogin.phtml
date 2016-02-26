@@ -1,0 +1,84 @@
+<?php
+/**
+ *
+ * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
+ *
+ * Copyright (C) 2013-2015 Randall C. Black <randy@blacksdesign.com>
+ *
+ * This file is part of PartForge
+ *
+ * PartForge is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * PartForge is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PartForge.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @license GPL-3.0+ <http://spdx.org/licenses/GPL-3.0+>
+ */
+  $onload = array();
+  if (!$this->layout()->show_in_any_window) {
+    $onload[] = "verifyCorrectWindow('PopupWin',false);";
+  }
+  if ($this->layout()->scrollhold) {
+    $scrollholdkey = empty($this->layout()->scrollholdkey) ? Zend_Controller_Front::getInstance()->getRequest()->getActionName() : $this->layout()->scrollholdkey;
+    $onload[] = "initScrollSaver('".$scrollholdkey."');";
+  } elseif (!$this->layout()->no_set_form_focus) {  // note: in IE 8, then two things are mutually exclusive
+    $onload[] = "set_default_focus();";
+  }
+  
+  $nav_html = '<span>&nbsp;</span>';
+  if (is_array($this->layout()->navlist_array)) {
+    $nav_html = implode("</li>\r\n<li>",$this->layout()->navlist_array);
+  }
+  
+  $baseurl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();
+  $config = Zend_Registry::get('config');
+  
+?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title><?php echo ($this->layout()->title ? $this->layout()->title.' - ' : '').$config->application_title;?></title>
+<style type="text/css">
+    .sortinglist { list-style-type: none; margin: 0; padding: 0; width: 60%; }
+    .sortinglist li { margin: 0 3px 3px 3px; padding: 0.1em; padding-left: 3.4em;  font-size: 1.0em; height: 18px; }
+    .sortinglist li span { position: absolute; margin-left: -1.7em;}
+</style>
+
+<?php echo fetchHtmlHeaderIncludes();?>
+
+<script type="text/javascript">
+var baseUrl = '<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>';
+$(document).ready(function () {
+	$( ".bd-button, .listrowlink, .minibutton2, .searchbutton" ).button();
+});
+</script>
+</head>
+
+<body class="tundra" onLoad="<?php echo implode('',$onload);?>">
+<div class="main">
+<div id="logobar">
+<a href="<?php echo UrlCallRegistry::formatViewUrl('itemlistview','struct',array('resetview' => '1'));?>"><img title="<?php echo $config->application_title;?>" class="logoheadimage" src="<?php echo $baseurl.$config->logo_file;?>"></a>
+</div>
+<div id="whoisloggedin"><?php echo $_SESSION['account']->whoAmIHtml() ?></div>
+
+<div>
+<a name="TopOfPageAnchor"></a>
+<div id="navlist">
+</div>
+</div>
+<div class="textArea">
+<?php echo $this->layout()->content ?>
+</div> 
+
+
+</div> 
+</body>
+</html>

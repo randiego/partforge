@@ -1,0 +1,27 @@
+<?php
+    $this->layout()->title = 'Manage Users';
+    $this->layout()->setLayout('layout');
+    $this->layout()->scrollhold = true;
+    $html_msg = '';
+    
+    $BreadCrumbs = new BreadCrumbsManager();
+    $BreadCrumbs->newAnchor($this->navigator->getCurrentViewUrl(),$this->layout()->title);
+    
+    $minibuttons = new EditLinks();
+    
+    if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'table:user','add')) {
+        $minibuttons->add_item( $this->navigator->getCurrentHandlerUrl('btnNewUser'),"New User", 'Add a new user to the system');
+        $html_msg .= fetch_event_log_header_html($this->navigator->getCurrentHandlerUrl('btnClearMessages'));
+    }
+    $minibuttons->add_item( $this->navigator->getCurrentHandlerUrl('btnShowEmails'),"Get Email Addresses", 'Get Email Address Lists for Types of Users');
+    $html_msg .= DBTableRowWhatsNewUser::fetchWhatsNew('EMAILALLUSERS','You can now do email blasts to specific user types using the Get Email Addresses button.','3/10/2015');
+    
+    
+    $overtablehtml = '';
+    if ($minibuttons->count() > 0) {
+    	$overtablehtml .= '<div class="firstbuttonrow">'.$minibuttons->buttons_html().'</div>';
+    }    
+    
+    echo fetch_form_tag($html_msg.$this->paginated_report_page->fetch_form_body_html($overtablehtml));
+
+?>

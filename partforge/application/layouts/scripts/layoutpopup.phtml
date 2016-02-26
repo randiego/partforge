@@ -1,0 +1,66 @@
+<?php
+/**
+ *
+ * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
+ *
+ * Copyright (C) 2013-2015 Randall C. Black <randy@blacksdesign.com>
+ *
+ * This file is part of PartForge
+ *
+ * PartForge is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * any later version.
+ *
+ * PartForge is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with PartForge.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @license GPL-3.0+ <http://spdx.org/licenses/GPL-3.0+>
+ */
+  $onload = array();
+  if (!$this->layout()->show_in_any_window) {
+    $onload[] = "verifyCorrectWindow('PopupWin',true);";
+  }
+  if ($this->layout()->scrollhold) {
+    $request = Zend_Controller_Front::getInstance()->getRequest();
+    $onload[] = "initScrollSaver('".$request->getActionName()."');";
+  } else {  // note: in IE 8, then two things are mutually exclusive
+    if (!$this->layout()->no_set_form_focus) {
+      $onload[] = "set_default_focus();";
+    }
+  }  
+  
+  $baseurl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl(); 
+  $config = Zend_Registry::get('config');
+  
+?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title><?php echo ($this->layout()->title ? $this->layout()->title.' - ' : '').$config->application_title;?></title>
+
+<?php echo fetchHtmlHeaderIncludes();?>
+
+<script type="text/javascript">
+var baseUrl = '<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>';
+$(document).ready(function () {
+	$( ".bd-button, .listrowlink, .minibutton2, .searchbutton" ).button();
+});
+</script>
+</head>
+
+<body class="tundra" onLoad="<?php echo implode('',$onload);?>">
+<div class="main">
+<div class="textAreaPopup">
+<?php echo $this->layout()->content ?>
+</div> 
+<!-- end textArea -->
+<div class="footer">&nbsp;</div> <!-- end footer -->
+</div> <!-- end main -->
+</body>
+</html>

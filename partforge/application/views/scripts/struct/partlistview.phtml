@@ -1,0 +1,21 @@
+<?php
+    $this->layout()->title = 'List of Part Definitions';
+    $BreadCrumbs = new BreadCrumbsManager();
+    $BreadCrumbs->newAnchor($this->navigator->getCurrentViewUrl(),$this->layout()->title);    
+    $this->layout()->setLayout('layout');
+    $this->layout()->scrollhold = true;
+    $html = '';
+    
+    $minibuttons = new EditLinks();
+    if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'ui:caneditdefinitions')) {
+	    $minibuttons->add_item( $this->navigator->getCurrentHandlerUrl('btnType'),"New Type", 'Add a new part or form type to the system');
+    }
+    
+    $overtablehtml = '';
+    if ($minibuttons->count() > 0) {
+    	$overtablehtml .= '<div class="firstbuttonrow">'.$minibuttons->buttons_html().'</div>';
+    }
+    
+    echo fetch_form_tag($html.$this->paginated_report_page->fetch_form_body_html($overtablehtml));
+
+?>

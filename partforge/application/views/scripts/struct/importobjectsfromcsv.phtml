@@ -1,0 +1,59 @@
+<?php
+	$config = Zend_Registry::get('config');
+	$this->layout()->title = $this->import_object->getPageTitle();
+	$this->layout()->setLayout('layoutdialog');
+	$this->layout()->show_in_any_window = true;
+        
+	$html = '';
+//TODO:        $html .= $this->uploaddocument->fetchHiddenIndexFormTag();
+	$html .= '
+            <input type="hidden" name="MAX_FILE_SIZE" value="'.$config->max_file_upload_size.'">
+            <div style="width:600px;">
+            <p>The imported files must be in CSV format.  
+		Column headers must start on line 1, and the data must start on line 2. </p>
+            <p>Actions for each input row can be specified with an action column with values like:<dl>
+            		<dt>NewObject</dt><dd>creating a new itemobject and itemversion</dd>
+            		<dt>ReplaceFields</dt><dd>this is for the case where we want to change the value of specific fields in an existing version. without creating a new version.  
+            		We can even change the fieldtype_id if we enter it.  When you select the typeversion from the top dropdown on the following page for this type of import row, it does nothing more than specify the fields you can choose from the header dropdowns.</dd>
+            		<dt>NewVersion</dt><dd>This is the case where we specify a serial number and some other fields.
+    		The SN is used to lookup the corresponding
+    		 itemversion_id and itemobject_id.  If it cannot be found, then a new object is created with that
+    		 serial number.  In this case, user_id and effective date are required.  If the itemobject_id
+    		 is found then we obtain the version that is current as of the input effective_date.  A check is
+    		 done to see if adding the record will result in any new field values.  Note that
+    		 we also have to make sure the serial number does not change in mid stream too.  If any new fields
+    		 create a new version, then a new version
+    		 of the record is added with the new fields.  If not, then the record is skipped since it will not
+    		 produce a legit new version.  If the only version found is in the future, then that version is
+    		 loaded and a comparison is done on the field to be updated.  If there are no changes other than
+    		 then effective date, then the effective date of the existing record is adjusted but no addition
+    		 version is creeated.</dd>
+            		</dl></p>
+            </div>
+            <p>
+            <table class="edittable">
+            <col style="width: 100px;">
+            <col style="width: 500px;">
+        ';
+        $limit_text = number_format(ceil($config->max_file_upload_size / (1024*1024))).' MB';
+        //$filetypes = text_to_wrappedhtml('(Allowed: '.implode(', ',$this->uploaddocument->getAllowedFileExtArray()).', < '.$limit_text.')',50);
+        
+        $html .= '
+        <tr>
+                    <th>File Name:<br><span class="paren">'.$filetypes.'</span></th>
+                    <td><input class="inputboxclass" type="file" name="pcfile" size="60"></td>
+                </tr>
+        <tr>
+          <th>Delimited by:</th>
+          <td><input name="use_tabs" type="radio" value="0" checked> Commas&nbsp;&nbsp;
+              <input name="use_tabs" type="radio" value="1"> Tabs
+          </td>
+        </tr>
+        ';
+
+	$html .= '</table>
+        </p>';
+
+        echo fetch_form_page($this->layout()->title,$html,array('Upload and Preview' => 'btnUpload', 'Cancel' => 'btnCancel'),'','','enctype="multipart/form-data"');
+        
+?>

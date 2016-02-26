@@ -1,0 +1,19 @@
+<?php
+
+$this->layout()->title = 'Email Me My Login ID';
+$this->layout()->setLayout('layoutdialog');
+$html = '';
+$html .= '<p style="margin-top:20px;">Enter your <b>email</b> to have your Login ID sent to you.</p>';
+$html .= '<p class="name_search_box"><input style="width:600px;" name="email" id="email" value="'.$_SESSION['findloginbyemail']['email'].'"></p>';
+$html .= '<p>(This only works if your email is correctly entered in the system and you can read email at this address.)</p>';
+
+$html2 = '<p  style="margin-top:30px;">OR, most users are able to see a list of Login IDs from the <b>Users</b> tab once they are logged in.<br />So, try asking another logged-in user for help finding your Login ID.</p>';
+$html2 .= '<p  style="margin-top:30px;">OR, you can contact one of these System Administrators for help:</p>';
+$records = DbSchema::getInstance()->getRecords('user_id',"SELECT * FROM user where user_enabled=1 and user_type='Admin' order by last_name, first_name");
+$names = array();
+foreach($records as $record) {
+	$names[] = DBTableRowUser::concatNames($record).' ('.mailto_link($record['email'],$record['email'],'Forgot my Login ID',"Hi ".$record['first_name'].", \n\nHelp.  I forgot my Login ID.").')';
+}
+$html2 .= '<ul><li>'.implode('</li><li>',$names).'</li></ul>';
+
+echo fetch_form_page($this->layout()->title,$html,array('OK' => 'btnOK', 'Cancel' => 'btnCancel')).$html2;

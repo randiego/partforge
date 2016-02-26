@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>{#dfimageupload_dlg.title}</title>
+	<script type="text/javascript" src="../../../../jqueryui11/external/jquery/jquery.js"></script>
+	<script type="text/javascript" src="../../tiny_mce_popup.js"></script>
+	<script type="text/javascript" src="js/dialog.js"></script>
+</head>
+<body>
+
+<script type="text/javascript">
+
+function progressHandlingFunction(e){
+    if(e.lengthComputable){
+        $('progress').attr({value:e.loaded,max:e.total});
+    }
+}
+
+function completeHandler(e) {
+	var titlehtml =  $('<div />').text($('#mouseover_name').val()).html();
+	DFImageUploadDialog.insert('<img class="typedocument_image" src="../types/documents/' + e['document_id'] + '" width="250" alt="'+titlehtml+'" title="'+titlehtml+'" /><br />'+titlehtml);
+}
+
+function uploadFile() {
+	if (checkFileSelected($('#filenamebox')[0])) {  // double check to make sure we have an image file selected
+		$('#insert').val('Uploading...')
+	    var formData = new FormData($('form')[0]);
+	    // <?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl()
+	    $.ajax({
+	        url: $('#upload_url').val(),  //Server script to process data
+	        type: 'POST',
+	        xhr: function() {  // Custom XMLHttpRequest
+	            var myXhr = $.ajaxSettings.xhr();
+	            if(myXhr.upload){ // Check if upload property exists
+	                myXhr.upload.addEventListener('progress',progressHandlingFunction, false); // For handling the progress of the upload
+	            }
+	            return myXhr;
+	        },
+	        //Ajax events
+	       // beforeSend: beforeSendHandler,
+	        success: completeHandler,
+	      //  error: errorHandler,
+	        // Form data
+	        data: formData,
+	        //Options to tell jQuery not to process data or worry about content-type.
+	        cache: false,
+	        contentType: false,
+	        processData: false
+	    });
+	}
+}
+
+function checkFileSelected(el) {
+    var file = el.files[0];
+    if (typeof file == "undefined") {
+    	alert('No file selected.');
+    	return false;
+    } else {
+	    name = file.name;
+	    size = file.size;
+	    type = file.type;
+	    if ((type!='image/jpeg') && (type!='image/gif') && (type!='image/png')) {
+	    	alert('Sorry, wrong file type.  You can only upload jpg, gif, or png files.');
+	    	el.value = '';
+	    	return false;
+	    }
+    }
+    return true;
+}
+
+
+</script>
+
+<form onsubmit="tinyMCEPopup.close();return false;" enctype="multipart/form-data" action="#" >
+	<p>Browse to select an image file (JPG, PNG, or GIF)</p>
+	<input id="filenamebox" name="files" type="file" onchange="checkFileSelected($('#filenamebox')[0]);" />
+	<p>Title (Optional):<br /><input id="mouseover_name" name="mouseover_name" type="text" class="text" style="width:100%;"/></p>
+	<input id="upload_url" name="upload_url" type="hidden"/>
+	<input id="typeobject_id" name="typeobject_id" type="hidden" />
+	<div class="mceActionPanel">
+		<input type="button" id="insert" name="insert" value="{#insert}" onclick="uploadFile();" />
+		<input type="button" id="cancel" name="cancel" value="{#cancel}" onclick="tinyMCEPopup.close();" />		
+	</div>
+</form>
+
+
+</body>
+</html>

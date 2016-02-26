@@ -1,0 +1,71 @@
+<?php
+
+	$title = 'template';
+
+    $this->layout()->title = 'Analyze Data and Export';
+    $this->layout()->setLayout('layout');
+    $this->layout()->scrollhold = true;
+
+    
+
+$html = '<h1>Raw Exporting and Table Joining</h1>';
+$html .= '<input type="hidden" name="btnOnChange" value="">';
+
+// build the list of possible options in the selection box
+$proc_options = DBTableRowTypeVersion::getPartNumbersWAliasesAllowedToUser($_SESSION['account'],true,false);
+foreach($proc_options as $idx => $option) {
+	$proc_options[$idx] = 'Procedure: '.$option;
+}
+$part_options = DBTableRowTypeVersion::getPartNumbersWAliasesAllowedToUser($_SESSION['account'],false,false);
+foreach($part_options as $idx => $option) {
+	$part_options[$idx] = 'Part: '.$option;
+}
+$options = $proc_options + $part_options;
+$A_options = $options;
+$B_options = $options;
+$ReportDataA = new ReportDataItemListView(true,true,isset($proc_options[$this->params['A_category']]),false,$this->params['A_category']);
+$ReportDataB = new ReportDataItemListView(true,true,isset($proc_options[$this->params['B_category']]),false,$this->params['B_category']);
+
+$joinFieldA_options = $ReportDataA->csvfields;
+$joinFieldB_options = $ReportDataB->csvfields;
+
+$dummyparms = array();
+$A_Count = $this->params['A_category'] ? $ReportDataA->get_records_count($dummyparms, '') : '';
+$B_Count = $this->params['B_category'] ? $ReportDataB->get_records_count($dummyparms, '') : '';
+
+$A_export_link = linkify($this->navigator->getCurrentHandlerUrl('btnSaveOneToCSV',null,null,array('tableid' => 'A')),'Save to Spreadsheet','','listrowlink',"",'_blank');
+$B_export_link = linkify($this->navigator->getCurrentHandlerUrl('btnSaveOneToCSV',null,null,array('tableid' => 'B')),'Save to Spreadsheet','','listrowlink',"",'_blank');
+
+$html .= '<table class="listtable">
+<tr><th>&nbsp;</th><th>Part/Procedure</th><th>Join On</th><th>Rows</th><th>&nbsp;</th></tr>
+<tr><td>A</td><td>'.format_select_tag($A_options,'A_category',$this->params,"document.theform.btnOnChange.value='catchange';document.theform.submit();return false;",false,'-- Select --').'</td><td>'.format_select_tag($joinFieldA_options,'A_joincolumn',$this->params,"document.theform.btnOnChange.value='catchange';document.theform.submit();return false;",false,'-- Select --').'</td><td>'.$A_Count.'</td><td>'.$A_export_link.'</td></tr>
+<tr><td>B</td><td>'.format_select_tag($B_options,'B_category',$this->params,"document.theform.btnOnChange.value='catchange';document.theform.submit();return false;",false,'-- Select --').'</td><td>'.format_select_tag($joinFieldB_options,'B_joincolumn',$this->params,"document.theform.btnOnChange.value='catchange';document.theform.submit();return false;",false,'-- Select --').'</td><td>'.$B_Count.'</td><td>'.$B_export_link.'</td></tr>
+</table>';
+
+$html .= linkify($this->navigator->getCurrentHandlerUrl('btnSaveCSV',null,null),'Join and Save to Spreadsheet','','bd-button',"",'_blank');
+//$html .= '<input class="bd-button" type="submit" value="Join Data" name="btnExportJoined">';
+
+echo fetch_form_tag($html);
+
+echo '<h1>Global Reports</h1>';
+
+$reports = ReportGenerator::getReportList();
+$html = '<div class="sysreports">';
+foreach($reports as $report) {
+	$links = array();
+	$links[] = linkify($this->navigator->getCurrentViewUrl('reportgenerate',null,array('class_name' => $report['class_name'])),'Save to Spreadsheet','','listrowlink',"",'_blank');
+	if ($_SESSION['account']->getRole()=='Admin') {
+		$links[] = linkify($this->navigator->getCurrentHandlerUrl('btnForceRefreshReport',null,null,array('class_name' => $report['class_name'])),'Regenerate','','listrowlink');
+	}
+	if (isset($report['last_run'])) 
+	$last_run = isset($report['last_run']) ? date("m/d/Y H:i",strtotime($report['last_run'])) : '';
+	$html .= '<div class="title">'.$report['title'].'<div class="subtitle">Last Updated: '.$last_run.'</div></div>';
+	$html .= '<div class="description">'.$report['description'].'</div>';
+	if (isset($report['graph_file_url'])) {
+		$html .= '<div class="graph"><img src="'.$report['graph_file_url'].'" /></div>';
+	}
+	$html .= '<div class="controls">'.implode(' ',$links).'</div>';
+}
+$html .= '</div>';
+echo $html;
+

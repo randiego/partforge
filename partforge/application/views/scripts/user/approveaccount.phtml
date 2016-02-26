@@ -1,0 +1,19 @@
+<?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/user/approveaccount.js?v=1" type="TEXT/JAVASCRIPT"></script>
+
+<?php
+
+$this->layout()->title = 'Approve Account';
+$this->layout()->setLayout('layoutdialog');
+
+$html = '';
+$html .= '<table class="edittable">
+             <col class="table_label_width">
+             <col class="short_table_value_width">
+             <col class="table_label_width">
+             <col class="short_table_value_width">';
+
+$html .= fetchEditTableTR(array(array('user_type'),array('send_welcome_email'),array('email'),array('message')), $this->formtable);
+$html .= '</table>';
+
+echo fetch_form_page($this->layout()->title,$html,array('OK' => 'btnOK', 'Cancel' => 'btnCancel'));
