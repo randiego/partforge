@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2015 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2016 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -35,7 +35,7 @@ $config['notices_from_email'] = '***posiblynoone@example.com***';
 // this is a browser defined maximum bytes one can upload. This should be smaller than the php limit.
 // $config['max_file_upload_size'] = 40*1024*1024;
 
-// this is the password that is automatically assigneed to accounts which have had their password reset.
+// this is the password that is automatically assigned to accounts which have had their password reset.
 //$config['default_new_password'] = 'partforgepw';
 
 // dead stop and show terse message that system is unavailable

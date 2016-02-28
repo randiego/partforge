@@ -48,14 +48,14 @@ a specific test fixture.
 
 Sorry, this is all there is right now...
 
-Before starting you should have Apache, php 5.2.9+ (extensions: curl, gd2, tidy; helpful settings: memory_limit=256M, post_max_size=50M), MySQL 5.5+, and preferably phpMyAdmin installed for loading the database.  On Windows, installing [WAMP](http://www.wampserver.com/en/) 
+Before starting you should have Apache, php 5 versions 5.2.9+ (extensions: curl, gd2, tidy, mysql (really need to change to mysqli soon); helpful settings: memory_limit=256M, post_max_size=50M), MySQL 5.5+, and preferably phpMyAdmin installed for loading the database.  On Windows, installing [WAMP](http://www.wampserver.com/en/) 
 is a quick way to get all this in one shot.  
 
-##### 1. unpack the PartForge file structure and save it someplace not necessarily within the a web viewable area.
+##### 1. unpack the PartForge file structure and save it someplace not necessarily within a web viewable area.
 
 ##### 2. Create an Apache alias called partforge that points to the /public directory in the install package.
 
-##### 3. open phpMyAdmin and create a new database called partforgedb and add a read/read access user and password (partforgeuser, partforgepw). 
+##### 3. open phpMyAdmin and create a new database called partforgedb and add a read/write access user and password (partforgeuser, partforgepw). 
 
 ##### 4. From within phpMyAdmin, make the empty partforgedb current, use the import tab to browse and load <partforge_inst_dir>/database/db_quadcopter_example.sql.
 Alternatively you could load an empty image /database/db_generate.sql.
