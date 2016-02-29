@@ -344,4 +344,9 @@ CREATE TABLE IF NOT EXISTS assigned_to_task (
 	INDEX(group_task_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-
+CREATE TABLE taskslog (
+  tasklog_id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  tl_key VARCHAR(64),
+  tl_last_run DATETIME,
+  INDEX(tl_key)
+);

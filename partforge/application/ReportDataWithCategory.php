@@ -56,7 +56,8 @@ abstract class ReportDataWithCategory extends ReportData {
 	public function ensure_category($category) {
 		if (count($this->category_array)>0) {
 			if (!array_key_exists($category,$this->category_array)) {
-				$category = reset(array_keys($this->category_array)); // first category
+				$categories = array_keys($this->category_array);
+				$category = reset($categories); // first category
 			}
 		}
 		return $category;

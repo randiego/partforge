@@ -591,7 +591,8 @@ class BreadCrumbsManager {
 	public function getPreviousUrl() {
 		if (count($_SESSION['breadcrumbs'])>1) {
 			// go back one URL from the end
-			$url = reset(array_slice(  array_keys($_SESSION['breadcrumbs'])  ,-2,1));
+			$records = array_slice(  array_keys($_SESSION['breadcrumbs'])  ,-2,1);
+			$url = reset($records);
 			return $url;
 		} else {
 			return '';

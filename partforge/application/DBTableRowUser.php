@@ -200,7 +200,7 @@
         	return $out;
         }
         
-        public function save($fieldnames,$handle_err_dups_too=true)
+        public function save($fieldnames=array(),$handle_err_dups_too=true)
         {
 			
 			if (in_array('password',$fieldnames)) {

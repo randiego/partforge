@@ -341,61 +341,6 @@ function self_url($scheme='',$host='') {
 	return $scheme.'://'.$host.$request->getBaseUrl().'/'.$request->getControllerName().'/'.$request->getActionName();
 }
 
-function query_params_array() {
-	$ending = ( isset($_SERVER['QUERY_STRING']) ) ? $_SERVER['QUERY_STRING'] : '';
-	$vals = array();
-	$ending = str_replace('?','', $ending);
-	parse_str($ending, $vals);
-	return $vals;
-}
-
-function my_encrypt($string,$key) {
-	srand((double) microtime() * 1000000);
-	//for sake of MCRYPT_RAND
-	$key = md5($key);
-	/* Open module, and create IV */
-	$td = mcrypt_module_open('rijndael-128','','cfb', '');
-	$key = substr($key, 0,mcrypt_enc_get_key_size($td));
-	$iv_size = mcrypt_enc_get_iv_size($td);
-	$iv = mcrypt_create_iv($iv_size,MCRYPT_RAND);
-	/* Initialize encryption handle */
-	if (mcrypt_generic_init($td, $key, $iv) !=-1) {
-
-		/* Encrypt data */
-		$c_t = mcrypt_generic($td, $string);
-		mcrypt_generic_deinit($td);
-		mcrypt_module_close($td);
-		$c_t = $iv.$c_t;
-		return $c_t;
-	} //end if
-}
-
-function my_decrypt($string,$key) {
-	$key = md5($key);
-	/* Open module, and create IV */
-	$td = mcrypt_module_open('rijndael-128','','cfb', '');
-	$key = substr($key, 0,mcrypt_enc_get_key_size($td));
-	$iv_size = mcrypt_enc_get_iv_size($td);
-	$iv = substr($string,0,$iv_size);
-	$string = substr($string,$iv_size);
-	/* Initialize encryption handle */
-	if (mcrypt_generic_init($td, $key, $iv) !=-1) {
-		/* Encrypt data */
-		$c_t = mdecrypt_generic($td, $string);
-		mcrypt_generic_deinit($td);
-		mcrypt_module_close($td);
-		return $c_t;
-	} //end if
-}
-
-function mini_number_digest($id_number) {
-	// instead of md5, wanted something non-trivial, non-normal, that is trivial to duplicate in VBA
-	if ($id_number<1000) {
-		$id_number += 1000;
-	}
-	return (string) pow((pow((int)$id_number,2) % 1234),2);
-}
-
 /* for logging any problems that the user wouldn't know what to do with, but I should know about */
 
 function logerror($msg) {

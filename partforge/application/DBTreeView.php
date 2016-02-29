@@ -73,7 +73,8 @@ class DBTreeView {
 								$parent_value = '';
 							} else {
 								// the qualifier for the next search is the default or the first in the list of parent pointers
-								$parent_index_in_parent = isset($child['parent_index_in_parent']) ? $child['parent_index_in_parent'] : reset(array_keys($parent_pointers));
+								$keyss = array_keys($parent_pointers);
+								$parent_index_in_parent = isset($child['parent_index_in_parent']) ? $child['parent_index_in_parent'] : reset($keyss);
 								$parent_value = $parent_pointers[$parent_index_in_parent];
 								$parent_index = isset($child['parent_index']) ? $child['parent_index'] : $parent_index_in_parent;
 							}

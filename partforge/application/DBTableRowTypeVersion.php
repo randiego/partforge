@@ -610,7 +610,8 @@
         	$and_where = is_null($partnumber_alias) ? '' : " AND (itemversion.partnumber_alias='{$partnumber_alias}')";
         	$query = "SELECT count(*) FROM itemversion
         	WHERE (itemversion.typeversion_id='{$typeversion_id}')".$and_where;
-        	$record = reset(DbSchema::getInstance()->getRecords('',$query));
+        	$records = DbSchema::getInstance()->getRecords('',$query);
+        	$record = reset($records);
         	return $record['count(*)'];
         }
         
@@ -978,7 +979,8 @@
          */
         public function numberOfTypesDefined() {
         	$query = "SELECT count(*) FROM typeversion WHERE typeobject_id='{$this->typeobject_id}'";
-        	$record = reset(DbSchema::getInstance()->getRecords('',$query));
+        	$records = DbSchema::getInstance()->getRecords('',$query);
+        	$record = reset($records);
         	return $record['count(*)'];
         }
         

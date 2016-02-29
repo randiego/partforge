@@ -673,3 +673,9 @@ CREATE TABLE IF NOT EXISTS `whats_new_user` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
 
 
+CREATE TABLE taskslog (
+  tasklog_id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  tl_key VARCHAR(64),
+  tl_last_run DATETIME,
+  INDEX(tl_key)
+);

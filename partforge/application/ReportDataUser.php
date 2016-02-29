@@ -90,7 +90,8 @@ class ReportDataUser extends ReportDataWithCategory {
 		$DBTableRowQuery->addAndWhere( $this->getSearchAndWhere($searchstr))
 						->setSelectFields('count(*)')
 						->addAndWhere($this->getCategoryAndWhere($DBTableRowQuery,'all',$searchstr));
-		$record = reset(DbSchema::getInstance()->getRecords('',$DBTableRowQuery->getQuery()));
+		$records = DbSchema::getInstance()->getRecords('',$DBTableRowQuery->getQuery());
+		$record = reset($records);
 		return $record['count(*)'];
 	}
 	
@@ -98,7 +99,7 @@ class ReportDataUser extends ReportDataWithCategory {
 	 * (select count(*) from itemversion where (user_id=) or (proxy_user_id=) ) as 
 	 */
 
-	public function make_directory_detail(&$queryvars, &$record,&$buttons_arr,&$detail_out,UrlCallRegistry $navigator) {
+	public function make_directory_detail($queryvars, &$record,&$buttons_arr,&$detail_out,UrlCallRegistry $navigator) {
 		parent::make_directory_detail($queryvars, $record,$buttons_arr,$detail_out,$navigator);
 		
 		foreach(array_keys($this->display_fields($navigator,$queryvars)) as $fieldname) {

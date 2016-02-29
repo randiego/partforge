@@ -55,7 +55,7 @@ abstract class ReportData {
 	public function get_records_count(&$queryvars, $searchstr) {
 		return count($this->get_records($queryvars, $searchstr,''));
 	}
-	public function make_directory_detail(&$queryvars, &$record,&$buttons_arr,&$detail_out,UrlCallRegistry $navigator) {
+	public function make_directory_detail($queryvars, &$record,&$buttons_arr,&$detail_out,UrlCallRegistry $navigator) {
 	}
 
 	public function make_export_detail($queryvars, &$record,&$detail_out) {

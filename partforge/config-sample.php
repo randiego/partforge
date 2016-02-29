@@ -54,10 +54,10 @@ $config['notices_from_email'] = '***posiblynoone@example.com***';
 // this where email notifications are sent when someone registers.
 $config['register_notification_email'] = '***somebody@example.com***';
 
-// this is the absolute file path of the /public folder.  For example: '/var/www/html/partforge/public' or 'c:/wamp/www/partforge/public'
+// this is the absolute file path of the /public folder.  For example: '/var/www/partforge/public' or 'c:/wamp/www/partforge/public'
 $config['document_path_base'] = '***c:/wamp/www/partforge/public***';
 
-// the absolute file path of the reports folder.  For example: '/var/www/html/partforge/reports' or 'c:/wamp/www/partforge/reports'
+// the absolute file path of the reports folder.  For example: '/var/www/partforge/reports' or 'c:/wamp/www/partforge/reports'
 $config['reports_classes_path'] = '***c:/wamp/www/partforge/reports***';
 
 $config['db_params'] = array(

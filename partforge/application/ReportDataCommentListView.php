@@ -125,11 +125,12 @@ class ReportDataCommentListView extends ReportDataWithCategory {
 		$DBTableRowQuery->addAndWhere( $this->getSearchAndWhere($searchstr,$DBTableRowQuery) );
 		$this->addExtraJoins($DBTableRowQuery);
 		$DBTableRowQuery->setSelectFields('count(*)');
-		$record = reset(DbSchema::getInstance()->getRecords('',$DBTableRowQuery->getQuery()));
+		$records = DbSchema::getInstance()->getRecords('',$DBTableRowQuery->getQuery());
+		$record = reset($records);
 		return $record['count(*)'];
 	}
 
-	public function make_directory_detail(&$queryvars, &$record,&$buttons_arr,&$detail_out,UrlCallRegistry $navigator) {
+	public function make_directory_detail($queryvars, &$record,&$buttons_arr,&$detail_out,UrlCallRegistry $navigator) {
 		parent::make_directory_detail($queryvars, $record,$buttons_arr,$detail_out,$navigator);
 
         $query_params = array();
