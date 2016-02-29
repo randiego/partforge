@@ -81,7 +81,9 @@ Alternatively you could load an empty image /database/db_generate.sql.
 
 * * * * * /usr/bin/wget -q -O /var/www/partforge/cronout_servicetasks.txt "http://localhost/partforge/cron/servicetasks"
 
+## A Word of Caution about security
 
+PartForge is currently intended for use inside a trusted network.  It has an API that is not password protected.  It is protected only by virtue of having no web GUI and by the fact that the API is primarily meant for viewing existing data and adding parts and procedures, but not changing existing parts and procedures.
 
 ## Personal Note and Background
 
