@@ -65,9 +65,9 @@ class DbSchema {   // singleton
 		$db = @mysql_connect($host,$username,$password);
 		if (!$db) {
 			if (mysql_errno() == 1203) { // too many connections
-				$msg = 'Error connecting to database: '.mysql_error().'; The server is too busy at the moment. You may click refresh in your browser or try again later. If this problem persists, please contact support at '.mailto_link(Zend_Registry::get('config')->support_email);
+				$msg = 'Error connecting to database: '.mysql_error().'; The server is too busy at the moment. You may click refresh in your browser or try again later.';
 			} else {
-				$msg = 'Error connecting to database: '.mysql_error().'; You may click refresh in your browser or try again later. If the problem persists, please contact support at '.mailto_link(Zend_Registry::get('config')->support_email);
+				$msg = 'Error connecting to database: '.mysql_error().'; You may click refresh in your browser or try again later.';
 			}
 			// we should assume that we do not have any framework ready for a call to showdialog if this is the first useable of DbSchema
 			echo block_text_html($msg);
