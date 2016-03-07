@@ -49,11 +49,13 @@ a specific test fixture.
 Before starting you should have Apache 2+, php 5 versions 5.2.9+ (extensions: curl, gd2, tidy, mysql (really need to change to mysqli soon); helpful settings: memory_limit=256M, post_max_size=50M), MySQL 5.5+, and preferably phpMyAdmin installed for loading the database.  On Windows, installing [WAMP](http://www.wampserver.com/en/) 
 is a quick way to get all this in one shot.  
 
-##### 1. Unpack the PartForge file structure and save it someplace not necessarily within a web viewable area.  [example: in Centos/Redhat, save it to /var/www so that public is here: /var/www/partforge/public]
+##### 1. Unpack the PartForge file structure and save it someplace not necessarily within a web viewable area.  [example: in Centos/Redhat, save it to ```/var/www``` so that public is here: ```/var/www/partforge/public```]
 
 ##### 2. Create an Apache alias called partforge that points to the /public directory in the install package.
 
-[example: in Centos/Redhat, add the file partforge.conf (as follows) to the /etc/httpd/conf.d/ directory]
+[example: in Centos/Redhat, add the file partforge.conf (as follows) to the ```/etc/httpd/conf.d/``` directory]
+
+```
 Alias /partforge/ "/var/www/partforge/public/" 
 <Directory "/var/www/partforge/public/">
     Options Indexes FollowSymLinks MultiViews
@@ -61,14 +63,15 @@ Alias /partforge/ "/var/www/partforge/public/"
     Order allow,deny
     Allow from all
 </Directory>
+```
 
 You may need to restart the webserver.
 
 ##### 3. Open phpMyAdmin and create a new database (select utf8_general_ci for collation) called partforgedb and add a read/write access user and password (partforgeuser, partforgepw) with local access and grant all permissions on the database partfforgedb. 
 
-##### 4. Browse to http://<host>/partforge/install.php and follow the steps agree to the license and to perform checks and initialize the database and the configuration.  
+##### 4. Browse to ```http://[host]/partforge/install.php``` and follow the steps agree to the license and to perform checks and initialize the database and the configuration.  
 
-##### 5. You are then prompted to login at http://<host>/partforge/ with login id = admin, password = admin. 
+##### 5. You are then prompted to login at ```http://[host]/partforge/``` with login id = admin, password = admin. 
 
 ## A Word of Caution about security
 
@@ -93,6 +96,7 @@ many more for excellent feedback and clever new ways to work with the constraint
 
 The goofiness and bugs in PartForge are mine.
 
+--Randy Black
 
 ## LICENSE
 
