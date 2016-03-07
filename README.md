@@ -44,14 +44,12 @@ a specific test fixture.
 
 ## Getting Started
 
-### Manual Installation
-
-Sorry, this is all there is right now...
+### Installation
 
 Before starting you should have Apache 2+, php 5 versions 5.2.9+ (extensions: curl, gd2, tidy, mysql (really need to change to mysqli soon); helpful settings: memory_limit=256M, post_max_size=50M), MySQL 5.5+, and preferably phpMyAdmin installed for loading the database.  On Windows, installing [WAMP](http://www.wampserver.com/en/) 
 is a quick way to get all this in one shot.  
 
-##### 1. unpack the PartForge file structure and save it someplace not necessarily within a web viewable area.  [example: in Centos/Redhat, save it as /var/www/partforge]
+##### 1. Unpack the PartForge file structure and save it someplace not necessarily within a web viewable area.  [example: in Centos/Redhat, save it to /var/www so that public is here: /var/www/partforge/public]
 
 ##### 2. Create an Apache alias called partforge that points to the /public directory in the install package.
 
@@ -64,22 +62,13 @@ Alias /partforge/ "/var/www/partforge/public/"
     Allow from all
 </Directory>
 
-Be sure to restart the webserver.
+You may need to restart the webserver.
 
-##### 3. open phpMyAdmin and create a new database (select, say utf8_general_ci for collation) called partforgedb and add a read/write access user and password (partforgeuser, partforgepw) with local access and grant all permissions on the database partfforgedb. 
+##### 3. Open phpMyAdmin and create a new database (select utf8_general_ci for collation) called partforgedb and add a read/write access user and password (partforgeuser, partforgepw) with local access and grant all permissions on the database partfforgedb. 
 
-##### 4. From within phpMyAdmin, make the empty partforgedb current, use the import tab to browse and load the file /database/db_quadcopter_example.sql.
-Alternatively you could load an empty image /database/db_generate.sql.
+##### 4. Browse to http://<host>/partforge/install.php and follow the steps agree to the license and to perform checks and initialize the database and the configuration.  
 
-##### 5. copy the file <partforge_inst_dir>/config-sample.php to config.php and make sure you set valid values for all the '*** <values> ***' settings located within config.php (including database name/user/password).
-
-##### 6. navigate to http://localhost/partforge/phpinfo.php.  You should see the php configuration status page.  If you see any warnings at the top, you must fix those before continue.
-
-##### 7. navigate to http://localhost/partforge/ and login with user admin, admin.  Or if you are remote accessing the server, browse to http://NNN.NNN.NNN.NNN/partforge/
-
-##### 8. To complete the installation, you must setup a crontab job in order to service the various background tasks.  Basically the cron job needs to load the page /partforge/cron/servicetasks once a minute.  So the crontab line might look like this:
-
-* * * * * /usr/bin/wget -q -O /var/www/partforge/cronout_servicetasks.txt "http://localhost/partforge/cron/servicetasks"
+##### 5. You are then prompted to login at http://<host>/partforge/ with login id = admin, password = admin. 
 
 ## A Word of Caution about security
 

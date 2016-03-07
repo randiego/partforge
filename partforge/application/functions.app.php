@@ -689,6 +689,13 @@ function fetchPageBannerDiv() {
 		}
 	}	
 	
+	if ($_SESSION['account']->user_type=='Admin') {
+		$installfile = htmlentities(Zend_Registry::get('config')->document_path_base.'/install.php');
+		if (file_exists($installfile)) {
+			$html .= '<div class="pageBannerDiv">Warning: The installation file "'.htmlentities($installfile).'" should be removed to prevent accidental or malicious reconfiguration.</div>';
+		}
+	}
+	
 	return $html;
 }
 

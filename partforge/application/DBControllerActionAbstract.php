@@ -40,6 +40,16 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
 			spawnurl($config->scheme.'://'.$this->getRequest()->getHttpHost().$this->getRequest()->getBaseUrl().$this->navigator->getCurrentViewUrl());
         }
         $this->getResponse()->setHeader('Content-Type', 'text/html; charset=UTF-8', true);
+        
+        // if cron is not running, we try to service it here.  A mutex of somesort here would be ideal.  If unlucky, two processes might run this at the same time.
+        $last_task_run = getGlobal('last_task_run');
+        $last_chance_task_interval = 600; // seconds be longer than standard cron interval servicing cron/servicetasks
+        if (is_null($last_task_run) || script_time() > strtotime($last_task_run) + $last_chance_task_interval) {
+        	setGlobal('last_task_run', time_to_mysqldatetime(script_time()));
+        	$TaskRunner = new MaintenanceTaskRunner(array());
+        	$TaskRunner->run();
+        }
+        
     }
     
     public function indexAction()

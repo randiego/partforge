@@ -94,7 +94,7 @@ $(document).ready(function () {
 	if (Math.abs(deltaTimeSec)>10.0) {
 		$('#headmessages').append('<div class="pageBannerDiv">Client Time Error.  Server Timestamp is lagging by:'+(deltaTimeSec).toFixed(1)+' seconds.  If this message persists, please contact the system administartion to restart the server.  This message might also mean that your computer time is set incorrectly.</div>');
 	}
-	$('#headmessages').append('<?php echo fetchPageBannerDiv();?>');
+	$('#headmessages').append('<?php echo addslashes(fetchPageBannerDiv());?>');
 	$('#navlist').buttonset();
 });
 </script>

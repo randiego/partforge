@@ -58,6 +58,7 @@ class CronController extends Zend_Controller_Action
 	 * Individual tasks have their own interval determined by the MaintenanceTaskRunner.
 	 */
 	public function servicetasksAction() {
+		setGlobal('last_task_run', time_to_mysqldatetime(script_time()));
 		$TaskRunner = new MaintenanceTaskRunner($this->getRequest()->getParams());
 		$TaskRunner->run();
 		foreach($TaskRunner->getMessages() as $message) {

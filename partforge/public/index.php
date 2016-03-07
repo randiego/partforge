@@ -13,18 +13,14 @@ set_include_path(
 ini_set('session.save_path', realpath(dirname(__FILE__) . '/../sessions/'));
 ini_set('session.gc_maxlifetime', 36000);
 
-//require_once "Zend/Loader.php";
-//Zend_Loader::registerAutoload();
 require_once "Zend/Loader/Autoloader.php";
 $autoloader = Zend_Loader_Autoloader::getInstance();
 $autoloader->setFallbackAutoloader(true);
 
-// BD framework libraries
 
 require_once("../application/functions.app.php");
 Zend_Session::start();
 require_once("../application/init.php");
-
 
 $frontController = Zend_Controller_Front::getInstance();
 $frontController->setControllerDirectory(array( 'default' => APPLICATION_PATH . '/controllers',
@@ -43,8 +39,6 @@ if (!isset($_SESSION['account'])) {
 	$_SESSION['account']->user_type = $acl->defaultRole();
 	error_log("new session was created.\r\n");
 }
-
-//$route = new Zend_Controller_Router_Route();
 
 /*
  * An entry in this array means that we will actually use the "db" as the controller name
@@ -81,6 +75,5 @@ $frontController->getRouter()->addRoute('dotask', new Zend_Controller_Router_Rou
 
 // setup layout processing
 Zend_Layout::startMvc(APPLICATION_PATH . '/layouts/scripts');
-$view = Zend_Layout::getMvcInstance()->getView();
 
 $frontController->dispatch();
