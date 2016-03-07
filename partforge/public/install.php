@@ -173,7 +173,7 @@ function step_2() {
 	} else {
 		php_ini_ok('date.timezone');
 	}
-	if (intval(ini_get('memory_limit'))<256) {
+	if ((intval(ini_get('memory_limit'))!=-1) && (intval(ini_get('memory_limit'))<256)) {
 		show_message('PHP Configuration setting memory_limit (currently '.ini_get('memory_limit').') is recommended to be at least 256M.  (Complex operations and views may fail mysteriously.)','W');
 	} else {
 		php_ini_ok('memory_limit');
@@ -286,6 +286,7 @@ function prep_step_3() {
 	$_SESSION['globals']['dbname'] = getInstallParamFromConfig($configtext,'DBNAME');
 	$_SESSION['globals']['username'] = getInstallParamFromConfig($configtext,'USERNAME');
 	$_SESSION['globals']['password'] = getInstallParamFromConfig($configtext,'PASSWORD'); 
+	$_SESSION['globals']['initial_db'] = 'db_quadcopter_example.sql';
 }
 
 function getSubmittedAndCheckRequired($paramnames) {
@@ -328,6 +329,24 @@ function get_records($idfieldname,$query) {
 	return $out;
 }
 
+function format_radio_tags($values,$field_name,$in_value) {
+	$tags = array();
+	$ii = 0;
+	foreach($values as $value => $text) {
+		// must make sure integer string is compared properly to integer index.
+		$in_value = is_numeric($in_value) && (intval($in_value)==$in_value ) ? (int)$in_value : $in_value;
+		$value = is_numeric($value) && (intval($value)==$value ) ? (int)$value : $value;
+		if ($in_value===$value) {
+			$selected = ' checked="checked"';
+		} else {
+			$selected = '';
+		}
+		$ii++;
+		$idname = $field_name.'_'.$ii;
+		$tags[] = '<input class="radioclass" type="radio" name="'.$field_name.'" value="'.$value.'" id="'.$idname.'"'.$selected.' />&nbsp;<label for="'.$idname.'">'.$text.'</label>';
+	}
+	return implode('<br />',$tags);
+}
 
 function step_3(){
 	$allow_skip = false;
@@ -335,6 +354,7 @@ function step_3(){
 		prep_step_4();
 		header("Location: install.php?step=4");
 	} else if (isset($_POST['submit']) && $_POST['submit']=="Continue") {
+		$_SESSION['globals']['initial_db'] = $_POST['initial_db'];
 		if (!getSubmittedAndCheckRequired(array('host','dbname','username','password'))) {
 			error_message("All fields are required!");
 		} else {
@@ -356,7 +376,7 @@ function step_3(){
 						$allow_skip = true;
 						error_message("There are already tables in the database.  You must start with an empty database before continuing.");						
 					} else {
-						$sqlfile = realpath(dirname(__FILE__) . '/../database/db_quadcopter_example.sql');
+						$sqlfile = realpath(dirname(__FILE__) . '/../database/'.$_SESSION['globals']['initial_db']);
 						$sql = file($sqlfile);
 						if (!$sql) {
 							$dbok = false;
@@ -392,11 +412,12 @@ function step_3(){
 			}
 		}
 	}
-
+		$db_options = array('db_quadcopter_example.sql' => 'Quadcopter Demonstration Database', 'db_generate.sql' => 'Empty Database');
 		?>
 		<h1>Step 3: Database Configuration</h1>
 		<form method="post" action="install.php?step=3">
 			<table class="edittable">
+			<tr><th>Initialization Database:</th><td><?php echo format_radio_tags($db_options,'initial_db',$_SESSION['globals']['initial_db']);?></td></tr>
 			<tr><th>Database Host:</th><td><input type="text" name="host" value='<?php echo $_SESSION['globals']['host']; ?>' size="30"></td></tr>
 			<tr><th>Database Name:</th><td><input type="text" name="dbname" size="30" value="<?php echo $_SESSION['globals']['dbname']; ?>"></td></tr>
 			<tr><th>Database Username:</th><td><input type="text" name="username" size="30" value="<?php echo $_SESSION['globals']['username']; ?>"></td></tr>
@@ -445,7 +466,15 @@ function step_4(){
 		<?php
 }
 
-
+function self($scheme='',$host='') {
+	if (!$scheme) {
+		$scheme = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS']=='on' ? 'https' : 'http';
+	}
+	if (!$host) {
+		$host = $_SERVER['HTTP_HOST'];
+	}
+	return $scheme.'://'.$host.$_SERVER['PHP_SELF'];
+}
 
 function step_5() {
 	// up to this point, nothing is saved in the config file yet.  So now we do that.
@@ -461,18 +490,21 @@ function step_5() {
 	$configtext = putInstallParamToConfigStr($configtext, 'NOTICES_FROM_EMAIL', $_SESSION['globals']['notices_from_email']);
 	file_put_contents($_SESSION['globals']['configfilename'],$configtext);
 	
+	$login_url = str_replace(basename(__FILE__), '', self());
+	
 	?>
 	<h1>Congratulations!  Your Installation is Mostly Complete.</h1>
 	<p>The database has been initialized and some basic parameters have been added to the configuration file (<?php echo $_SESSION['globals']['configfilename'];?>).  
 	To modify these parameters and others, please edit that file directly.
 	</p>
-	<p>You should now be able to log into your PartForge installation at a location like <a href="http://localhost/partforge/">http://localhost/partforge/</a> using Login ID <i>admin</i> and Password <i>admin</i>.</p>
-	<p>For a complete installation, you need to setup a cron job to service maintenance tasks.  You should have the cron access the page "http://localhost/partforge/cron/servicetasks" once a minute.  The crontab entry will look something like this:<br />
+	<p>You should now be able to log into your PartForge installation at a location like <a href="<?php echo $login_url;?>"><?php echo $login_url;?></a> using Login ID <i>admin</i> and Password <i>admin</i>.</p>
+	<p>For a complete installation, you need to setup a cron job to service maintenance tasks.  You should have the cron access the page "http://localhost/partforge/cron/servicetasks" once a minute.  The crontab entry will look something like:<br />
 	<pre>* * * * /usr/bin/wget -q "http://localhost/partforge/cron/servicetasks"</pre>
 	The reason this is possibly optional is that if the cron is not running, accessing the site will service the tasks.  But this is not great for responsiveness and if you don't use the site
 	nothing happens.</p>
 	<p>Finally, you should delete this installation script (<?php echo __FILE__;?>) or move it to a location like <?php echo realpath(dirname(__FILE__) . '/..');?> that is not accessible from the webserver.  Keeping this script where it is is obviously a security hole.</p>
 	<p>Please visit the project page at <a href="https://github.com/randiego/partforge" target="_blank">GitHub/PartForge</a> for the latest version and other resources.</p>
+	<p style="margin-top:30px;"><a class="bd-linkbtn" style="padding:10px;"  href="<?php echo $login_url;?>">Login at <?php echo $login_url;?></a></p>
 	<?php 
 }
 
