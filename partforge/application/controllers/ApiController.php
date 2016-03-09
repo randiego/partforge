@@ -70,7 +70,11 @@ class ApiController extends Zend_Controller_Action
 			$TypeVersion = DbSchema::getInstance()->dbTableRowObjectFactory('typeversion');
 			if (!$TypeVersion->getCurrentRecordByObjectId($this->params['typeobject_id'])) {	
 				$errormsg[] = 'typeobject_id not found.';
-			}		
+			} else {
+				if (DBTableRowTypeVersion::isTypeCategoryAProcedure($TypeVersion->typecategory_id)) {
+					$errormsg[] = 'This is a procedure.  It has no serial numbers.';
+				}
+			}
 		}
 
 
