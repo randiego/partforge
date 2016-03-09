@@ -64,9 +64,15 @@ class ApiController extends Zend_Controller_Action
 		$json_array = isset($this->params['json_array']) && ($this->params['json_array']);
 
 		$errormsg = array();
-		if (!isset($this->params['typeobject_id'])) {
+		if (!isset($this->params['typeobject_id']) || !is_numeric($this->params['typeobject_id'])) {
 			$errormsg[] = 'You must include a typeobject_id parameter with your request.';
+		} else {
+			$TypeVersion = DbSchema::getInstance()->dbTableRowObjectFactory('typeversion');
+			if (!$TypeVersion->getCurrentRecordByObjectId($this->params['typeobject_id'])) {	
+				$errormsg[] = 'typeobject_id not found.';
+			}		
 		}
+
 
 		$output = array('data' => array(), 'errormessages' => $errormsg);
 		$simple_out = array();
