@@ -46,14 +46,22 @@ a specific test fixture.
 
 ### Installation
 
-Before starting you should have Apache 2+, php 5 versions 5.2.9+ (extensions: curl, gd2, tidy, mysql (really need to change to mysqli soon); helpful settings: memory_limit=256M, post_max_size=50M), MySQL 5.5+, and preferably phpMyAdmin installed for loading the database.  On Windows, installing [WAMP](http://www.wampserver.com/en/) 
-is a quick way to get all this in one shot.  
+I've tried installing PartForge on a few different platforms.  Below are my notes for each specific platform.
 
-##### 1. Unpack the PartForge file structure and save it someplace not necessarily within a web viewable area.  [example: in Centos/Redhat, save it to ```/var/www``` so that public is here: ```/var/www/partforge/public```]
+Common theme: Apache 2+, php 5 versions 5.2.9+ (extensions: curl, gd2, mysql, mysqli; helpful settings: memory_limit=256M, post_max_size=50M), MySQL 5.5+.
+
+#### Installing on Centos/Redhat with shell access
+
+This is for the case of running on an in-house server, or a hosted Virtual Private Server.  If you are trying out PartForge, a good way to go is to install VirtualBox and download a ready-to-use virtual machine image (for example, see http://virtualboxes.org/images/centos/).
+
+##### 1. Download ZIP from https://github.com/randiego/partforge and put it on the server.
+
+You can unpack the PartForge file structure and upload it to your server, or upload and unpack it on the server.
+Put this someplace not necessarily within a web viewable area.  For Centos/Redhat, save it to ```/var/www``` so that the public directory is: ```/var/www/partforge/public```.  
 
 ##### 2. Create an Apache alias called partforge that points to the /public directory in the install package.
 
-[example: in Centos/Redhat, add the file partforge.conf (as follows) to the ```/etc/httpd/conf.d/``` directory]
+In Centos/Redhat, add the file partforge.conf (as follows) to the ```/etc/httpd/conf.d/``` directory]
 
 ```
 Alias /partforge/ "/var/www/partforge/public/" 
@@ -67,11 +75,23 @@ Alias /partforge/ "/var/www/partforge/public/"
 
 You may need to restart the webserver.
 
-##### 3. Open phpMyAdmin and create a new database (select utf8_general_ci for collation) called partforgedb and add a read/write access user and password (partforgeuser, partforgepw) with local access and grant all permissions on the database partfforgedb. 
+##### 3. Edit the public/.htaccess file uncomment the correct section.
 
-##### 4. Browse to ```http://[host]/partforge/install.php``` and follow the steps agree to the license and to perform checks and initialize the database and the configuration.  
+For use with aliases in this installation example, your /public/.htaccess file should look like this:
 
-##### 5. You are then prompted to login at ```http://[host]/partforge/``` with login id = admin, password = admin. 
+```
+RewriteEngine on
+RewriteCond %{SCRIPT_FILENAME} !-f
+RewriteCond %{SCRIPT_FILENAME} !-d
+RewriteCond %{REQUEST_URI} ^/partforge
+RewriteRule ^(.*)$ /partforge/index.php/$1
+```
+
+##### 4. Open phpMyAdmin or some other MySql management program and create a new database (select utf8_general_ci for collation) called, say, partforgedb and add a read/write access user and password (partforgeuser, partforgepw) with local access and grant all permissions on the database partfforgedb. 
+
+##### 5. Browse to ```http://[host]/partforge/install.php``` and follow the steps to agree to the license and to perform checks and initialize the database and the configuration.  
+
+##### 6. You are then prompted to login at ```http://[host]/partforge/``` with login id = admin, password = admin. 
 
 ## A Word of Caution about security
 

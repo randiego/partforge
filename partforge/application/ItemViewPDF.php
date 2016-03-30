@@ -45,25 +45,7 @@ class ItemViewPDF extends TCPDF {
 	protected $_h2; // text spacing
 	protected $_myfont;
 	protected $_current_header;
-	
-	// http://tidy.sourceforge.net/docs/quickref.html
-	protected $_tidy_options = array (
-				'clean' => 1,
-				'drop-empty-paras' => 1,
-				'drop-proprietary-attributes' => 1,
-				'fix-backslash' => 1,
-				'hide-comments' => 1,
-				'join-styles' => 1,
-				'lower-literals' => 1,
-				'merge-divs' => 1,
-				'merge-spans' => 1,
-				'word-2000' => 1,
-				'wrap' => 0,
-				'output-bom' => 0,
-				'show-body-only' => 1,
-				'char-encoding' => 'utf8',
-			);
-
+		
 	public function __construct() {
 		parent::__construct('P', 'mm', 'LETTER');
 		$this->_myfont = PDF_FONT_NAME_MAIN;  
@@ -90,9 +72,16 @@ class ItemViewPDF extends TCPDF {
 	public function MyCell($w, $h=0, $txt='', $border=0, $ln=0, $align='', $fill=false, $link='') {
 		return parent::Cell($w, $h,  $this->translateUtf8ToIso($txt), $border, $ln, $align, $fill, $link);
 	}
+	
+	public function clean_html($dirty_html) {
+		// see http://www.bioinformatics.org/phplabware/internal_utilities/htmLawed/htmLawed_README.htm#s2.2
+		require_once("htmLawed.php");
+		$clean_html = trim(htmLawed($dirty_html, array('safe' => 1, 'clean_ms_char' => 2)));
+		return $clean_html;
+	}
 
 	public function MyMultiCell($w, $h, $html, $border=0, $align='L', $fill=false) {
-		$html = tidy_repair_string($html,$this->_tidy_options);
+		$html = $this->clean_html($html);
 		return parent::writeHTMLCell($w, $h, $x, $y, $html, $border, 1, $fill, true, $align, true);
 	}
 
@@ -128,7 +117,7 @@ class ItemViewPDF extends TCPDF {
 		}
 		$html .= '</table>';
 		$this->SetFont($this->_myfont,'',10);
-		$html = tidy_repair_string($html,$this->_tidy_options);
+		$html = $this->clean_html($html);
 		$this->writeHTML($html);
 	}
 
@@ -240,16 +229,16 @@ class ItemViewPDF extends TCPDF {
 					$label = $fieldtype['caption'].":";
 					$sublabel = TableRow::composeSubcaptionWithValidation($fieldtype['subcaption'], $fieldtype['minimum'], $fieldtype['maximum'], $fieldtype['units'],true);
 					
-					$label = tidy_repair_string($label,$this->_tidy_options);
-					$sublabel = tidy_repair_string($sublabel,$this->_tidy_options);
-					$rhs_html = tidy_repair_string($rhs_html,$this->_tidy_options);
+					$label = $this->clean_html($label);
+					$sublabel = $this->clean_html($sublabel);
+					$rhs_html = $this->clean_html($rhs_html);
 					
 					$lw = 130;
 					$rw = 148;
 					$html .= '<td width="'.$lw.'" style="border-color:#000 #ddd #000 #000;background-color:#EEE;"><b>'.$label.'</b><br /><font size="8"><i>'.$sublabel.'</i></font></td>';
 					$redmessage = '';
 					if (count($validate_msg)>0) {
-						$redmessage = '<br /><i><font size="9" color="red">'.tidy_repair_string(implode('<br />',$validate_msg),$this->_tidy_options).'</font></i>';
+						$redmessage = '<br /><i><font size="9" color="red">'.$this->clean_html(implode('<br />',$validate_msg)).'</font></i>';
 					}
 					if ($is_single_column) {
 						$html .= '<td colspan="3" width="'.(2*$rw+$lw).'" style="border-color:#000 #000 #000 #ddd;">'.$rhs_html.$redmessage.'</td>';
@@ -261,7 +250,7 @@ class ItemViewPDF extends TCPDF {
 				 
 			} else if (($row['type']=='html') && ($this->show_text_fields)) {
 				$user_html_in = $row['html'];
-				$user_html_clean = tidy_repair_string($user_html_in,$this->_tidy_options);
+				$user_html_clean = $this->clean_html($user_html_in);
 				$user_html_clean = $this->convertIMGsToAbsoluteUrls($user_html_clean);
 				$html .= '<tr>';
 				$html .= '<td colspan="4" style="border-left:0.5px solid #fff;border-right:0.5px solid #fff;"><div>'.$user_html_clean.'</div></td>';
@@ -319,7 +308,7 @@ class ItemViewPDF extends TCPDF {
 			$html .= '<table border="0.5" cellpadding="4" cellspacing="0"><thead><tr style="background-color:#EEE; font-weight:bold;"><td width="113" align="center">User / Date</td><td width="386" align="center">Comment or Description</td><td width="57" align="center">Result</td></tr></thead>';
 			foreach($layout_rows_comments_changes as $layout_rows_comments_change) {
 				foreach($layout_rows_comments_change as $key => $value) {
-					$layout_rows_comments_change[$key] = tidy_repair_string($value,$this->_tidy_options);
+					$layout_rows_comments_change[$key] = $this->clean_html($value);
 				}
 				if (isset($layout_rows_comments_change[2]) && $layout_rows_comments_change[2]) {
 					$html .= '<tr><td width="113">'.$layout_rows_comments_change[0].'</td><td width="386">'.$layout_rows_comments_change[1].'</td><td width="57"><span style="font-weight:bold;">'.$layout_rows_comments_change[2].'</span></td></tr>';

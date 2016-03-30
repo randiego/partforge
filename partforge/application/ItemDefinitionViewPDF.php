@@ -76,7 +76,7 @@ class ItemDefinitionViewPDF extends ItemViewPDF {
 			$html .= '<table border="0.5" cellpadding="4" cellspacing="0"><thead><tr style="background-color:#EEE; font-weight:bold;"><td width="113" align="center">User / Date</td><td width="443" align="center" span="2">Comment</td></tr></thead>';
 			foreach($layout_rows_comments_changes as $layout_rows_comments_change) {
 				foreach($layout_rows_comments_change as $key => $value) {
-					$layout_rows_comments_change[$key] = tidy_repair_string($value,$this->_tidy_options);
+					$layout_rows_comments_change[$key] = $this->clean_html($value);
 				}
 				$html .= '<tr><td width="113">'.$layout_rows_comments_change[0].'</td><td width="443" colspan="2">'.$layout_rows_comments_change[1].'</td></tr>';
 			}

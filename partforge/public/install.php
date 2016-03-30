@@ -30,6 +30,7 @@
  */
 
 session_start(); 
+ob_start();
 ?>
 
 <!DOCTYPE html>
@@ -179,8 +180,7 @@ function step_2() {
 		php_ini_ok('memory_limit');
 	}
 	if (intval(ini_get('post_max_size'))<40) {
-		php_ini_error('post_max_size','It is recommended to be at least 40M.');
-		$error = true;
+		show_message('PHP Configuration setting post_max_size (currently '.ini_get('post_max_size').') is recommended to be at least 40M.','W');
 	} else {
 		php_ini_ok('post_max_size');
 	}
@@ -207,7 +207,6 @@ function step_2() {
 
 	if (!check_extension('curl')) $error = true;
 	if (!check_extension('gd')) $error = true;   // supposedly this means gd2
-	if (!check_extension('tidy')) $error = true;
 	if (!check_extension('mysql')) $error = true;
 	if (!check_extension('json')) $error = true;
 	
@@ -512,3 +511,4 @@ function step_5() {
 
 </div>
 </body>
+<?php ob_end_flush();
