@@ -12,7 +12,7 @@ have dispositions (Pass, Fail, ...).
 
 * Each Part (aka Assembly) has its own type of input form to capture structured information (input fields).  
 
-* In addition to strucutured data (date, boolean, character, listfields, numeric fields), each Part and Procedure also 
+* In addition to structured data (date, boolean, character, listfields, numeric fields), each Part and Procedure also 
 has adhoc data like comments, photos, and file attachements.
 
 * Each Part has it's own dedicate page for each serial number, complete with a chronological timeline like FaceBook Wall, Twitter Feed, or Discourse Topic showing the 
@@ -52,16 +52,26 @@ Common theme: Apache 2+, php 5 versions 5.2.9+ (extensions: curl, gd2, mysql, my
 
 #### Installing on Centos/Redhat with shell access
 
-This is for the case of running on an in-house server, or a hosted Virtual Private Server.  If you are trying out PartForge, a good way to go is to install VirtualBox and download a ready-to-use virtual machine image (for example, see http://virtualboxes.org/images/centos/).
+This is for the case of running on an in-house server, or a hosted Virtual Private Server.  
+If you are trying out PartForge, a good way to go is to install VirtualBox and download a ready-to-use virtual 
+machine image (for example, see http://virtualboxes.org/images/centos/).
 
-##### 1. Download ZIP from https://github.com/randiego/partforge and put it on the server.
+##### 1. Download ZIP from https://github.com/randiego/partforge/zipball/master and put it on the server.
 
-You can unpack the PartForge file structure and upload it to your server, or upload and unpack it on the server.
-Put this someplace not necessarily within a web viewable area.  For Centos/Redhat, save it to ```/var/www``` so that the public directory is: ```/var/www/partforge/public```.  
+You can unpack the PartForge file structure on a PC and upload it to your server, or if you are logged into your server with shell access:
+
+```
+wget https://github.com/randiego/partforge/zipball/master
+unzip master
+cd randiego-partforge-xxxxxxx    (or whatever its called)
+mv partforge /var/www
+```
+
+We save it to ```/var/www``` so that the public directory is: ```/var/www/partforge/public```.  
 
 ##### 2. Create an Apache alias called partforge that points to the /public directory in the install package.
 
-In Centos/Redhat, add the file partforge.conf (as follows) to the ```/etc/httpd/conf.d/``` directory]
+In Centos/Redhat, this can normally be done by adding the file partforge.conf (content as follows) to the ```/etc/httpd/conf.d/``` directory.
 
 ```
 Alias /partforge/ "/var/www/partforge/public/" 
@@ -75,9 +85,9 @@ Alias /partforge/ "/var/www/partforge/public/"
 
 You may need to restart the webserver.
 
-##### 3. Edit the public/.htaccess file uncomment the correct section.
+##### 3. Edit the /var/www/partforge/public/.htaccess file uncomment the correct section.
 
-For use with aliases in this installation example, your /public/.htaccess file should look like this:
+For use with aliases in this installation example, your .htaccess file should look like this:
 
 ```
 RewriteEngine on
@@ -87,11 +97,23 @@ RewriteCond %{REQUEST_URI} ^/partforge
 RewriteRule ^(.*)$ /partforge/index.php/$1
 ```
 
-##### 4. Open phpMyAdmin or some other MySql management program and create a new database (select utf8_general_ci for collation) called, say, partforgedb and add a read/write access user and password (partforgeuser, partforgepw) with local access and grant all permissions on the database partfforgedb. 
+##### 4. Create the database.
 
-##### 5. Browse to ```http://[host]/partforge/install.php``` and follow the steps to agree to the license and to perform checks and initialize the database and the configuration.  
+You can open phpMyAdmin or some other MySql management program and create a new database (select utf8_general_ci for collation) called, say, partforgedb and add a read/write access user and password (partforgeuser, partforgepw) with local access and grant all permissions on the database partfforgedb.
 
-##### 6. You are then prompted to login at ```http://[host]/partforge/``` with login id = admin, password = admin. 
+Or, if you have shell access, do the following:
+
+```
+mysql -u root -p
+>CREATE USER 'partforgeuser'@'localhost' IDENTIFIED BY 'partforgepw';
+>CREATE DATABASE partforgedb;
+>GRANT ALL PRIVILEGES ON partforgedb.* TO 'partforgeuser'@'localhost';
+``` 
+
+##### 5. Browse to ```http://[host]/partforge/install.php``` and follow the steps to agree to the license and to perform checks and initialize the database and the configuration.
+Note that if you get a 403 Forbidden message instead of the installer page, you may need to disable SELinux if you have that.  
+
+##### 6. When you have completed the install.php script, you are then prompted to login at ```http://[host]/partforge/``` with login id = admin, password = admin. 
 
 ## A Word of Caution about security
 
