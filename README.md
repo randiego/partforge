@@ -1,46 +1,28 @@
 # partforge
-PartForge is groupware for recording parts and assemblies by serial number and version along with associated test data and comments
 
-PartForge is a kind of database that grew out of a need to keep track of assembly details and test data of manufactured products.
-Basically, it keeps track of anything that has a serial number, 
-including anything with a serial number that is composed of other things with serial numbers. 
+## Do you need PartForge?
 
-## Key Features
+Probably not.  But if you are in the business of making, selling, or servicing things that have serial numbers and you want to keep track of them for days, or even forever, then read on.  
 
-* The main types of objects in PartForge are Parts and Procedures.  Roughly, the difference is: Parts have serial numbers and Procedures 
-have dispositions (Pass, Fail, ...).
+PartForge works like this:
 
-* Each Part (aka Assembly) has its own type of input form to capture structured information (input fields).  
+* Design a home page for each of your parts and tell PartForge what style of serial number to use.  (Your parts have serial numbers right?)
 
-* In addition to structured data (date, boolean, character, listfields, numeric fields), each Part and Procedure also 
-has adhoc data like comments, photos, and file attachements.
+* As you make or receive new parts, add their serial numbers.  Or even better, give an account to someone else and let them add the parts for you.  Every serial number now has its own home page.  It's like Facebook for parts.
 
-* Each Part has it's own dedicate page for each serial number, complete with a chronological timeline like FaceBook Wall, Twitter Feed, or Discourse Topic showing the 
-history of the particular Part.  This timeline shows when it was created, what changes
-where made, who made them, when it was associated with other higher level assemblies, comments, photos, attachments, and what procedures
-were performed.
+* Add pictures, attachments, and comments to each part's page for the life of that part, whether it was just built, is being tested, or was returned for service.  Or even better, add accounts for everyone in your organization and have them update the part pages.
 
-* Each Part can also have any number of custom test procedures that are associated with it.  A summary of these also shows up in the timeline.  
-Like Parts, these Procedures each have their own unique form layouts and data fields.  
+* Need structured data?  No problem, add form fields to your page definition to create text fields, dropdown boxes, yes/no selectors, and more.
 
-* A Procedure can be associated with more than one Part since Procedures are often performed with a combination of components (Parts).
+* Need to know who added data or made a change to the part and when?  No problem, every part page has an event stream or feed that shows every change in chronological order from the birth of your part to the latest change.
 
-* In the real world, parts and assemblies are sometimes reworked, components are changed, tests are repeated, and people make useful observations.
-These non-linear workflows are handled naturally with PartForge since every Part (and Procedure) is versioned automatically.  So, if you replace
-a component in an assembly, or change any field value, a new version of that Part is created and this event (what, who, when) is recorded in the timeline
-for the affected Part.  All previous versions are retained so you never loose the history.  
+* Need to keep track of assemblies of different types of parts?  This is where it gets interesting.  In addition to form fields (like dropdowns, and text boxes), you can add components to your part form definition.  Each of these components is (you guessed it) a part with its own part page and definition.  When you select a component for your part, you create a two-way link between your part page and the component part pages.
 
-* When subassemblies are linked to higher level assemblies, you can drill both up (where used) and down into components.
+* Have detailed procedures that need to be performed?  You can add forms for procedures too.  These are like part definitions, except they belong to parts and don't have serial numbers.  
 
-* Both the Part and Procedure form definitions are entered using a built-in form editor where you define serial number types, data field definitions,
-captions, min and max values, related components (linked Parts) and the actual layout of the forms.  
-These form definitions also are versioned.
-
-* Objects like test fixtures, batches or lots of parts, testing stations, or even customers can be entered as Parts and associated with 
-pther Parts and Procedures in useful ways.  For example an in-house test fixture can be associated with a specific test (Procedure) so that for every
-test conducted, you would know what test fixture was used.  Similarly you could know all the final assemblies that were calibrated with
-a specific test fixture.
-
+As your PartForge repository grows, new possibilities emerge, like the ability to see trends, or clustering of defects around certain batches of parts, or around certain technicians, or time periods.  
+If your procedures include taking detailed pictures of your products at different assembly stages, then you can 
+troubleshoot problems on a specific serial number remotely and without disassembly.   
 
 ## Getting Started
 
@@ -181,11 +163,11 @@ times by different people, weeks or months before being assembled into the final
 mysterious behaviors that require an engineer to do a "root cause" analysis.
 
 I wrote PartForge (known to my coworkers as "Blue" after the server it runs on) to help with this process.
-PartForge has been used by QD for a few years now and is gradually replacing a paper-based "traveller" workflow where test data and assembly information 
+PartForge has been used by QD for a few years now and is gradually replacing a paper-based "traveler" workflow where test data and assembly information 
 is printed out and physically attached to assemblies, or is saved on a communal file servers.   About half of QD's 200+ people use PartForge on a weekly basis, 
 and about a quarter use it daily. 
 
-Thanks go to Damon Jackson for being such an enthiastic evanglist for PartForge within QD, Jeremy Terry for a constant stream of great suggestions
+Thanks go to Damon Jackson for being such an enthusiastic evangelist for PartForge within QD, Jeremy Terry for a constant stream of great suggestions
 (sorry I didn't get them done before you left!), Dinesh Martin for thoughtful suggestions and pushing the API development to where it was useful and, Will Neils, Andreas Aman and 
 many more for excellent feedback and clever new ways to work with the constraints of what I wrote.  
 
