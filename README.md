@@ -113,7 +113,61 @@ mysql -u root -p
 ##### 5. Browse to ```http://[host]/partforge/install.php``` and follow the steps to agree to the license and to perform checks and initialize the database and the configuration.
 Note that if you get a 403 Forbidden message instead of the installer page, you may need to disable SELinux if you have that.  
 
-##### 6. When you have completed the install.php script, you are then prompted to login at ```http://[host]/partforge/``` with login id = admin, password = admin. 
+##### 6. When you have completed the install.php script, you are then prompted to login at ```http://[host]/partforge/``` with login id = admin, password = admin.
+
+#### Installing on GoDaddy shared hosting account
+
+This will create an instance of the PartForge software at a subdomain like partforge.mydomain.com.
+
+##### 1. Download and install PartForge files.
+
+Click the "Download ZIP" button on https://github.com/randiego/partforge and save it to your PC.  
+Open Godaddy file manager, create a folder called temp and upload the PartForge zip file to it.
+Select the zip file and extract it.
+Browse into the folder you just extracted and select the /partforge folder and move it to the top level (webroot).
+
+##### 2. Create Subdomain partforge.
+
+Use the GoDaddy control panel (Hosted Domains) to create a subdomain called partforge.mydomain.com in your account and 
+have it point to "/partforge/public".  This is a folder you just created.
+
+##### 3. Configure .htaccess files for proper redirects and security.
+
+Protect the application files from direct access by creating the file /partforge/.htaccess containing something like this:
+
+```
+RewriteEngine On
+RewriteCond %{HTTP_HOST} !partforge.mydomain.com
+RewriteRule ^.*$ "http://partforge.mydomain.com/" [R,L]
+```
+
+Modify the /partforge/public/.htaccess file to look like this:
+
+```
+RewriteEngine on
+RewriteCond %{SCRIPT_FILENAME} !-f
+RewriteCond %{SCRIPT_FILENAME} !-d
+RewriteRule ^(.*)$ /index.php/$1
+```
+
+##### 4. Create the database and user
+
+Open the GoDaddy Database/MySQL control panel and add an empty database: partforgedb for both the DB name and user.  
+Add, say, Busted@56@Sprinkles for the password.  The hostname might be something like this: partforgedb.db.3523013.hostedresource.com.
+
+##### 5. Run the installer
+
+Go to partforge.mydomain.com/install.php and begin.  This will verify your system is configured properly and also create a config.php file.
+If the install.php script reports that your php configuration is not correct or optimal (example: the memory limit is too low), 
+it may be possible to create a file php5.ini with the following contents, and place it in your webroot.
+Refer to GoDaddy's documentation.
+```
+memory_limit = 256M
+post_max_size = 40M
+```   
+
+##### 6. Use the File Manager to rename the install.php file to install.php.done so that it can no longer be run by site users. 
+
 
 ## A Word of Caution about security
 
