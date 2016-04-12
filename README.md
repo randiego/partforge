@@ -1,8 +1,8 @@
 # partforge
 
-## Do you need PartForge?
+## Why PartForge?
 
-Probably not.  But if you are in the business of making, selling, or servicing things that have serial numbers and you want to keep track of them for days, or even forever, then read on.  
+If you make, sell, or service things that have serial numbers and you want to keep track of them for days, or even forever, then PartForge might interest you. 
 
 PartForge works like this:
 
