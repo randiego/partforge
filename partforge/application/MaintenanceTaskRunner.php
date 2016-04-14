@@ -58,6 +58,7 @@ class MaintenanceTaskRunner {
 		 */
 		$this->messages = array();
 		$task_log = DbSchema::getInstance()->getRecords('tl_key',"SELECT * FROM taskslog");
+		$last_task_run_duration_start = microtime(true);
 		foreach($this->scheduled_tasks as $scheduled_task) {
 			$name = $scheduled_task['name'];
 			$interval = $scheduled_task['interval'];
@@ -84,12 +85,25 @@ class MaintenanceTaskRunner {
 					$TaskLog->save();					
 
 					// we run after resetting the task table.  This makes sure that long infrequent tasks don't overrun themselves with repeated calls.
+					$run_start = microtime(true);
+					
 					$this->$name($this->messages);
-						
+					
+					$run_end = microtime(true);
+					$TaskLog->tl_run_duration = $run_end - $run_start;
+					$TaskLog->tl_run_peak_memory = memory_get_peak_usage(false);
+					$TaskLog->save(array('tl_run_duration','tl_run_peak_memory'));						
 				} else {
 					$this->messages[] = array('message' => "The tasks '{$name}' does not exist", 'notify' => true);
 				}
 			}
+		}
+		$last_task_run_duration_end = microtime(true);
+		$duration = $last_task_run_duration_end - $last_task_run_duration_start;
+		setGlobal('last_task_run_duration', $duration);
+		$max_task_run_duration = getGlobal('max_task_run_duration');
+		if (is_null($max_task_run_duration) || ($duration > $max_task_run_duration)) {
+			setGlobal('max_task_run_duration', $duration);
 		}
 	}
 	

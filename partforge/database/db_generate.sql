@@ -493,3 +493,12 @@ CREATE TABLE `whats_new_user` (
   KEY `message_key` (`message_key`),
   KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+CREATE TABLE taskslog (
+  tasklog_id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  tl_key VARCHAR(64),
+  tl_last_run DATETIME,
+  INDEX(tl_key)
+);
+ALTER TABLE taskslog ADD COLUMN tl_run_duration FLOAT NULL AFTER tl_last_run;
+ALTER TABLE taskslog ADD COLUMN tl_run_peak_memory FLOAT NULL AFTER tl_run_duration;
