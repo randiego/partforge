@@ -4,6 +4,11 @@ $this->layout()->setLayout('layoutlogin');
 $loginid = htmlentities($this->remembered_login);
 $passwd = htmlentities($this->remembered_cryptpw);
 $remember_checked = $this->remembered_login ? ' checked' : '';
+
+if (!$this->databasecompatible) {
+	echo '<p class="errorred">The current database is not compatable with the application.<br /><br />'.linkify($this->navigator->getCurrentViewUrl('upgrade','utils'), 'Please Upgrade','','bd-button').' before continuing!<p>';
+}
+
 ?>
 <p class="errorred"><?php echo (isset($this->params['msge']) || isset($this->params['msgi']) ? $_SESSION['msg'] : '');?></p>
 <form id="theform" method="POST" action="<?php echo self_url();?>" name="theform">

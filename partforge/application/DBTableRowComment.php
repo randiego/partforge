@@ -118,6 +118,7 @@
 		public function delete() {
 			$itemobject_id = $this->itemobject_id;
 			parent::delete();
+			DBTableRowChangeLog::deletedItemComment($itemobject_id);
 			DBTableRowItemObject::updateCachedLastCommentFields($itemobject_id);
 		}	
 
@@ -127,7 +128,13 @@
 		 */
 		public function save($fieldnames=array(),$handle_err_dups_too=true) { // function will raise an exception if an error occurs
 			$itemobject_id = $this->itemobject_id;
+			$new_comment = !$this->isSaved();
 			parent::save($fieldnames,$handle_err_dups_too);
+			if ($new_comment) {
+				DBTableRowChangeLog::addedItemComment($itemobject_id);
+			} else {
+				DBTableRowChangeLog::changedItemComment($itemobject_id);
+			}
 			DBTableRowItemObject::updateCachedLastCommentFields($itemobject_id);
 		}		
 		

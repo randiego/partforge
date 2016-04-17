@@ -89,21 +89,25 @@ class MaintenanceTaskRunner {
 					
 					$this->$name($this->messages);
 					
-					$run_end = microtime(true);
-					$TaskLog->tl_run_duration = $run_end - $run_start;
-					$TaskLog->tl_run_peak_memory = memory_get_peak_usage(false);
-					$TaskLog->save(array('tl_run_duration','tl_run_peak_memory'));						
+					if (!Zend_Registry::get('config')->config_for_testing) {   // this is really variable so approval testing fails if we write this during automated testing.
+						$run_end = microtime(true);
+						$TaskLog->tl_run_duration = $run_end - $run_start;
+						$TaskLog->tl_run_peak_memory = memory_get_peak_usage(false);
+						$TaskLog->save(array('tl_run_duration','tl_run_peak_memory'));
+					}						
 				} else {
 					$this->messages[] = array('message' => "The tasks '{$name}' does not exist", 'notify' => true);
 				}
 			}
 		}
-		$last_task_run_duration_end = microtime(true);
-		$duration = $last_task_run_duration_end - $last_task_run_duration_start;
-		setGlobal('last_task_run_duration', $duration);
-		$max_task_run_duration = getGlobal('max_task_run_duration');
-		if (is_null($max_task_run_duration) || ($duration > $max_task_run_duration)) {
-			setGlobal('max_task_run_duration', $duration);
+		if (!Zend_Registry::get('config')->config_for_testing) {   // this is really variable so approval testing fails if we write this during automated testing.
+			$last_task_run_duration_end = microtime(true);
+			$duration = $last_task_run_duration_end - $last_task_run_duration_start;
+			setGlobal('last_task_run_duration', $duration);
+			$max_task_run_duration = getGlobal('max_task_run_duration');
+			if (is_null($max_task_run_duration) || ($duration > $max_task_run_duration)) {
+				setGlobal('max_task_run_duration', $duration);
+			}
 		}
 	}
 	

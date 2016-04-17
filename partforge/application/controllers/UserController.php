@@ -99,6 +99,7 @@ class UserController extends DBCustomControllerAction
     		$this->view->remembered_login = LoginStatus::getInstance()->cookieLogin();
     		$this->view->remembered_cryptpw = LoginStatus::getInstance()->cookieCryptPassword();
     	}
+    	$this->view->databasecompatible = getGlobal('databaseversion') == Zend_Registry::get('config')->databaseversion;
     	$this->view->params = $this->params;
     	$this->view->navigator = $this->navigator;
     }

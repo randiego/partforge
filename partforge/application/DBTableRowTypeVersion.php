@@ -767,6 +767,7 @@
         	 * if this is a new item instance, then first create the type instance
         	* record then save the record as a new record.
         	*/
+        	$new_object = !$this->isSaved();
         	if (!$this->isSaved()) {
         		$TypeObject = new DBTableRow('typeobject');
         		$TypeObject->save();
@@ -805,7 +806,11 @@
         	$_SESSION['most_recent_new_typeversion_id'] = $this->typeversion_id;
         	$this->getRecordById($this->typeversion_id);
         	self::updateCachedCurrentTypeVersionId($this->typeobject_id);
-
+        	if ($new_object) {
+        		DBTableRowChangeLog::addedTypeObject($this->typeobject_id, $this->typeversion_id);
+        	} else {
+        		DBTableRowChangeLog::addedTypeVersion($this->typeobject_id, $this->typeversion_id);
+        	}
         }
         
         /**
@@ -886,6 +891,7 @@
         
         
         	// if this is a new item instance, then first create the itemobject record then save the record as a new record
+        	$new_object = !$this->isSaved();
         	if (!$this->isSaved()) {
         		$TypeObject = new DBTableRow('typeobject');
         		$TypeObject->save();
@@ -970,6 +976,13 @@
         	self::updateCachedCurrentTypeVersionId($this->typeobject_id);
         	DBTableRowTypeObject::updateCachedNextSerialNumberFields($this->typeobject_id);
         	DBTableRowTypeObject::updateCachedHiddenFieldCount($this->typeobject_id);
+        	
+        	if ($new_object) {
+        		DBTableRowChangeLog::addedTypeObject($this->typeobject_id, $this->typeversion_id);
+        	} else {
+                DBTableRowChangeLog::changedTypeVersion($this->typeobject_id, $this->typeversion_id);
+            }
+        	
         }
         
  
@@ -1066,7 +1079,9 @@
         		*/
         		DbSchema::getInstance()->mysqlQuery("delete from typecomponent_typeobject where can_have_typeobject_id='{$typeobject_id}'");
         		DbSchema::getInstance()->mysqlQuery("delete from typecomment where typeobject_id='{$typeobject_id}'");
+        		DBTableRowChangeLog::deletedTypeObject($typeobject_id, $typeversion_id);
         	} else {
+        		DBTableRowChangeLog::deletedTypeVersion($typeobject_id, $typeversion_id);
         		self::updateCachedCurrentTypeVersionId($typeobject_id);
         	}
         }        

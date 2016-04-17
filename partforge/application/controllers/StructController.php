@@ -657,6 +657,7 @@ class StructController extends DBControllerActionAbstract
     			case isset($this->params['btnReleaseVersion']):
     				$TypeVersion->versionstatus = 'A';
     				$TypeVersion->save(array('versionstatus'));
+					DBTableRowChangeLog::releasedTypeVersion($TypeVersion->typeobject_id, $TypeVersion->typeversion_id);
     				$this->navigator->jumpToView(null,null,array('typeversion_id' => $this->params['typeversion_id']));
     			case isset($this->params['btnPreview']):
     				$return_url = $this->navigator->getCurrentHandlerUrl('',null,null,array('typeversion_id' => $this->params['typeversion_id']));
@@ -685,6 +686,7 @@ class StructController extends DBControllerActionAbstract
     				if ($TypeObject->getRecordById($this->params['typeobject_id'])) {
     					$TypeObject->typedisposition = 'B';
     					$TypeObject->save(array('typedisposition'));
+						DBTableRowChangeLog::obsoletedTypeObject($TypeVersion->typeobject_id, $TypeVersion->typeversion_id);
     				}
     				$this->navigator->jumpToView(null,null,array('resetview' => 1,'typeobject_id' => $this->params['typeobject_id']));
     			case isset($this->params['btnMakeActive']):

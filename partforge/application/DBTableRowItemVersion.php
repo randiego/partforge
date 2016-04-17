@@ -552,6 +552,7 @@
              * if this is a new item instance, then first create the item instance 
              * record then save the record as a new record.
              */
+            $new_object = !$this->isSaved();
 			if (!$this->isSaved()) {
 				$ItemObject = new DBTableRow('itemobject');
 				$ItemObject->save();
@@ -612,6 +613,12 @@
 				$affected_itemobjects[] = $this->itemobject_id;
 				DBTableRowItemObject::updateCachedLastReferenceFields($affected_itemobjects);				
 	        	DBTableRowItemObject::updateCachedCreatedOnFields($this->itemobject_id);
+                
+                if ($new_object) {
+                    DBTableRowChangeLog::addedItemObject($this->itemobject_id, $this->itemversion_id);
+                } else {
+                    DBTableRowChangeLog::addedItemVersion($this->itemobject_id, $this->itemversion_id);
+                }
 			}
         }
         
@@ -729,7 +736,6 @@
         	$affected_itemobjects = array_merge($affected_itemobjects,self::getHasItemObjectsAsArray($this->itemversion_id));
         	$affected_itemobjects[] = $this->itemobject_id;
         	DBTableRowItemObject::updateCachedLastReferenceFields($affected_itemobjects);
-
         	DBTableRowItemObject::updateCachedCreatedOnFields($this->itemobject_id);
 		}
 		
@@ -762,14 +768,19 @@
          */
         public function save($fieldnames=array(),$handle_err_dups_too=true, $user_id=null) {
         	if ($user_id==null) $user_id = $_SESSION['account']->user_id;
+        	$new_object = !$this->isSaved();
         	if ($this->isSaved()) {        		
         		$something_has_changed = $this->checkAndArchiveIfThisVersionHasChanges();
 	        	if ($something_has_changed) { // user and record_created should reflect the current user and time
 	        		$this->user_id = $user_id;
 	        		$this->record_created = time_to_mysqldatetime(script_time());
+	        		DBTableRowChangeLog::changedItemVersion($this->itemobject_id, $this->itemversion_id);
 	        	}
-        	}
+        	} 
 	        $this->saveUnversioned($fieldnames,$handle_err_dups_too);
+	        if ($new_object) {
+	        	DBTableRowChangeLog::addedItemObject($this->itemobject_id, $this->itemversion_id);
+	        }
         }
         
         /**
@@ -795,6 +806,7 @@
         		 */
         		DbSchema::getInstance()->mysqlQuery("delete from itemcomponent where has_an_itemobject_id='{$itemobject_id}'");
         		DbSchema::getInstance()->mysqlQuery("delete from comment where itemobject_id='{$itemobject_id}'");
+        		DBTableRowChangeLog::deletedItemObject($itemobject_id, $itemversion_id);
         	} else {
         		// these only make sense to update if $itemobject_id still exists
         		DBTableRowItemObject::updateCachedCreatedOnFields($itemobject_id);
@@ -804,6 +816,7 @@
 				$new_itemversion_id = self::getItemVersionIdFromByObjectId($itemobject_id);
         		$affected_itemobjects = array_merge($affected_itemobjects,self::getHasItemObjectsAsArray($new_itemversion_id));
         		$affected_itemobjects[] = $itemobject_id;
+		        DBTableRowChangeLog::deletedItemVersion($itemobject_id, $itemversion_id);
         	}
 	        DBTableRowItemObject::updateCachedLastReferenceFields($affected_itemobjects);
         }

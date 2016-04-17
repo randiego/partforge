@@ -51,7 +51,7 @@
             
             // controller resources
             
-            $controller_resources = array('db','error','help','index','cron','api','output','settings','joinedexport','struct','user','types_versions','types_objects','items_versions','items_objects','items_comments', 'items_documents', 'types_documents');
+            $controller_resources = array('db','error','help','index','cron','utils','api','output','settings','joinedexport','struct','user','types_versions','types_objects','items_versions','items_objects','items_comments', 'items_documents', 'types_documents');
             foreach($controller_resources as $controller_resource) {
             	$this->add(new Zend_Acl_Resource($controller_resource));
             }
@@ -112,6 +112,7 @@
             $this->allow(null,'types_documents');   
             $this->allow(null,'ui:nonterminalbling');
             $this->allow(null,'cron');         
+            $this->allow(null,'utils');         
             $this->allow(null,'api');
             
             

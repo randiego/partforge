@@ -31,6 +31,31 @@
             $this->user_id = $_SESSION['account']->user_id;
         }
         
+        /**
+         * Overridden to make sure changelog is updated
+         * @see DBTableRow::delete()
+         */
+        public function delete() {
+        	$typeobject_id = $this->typeobject_id;
+        	parent::delete();
+        	DBTableRowChangeLog::deletedTypeComment($typeobject_id);
+        }
+        
+        /**
+         * Overridden to make sure changelog is updated
+         * @see DBTableRow::save()
+         */
+        public function save($fieldnames=array(),$handle_err_dups_too=true) { // function will raise an exception if an error occurs
+        	$typeobject_id = $this->typeobject_id;
+        	$new_comment = !$this->isSaved();
+        	parent::save($fieldnames,$handle_err_dups_too);
+        	if ($new_comment) {
+        		DBTableRowChangeLog::addedTypeComment($typeobject_id);
+        	} else {
+        		DBTableRowChangeLog::changedTypeComment($typeobject_id);
+        	}
+        }        
+        
         /*
          * This kinda sorta works but was mostly pasted.
          */

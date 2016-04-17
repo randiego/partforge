@@ -1,0 +1,21 @@
+<?php
+$this->layout()->title = 'Upgrade Database';
+$this->layout()->setLayout('layoutdialog');
+?>
+
+<p class="errorred"><?php echo implode('<br />',$this->msgs); ?></p>
+<form id="theform" method="POST" action="<?php echo self_url();?>" name="theform">
+<input type="hidden" name="form" value="">
+<p>Your Database Version: <b><?php echo $this->currentversion; ?></b></p>
+<p>Target Version: <b><?php echo $this->targetversion; ?></b></p>
+
+<?php
+	if ($this->currentversion == $this->targetversion) {
+		echo "<p><b>Nothing to update</b>";
+		echo "<p>".linkify($this->navigator->getCurrentViewUrl('login','user'), 'Go to Login','','bd-button').".</p>";
+	} else {
+		echo '<input class="bd-button" type="submit" value="Upgrade Now" name="btnUpgrade">';
+	}
+?>
+
+</form>
