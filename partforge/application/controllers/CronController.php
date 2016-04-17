@@ -46,7 +46,7 @@ class CronController extends Zend_Controller_Action
 		$Log->event_log_date_added = time_to_mysqldatetime(script_time());
 		$Log->event_log_text = implode("\r\n",$this->_message_log);
 		$Log->event_log_notify = $this->_message_notify;
-		$Log->save();
+		if ($Log->event_log_text) $Log->save();  // only save this if there is something to say.
 	}
 	
 	/**
