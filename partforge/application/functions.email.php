@@ -26,6 +26,10 @@ class Email {
 		$this->PHPMailer->Subject = trim($subject);
 		$this->PHPMailer->Body = $message;
 	}
+	
+	function setContentType($content_type) {
+		$this->PHPMailer->ContentType = $content_type;
+	}
 
 	function AttachFile($path, $name = '') {
 		$this->PHPMailer->addAttachment($path, $name);

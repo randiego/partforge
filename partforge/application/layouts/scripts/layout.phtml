@@ -63,6 +63,9 @@ function fetchMenuLinks() {
 	if (Zend_Registry::get('config')->show_analyze_page) {
 		addLinkIfIsAllowed($acl, 'struct', 'joinedexport', 'Analyze', 'Export and Correlate Data', $links);
 	}
+	
+	addLinkIfIsAllowed($acl, 'struct', 'changelistview', 'Activity', 'view your Watchlist and other system activity', $links);
+	
 	addLinkIfIsAllowed($acl, 'user', 'listview', 'Users', 'manage all users', $links);
 	addLinkIfIsAllowed($acl, 'settings', 'listview', 'Settings', 'View / Edit system settings', $links);
 	addLinkIfIsAllowed($acl, 'user', 'manageaccount', 'My Account', 'change names, email, and password', $links);
@@ -89,11 +92,6 @@ function fetchMenuLinks() {
 var baseUrl = '<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>';
 $(document).ready(function () {
 	$( ".bd-button, .listrowlink, .minibutton2, .searchbutton" ).button();
-	var today=new Date();
-	var deltaTimeSec = today.getTime()/1000 - <?php echo script_time()?>;
-	if (Math.abs(deltaTimeSec)>10.0) {
-		$('#headmessages').append('<div class="pageBannerDiv">Client Time Error.  Server Timestamp is lagging by:'+(deltaTimeSec).toFixed(1)+' seconds.  If this message persists, please contact the system administartion to restart the server.  This message might also mean that your computer time is set incorrectly.</div>');
-	}
 	$('#headmessages').append('<?php echo addslashes(fetchPageBannerDiv());?>');
 	$('#navlist').buttonset();
 });

@@ -481,6 +481,7 @@ span.paren_red {
 
 .edittablewrapper {
 	max-width: 720px;
+	overflow-x: auto;
 }
 
 .buttonrow {
@@ -1290,6 +1291,29 @@ li.bd-event-row.bd-event-indented {
 	margin-left: 8px;
 }
 
+.bd-stream-end-notice .bd-event-content {
+	background-color: #FCC;
+	border: 1px solid #99F;
+}
+
+.bd-event-row.bd-stream-end-notice {
+	padding: 0px 0px 0px 40px;
+}
+
+.bd-event-content.more-records {
+	text-align: center;
+	padding:10px;
+	min-height:10px;
+	font-size: 15px;
+	font-weight: bold;
+}
+
+.dashboard-show-more {
+	margin-left:10px;
+	color:#f00;
+	font-style:italic;
+}
+
 .bd-type-change .bd-event-content {
 	background-color: #FFC;
 	border: 1px solid #99F;
@@ -1858,6 +1882,17 @@ a.bd-button, a.used-on-button, button.jumpmenu {
 	margin-top:-2px;
 }
 
+span.monthsmenu select {
+	width:180px;	
+}
+
+span.monthsmenu {
+	display: block;
+	float: right;
+	margin-top: -7px;
+	margin-right: -7px;
+}
+
 .buttonrow a.bd-button, .buttonrow a.used-on-button, .buttonrow button.jumpmenu {
 	margin-top:2px;
 }
@@ -1886,7 +1921,7 @@ a.bd-button, a.used-on-button, button.jumpmenu {
     display: block;
     float: right;
     height: auto;
-    margin: 0px 0px 4px 4px;
+    margin: 0px 0px 4px 6px;
     width: auto;	
     background-color: #FFA;
 }
@@ -1954,4 +1989,21 @@ dl.comment_tips dt {
 .comp_add_button_group div a {
     color: #0073ea;
     text-decoration: none;   	
+}
+
+.checkbox_pending {
+	background-color: #f6f6f6;
+}
+
+.updated_banner {
+	position: absolute;
+    background-color: #ff3;
+    border: 1px solid #999;
+    color: #000;
+    font-size: 12px;
+    width: 50px;
+    font-weight: bold;
+    padding: 5px;	
+    top: 150px;
+    left: 300px;
 }

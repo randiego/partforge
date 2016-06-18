@@ -1064,11 +1064,13 @@
         public function delete() {
         	$typeobject_id = $this->typeobject_id;
         	$typeversion_id = $this->typeversion_id;
+        	$text_desc = $this->type_part_number;
         	parent::delete();
         	DbSchema::getInstance()->mysqlQuery("DELETE typecomponent_typeobject FROM typecomponent_typeobject 
         			INNER JOIN typecomponent ON typecomponent.typecomponent_id=typecomponent_typeobject.typecomponent_id
 		        	WHERE typecomponent.belongs_to_typeversion_id='{$typeversion_id}'");
         	DbSchema::getInstance()->mysqlQuery("delete from typecomponent where belongs_to_typeversion_id='{$typeversion_id}'");
+        	DbSchema::getInstance()->mysqlQuery("delete from partnumbercache where typeversion_id='{$typeversion_id}'");        	
         	// if we have just deleted the last typeversion, then we should cleanup the whole typeobject
         	$tv_records = DbSchema::getInstance()->getRecords('',"SELECT * FROM typeversion where typeobject_id='{$typeobject_id}'");
         	if (count($tv_records)==0) {
@@ -1079,10 +1081,10 @@
         		*/
         		DbSchema::getInstance()->mysqlQuery("delete from typecomponent_typeobject where can_have_typeobject_id='{$typeobject_id}'");
         		DbSchema::getInstance()->mysqlQuery("delete from typecomment where typeobject_id='{$typeobject_id}'");
-        		DBTableRowChangeLog::deletedTypeObject($typeobject_id, $typeversion_id);
+        		DBTableRowChangeLog::deletedTypeObject($typeobject_id, $text_desc);
         	} else {
-        		DBTableRowChangeLog::deletedTypeVersion($typeobject_id, $typeversion_id);
         		self::updateCachedCurrentTypeVersionId($typeobject_id);
+        		DBTableRowChangeLog::deletedTypeVersion($typeobject_id);
         	}
         }        
         
@@ -1673,8 +1675,10 @@
         	foreach(array_intersect($targ_fields, $this_fields, $fields_used) as $fieldname) {
                 $targ_fieldtype = $targ_fieldtypes[$fieldname];
                 $this_fieldtype = $this_fieldtypes[$fieldname];
-        		if ($targ_fieldtype['type']!=$this_fieldtype['type']) {
-        			$fail_msg[] = "The field '{$fieldname}' would change types from ".$this_fieldtype['type'].' to '.$targ_fieldtype['type'].'.';
+        		if (($targ_fieldtype['type']!=$this_fieldtype['type'])) {
+        			if (!in_array($targ_fieldtype['type'], array('varchar','text')) || !in_array($this_fieldtype['type'], array('varchar','text'))) {
+	        			$fail_msg[] = "The field '{$fieldname}' would change types from ".$this_fieldtype['type'].' to '.$targ_fieldtype['type'].'.';
+        			}
         		} else {
         			if ($this_fieldtype['type']=='enum') {
         				$targ_keys_defined = is_array($targ_fieldtype['options']) ? array_keys($targ_fieldtype['options']) : array();

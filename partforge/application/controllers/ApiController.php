@@ -42,6 +42,7 @@ class ApiController extends Zend_Controller_Action
 		$h = array();
 		$h['getserialnumbers'] = 'returns a list of serial numbers for the specified typeobject_id number.  The second parameter should be something like typeobject_id=35.';
 		$h['getusers'] = 'returns a list of login IDs for non-guest and non-data-terminal type users.';
+		$h['getactivity'] = "returns the system activity/change log.  Usage: /api/getactivity?user_id=123 or /api/getactivity?login_id=username  or /api/getactivity?typeobject_id=123 or /api/getactivity?itemobject_id=123,3,1243&from=-1day&to=now  or /api/getactivity?limit=1";
 		
 		foreach (get_class_methods('ApiController') as $actionmeth) {
 		
@@ -112,6 +113,50 @@ class ApiController extends Zend_Controller_Action
 		}
 		$this->returnOutput($simple_out);
 	}	
+	
+	/**
+	 * Gets a list of system activity.
+	 * 
+	 * Examples:
+	 * 	/api/getactivity?user_id=123
+	 *  /api/getactivity?login_id=username
+	 *  /api/getactivity?typeobject_id=123
+	 *  /api/getactivity?itemobject_id=123&from=-1day&to=now 
+	 */
+	public function getactivityAction() {
+		$itemobject_id_set = isset($this->params['itemobject_id']) ? "('".implode("','",explode(',',addslashes($this->params['itemobject_id'])))."')" : null;
+		$typeobject_id_set = isset($this->params['typeobject_id']) ? "('".implode("','",explode(',',addslashes($this->params['typeobject_id'])))."')" : null;
+		$user_id_set = isset($this->params['user_id']) ? "('".implode("','",explode(',',addslashes($this->params['user_id'])))."')" : null;
+		$login_id_set = isset($this->params['login_id']) ? "('".implode("','",explode(',',addslashes($this->params['login_id'])))."')" : null;
+		$from_time = isset($this->params['from']) ? strtotime($this->params['from']) : 0;
+		$to_time = isset($this->params['to']) ? strtotime($this->params['to']) : 0;
+		$limit = isset($this->params['limit']) ? (is_numeric($this->params['limit']) ? addslashes($this->params['limit']) : null) : null;
+		
+		$errormsg = array();
+		if ($user_id_set) {
+			$records = DbSchema::getInstance()->getRecords('user_id',"SELECT user_id,login_id FROM user where user_id IN {$user_id_set}");
+			if (count($records)==0) $errormsg[] = "user_ids = '{$user_id_set}' do not exist.";
+		}
+		
+		if ($login_id_set) {
+			$records = DbSchema::getInstance()->getRecords('user_id',"SELECT user_id,login_id FROM user where login_id IN {$login_id_set}");
+			if (count($records)==0) $errormsg[] = "login_ids = '{$login_id_set}' do not exist.";
+		}
+		
+		if (count($errormsg)>0) $this->returnOutput( array('data' => array(), 'errormessages' => implode(', ', $errormsg) ) );
+		
+		$DBTableRowQuery = DBTableRowChangeLog::getNewQueryForApiOutput();
+		$DBTableRowQuery->setOrderByClause("ORDER BY changelog.changed_on desc");
+		
+		if (!is_null($itemobject_id_set)) $DBTableRowQuery->addAndWhere(" and (changelog.trigger_itemobject_id IN {$itemobject_id_set})");
+		if (!is_null($typeobject_id_set)) $DBTableRowQuery->addAndWhere(" and (changelog.trigger_typeobject_id IN {$typeobject_id_set})");
+		if (!is_null($user_id_set)) $DBTableRowQuery->addAndWhere(" and (changelog.user_id IN {$user_id_set})");
+		if (!is_null($login_id_set)) $DBTableRowQuery->addAndWhere(" and (user.login_id IN {$login_id_set})");
+		if ($from_time) $DBTableRowQuery->addAndWhere(" and (changelog.changed_on>='".time_to_mysqldatetime($from_time)."')");
+		if ($to_time) $DBTableRowQuery->addAndWhere(" and (changelog.changed_on<='".time_to_mysqldatetime($to_time)."')");
+		if ($limit) $DBTableRowQuery->setLimitClause("LIMIT {$limit}");
 
+		$this->returnOutput( array('data' => DbSchema::getInstance()->getRecords('',$DBTableRowQuery->getQuery())) );
+	}
 
 }

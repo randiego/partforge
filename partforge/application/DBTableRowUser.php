@@ -140,6 +140,19 @@
 
 			return ('' == $this->_lastErrorMessage);
 		}
+		
+		public function reasonsWhyCantRecieveWatchNotices() {
+			$m = array();
+			if (!$this->user_enabled) $m[] = 'Account is not enabled.';
+			if ($this->waiting_approval) $m[] = 'Account has not been approved yet.';
+			if (in_array($this->getRole(),array('Guest','DataTerminal'))) $m[] = 'This user type is not allowed to receive watch notices.';
+			if (!$this->email) {
+				$m[] = 'Your email address is missing and should be set from the My Account tab.';
+			} else {
+				$this->validateFields(array('email'), $m);
+			}
+			return $m;
+		}
 
         public function getLastErrorMessage()
         {
@@ -218,6 +231,16 @@
 			parent::save($fieldnames,$handle_err_dups_too);
         }
         
+        static public function getUserPreference($user_id, $key) {
+        	$records = DbSchema::getInstance()->getRecords('userpreference_id',"SELECT * FROM userpreferences WHERE user_id='{$user_id}' and pref_key='{$key}'");
+        	if (count($records)==1) {
+        		$record = reset($records);
+        		return $record['pref_value'];
+        	} else {
+        		return null;
+        	}        	
+        }
+        
         public function getPreference($key) {
             if (($this->getRole()=='nobody') || !is_numeric($this->user_id)) {
                 if (isset($_SESSION['nobody_userpreferences'][$key])) {
@@ -226,29 +249,27 @@
                     return null;
                 }
             } else {
-                $records = DbSchema::getInstance()->getRecords('userpreference_id',"SELECT * FROM userpreferences WHERE user_id='{$this->user_id}' and pref_key='{$key}'");
-                if (count($records)==1) {
-                    $record = reset($records);
-                    return $record['pref_value'];
-                } else {
-                    return null;
-                }
+            	return self::getUserPreference($this->user_id, $key);
             }
+        }
+        
+        static public function setUserPreference($user_id,$key,$value) {
+        	$Pref = DbSchema::getInstance()->dbTableRowObjectFactory('userpreferences',true);
+        	if ($Pref->getRecord("SELECT * FROM userpreferences WHERE user_id='{$user_id}' and pref_key='{$key}'")) {
+        		$Pref->pref_value = $value;
+        	} else {
+        		$Pref->user_id = $user_id;
+        		$Pref->pref_key = $key;
+        		$Pref->pref_value = $value;
+        	}
+        	$Pref->save();
         }
         
         public function setPreference($key,$value) {
             if (($this->getRole()=='nobody') || !is_numeric($this->user_id)) {
                 $_SESSION['nobody_userpreferences'][$key] = $value;
             } else {
-                $Pref = DbSchema::getInstance()->dbTableRowObjectFactory('userpreferences',true);
-                if ($Pref->getRecord("SELECT * FROM userpreferences WHERE user_id='{$this->user_id}' and pref_key='{$key}'")) {
-                    $Pref->pref_value = $value;
-                } else {
-                    $Pref->user_id = $this->user_id;
-                    $Pref->pref_key = $key;
-                    $Pref->pref_value = $value;
-                }
-                $Pref->save();
+            	self::setUserPreference($this->user_id, $key, $value);
             }
         }
         

@@ -35,9 +35,9 @@ class ReportDataPartListView extends ReportDataWithCategory {
 		$this->_recent_row_age = Zend_Registry::get('config')->recent_row_age;
 		
 		$this->title = 'List of Definitions';
-		$this->fields['part_number'] 	= array('display'=>'Part Number',		'key_asc'=>'part_number', 'key_desc'=>'part_number desc');
-		$this->fields['part_description'] 	= array('display'=>'Part Description',		'key_asc'=>'part_description', 'key_desc'=>'part_description desc');
-		$this->fields['typecategory_name'] 	= array('display'=>'Category',		'key_asc'=>'typecategory_name', 'key_desc'=>'typecategory_name desc');
+		$this->fields['part_number'] 	= array('display'=>'Number',		'key_asc'=>'part_number', 'key_desc'=>'part_number desc');
+		$this->fields['part_description'] 	= array('display'=>'Name',		'key_asc'=>'part_description', 'key_desc'=>'part_description desc');
+		$this->fields['typecategory_name'] 	= array('display'=>'Type',		'key_asc'=>'typecategory_name', 'key_desc'=>'typecategory_name desc');
 		$this->fields['sn_type'] 	= array('display'=>'Serial Number<br  />Helper Caption');
 		$this->fields['next_sn'] 	= array('display'=>'Next<br />Serial Number');
 		$this->fields['tv__record_modified'] 	= array('display'=>'Modified Date',		'key_asc'=>'tv__record_modified', 'key_desc'=>'tv__record_modified desc', 'start_key' => 'key_desc');

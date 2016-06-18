@@ -43,11 +43,12 @@ class MaintenanceTaskRunner {
 		 */
 		// method names of the various tasks we will be performing.  Each method
 		$this->scheduled_tasks = array(
+			array('name' => 'service_inprocess_workflows', 'interval' => 30), // this should really be as responsive as possible
+			array('name' => 'process_watch_notifications', 'interval' => 1), 
 			array('name' => 'update_definition_stats', 'interval' => 5*60),
 			array('name' => 'update_cached_fields', 'interval' => 8*3600),
-			array('name' => 'generate_user_reports', 'interval' => 5*60),   // reports have their own intervals, so this is not too frequent
 			array('name' => 'update_user_stats', 'interval' => 5*60),
-			array('name' => 'service_inprocess_workflows', 'interval' => 30), // this should really be as responsive as possible
+			array('name' => 'generate_user_reports', 'interval' => 5*60),   // reports have their own intervals, so this is not too frequent
 		);
 		
 	}
@@ -189,4 +190,15 @@ class MaintenanceTaskRunner {
 			}
 		}
 	}
+	
+	
+	/**
+	 * send out change notifications to those that have daily notifications specified for watches.
+	 * @param array $messages
+	 */
+	private function process_watch_notifications(&$messages) {
+		WatchListReporter::processCurrentDailyWatchNotifications();
+		WatchListReporter::processCurrentInstantNotifications();
+	}
+	
 }

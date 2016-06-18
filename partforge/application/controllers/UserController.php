@@ -330,8 +330,13 @@ class UserController extends DBCustomControllerAction
     			// this link is good now get the workflow object itself.
     			$Workflow = GroupTask::getInstance($Assigned->group_task_id);
     			if (!is_null($Workflow)) {
-    				$Workflow->responded($Assigned->user_id);
-    				spawnurl($Workflow->getRedirectUrl());
+    				if (!$Workflow->isTaskClosed()) {
+	    				$Workflow->responded($Assigned->user_id);
+	    				spawnurl($Workflow->getRedirectUrl());
+    				} else {
+    					$_SESSION['msg'] = TextToHtml($Workflow->getRespondedUserNames())." already responded to ".linkify($Workflow->getRedirectUrl(),'this request').".";
+    					spawnurl($_SESSION['account']->defaultLoginUrl(array('msgi' => 1)));
+    				}
     			}
     		}
     	}

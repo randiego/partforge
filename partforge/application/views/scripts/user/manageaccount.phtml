@@ -1,6 +1,9 @@
 <?php
 	$this->layout()->title = 'My Account Preferences';
+	$BreadCrumbs = new BreadCrumbsManager();
+	$BreadCrumbs->newAnchor($this->navigator->getCurrentViewUrl(),$this->layout()->title);
 	$this->layout()->setLayout('layout');
+	
         
 	$html = '';
 	
@@ -8,6 +11,10 @@
 
 	if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'user','changeprofile')) {
 		$detailslinks->add_item( $this->navigator->getCurrentHandlerUrl('btnEditProfile') ,"Edit", 'edit name, login, and email');
+	}
+	
+	if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'user','managewatchlist')) {
+		$detailslinks->add_item($this->navigator->getCurrentViewUrl('watchlistview','struct',array('resetview' => 1,'search_string' => '')), 'Manage My Watchlist', 'View and manage your currently set watchlist');
 	}
 	
 	$html .= '

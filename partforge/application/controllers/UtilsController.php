@@ -43,6 +43,7 @@ class UtilsController extends DBControllerActionAbstract
 				case isset($this->params['btnUpgrade']):
 					$databaseversion = getGlobal('databaseversion');
 					if (!$databaseversion) $databaseversion = '1 or older';
+
 					
 					if ($databaseversion=='1 or older') {
 						$msgs[] = 'Upgrading to version 2: background changelog table';
@@ -69,6 +70,96 @@ class UtilsController extends DBControllerActionAbstract
 						setGlobal('databaseversion', $databaseversion);
 					}
 					
+					if ($databaseversion=='2') {
+						$msgs[] = 'Upgrading to version 3: new format for changelog table.';
+						DbSchema::getInstance()->mysqlQuery("DROP TABLE IF EXISTS changelog");
+						DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS `changelog` (
+							  `changelog_id` int(11) NOT NULL AUTO_INCREMENT,
+							  `user_id` int(11) NOT NULL,
+							  `changed_on` datetime NOT NULL,
+							  `desc_typeversion_id` int(11) DEFAULT NULL,
+							  `desc_partnumber_alias` int(11) DEFAULT NULL,
+							  `desc_itemversion_id` int(11) DEFAULT NULL,
+							  `desc_typecategory_id` int(11) DEFAULT NULL,
+							  `desc_comment_id` int(11) DEFAULT NULL,
+							  `desc_text` varchar(255) DEFAULT NULL,
+							  `locator_prefix` VARCHAR(2) DEFAULT NULL,
+							  `trigger_itemobject_id` int(11) DEFAULT NULL,
+							  `trigger_typeobject_id` int(11) DEFAULT NULL,
+							  `change_code` VARCHAR(4) NOT NULL,
+							  PRIMARY KEY (`changelog_id`),
+							  KEY `user_id` (`user_id`),
+							  KEY `trigger_itemobject_id` (`trigger_itemobject_id`),
+							  KEY `trigger_typeobject_id` (`trigger_typeobject_id`),
+							  KEY `change_code` (`change_code`)
+							) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
+						
+						DbSchema::getInstance()->mysqlQuery("DROP TABLE IF EXISTS changecode");
+						DbSchema::getInstance()->mysqlQuery("CREATE TABLE `changecode` (
+						`change_code_id` int(11) NOT NULL AUTO_INCREMENT,
+						`change_code` VARCHAR(4) NOT NULL,
+						`change_code_name` varchar(128) DEFAULT NULL,
+						PRIMARY KEY (`change_code_id`),
+						KEY `change_code` (`change_code`)
+						) ENGINE=InnoDB  DEFAULT CHARSET=utf8;");
+						
+						DbSchema::getInstance()->mysqlQuery("INSERT INTO `changecode` (`change_code_id`, `change_code`, `change_code_name`) VALUES
+						(1, 'DIO', 'Deleted an Item'),
+						(2, 'DIV', 'Deleted Item Version'),
+						(3, 'AIO', 'Added New Item'),
+						(4, 'CIV', 'Changed Item Version'),
+						(5, 'AIV', 'Added Item Version'),
+						(6, 'ATO', 'Added New Definition'),
+						(7, 'RTV', 'Released Definition Version'),
+						(8, 'OTO', 'Obsoleted Definition'),
+						(9, 'CTV', 'Changed Definition Version'),
+						(10, 'ATV', 'Added Definition Version'),
+						(11, 'DTV', 'Deleted Definition Version'),
+						(12, 'DTO', 'Deleted a Definition'),
+						(13, 'AIC', 'Added Item Comment'),
+						(14, 'CIC', 'Changed Item Comment'),
+						(15, 'DIC', 'Deleted Item Comment'),
+						(16, 'AIR', 'Became Used On'),
+						(17, 'AIP', 'Added Procedure'),
+						(18, 'ATC', 'Added Definition Comment'),
+						(19, 'CTC', 'Changed Definition Comment'),
+						(20, 'DTC', 'Deleted Definition Comment');");
+
+						$databaseversion = '3';
+						setGlobal('databaseversion', $databaseversion);
+					}
+					
+					if ($databaseversion=='3') {
+						$msgs[] = 'Upgrading to version 4: changesubscription table';
+						DbSchema::getInstance()->mysqlQuery("DROP TABLE IF EXISTS changesubscription");
+						DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS `changesubscription` (
+							  `changesubscription_id` int(11) NOT NULL AUTO_INCREMENT,
+							  `user_id` int(11) NOT NULL,
+							  `added_on` datetime NOT NULL,
+							  `itemobject_id` int(11) DEFAULT NULL,
+							  `typeobject_id` int(11) DEFAULT NULL,
+							  `notify_instantly` INT(1) DEFAULT 0,
+							  `notify_daily` INT(1) DEFAULT 0,
+							  PRIMARY KEY (`changesubscription_id`),
+							  KEY `user_id` (`user_id`),
+							  KEY `itemobject_id` (`itemobject_id`),
+							  KEY `typeobject_id` (`typeobject_id`)
+							) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
+						DbSchema::getInstance()->mysqlQuery("DROP TABLE IF EXISTS changenotifyqueue");
+						DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS `changenotifyqueue` (
+							  `changenotifyqueue_id` int(11) NOT NULL AUTO_INCREMENT,
+							  `user_id` int(11) NOT NULL,
+							  `changelog_id` int(11) NOT NULL,
+							  `added_on` datetime NOT NULL,
+							  PRIMARY KEY (`changenotifyqueue_id`),
+							  KEY `user_id` (`user_id`),
+							  KEY `changelog_id` (`changelog_id`)
+							) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
+						$databaseversion = '4';
+						setGlobal('databaseversion', $databaseversion);
+					}					
+						
+			
 			}
 		}
 		$this->view->currentversion = getGlobal('databaseversion');

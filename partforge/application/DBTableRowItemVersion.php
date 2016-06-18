@@ -552,6 +552,7 @@
              * if this is a new item instance, then first create the item instance 
              * record then save the record as a new record.
              */
+			$Temp = null;
             $new_object = !$this->isSaved();
 			if (!$this->isSaved()) {
 				$ItemObject = new DBTableRow('itemobject');
@@ -594,7 +595,8 @@
 				// don't try to save component fieldnames
 				$fieldnames = array_diff($fieldnames,$this->getComponentFieldNames(), $this->getComponentSubFieldNames()); 
 				parent::save($fieldnames,$handle_err_dups_too);
-
+				
+				$previous_rev_components = !is_null($Temp) ? $Temp->getCurrentlySetComponentValues() : array();
 				// save all the itemcomponent records
 				foreach($this->getCurrentlySetComponentValues() as $fieldname => $itemobject_id) {
 					$Comp = new DBTableRow('itemcomponent');
@@ -602,6 +604,11 @@
 					$Comp->belongs_to_itemversion_id = $this->itemversion_id;
 					$Comp->has_an_itemobject_id = $itemobject_id;
 					$Comp->save();
+					
+					// only report this if it is different than the previous rev
+					if (!isset($previous_rev_components[$fieldname]) || ($previous_rev_components[$fieldname]!=$itemobject_id)) {
+						DBTableRowChangeLog::addedItemReference($itemobject_id, $this->itemversion_id);
+					}
 				}
 
 				$this->getRecordById($this->itemversion_id);
@@ -726,6 +733,7 @@
         		$Comp->belongs_to_itemversion_id = $this->itemversion_id;
         		$Comp->has_an_itemobject_id = $itemobject_id;
         		$Comp->save();
+        		DBTableRowChangeLog::addedItemReference($itemobject_id, $this->itemversion_id);
         	}
         		
         	$this->getRecordById($this->itemversion_id);
@@ -791,6 +799,8 @@
         public function delete() {
         	$itemobject_id = $this->itemobject_id;
         	$itemversion_id = $this->itemversion_id;
+        	$typeversion_id = $this->typeversion_id;
+        	$partnumber_alias = $this->partnumber_alias;
         	parent::delete();
         	// gather all the itemobjects that will be affected by removing this itemversion.  These will be needed to refresh those itemobject fields
         	$affected_itemobjects = self::getHasItemObjectsAsArray($itemversion_id);       	
@@ -806,7 +816,7 @@
         		 */
         		DbSchema::getInstance()->mysqlQuery("delete from itemcomponent where has_an_itemobject_id='{$itemobject_id}'");
         		DbSchema::getInstance()->mysqlQuery("delete from comment where itemobject_id='{$itemobject_id}'");
-        		DBTableRowChangeLog::deletedItemObject($itemobject_id, $itemversion_id);
+        		DBTableRowChangeLog::deletedItemObject($itemobject_id, $typeversion_id, $partnumber_alias);
         	} else {
         		// these only make sense to update if $itemobject_id still exists
         		DBTableRowItemObject::updateCachedCreatedOnFields($itemobject_id);
@@ -816,7 +826,7 @@
 				$new_itemversion_id = self::getItemVersionIdFromByObjectId($itemobject_id);
         		$affected_itemobjects = array_merge($affected_itemobjects,self::getHasItemObjectsAsArray($new_itemversion_id));
         		$affected_itemobjects[] = $itemobject_id;
-		        DBTableRowChangeLog::deletedItemVersion($itemobject_id, $itemversion_id);
+		        DBTableRowChangeLog::deletedItemVersion($itemobject_id, $typeversion_id, $partnumber_alias, $new_itemversion_id);
         	}
 	        DBTableRowItemObject::updateCachedLastReferenceFields($affected_itemobjects);
         }
@@ -1705,7 +1715,7 @@
 			            $current_effective_date_set = ($value && (strtotime($value) != -1));
 			            $latest_effective_date = $this->getLatestOfComponentCreatedDates();
 
-			            $now_btn = !$value ? '&nbsp<a class="minibutton2" id="effectiveDataNow" title="insert current time">now</a>' : '';
+			            $now_btn = !$value ? '&nbsp<a class="minibutton2" id="effectiveDateNow" title="insert current time">now</a>' : '';
 			            $date_warn_html = ($latest_effective_date!=null) ? '<div style="margin-top:4px;"><span class="'.(($current_effective_date_set && ($latest_effective_date>strtotime($value))) ? 'paren_red' : 'paren').'">Must be '.date("m/d/Y H:i",$latest_effective_date)." or later</span></div>" : '';
 
 			            return '<div><INPUT class="inputboxclass" TYPE="text" NAME="'.$fieldname.'" VALUE="'.($current_effective_date_set ? date('m/d/Y H:i',strtotime($value)) : $value).'" SIZE="20" MAXLENGTH="24"'.$attributes.'>'.$now_btn.'</div>'.$date_warn_html;
@@ -2236,5 +2246,15 @@
 			if (empty($index_value)) $index_value = $this->itemversion_id;
 			return DBTableRow::wasItemTouchedRecently($scope_key, $index_value, $max_time);
 		}	
+		
+		/**
+		 * Returns the number of months history based on most recent and oldest version or reference.
+		 */
+		public function getTotalMonthsOfHistory() {
+			$effective_date_exists = ($this->effective_date && (strtotime($this->effective_date) != -1));
+			$most_recent_time = $effective_date_exists ? strtotime($this->effective_date) : script_time();
+			$create_time = strtotime($this->createdOnDate());
+			return ($most_recent_time - $create_time)/(30*24*3600);				
+		}
         		
     }

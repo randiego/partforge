@@ -138,13 +138,14 @@
             
             $this->deny('Guest','settings');
             $this->deny($this->_defaultRole,'settings');
-            $this->deny('Guest','user',array('manageaccount','changeprofile','changepassword'));
+            $this->deny('Guest','user',array('manageaccount','changeprofile','changepassword','managewatchlist'));
             $this->deny('DataTerminal','user',array('manageaccount','changeprofile','changepassword','listview'));
             if ($global_readonly) {
 	            $this->deny($this->_defaultRole,'user',array('manageaccount','changeprofile','changepassword'));
             }
             // comments tab
             $this->deny('DataTerminal','struct',array('commentlistview'));
+            $this->deny('DataTerminal','struct',array('changelistview'));
             
   			// allow the utility and login controller for default
   			

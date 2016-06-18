@@ -127,27 +127,42 @@ class GroupTask {
 		return DbSchema::getInstance()->getRecords('assigned_to_task_id',"SELECT * FROM assigned_to_task WHERE (group_task_id='{$this->record->group_task_id}') {$and_where}");
 	}
 	
-	public function responded($user_id) {
-		// get the user record.
+	public function isTaskClosed() {
+		return !is_null($this->record->closed_on);
+	}
+	
+	public function getRespondedUserNames() {
+		$names = array();
 		$records = $this->getAssignedToTasks();
 		foreach($records as $assigned_to_task_id => $record) {
-			$Assigned = new DBTableRow('assigned_to_task');
-			$Assigned->assign($record);			
-			if ($record['user_id']==$user_id) {
-				$Assigned->responded_on = time_to_mysqldatetime(script_time());
-				$Assigned->save(array('responded_on'));
-			} else {
-				if ($Assigned->notified_on) {
-					$Assigned->nevermind_on = time_to_mysqldatetime(script_time());
-					$Assigned->save(array('nevermind_on'));
-					$tmp = array();
-					$tmp['RESPONDER_NAME'] = DBTableRowUser::getFullName($user_id);
-					$this->sendEmail($record['user_id'],'WorkflowNevermindEmail.txt',"Cancel: ".$this->record->title,$tmp);
+			if ($record['responded_on']) $names[] = DBTableRowUser::getFullName($record['user_id']);
+		}
+		return implode('; ',$names);
+	}
+	
+	public function responded($user_id) {
+		// get the user record if this is not a close task.
+		if (!$this->isTaskClosed()) {
+			$records = $this->getAssignedToTasks();
+			foreach($records as $assigned_to_task_id => $record) {
+				$Assigned = new DBTableRow('assigned_to_task');
+				$Assigned->assign($record);			
+				if ($record['user_id']==$user_id) {
+					$Assigned->responded_on = time_to_mysqldatetime(script_time());
+					$Assigned->save(array('responded_on'));
+				} else {
+					if ($Assigned->notified_on) {
+						$Assigned->nevermind_on = time_to_mysqldatetime(script_time());
+						$Assigned->save(array('nevermind_on'));
+						$tmp = array();
+						$tmp['RESPONDER_NAME'] = DBTableRowUser::getFullName($user_id);
+						$this->sendEmail($record['user_id'],'WorkflowNevermindEmail.txt',"Cancel: ".$this->record->title,$tmp);
+					}
 				}
 			}
+			$this->record->closed_on = time_to_mysqldatetime(script_time());
+			$this->record->save(array('closed_on'));
 		}
-		$this->record->closed_on = time_to_mysqldatetime(script_time());
-		$this->record->save(array('closed_on'));
 	}
 
 	

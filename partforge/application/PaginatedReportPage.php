@@ -36,6 +36,10 @@ class PaginatedReportPage {
 		$this->_navigator = $navigator;
 	}
 	
+	public function overrideReportTitle($title) {
+		$this->_report_data_obj->title = $title;
+	}
+	
 	/*
 	  the following is the handler for fairly generic webpage events
 	*/
@@ -45,13 +49,16 @@ class PaginatedReportPage {
 		if (isset($this->queryvars['btnSearch']) || ($this->queryvars['search_string'] != '')) {
 			$handle = true;
 		}
-
+		
 		/*
 		 list of mutually exclusive actions:
 		*/
 		switch (true)
 		{
 			case isset($this->queryvars['btnChangeSortKey']):
+				$handle = true;
+				break;
+			case ($this->queryvars['btnOnChange'] == 'listtypechange'):
 				$handle = true;
 				break;
 			case ($this->queryvars['btnOnChange'] == 'rowschange'):

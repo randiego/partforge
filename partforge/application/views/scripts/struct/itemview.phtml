@@ -1,9 +1,15 @@
 <script type="text/javascript">
 var scrollPosKey = "<?php echo 'itemViewPanelPos'.$this->dbtable->itemversion_id;?>";
 var pdfViewUrl = "<?php echo $this->navigator->getCurrentViewUrl('itemviewpdf',null,array('itemversion_id' => $this->dbtable->itemversion_id, 'show_form_fields' => '_SHOWFORM_', 'show_text_fields' => '_SHOWTEXT_', 'show_event_stream' => '_SHOWEVENTS_'));?>";
+var followUrl = "<?php echo $this->navigator->getCurrentHandlerUrl('btnFollow',null,null,array('itemobject_id' => $this->dbtable->itemobject_id, 'followNotifyTimeHHMM' => '_FOLLOWNOTIFYTIMEHHMM_', 'notify_instantly' => '_NOTIFYINSTANTLY_', 'notify_daily' => '_NOTIFYDAILY_'));?>";
+var followInstantly =  "<?php echo $_SESSION['account']->getPreference('followInstantly');?>";
+var followDaily =  "<?php echo $_SESSION['account']->getPreference('followDaily');?>";
+var followNotifyTimeHHMM =  "<?php echo $_SESSION['account']->getPreference('followNotifyTimeHHMM');?>";
+var followNotifyEmailMsg =  "<?php echo implode('  ',$_SESSION['account']->reasonsWhyCantRecieveWatchNotices());?>";
+
 </script>
 <?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
-<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemview.js?v=7" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemview.js?v=9" type="TEXT/JAVASCRIPT"></script>
 
 <?php
 
@@ -18,6 +24,8 @@ $this->layout()->scrollhold = true;
 
 $is_current_version = $this->dbtable->io__cached_current_itemversion_id==$this->dbtable->itemversion_id;
 $is_a_procedure = DBTableRowTypeVersion::isTypeCategoryAProcedure($this->dbtable->tv__typecategory_id);
+$big_page_length = isset($this->queryvars['months']) ? (($this->queryvars['months']==1) ? '1 month' : $this->queryvars['months'].' months') : '';
+$not_all_records_showing = EventStream::getNestedEventStreamRecordCount($this->dbtable) != EventStream::getNestedEventStreamRecordCount($this->dbtable, $this->earliest_date);
 
 $html = '';
 $html_right = '';
@@ -68,6 +76,19 @@ if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'
 	// this is sneaky, but this link will actually work if the JS is not executed, but is normally overridden by the JS.
 	$pdf_url = $this->navigator->getCurrentViewUrl('itemviewpdf',null,array('itemversion_id' => $this->dbtable->itemversion_id));
 	$detailslinks[] = linkify($pdf_url,'PDF','Open a printable PDF view of this page','bd-button','','','pdfButton');
+
+	if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'user','managewatchlist')) {
+		$Subscription = new DBTableRowChangeSubscription();
+		$is_following = $Subscription->getRecordByIds($_SESSION['account']->user_id, $this->dbtable->itemobject_id, null);
+		$cat_name = $is_a_procedure ? 'Procedure' : 'Part';
+		if ($is_following) {
+			$usfollow_url = $this->navigator->getCurrentHandlerUrl('btnUnFollow',null,null,array('itemobject_id' => $this->dbtable->itemobject_id));
+			$detailslinks[] = linkify($usfollow_url,'Stop Watching', $Subscription->getDescription()."  Click here to remove this item from your Watchlist.",'bd-button');
+		} else {
+			$follow_url = $this->navigator->getCurrentHandlerUrl('btnFollow',null,null,array('itemobject_id' => $this->dbtable->itemobject_id));
+			$detailslinks[] = linkify($follow_url,'Watch', "Add to your Watchlist to follow any changes that occur to this {$cat_name}",'bd-button','','','followButton');
+		}
+	}
 }
 
 /*
@@ -105,7 +126,8 @@ if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'
 $records = $this->streamrecords;
 list($lines,$references_by_typeobject_id) = EventStream::eventStreamRecordsToLines($records,$this->dbtable, $this->navigator);
 $layout_rows = EventStream::eventStreamLinesToHtml($this->dbtable,$lines,$this->navigator);
-$html_dashboard = EventStream::renderDashboardView($this->dbtable,$procedure_records, $references_by_typeobject_id);
+$more_results = $not_all_records_showing ? '<div class="dashboard-show-more">There may be more results.  Use selector to view more than '.$big_page_length.' of history.</div>' : '';
+$html_dashboard = EventStream::renderDashboardView($this->dbtable,$procedure_records, $references_by_typeobject_id,$more_results);
 
 
 /*
@@ -123,6 +145,11 @@ if (count($usedon)==1) {
 	$detailslinks[] = '<button class="used-on-button jumpmenu">Used On...</button><ul><li>'.implode('</li><li>',$used_on_links).'</li></ul>';
 }
 
+if ($this->show_big_page_controls) {
+	$history_selector = '<span class="monthsmenu" style="font-size: 12px;">'.format_select_tag(EventStream::monthsOfHistoryOptions($this->dbtable->getTotalMonthsOfHistory()),'months',$this->queryvars,"",false, 'Select History to Show',' ID="monthsHistoryId"').'</span>';
+	$html .= '<div class="itemview_notice red">Slow Page.     The Current View Shows:  '.$history_selector.'</div>';
+	$html .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_BIG_PAGE_CONTROL','Pages with a lot of history use the above selector to let you choose how much history to show.','6/16/2016');
+}
 
 if (!$is_current_version) {
 	$query_params = array();
@@ -135,14 +162,13 @@ if (!$is_current_version) {
 if (Zend_Registry::get('config')->config_for_testing) {
 	$html .= "<p>Most Recent Object ID = {$this->dbtable->io__cached_current_itemversion_id}".', /items/versions/'."{$this->dbtable->io__cached_current_itemversion_id}</p>";
 	$html .= "<p>This Object ID = {$this->dbtable->itemversion_id}".', /items/versions/'.$this->dbtable->itemversion_id.', /items/objects/'.$this->dbtable->itemobject_id."</p>";
-//	$query_params = array();
-//	$query_params['itemversion_id'] = $this->dbtable->io__cached_current_itemversion_id;
-//	$html .= '<IMG src="'.$this->navigator->getCurrentViewUrl('qrcode','',$query_params).'">';
 }
 
 $html .= '<div class="tablewrap">';
 
 $html .= '<div class="buttonrow">'.implode('&nbsp;',$detailslinks).'</div>';
+
+$html .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_WATCH_BUTTON','Click the "Watch" button to create a personal watchlist and receive email notifications when something changes on this page.','6/16/2016');
 
 $fields_to_remove = array();
 
@@ -170,9 +196,10 @@ if (!empty($fieldlayout)) {
 	
 	$html .= DBTableRowItemVersion::fetchItemVersionEditTableTR($fieldlayout, $this->dbtable, $errormsg, '', $editable);
 	$html .= '</table></div>
-		';    
+		';
 }
 $html .= '</div>';
+
 
 $add_links = array();
 if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'table:comment','add')) {
@@ -182,11 +209,18 @@ if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'
 $html_right .= '<div class="bd-list-container"><ul class="bd-stream-list">';
 // in the following: style="position: relative; z-index: 10" seems to be absolutely necessary to get the menu to be on top in IE7
 // see http://www.brenelz.com/blog/squish-the-internet-explorer-z-index-bug/
+
+$html_right .= '<input type="hidden" name="btnOnChange" value="" />';
 $html_right .= '<li class="bd-event-row" style="position: relative; z-index: 10; padding-bottom:0px;">
 		<div class="buttonrow">'.implode('&nbsp;',$add_links).(!empty($menulinks) ? '&nbsp;<button class="jumpmenu">Add New Procedure</button><ul><li>'.implode('</li><li>',$menulinks).'</li></ul>':'').'
 	   </div></li>';
 
+
 $html_right .= implode('',array_reverse($layout_rows));
+
+if ($not_all_records_showing) {
+	$html_right .= '<li class="bd-event-row bd-stream-end-notice"><div class="bd-event-content more-records">THERE IS MORE<br /><span class="paren">Use selector at top of page to view more than '.$big_page_length.' of history.</span></div></li>';
+}
 
 $html_right .= '</ul></div>';
 $html_page = '

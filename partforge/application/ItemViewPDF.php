@@ -76,6 +76,7 @@ class ItemViewPDF extends TCPDF {
 	public function clean_html($dirty_html) {
 		// see http://www.bioinformatics.org/phplabware/internal_utilities/htmLawed/htmLawed_README.htm#s2.2
 		require_once("htmLawed.php");
+		$dirty_html = $this->translateUtf8ToIso($dirty_html);
 		$clean_html = trim(htmLawed($dirty_html, array('safe' => 1, 'clean_ms_char' => 2)));
 		return $clean_html;
 	}

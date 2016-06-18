@@ -46,8 +46,8 @@ class ReportDataCommentListView extends ReportDataWithCategory {
 		$this->fields['created_by_name'] 	= array('display'=>'User',		'key_asc'=>'created_by_name', 'key_desc'=>'created_by_name desc');
 		$this->fields['typecategory_name'] 	= array('display'=> 'Type',		'key_asc'=>'typecategory_name', 'key_desc'=>'typecategory_name desc');
 		
-		$this->fields['part_number'] 	= array('display'=> ($this->is_user_procedure ? 'Procedure Number' : 'Part Number'),		'key_asc'=>'partnumbercache.part_number', 'key_desc'=>'partnumbercache.part_number desc');
-		$this->fields['part_description'] 	= array('display'=> ($this->is_user_procedure ? 'Description' : 'Part Description'),		'key_asc'=>'partnumbercache.part_description', 'key_desc'=>'partnumbercache.part_description desc');
+		$this->fields['part_number'] 	= array('display'=> 'Number',		'key_asc'=>'partnumbercache.part_number', 'key_desc'=>'partnumbercache.part_number desc');
+		$this->fields['part_description'] 	= array('display'=> 'Name',		'key_asc'=>'partnumbercache.part_description', 'key_desc'=>'partnumbercache.part_description desc');
 		
 		
 		$this->fields['procedure_date'] 	= array('display'=> 'Procedure<br />With<br />Comment',		'key_asc'=>'procedure_date', 'key_desc'=>'procedure_date desc', 'start_key' => 'key_desc');
@@ -55,7 +55,7 @@ class ReportDataCommentListView extends ReportDataWithCategory {
 		$this->fields['comment_text'] 	= array('display'=> 'Comment');
 		$this->fields['documents_packed'] 	= array('display'=> 'Attachments');
 		
-		$this->search_box_label = 'part, SN, name, text, locator';
+		$this->search_box_label = 'number,SN,user,comment,locator';
 
 	}
         

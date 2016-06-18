@@ -26,7 +26,7 @@
 require_once('functions.common.php');
 
 
-define('AUTOPROPAGATING_QUERY_PARAMS','pageno,search_string,search_date_from,search_date_to,sort_key,table,edit_buffer_key');
+define('AUTOPROPAGATING_QUERY_PARAMS','pageno,search_string,search_date_from,search_date_to,sort_key,table,edit_buffer_key,list_type,months');
 
 require_once('functions.common.php');
 
@@ -60,10 +60,11 @@ function templatevarmap($a) {
 	return '{_'. strtoupper($a) .'_}';
 }
 
-function send_template_email($templatestring,$to,$toname,$from,$fromname,$assignarray,$subject,$cc = '',$bcc = '') {
+function send_template_email($templatestring,$to,$toname,$from,$fromname,$assignarray,$subject,$cc = '',$bcc = '', $content_type='text/plain') {
 	$message = email_template_to_text($templatestring,$assignarray);
 	require_once('functions.email.php');
 	$themail = new Email($to,$toname,$from,$fromname,$cc,$bcc,$subject,$message);
+	$themail->setContentType($content_type);
 	if (!$themail->Send()) {
 		logerror("themail->Send($to, $subject, $message) failed in send_template_email()");
 		return false;
@@ -544,11 +545,12 @@ class BreadCrumbsManager {
 	}
 
 	/**
-	 * Push the specified url and caption onto the breadcrumb stack.
+	 * Push the specified url and caption onto the breadcrumb stack.  The url has to be an exact match of previously
+	 * added ones in order to properly prune the history list.
 	 * @param unknown_type $inurl
 	 * @param unknown_type $intitle
 	 */
-	public function addCurrentUrl($inurl,$intitle) {
+	public function addCurrentUrl($inurl,$intitle,$match_on_title_only=false) {
 		$this->_current_url = $inurl;
 		$_SESSION['breadcrumbs'][$inurl] = $intitle;
 		// now prune any urls after this one.  Basically we reset the breadcrumbs back to the current url when we
@@ -558,6 +560,11 @@ class BreadCrumbsManager {
 		foreach($_SESSION['breadcrumbs'] as $url => $url_name) {
 			$new[$url] = $url_name;
 			if ($url==$inurl) break;
+			if ($match_on_title_only && ($url_name==$intitle)) {
+				array_pop($new); // remove the last entry we just put on
+				$new[$inurl] = $intitle;
+				break;
+			}
 			$bc_links[] = linkify($url, $url_name);
 		}
 		$_SESSION['breadcrumbs'] = $new;

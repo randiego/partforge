@@ -31,7 +31,6 @@ function initPanelScrollSaver() {
 	}
 }
 
-
 $(document).ready(function() {
 	
 	$('#AddAnotherID').effect("highlight", {color:"#3F3"}, 10000);
@@ -134,6 +133,16 @@ $(document).ready(function() {
 		});
 		return false; // prevents the default link
 	});
+	
+	activatefollowButton(followUrl,"If you want to watch all items of this type, click Watch from the definition page.");
+	
+	$("#monthsHistoryId").selectmenu({
+	      change: function( event, data ) {
+	  		document.theform.btnOnChange.value='monthschange';
+			document.theform.submit();
+			return false;
+	      }
+	 });
     
 });
 

@@ -117,8 +117,9 @@
 		 */
 		public function delete() {
 			$itemobject_id = $this->itemobject_id;
+			$text = $this->comment_text;
 			parent::delete();
-			DBTableRowChangeLog::deletedItemComment($itemobject_id);
+			DBTableRowChangeLog::deletedItemComment($itemobject_id, $text);
 			DBTableRowItemObject::updateCachedLastCommentFields($itemobject_id);
 		}	
 
@@ -131,9 +132,9 @@
 			$new_comment = !$this->isSaved();
 			parent::save($fieldnames,$handle_err_dups_too);
 			if ($new_comment) {
-				DBTableRowChangeLog::addedItemComment($itemobject_id);
+				DBTableRowChangeLog::addedItemComment($itemobject_id, $this->comment_id, $this->user_id);
 			} else {
-				DBTableRowChangeLog::changedItemComment($itemobject_id);
+				DBTableRowChangeLog::changedItemComment($itemobject_id, $this->comment_id, $this->user_id);
 			}
 			DBTableRowItemObject::updateCachedLastCommentFields($itemobject_id);
 		}		

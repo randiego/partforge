@@ -62,14 +62,38 @@ class EventStream {
 	}
 	
 	/**
+	 * This is used to estimate the number of records that will be returned from getNestedEventStreamRecords().  It is an overestimate
+	 * because it does not remove double counts for indented records, but it is still useful for deciding if we will truncate the results.
+	 * @param DBTableRowItemVersion $ItemVersion
+	 * @return mixed
+	 */
+	static public function getNestedEventStreamRecordCount(DBTableRowItemVersion $ItemVersion, $end_date=null) {
+		$count = 0;
+		$EventStream = new self($ItemVersion->itemobject_id);
+		
+		$count += $EventStream->getAssembleStreamArrayRecordCount('',$end_date);
+		if (!$ItemVersion->is_user_procedure) {		
+			foreach($ItemVersion->getCurrentlySetComponentValues() as $componentname => $itemobject_id) {
+				$ComponentObj = $ItemVersion->getComponentAsIVObject($componentname);
+				if (!is_null($ComponentObj) && $ComponentObj->hasASerialNumber()) {
+					$EventStream = new self($itemobject_id);
+					$count += $EventStream->getAssembleStreamArrayRecordCount($componentname, $end_date);
+				}
+			}
+		}
+		return $count;
+	}
+	
+	/**
 	 * puts together a top and nested event stream items for none procedures.  It looks like procedures don't make much sense to view an indented list.
 	 * @param DBTableRowItemVersion $ItemVersion
 	 * @return Ambigous <multitype:, multitype:multitype:string unknown NULL  multitype:string NULL unknown  >
 	 */
-	static public function getNestedEventStreamRecords(DBTableRowItemVersion $ItemVersion) {
+	static public function getNestedEventStreamRecords(DBTableRowItemVersion $ItemVersion, $end_date=null) {
 		$streamlines = array();
 		$EventStream = new self($ItemVersion->itemobject_id);
-		$streamlines = $EventStream->assembleStreamArray();
+		
+		$streamlines = $EventStream->assembleStreamArray('',$end_date);
 		if (!$ItemVersion->is_user_procedure) {
 	
 			// build list of parent itemversion_ids so that we can eliminate dups from component lists
@@ -82,7 +106,7 @@ class EventStream {
 				$ComponentObj = $ItemVersion->getComponentAsIVObject($componentname);
 				if (!is_null($ComponentObj) && $ComponentObj->hasASerialNumber()) {
 					$EventStream = new self($itemobject_id);
-					$morelines = $EventStream->assembleStreamArray($componentname);
+					$morelines = $EventStream->assembleStreamArray($componentname,$end_date);
 		
 					// remove any duplicates of top-level items.
 					foreach($morelines as $idx => $moreline) {
@@ -97,8 +121,45 @@ class EventStream {
 		}
 		return $streamlines;
 	}
+	
+	public function getVersionRecords($end_date) {
+		$end_date_and_where = is_null($end_date) ? '' : " and (effective_date >= '".time_to_mysqldatetime(strtotime($end_date))."')";
+		$query = "SELECT *, (SELECT count(*) FROM itemversionarchive WHERE itemversionarchive.itemversion_id=itemversion.itemversion_id) as archive_count,
+		(SELECT min(record_created) FROM itemversionarchive WHERE itemversionarchive.itemversion_id=itemversion.itemversion_id) as oldest_record_created
+		FROM itemversion WHERE itemobject_id='{$this->_itemobject_id}' {$end_date_and_where} ORDER BY effective_date";
+		return DbSchema::getInstance()->getRecords('itemversion_id',$query);
+	}
+	
+	public function getAssembleStreamArrayRecordCount($indented_component_name='', $end_date=null) {
+		$count = 0;
+		
+		// version
+		$end_date_and_where = is_null($end_date) ? '' : " and (effective_date >= '".time_to_mysqldatetime(strtotime($end_date))."')";
+		$query = "SELECT count(*) as record_count FROM itemversion WHERE itemobject_id='{$this->_itemobject_id}' {$end_date_and_where}";
+		$records = DbSchema::getInstance()->getRecords('',$query);
+		$record = reset($records);
+		$count += $record['record_count'];
+		
+		// get itemversion records that include us as components.  Include comments and documents as well.
+		$end_date_and_where = is_null($end_date) ? '' : " and (iv_them.effective_date >= '".time_to_mysqldatetime(strtotime($end_date))."')";
+		$query = "SELECT count(*) as record_count FROM itemcomponent
+					LEFT JOIN itemversion AS iv_them ON iv_them.itemversion_id=itemcomponent.belongs_to_itemversion_id
+					WHERE itemcomponent.has_an_itemobject_id='{$this->_itemobject_id}' {$end_date_and_where}";		
+		$records = DbSchema::getInstance()->getRecords('',$query);
+		$record = reset($records);
+		$count += $record['record_count'];
+		
+		// comments
+		$end_date_and_where = is_null($end_date) ? '' : " and (comment.comment_added >= '".time_to_mysqldatetime(strtotime($end_date))."')";
+		$query = "SELECT count(*) as record_count FROM comment WHERE itemobject_id='{$this->_itemobject_id}' {$end_date_and_where}";
+		$records = DbSchema::getInstance()->getRecords('',$query);
+		$record = reset($records);
+		$count += $record['record_count'];
+		
+		return $count;
+	}
 
-	public function assembleStreamArray($indented_component_name='') {
+	public function assembleStreamArray($indented_component_name='', $end_date=null) {
 		$config = Zend_Registry::get('config');
 		
 		$holdComponents=array();
@@ -108,9 +169,10 @@ class EventStream {
 		/*
 		 * create array entries in the eventstream.  We start with all the versions of this item object.
 		 */
+		$end_date_and_where = is_null($end_date) ? '' : " and (effective_date >= '".time_to_mysqldatetime(strtotime($end_date))."')";
 		$query = "SELECT *, (SELECT count(*) FROM itemversionarchive WHERE itemversionarchive.itemversion_id=itemversion.itemversion_id) as archive_count,
 				(SELECT min(record_created) FROM itemversionarchive WHERE itemversionarchive.itemversion_id=itemversion.itemversion_id) as oldest_record_created 
-				FROM itemversion WHERE itemobject_id='{$this->_itemobject_id}' ORDER BY effective_date";
+				FROM itemversion WHERE itemobject_id='{$this->_itemobject_id}' {$end_date_and_where} ORDER BY effective_date";
 		$records = DbSchema::getInstance()->getRecords('itemversion_id',$query);
 		$is_first = true;
 		foreach($records as $itemversion_id => $record) {
@@ -163,6 +225,7 @@ class EventStream {
 		*/
 	
 		// get itemversion records that include us as components.  Include comments and documents as well.
+		$end_date_and_where = is_null($end_date) ? '' : " and (iv_them.effective_date >= '".time_to_mysqldatetime(strtotime($end_date))."')";
 		$query = "
 				
 				SELECT 
@@ -181,7 +244,7 @@ class EventStream {
 					) as comments_packed
 				FROM itemcomponent
 				LEFT JOIN itemversion AS iv_them ON iv_them.itemversion_id=itemcomponent.belongs_to_itemversion_id
-				WHERE itemcomponent.has_an_itemobject_id='{$this->_itemobject_id}' ORDER BY iv_them.effective_date";
+				WHERE itemcomponent.has_an_itemobject_id='{$this->_itemobject_id}' {$end_date_and_where} ORDER BY iv_them.effective_date";
 		$records = DbSchema::getInstance()->getRecords('itemversion_id',$query);
 		foreach($records as $itemversion_id => $record) {
 			// get itemversion record for the item that has included us as a component
@@ -227,8 +290,10 @@ class EventStream {
 			
 			
 			$arr = $itemevent;
+			// the 3rd || handles left over entries let through by the query when we want to remove older entries ($end_date not null)
 			$hide_this_entry = (!$ItemVersion->isCurrentVersion() && $ItemVersion->is_user_procedure && !$config->show_old_proc_version_in_eventstream)
-								|| (!$ItemVersion->isCurrentVersion() && !$ItemVersion->is_user_procedure && !$config->show_old_part_version_in_eventstream);
+								|| (!$ItemVersion->isCurrentVersion() && !$ItemVersion->is_user_procedure && !$config->show_old_part_version_in_eventstream)
+								|| (!is_null($end_date) && (strtotime( $itemevent['effective_date']) < strtotime($end_date) ));
 			if (!$hide_this_entry) {				
 				$out[] = $arr;
 			}
@@ -238,12 +303,13 @@ class EventStream {
 	
 	
 		// add comments
+		$end_date_and_where = is_null($end_date) ? '' : " and (comment.comment_added >= '".time_to_mysqldatetime(strtotime($end_date))."')";
 		$query = "
 				
 				SELECT comment.*, (SELECT GROUP_CONCAT(
 				CONCAT(document.document_id,',',document.document_filesize,',',CONVERT(HEX(document.document_displayed_filename),CHAR),',',CONVERT(HEX(document.document_stored_filename),CHAR),',',document.document_stored_path,',',document.document_file_type,',',document.document_thumb_exists) 
 					SEPARATOR ';') FROM document WHERE (document.comment_id = comment.comment_id) and (document.document_path_db_key='{$config->document_path_db_key}')) as documents_packed FROM comment
-				WHERE itemobject_id='{$this->_itemobject_id}'
+				WHERE itemobject_id='{$this->_itemobject_id}' {$end_date_and_where}
 			";
 		$records = DbSchema::getInstance()->getRecords('comment_id',$query);
 		foreach($records as $comment_id => $record) {
@@ -809,7 +875,7 @@ class EventStream {
 	 * @param array $references_by_typeobject_id  This is a list of all the procedures that actually exist for this item
 	 * @return string
 	 */
-	static public function renderDashboardView($dbtable, $procedure_records, $references_by_typeobject_id) {
+	static public function renderDashboardView($dbtable, $procedure_records, $references_by_typeobject_id, $more_to_show_msg_html='') {
 		$html_dashboard = '';
 
 		// ensures only one entry per typeobject_id
@@ -854,8 +920,13 @@ class EventStream {
 	        	</tr>';
 				}
 				$html_dashboard .= '</table>';
+				if ($more_to_show_msg_html) $html_dashboard .= $more_to_show_msg_html;
 			} else {
-				$html_dashboard .= '<p>No Results.</p>';
+				if ($more_to_show_msg_html) {
+					$html_dashboard .= $more_to_show_msg_html;
+				} else {
+					$html_dashboard .= '<p>No Results.</p>';
+				}
 			}
 		}
 		
@@ -887,6 +958,55 @@ class EventStream {
 			}
 		}	
 		return $usedon;	
+	}
+	
+	static public function monthsOfHistoryOptions($max_months) {
+		// return 1, 3, 6, 12, 24, 36, 48, ... to above max.
+		$out = array(1 => '1 Month');
+		if ($max_months > 1) $out[3] = '3 Months';
+		if ($max_months > 3) $out[6] = '6 Months';
+		if ($max_months > 6) $out[12] = '1 Year';
+		$years = 1;
+		while ($max_months > $years*12) {
+			$years++;
+			$out[$years*12] = $years.' Years';
+		};
+		
+		// the last entry should be 'ALL' instead of the number of months.
+		$last = array_pop($out);
+		$out['ALL'] = $last.' (All)';
+		
+		foreach($out as $key => $text) {
+			$out[$key] = $text.' of History';
+		}
+		return $out;
+	}
+	
+	static public function roundToNearestMonthsOfHistory($month, $max_months) {
+		$out_month = 1;
+		foreach(array_keys(self::monthsOfHistoryOptions($max_months)) as $round_month) {
+			if ($round_month > $month) {
+				$out_month = $round_month;
+				break;
+			}
+		}
+		return $out_month;
+	}
+	
+	static public function tooBigRecordCount() {
+		return 800;
+	}
+	
+	static public function getTooBigStartingNumMonths(DBTableRowItemVersion $ItemVersion, $length_items) {
+		$length_months = $ItemVersion->getTotalMonthsOfHistory();
+		$target_starter_count = self::tooBigRecordCount() / 2;
+		return self::roundToNearestMonthsOfHistory($target_starter_count/$length_items * $length_months, $length_months);		
+	}
+	
+	static public function getEarliestDateOfHistory($ItemVersion, $months_param) {
+		$effective_date_exists = ($ItemVersion->effective_date && (strtotime($ItemVersion->effective_date) != -1));
+		$months_in_seconds = $months_param*30*24*3600;
+		return time_to_mysqldatetime($effective_date_exists ? strtotime($ItemVersion->effective_date) - $months_in_seconds : script_time() - $months_in_seconds);
 	}
 	
 }

@@ -1149,7 +1149,13 @@ function renderFormLayout() {
 			                	plugins : "dfimageupload,autolink,lists,pagebreak,style,layer,table,save,advhr,advimage,advlink,emotions,iespell,inlinepopups,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,noneditable,visualchars,nonbreaking,xhtmlxtras,template,advlist",
 			            		theme_advanced_buttons1 : "bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,formatselect,|,bullist,numlist,|,outdent,indent,blockquote,|,link,unlink,help,code",
 			            		theme_advanced_buttons2 : "tablecontrols,|,hr,removeformat,|,sub,sup,|,charmap,|,dfimageupload",
-			                	width: '100%', height: 300});
+			                	width: '100%', height: 300,
+			                	paste_preprocess : function(pl, o) {
+			                		if (/<img[^>]+src="data:image/ig.test(o.content)) {
+			                			o.content = '';
+			                			alert('Sorry.  You cannot past images from the clipboard.  Please use the Upload/Insert Image icon on the toolbar for this.');
+			                		}
+			                	}  });
                 },		
 			close: function( event, ui ) {
 				typeFormLayoutArray[idx]['html'] = $("#HtmlEditorContainer textarea").val();

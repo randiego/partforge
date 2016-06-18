@@ -44,7 +44,7 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
         // if cron is not running, we try to service it here.  A mutex of somesort here would be ideal.  If unlucky, two processes might run this at the same time.
         $last_task_run = getGlobal('last_task_run');
         $last_chance_task_interval = 600; // seconds be longer than standard cron interval servicing cron/servicetasks
-        if (is_null($last_task_run) || script_time() > strtotime($last_task_run) + $last_chance_task_interval) {
+        if (( is_null($last_task_run) || script_time() > strtotime($last_task_run) + $last_chance_task_interval) && $config->fake_cron_service) {
         	setGlobal('last_task_run', time_to_mysqldatetime(script_time()));
         	$TaskRunner = new MaintenanceTaskRunner(array());
         	$TaskRunner->run();
@@ -85,7 +85,7 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
             $request->setParamSources(array());             // instead of current getvars
             Zend_Controller_Front::getInstance()->getRouter()->route($request);     
             // ok now $request should be decomposed into something with an action and controller.  
-            $allowed_controller_actions = array('/struct/itemview','/struct/iv','/struct/io','/struct/tv','/struct/to','/struct/lv','/struct/partlistview','/struct/itemdefinitionview','/struct/procedurelistview','/struct/commentlistview','/struct/itemlistview','/struct/whoami','/user/listview','/user/itemview','/user/workflowtaskresponse'); 
+            $allowed_controller_actions = array('/struct/itemview','/struct/iv','/struct/io','/struct/tv','/struct/to','/struct/lv','/struct/partlistview','/struct/itemdefinitionview','/struct/procedurelistview','/struct/commentlistview','/struct/changelistview','/struct/itemlistview','/struct/whoami','/user/listview','/user/itemview','/user/workflowtaskresponse'); 
             $bare_target_controller_action = '/'.$request->getControllerName().'/'.$request->getActionName();
             if (array_search($bare_target_controller_action,$allowed_controller_actions)!==false) {
             	// it's in the list, so we can jump there

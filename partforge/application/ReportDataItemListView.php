@@ -95,7 +95,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
 		$this->title = $this->is_user_procedure ? 'List of Procedures' : 'List of Parts';
 		if ($show_early_part_numbers_column) {
 			$this->fields['part_number'] 	= array('display'=> ($this->is_user_procedure ? 'Procedure Number' : 'Part Number'),		'key_asc'=>'partnumbercache.part_number,iv__item_serial_number', 'key_desc'=>'partnumbercache.part_number desc,iv__item_serial_number');
-			$this->fields['part_description'] 	= array('display'=> ($this->is_user_procedure ? 'Description' : 'Part Description'),		'key_asc'=>'partnumbercache.part_description', 'key_desc'=>'partnumbercache.part_description desc');
+			$this->fields['part_description'] 	= array('display'=> ($this->is_user_procedure ? 'Name' : 'Part Name'),		'key_asc'=>'partnumbercache.part_description', 'key_desc'=>'partnumbercache.part_description desc');
 		}
 		
 		if ($show_change_date_column_early) {
@@ -113,7 +113,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
 
 		if ($show_late_part_numbers_column) {
 			$this->fields['part_number'] 	= array('display'=> ($this->is_user_procedure ? 'Procedure Number' : 'Part Number'),		'key_asc'=>'partnumbercache.part_number,iv__item_serial_number', 'key_desc'=>'partnumbercache.part_number desc,iv__item_serial_number');
-			$this->fields['part_description'] 	= array('display'=> ($this->is_user_procedure ? 'Description' : 'Part Description'),		'key_asc'=>'partnumbercache.part_description', 'key_desc'=>'partnumbercache.part_description desc');
+			$this->fields['part_description'] 	= array('display'=> ($this->is_user_procedure ? 'Name' : 'Part Name'),		'key_asc'=>'partnumbercache.part_description', 'key_desc'=>'partnumbercache.part_description desc');
 		}
 		
 		

@@ -29,7 +29,7 @@ class StructController extends DBControllerActionAbstract
 	/**
 	 * Looks to see if the search term entered is somehow special and warrents jumping directly to an object. 
 	 * @param ReportData $ReportData this is an instantiated instance of the ReportData class that makes up the list view.
-	 * @param string $quickjump_prefix this is the locator prefix (iv, or tv) that should be used to construct the locator url
+	 * @param string $quickjump_prefix this is the locator prefix (iv, or tv) that should be used to construct the locator url.  Leave blank if you don't want the single result search to jump.
 	 * @param string $quickjump_indexname if we construct a url, this is the fieldname of the number part of the locator as it would appear in the $ReportData results
 	 * @return string which is the URL of the unique object we want to jump to, otherwise return blank if we should just show the search results in a list
 	 */
@@ -38,7 +38,7 @@ class StructController extends DBControllerActionAbstract
 		$altSearchTargetUrl = specialSearchKeyToUrl($this->params['search_string'], true);
 		// if not a prefix format, then see if we have a single search result we can jump to
 		$searchResultCount = $ReportData->get_records_count($this->params, $this->params['search_string']);
-		if (!$altSearchTargetUrl && ($searchResultCount==1)) {
+		if (!$altSearchTargetUrl && ($searchResultCount==1) && ($quickjump_prefix!='')) {
 			$records = $ReportData->get_records($this->params, $this->params['search_string'],'');
 			$record = reset($records);
 			$altSearchTargetUrl = formatAbsoluteLocatorUrl($quickjump_prefix,$record[$quickjump_indexname]);
@@ -338,6 +338,94 @@ class StructController extends DBControllerActionAbstract
     	$this->view->navigator = $this->navigator;
     }    
     
+    public function changelistviewAction()
+    {
+    	$list_type = !isset($this->params['list_type']) || !in_array($this->params['list_type'], array_keys(ReportDataChangeLog::activityTypeOptions())) ? ReportDataChangeLog::activityTypeDefault() : $this->params['list_type'];
+    	$ReportData = new ReportDataChangeLog($list_type);
+    	$PaginatedReportPage = new PaginatedReportPage($this->params,$ReportData,$this->navigator);
+    	if (isset($this->params['form'])) {
+    		switch (true)
+    		{
+    		}
+    		$PaginatedReportPage->sort_and_search_handler();
+    
+    	}
+    	 
+    	if (isset($this->params['search_string']) && $this->params['search_string']) {
+    		$altSearchTargetUrl = $this->getAlternateSearchUrl($ReportData,'','');
+    		if ($altSearchTargetUrl) {
+    			spawnurl($altSearchTargetUrl);
+    		}
+    	}
+    
+    	$this->view->list_type = $list_type;
+    	$this->view->queryvars = $this->params;
+    	$this->view->paginated_report_page = $PaginatedReportPage;
+    	$this->view->navigator = $this->navigator;
+    }    
+    
+    public function watchlistviewAction()
+    {
+    	$ReportData = new ReportDataChangeSubscription();
+    	$PaginatedReportPage = new PaginatedReportPage($this->params,$ReportData,$this->navigator);
+    	
+    	if (isset($this->params['form'])) {
+    		switch (true)
+    		{
+    			case isset($this->params['btnDelete']):
+    				$Rec = new DBTableRowChangeSubscription();
+    				if ($Rec->getRecordById($this->params['changesubscription_id'])) {
+    					$Rec->delete();
+    				}
+    				$this->navigator->jumpToView();
+    			case isset($this->params['btnSetDailyNotifyTime']):
+    				$_SESSION['account']->setPreference('followNotifyTimeHHMM', $this->params['followNotifyTimeHHMM']);
+    				echo json_encode(array('sucess' => true));
+    				die();
+    				
+    		}
+    		$PaginatedReportPage->sort_and_search_handler();
+    	
+    	}
+
+    	if (isset($this->params['search_string']) && $this->params['search_string']) {
+    		$altSearchTargetUrl = $this->getAlternateSearchUrl($ReportData,'','');
+    		if ($altSearchTargetUrl) {
+    			spawnurl($altSearchTargetUrl);
+    		}
+    	}
+    
+    	$this->view->queryvars = $this->params;
+    	$this->view->paginated_report_page = $PaginatedReportPage;
+    	$this->view->navigator = $this->navigator;
+    }
+    
+    /*
+     * input: changesubscription_id, notify_instantly, notify_daily
+    * output: json object['notify_instantly'] or ['notify_daily']
+    */
+    public function setsubscriptionnotifyAction() {
+    	if (isset($this->params['changesubscription_id']) && is_numeric($this->params['changesubscription_id'])) {
+    		$CS = new DBTableRowChangeSubscription();
+    		if ($CS->getRecordById($this->params['changesubscription_id'])) {
+    			if (isset($this->params['notify_instantly'])) {
+    				$CS->notify_instantly = $this->params['notify_instantly'];
+    				$CS->save(array('notify_instantly'));
+    				echo json_encode(array('notify_instantly' => $CS->notify_instantly ? 1 : 0));
+    				die();    				
+    			} else if (isset($this->params['notify_daily'])) {
+    				$CS->notify_daily = $this->params['notify_daily'];
+    				$CS->save(array('notify_daily'));
+    				echo json_encode(array('notify_daily' => $CS->notify_daily ? 1 : 0));
+    				die();
+    			}
+    		}
+    	}
+    	echo json_encode(array('field' => 'nothing'));
+    	die();
+    }
+    
+    
     protected function edit_db_handler(DBTableRow $dbtable,$save_fieldnames) {
         $dbschema = DbSchema::getInstance();
         $edit_buffer = 'editing_'.$this->getBufferKey($dbtable);
@@ -558,11 +646,35 @@ class StructController extends DBControllerActionAbstract
     	if (!$ItemVersion->isSaved()) {
             $this->jumpToUsersLandingPage('Item not found.');
         }
-    	
+
+        // handling for long pages
+        
+        $length_items = EventStream::getNestedEventStreamRecordCount($ItemVersion);
+        $is_big_page =  $length_items > EventStream::tooBigRecordCount();
+        $this->view->show_big_page_controls = isset($this->params['months']) && $is_big_page;   
+        if ($is_big_page && !isset($this->params['months'])) {
+        	$params = isset($this->params['itemversion_id']) ? array('itemversion_id' => $this->params['itemversion_id']) : array('itemobject_id' => $this->params['itemobject_id']);
+        	$params['months'] = EventStream::getTooBigStartingNumMonths($ItemVersion, $length_items);
+        	$this->navigator->jumpToView(null,null,$params);
+        }      
     	
         if (isset($this->params['form'])) {
             switch (true)
             {
+            	case ($this->params['btnOnChange'] == 'monthschange'):
+            		$params = isset($this->params['itemversion_id']) ? array('itemversion_id' => $this->params['itemversion_id']) : array('itemobject_id' => $this->params['itemobject_id']);
+            		$params['months'] = $this->params['months'];
+            		$this->navigator->jumpToView(null,null,$params);
+            	case isset($this->params['btnFollow']):
+            		DBTableRowChangeSubscription::setFollowing($_SESSION['account']->user_id, $this->params['itemobject_id'], null, $this->params['notify_instantly'], $this->params['notify_daily']);
+            		$_SESSION['account']->setPreference('followNotifyTimeHHMM', $this->params['followNotifyTimeHHMM']);
+            		$_SESSION['account']->setPreference('followInstantly', $this->params['notify_instantly']);
+            		$_SESSION['account']->setPreference('followDaily', $this->params['notify_daily']);
+            		$this->navigator->jumpToView(null,null,array('itemobject_id' => $this->params['itemobject_id']));
+            	case isset($this->params['btnUnFollow']):            		
+            		DBTableRowChangeSubscription::clearFollowing($_SESSION['account']->user_id, $this->params['itemobject_id'], null);
+            		$this->navigator->jumpToView(null,null,array('itemobject_id' => $this->params['itemobject_id']));
+            		
             	case isset($this->params['btnSearch']):
             		if (isset($this->params['search_string']) && $this->params['search_string']) {
             			$this->navigator->jumpToView('itemlistview','struct',array('search_string' => $this->params['search_string']));
@@ -571,8 +683,14 @@ class StructController extends DBControllerActionAbstract
             }
             
         }
+
         
-        $this->view->streamrecords = EventStream::getNestedEventStreamRecords($ItemVersion);
+        $earliest_date = null;
+        if ($this->view->show_big_page_controls && is_numeric($this->params['months'])) {  // e.g.  months=ALL doesn't come here
+        	$earliest_date = EventStream::getEarliestDateOfHistory($ItemVersion, $this->params['months']);
+        } 
+        $this->view->earliest_date = $earliest_date;        
+        $this->view->streamrecords = EventStream::getNestedEventStreamRecords($ItemVersion,$earliest_date);
         
         $ItemVersion->startSelfTouchedTimer(); // the ideas is that we want to touch anything we view.
         $this->view->queryvars = $this->params;
@@ -700,6 +818,17 @@ class StructController extends DBControllerActionAbstract
     				$count = DBTableRowTypeVersion::upgradeItemVersions($this->params['typeversion_id'], $this->params['to_typeversion_id']);
     				$_SESSION['msg'] = "Version Upgrade Complete.  {$count} items were upgraded from Type Version {$this->params['typeversion_id']} to Type Version {$this->params['to_typeversion_id']}.";
     				$this->navigator->jumpToView('itemdefinitionview',null,array('resetview' => 1,'typeversion_id' => $this->params['to_typeversion_id'],'msgi' => 1));
+    				
+    			case isset($this->params['btnFollow']):
+    				DBTableRowChangeSubscription::setFollowing($_SESSION['account']->user_id, null, $this->params['typeobject_id'], $this->params['notify_instantly'], $this->params['notify_daily']);
+    				$_SESSION['account']->setPreference('followNotifyTimeHHMM', $this->params['followNotifyTimeHHMM']);
+    				$_SESSION['account']->setPreference('followInstantly', $this->params['notify_instantly']);
+    				$_SESSION['account']->setPreference('followDaily', $this->params['notify_daily']);
+    				$this->navigator->jumpToView(null,null,array('typeobject_id' => $this->params['typeobject_id']));
+    			case isset($this->params['btnUnFollow']):
+    				DBTableRowChangeSubscription::clearFollowing($_SESSION['account']->user_id, null, $this->params['typeobject_id']);
+    				$this->navigator->jumpToView(null,null,array('typeobject_id' => $this->params['typeobject_id']));
+
     			case isset($this->params['btnSearch']):
     				if (isset($this->params['search_string']) && $this->params['search_string']) {
     					$this->navigator->jumpToView('itemlistview','struct',array('search_string' => $this->params['search_string']));
@@ -804,6 +933,11 @@ class StructController extends DBControllerActionAbstract
     	echo json_encode(array('field' => 'nothing'));
     	die();
     }
+    
+    public function getdatetimenowAction() {
+    	echo json_encode(array('datetimenow' => date("m/d/Y H:i",script_time())));
+    	die();
+    }    
     
     public function tipsokigotitAction() {   	 
     	if (isset($this->params['key'])) {

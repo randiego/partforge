@@ -1,19 +1,3 @@
-function theFullTimeNow() {
-	var today=new Date();
-	var h=checkTime(today.getHours());
-	var m=checkTime(today.getMinutes());
-	var s=checkTime(today.getSeconds());
-	var mo=checkTime(today.getMonth()+1);
-	var da=checkTime(today.getDate());
-	var yr=today.getFullYear();
-	return mo+"/"+da+"/"+yr+" "+h+":"+m;
-}
-
-function checkTime(s) {
-	var out = s + "";
-	if (out.length < 2) out = "0" + out;
-	return out; 
-}
 
 function sessionTimeoutAction() {
     document.theform.form_action.value='emergencysave';formSubmit();
@@ -61,10 +45,14 @@ $(document).ready(function() {
 		})
 	});
 
-	$("#effectiveDataNow").click( function(event) {
-		$('input[name="effective_date"]').val(theFullTimeNow());
-		$('input[name="btnOnChange"]').val('effectivedatechange');
-		$('form').submit();
+	$("#effectiveDateNow").click( function(event) {
+	    $.getJSON(baseUrl+'/struct/getdatetimenow',
+	    		{typeversion_id : thisTypeVersion},
+	    		function(data) {
+	    			$('input[name="effective_date"]').val(data["datetimenow"]);
+	    			$('input[name="btnOnChange"]').val('effectivedatechange');
+	    			$('form').submit();  
+	    })
 	});
 	
 	// autosave

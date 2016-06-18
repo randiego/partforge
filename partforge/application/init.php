@@ -27,8 +27,8 @@
 $config = array();
 $config['banner_array'] = array();   // an array of html banners to show at the top of the application.
 $config['application_title'] = 'PartForge'; // appears in title tag and other places
-$config['cached_code_version'] = '52';  // for css and js files, this appended as ?v=N to the end to force reload to browse.  Increment when css or js files changes.
-$config['databaseversion'] = '2';
+$config['cached_code_version'] = '55';  // for css and js files, this appended as ?v=N to the end to force reload to browse.  Increment when css or js files changes.
+$config['databaseversion'] = '4';
 $config['config_for_testing'] = false; // Makes a few minor changes to improve testability when we are running as a test instance during automated testing.
 
 $config['global_readonly'] = false;  // if false, then all users must log in to be able to view content.  If true, then it is only necessary to login to write.
@@ -49,6 +49,8 @@ $config['login_html_message'] = '';
 
 $config['max_allowed_field_length'] = 80;
 
+$config['use_instant_watch_queue'] = true;  // If true then queue up the "instant" watch notification for sending on the cron  (every minute?).  Otherwise they are send immediately.
+$config['fake_cron_service'] = true; // If true, then if the cron task servicer has not been run sufficiently recently, then process the tasks on the next page fetch
 $config['max_file_upload_size'] = 40*1024*1024;  // this is a browser defined maximum bytes one can upload. This should be smaller than the php limit.
 $config['default_new_password'] = 'partforgepw'; // this is the password that is automatically assigneed to accounts which have had their password reset.
 $config['allowed_to_keep_temp_pw'] = true;     // when user's password is reset and emailed to them, they are allowed to keep it (instead of being forced to do a new one.)

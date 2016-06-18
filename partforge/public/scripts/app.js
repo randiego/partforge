@@ -18,6 +18,69 @@ function include(file)
 
 }
 
+function timeSelectHtmlForWatches(selectTagId, classId, timevalueHHMM) {
+	var keyValueArray = [['00:00','00:00'],['01:00','01:00'],['02:00','02:00'],['03:00','03:00'],['04:00','04:00'],['05:00','05:00'],['06:00','06:00'],['07:00','07:00'],['08:00','08:00'],['09:00','09:00'],
+	             ['10:00','10:00'],['11:00','11:00'],['12:00','12:00'],['13:00','13:00'],['14:00','14:00'],['15:00','15:00'],
+	             ['16:00','16:00'],['17:00','17:00'],['18:00','18:00'],['19:00','19:00'],['20:00','20:00'],['21:00','21:00'],['22:00','22:00'],['23:00','23:00']];
+	var component_value = timevalueHHMM;
+	
+	// generic select HTML processing
+	var html = "";
+	var selected;
+	html += '<select id="'+selectTagId+'" class="'+classId+'">';
+	for(var i=0; i<keyValueArray.length; i++) {
+		var key = keyValueArray[i][0];
+		var val = keyValueArray[i][1];
+		selected = (key == component_value) ? " selected=selected" : "";
+		html += '<option value="'+key+'"'+selected+'>'+val+'</option>';
+	}
+	html += '</select>';
+	return html;
+}
+
+/**
+ * Used whereever a followButton id is located to construct dialog and add click handler to.  
+ * @param followUrl string url with constants _FOLLOWNOTIFYTIMEHHMM_, _NOTIFYINSTANTLY_, _NOTIFYDAILY_ to be substituted with the form results
+ */
+function activatefollowButton(followUrl,footnote_text) {
+	if ($('#followButton').length) {
+		// create the popup follow dialog
+		$('<div />').attr('id','followDialogContainer').attr('title',"When something changes...").hide().appendTo('body');
+		var h = '';
+		h += '<label><input type="checkbox" name="notify_instantly" value="1" '+(followInstantly==1 ? 'checked="checked"' : '')+' />Email Me Instantly</label><br />';
+		h += '<label><input type="checkbox" name="notify_daily" value="1" '+(followDaily==1 ? 'checked="checked"' : '')+' />Send Me a Daily Summary at </label>'+timeSelectHtmlForWatches('timevalueHHMM', '', followNotifyTimeHHMM)+'<br /><div style="margin-left: 20px;"><span class="paren">(time is same for all your daily watches.)</span></div>';
+		h += '<label><input type="checkbox" name="no_notify" value="1" checked="checked" disabled="disabled" />Show on my Watchlist (Activity Tab)</label><br />';
+		if (footnote_text!='') h += '<div style="margin-top:10px;"><span class="paren">'+footnote_text+'</span></div>';
+		if (followNotifyEmailMsg!='') h += '<div style="margin-top:10px;"><span class="paren_red">Please fix the following problem before you can receive notifications: '+followNotifyEmailMsg+'</span></div>';
+		$('#followDialogContainer').html(h);
+		// now connect the on click handler that will override the normal link
+		$('#followButton').click(function(link) {
+			var contentdiv = $('#followDialogContainer');
+			pdfdialogdiv = contentdiv.dialog({
+				position: { my: "left top", at: "right bottom", of: link },
+				width: 300,
+				height: 'auto',
+				buttons: {
+					"OK": function() {
+						var filledUrl = followUrl;
+						filledUrl = filledUrl.replace('_FOLLOWNOTIFYTIMEHHMM_',$('#timevalueHHMM').val());
+						filledUrl = filledUrl.replace('_NOTIFYINSTANTLY_',$('#followDialogContainer input[name="notify_instantly"]:checked').val() ? '1' : '0');
+						filledUrl = filledUrl.replace('_NOTIFYDAILY_',$('#followDialogContainer input[name="notify_daily"]:checked').val() ? '1' : '0');
+						window.location.href = filledUrl;
+						$( this ).dialog( "close" );
+					},
+					Cancel: function() {
+						$( this ).dialog( "close" );
+					}
+				},			
+				close: function(event,ui) {$(this).dialog('destroy');}
+			});
+			return false; // prevents the default link
+		});
+	}
+}
+
+
 /* include any js files here */
 
 $(document).ready(function() {

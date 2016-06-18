@@ -494,11 +494,22 @@ CREATE TABLE `whats_new_user` (
   KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
-CREATE TABLE taskslog (
-  tasklog_id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  tl_key VARCHAR(64),
-  tl_last_run DATETIME,
-  INDEX(tl_key)
-);
-ALTER TABLE taskslog ADD COLUMN tl_run_duration FLOAT NULL AFTER tl_last_run;
-ALTER TABLE taskslog ADD COLUMN tl_run_peak_memory FLOAT NULL AFTER tl_run_duration;
+DROP TABLE IF EXISTS changelog;
+CREATE TABLE IF NOT EXISTS `changelog` (
+  `changelog_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `changed_on` datetime NOT NULL,
+  `itemobject_id` int(11) DEFAULT NULL,
+  `itemversion_id` int(11) DEFAULT NULL,
+  `typeobject_id` int(11) DEFAULT NULL,
+  `typeversion_id` int(11) DEFAULT NULL,
+  `locator_prefix` VARCHAR(2) DEFAULT NULL,
+  `change_code` VARCHAR(4) NOT NULL,
+  PRIMARY KEY (`changelog_id`),
+  KEY `user_id` (`user_id`),
+  KEY `itemobject_id` (`itemobject_id`),
+  KEY `itemversion_id` (`itemversion_id`),
+  KEY `typeobject_id` (`typeobject_id`),
+  KEY `typeversion_id` (`typeversion_id`),
+  KEY `change_code` (`change_code`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;

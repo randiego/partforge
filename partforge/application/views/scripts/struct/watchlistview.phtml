@@ -1,0 +1,22 @@
+<?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/watchlistview.js?v=2" type="TEXT/JAVASCRIPT"></script>
+<?php
+    $this->layout()->title = 'Manage My Watchlist';
+    
+    $BreadCrumbs = new BreadCrumbsManager();
+    $BreadCrumbs->addCurrentUrl($this->navigator->getCurrentViewUrl(null,null,array('resetview' => 1)),$this->layout()->title, true);
+    $this->paginated_report_page->overrideReportTitle($BreadCrumbs->render($this->navigator->getCurrentViewUrl(null,null,array('resetview' => 1)),$this->layout()->title,3));    
+    $this->layout()->setLayout('layout');
+    $this->layout()->scrollhold = true;
+    
+    
+    $times_array = array("00:00" => "00:00", "01:00" => "01:00", "02:00" => "02:00", "03:00" => "03:00", "04:00" => "04:00", "05:00" => "05:00", "06:00" => "06:00", "07:00" => "07:00", "08:00" => "08:00", "09:00" => "09:00", 
+    "10:00" => "10:00", "11:00" => "11:00", "12:00" => "12:00", "13:00" => "13:00", "14:00" => "14:00", "15:00" => "15:00", 
+    "16:00" => "16:00", "17:00" => "17:00", "18:00" => "18:00", "19:00" => "19:00", "20:00" => "20:00", "21:00" => "21:00", "22:00" => "22:00", "23:00" => "23:00");
+    
+    
+    $select_html = format_select_tag($times_array,'followNotifyTimeHHMM',array('followNotifyTimeHHMM' => $_SESSION['account']->getPreference('followNotifyTimeHHMM')),"",false, 'Select Time',' ID="followNotifyTimeHHMMId"');
+    
+    $html = $this->paginated_report_page->fetch_form_body_html('<div style="display:flex; align-items: center;"><span style="font-size:13px; margin-right:5px;">Your Daily Notification Time: </span><span>'.$select_html.'</span></div>');
+    echo '<div id="updatebannerId" class="updated_banner" style="display:none;">Updated</div>';
+    echo fetch_form_tag($html);

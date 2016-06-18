@@ -37,8 +37,9 @@
          */
         public function delete() {
         	$typeobject_id = $this->typeobject_id;
+        	$text = $this->comment_text;
         	parent::delete();
-        	DBTableRowChangeLog::deletedTypeComment($typeobject_id);
+        	DBTableRowChangeLog::deletedTypeComment($typeobject_id, $text);
         }
         
         /**
@@ -50,9 +51,9 @@
         	$new_comment = !$this->isSaved();
         	parent::save($fieldnames,$handle_err_dups_too);
         	if ($new_comment) {
-        		DBTableRowChangeLog::addedTypeComment($typeobject_id);
+        		DBTableRowChangeLog::addedTypeComment($typeobject_id, $this->comment_id);
         	} else {
-        		DBTableRowChangeLog::changedTypeComment($typeobject_id);
+        		DBTableRowChangeLog::changedTypeComment($typeobject_id, $this->comment_id);
         	}
         }        
         

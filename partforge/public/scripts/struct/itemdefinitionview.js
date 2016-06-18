@@ -1,3 +1,5 @@
+
+
 $(document).ready(function() {
 	// ajax call to create a comment.
     $("#commentSendButtonId").click( function (event) {
@@ -43,6 +45,16 @@ $(document).ready(function() {
 			return false; // prevents the default link
 		});
     }
+    	
+	activatefollowButton(followUrl,"");
+    
+	/*
+    $('#followButton').button( "option", "icons", { primary: "ui-icon-signal-diag"} );
+    $('#previewButton').button( "option", "icons", { primary: "ui-icon-zoomin"} );
+    $('#moveComponentsButton').button( "option", "icons", { primary: "ui-icon-wrench"} );
+    $('#makeActiveButton').button( "option", "icons", { primary: "ui-icon-play"} );
+    $('#makeObsoleteButton').button( "option", "icons", { primary: "ui-icon-cancel"} );
+    */
     
     
 });
