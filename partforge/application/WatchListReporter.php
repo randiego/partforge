@@ -30,6 +30,13 @@ class WatchListReporter {
 	}
 	
 
+	/**
+	 * This checks for any users who are subscribed for daily notifications (in changesubscription table)
+	 * and then look in their preferences file at the followNotifyTimeHHMM and lastFollowNotifyTimeDateAndHHMM
+	 * settings to see if it's time to send an email.  If so, all the items in the change log since the last notify time
+	 * are gathered and included in the email.  An "empty" email is sent if they have at least one daily notify set
+	 * but there are no actual changes.
+	 */
 	static public function processCurrentDailyWatchNotifications() {
 		$current_time = time_to_mysqldatetime(script_time());           // 2016-05-10 21:25:00
 		$current_date = time_to_mysqldate(script_time()).' 00:00:00';   // 2016-05-10 00:00:00
@@ -37,7 +44,8 @@ class WatchListReporter {
 				LEFT JOIN userpreferences ntpref ON ntpref.user_id=cs.user_id AND ntpref.pref_key='followNotifyTimeHHMM'
 				LEFT JOIN userpreferences lntpref ON lntpref.user_id=cs.user_id AND lntpref.pref_key='lastFollowNotifyTimeDateAndHHMM'
 				WHERE (ntpref.pref_value IS NOT NULL) and (TIMESTAMPDIFF(SECOND, ADDTIME('{$current_date}', STR_TO_DATE(ntpref.pref_value,'%H:%i')   ), '{$current_time}') >= 0)
-				and (IFNULL(TIMESTAMPDIFF(SECOND, ADDTIME('{$current_date}', STR_TO_DATE(ntpref.pref_value,'%H:%i')   ), STR_TO_DATE(lntpref.pref_value,'%Y-%m-%d %H:%i')),-1) < 0)");
+				and (IFNULL(TIMESTAMPDIFF(SECOND, ADDTIME('{$current_date}', STR_TO_DATE(ntpref.pref_value,'%H:%i')   ), STR_TO_DATE(lntpref.pref_value,'%Y-%m-%d %H:%i')),-1) < 0)
+				and (cs.notify_daily=1)");
 
 		foreach($user_ids_records as $user_ids_record) {
 			$user_id = $user_ids_record['user_id'];
@@ -45,10 +53,10 @@ class WatchListReporter {
 			
 			// select change dates >= getPreference('lastFollowNotifyTimeDateAndHHMM') or if not exists, then for the last 24 hours.
 			$last_time_str = DBTableRowUser::getUserPreference($user_id, 'lastFollowNotifyTimeDateAndHHMM');
-			// in case there was no last time, fake one...
-			$start_time = is_null($last_time_str) || !strtotime($last_time_str) ? script_time() - 24*3600 : strtotime($last_time_str);
+			// in case there was no last time, or there is something wrong with that time or too long ago, fake one...
+			$start_time = is_null($last_time_str) || !strtotime($last_time_str) || (strtotime($last_time_str) < script_time() - 48*3600 ) ? script_time() - 24*3600 : strtotime($last_time_str);
 			$end_time = script_time();
-				
+			
 			// select all from changelog where in list.  (this query almost identical to just going to the Watching tab.)
 			$DBTableRowQuery = DBTableRowChangeLog::getNewQueryForApiOutput();
 			$DBTableRowQuery->setOrderByClause("ORDER BY changelog.changed_on asc");
