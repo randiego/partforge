@@ -85,7 +85,7 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
             $request->setParamSources(array());             // instead of current getvars
             Zend_Controller_Front::getInstance()->getRouter()->route($request);     
             // ok now $request should be decomposed into something with an action and controller.  
-            $allowed_controller_actions = array('/struct/itemview','/struct/iv','/struct/io','/struct/tv','/struct/to','/struct/lv','/struct/partlistview','/struct/itemdefinitionview','/struct/procedurelistview','/struct/commentlistview','/struct/changelistview','/struct/itemlistview','/struct/whoami','/user/listview','/user/itemview','/user/workflowtaskresponse'); 
+            $allowed_controller_actions = array('/struct/itemview','/struct/iv','/struct/io','/struct/tv','/struct/to','/struct/lv','/struct/partlistview','/struct/itemdefinitionview','/struct/procedurelistview','/struct/commentlistview','/struct/changelistview','/struct/watchlistview','/struct/itemlistview','/struct/whoami','/user/listview','/user/itemview','/user/workflowtaskresponse'); 
             $bare_target_controller_action = '/'.$request->getControllerName().'/'.$request->getActionName();
             if (array_search($bare_target_controller_action,$allowed_controller_actions)!==false) {
             	// it's in the list, so we can jump there

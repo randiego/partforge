@@ -125,6 +125,7 @@ $(document).ready(function() {
 				element.hide();
 			}
 		})
+		return false;
 	});	
     
     // do this automatically for everything.

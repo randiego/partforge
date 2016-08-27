@@ -297,7 +297,7 @@
 
 			$select = array();
 			foreach($type_digest['addon_component_fields'] as $fieldname) {
-				$select[] = "SUM((SELECT count(*) FROM itemcomponent WHERE iv.itemversion_id=itemcomponent.belongs_to_itemversion_id AND itemcomponent.component_name='{$fieldname}')) as  {$fieldname}";
+				$select[] = "SUM((SELECT count(*) FROM itemcomponent WHERE iv.itemversion_id=itemcomponent.belongs_to_itemversion_id AND itemcomponent.component_name='{$fieldname}')) as  `{$fieldname}`";
 			}
 			
 			foreach($type_digest['addon_property_fields'] as $fieldname) {
@@ -306,7 +306,7 @@
 				$like_blank = fetch_like_query('"'.$fieldname.'":""');
 				$select[] = "SUM((IF((iv.item_data {$like_something}) and NOT (iv.item_data {$like_null}) and NOT (iv.item_data {$like_blank}), 1, 0) +
   (SELECT count(*) FROM itemversionarchive as iva WHERE iv.itemversion_id=iva.itemversion_id 
-       AND (iva.item_data {$like_something}) and NOT (iva.item_data {$like_null}) and NOT (iva.item_data {$like_blank})) )) as {$fieldname}";
+       AND (iva.item_data {$like_something}) and NOT (iva.item_data {$like_null}) and NOT (iva.item_data {$like_blank})) )) as `{$fieldname}`";
 			}		
 			
 			if (count($select)>0) {
@@ -374,7 +374,7 @@
 					$json_snippet = substr($json_snippet,1,strlen($json_snippet)-2);
 					$like_value = fetch_like_query($json_snippet);
 					$select[] = "SUM((IF((iv.item_data {$like_value}), 1, 0) +
-						(SELECT count(*) FROM itemversionarchive as iva WHERE iv.itemversion_id=iva.itemversion_id AND (iva.item_data {$like_value})) )) as {$fieldname}_{$optnum}";						
+						(SELECT count(*) FROM itemversionarchive as iva WHERE iv.itemversion_id=iva.itemversion_id AND (iva.item_data {$like_value})) )) as `{$fieldname}_{$optnum}`";						
 				}
 				$counts = array();
 				if (count($select)>0) {

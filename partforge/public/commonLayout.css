@@ -1558,6 +1558,25 @@ ul.bd-event-subcomments li {
     position: relative;
 }
 
+.bd-layout-list .empty_space_notice {
+	font-weight: bold;
+	color: #777;
+    font-style: italic;
+    margin: 5px 0 5px 0;
+    text-align: center;
+}
+
+.bd-layout-list .db-field-item.touchlight, .bd-layout-list .db-html-item.touchlight  {
+	background-color: #FFA;
+}
+
+.sortingNoticeBanner {
+	font-weight: bold;
+	color: #01317e;
+    font-style: italic;
+    margin-left: 10px;
+}
+
 .bd-instruction-text {
 	width: 600px;
 	color: #01317E;
@@ -1598,8 +1617,6 @@ ul.bd-event-subcomments li {
 
 .bd-layout-frame li div.db-sizer-control {
 	display: none;
-	float: right;
-	width:50px;
 }
 
 .bd-layout-frame .bd-sorting li div.db-sizer-control {
@@ -1607,9 +1624,6 @@ ul.bd-event-subcomments li {
 }
 
 .bd-layout-frame li div.db-edit-control {
-	display: block;
-	float: right;
-	width:40px;
 }
 
 .bd-layout-frame .bd-sorting li div.db-edit-control {

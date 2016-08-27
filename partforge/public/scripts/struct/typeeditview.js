@@ -44,6 +44,15 @@ function Str2Hex(instr) {
 
 var componentSubFieldsList = {};
 var subFieldListFetched = false;
+
+var layoutItemTouched = -1;
+function touchLayoutItem(idx) {
+	layoutItemTouched = idx;
+}
+function wasLayoutItemTouched(idx) {
+	return layoutItemTouched==idx;
+}
+
 /**
  * refreshes the componentSubFieldsList with subfields for edit checking purposes.  The flag subFieldListFetched
  * will be set when the fetch is complete.
@@ -1016,36 +1025,61 @@ function layoutFieldnameSelectHtml(curr_value) {
 
 function renderFormLayout() {
 	var html = "";
+	var scrollToViewID = "";
 
 	// build list of fields that are allowed to show up in the layout.
 	var validFields = '|typeversion_id|item_serial_number|effective_date|'+allFieldNames(false).join('|')+'|'; // get all the fields that are possible
-	
-	html += '<div class="bd-layout-outer-div"><div style="text-align: right;"><a class="bd-linkbtn" href="#" id="startSortLink">arrange fields</a></div><div class="bd-layout-frame">';
+	var sortingNoticeBannerTxt = 'Drag and drop fields, then click "done moving"';
+	html += '<div class="bd-layout-outer-div"><div class="sortingNoticeBanner" style="display:none;margin-top: 15px; margin-bottom:5px;"">'+sortingNoticeBannerTxt+'</div><div class="bd-layout-frame">';
 	html += '<ul id="layout_sortable" class="bd-layout-list">';
 	for(var i=0; i<typeFormLayoutArray.length; i++) {
 		var row = typeFormLayoutArray[i];
 		var width = row["layout-width"];
-		var classnm;
+		var blockid = 'layoutitem_'+i;
+		var classnm = '';
+		if (wasLayoutItemTouched(i)) {
+			classnm = 'touchlight ';
+			scrollToViewID = blockid;
+		}
 		if (row["type"]=='columns') {
-			classnm = (width==2) ? 'bd-layout-item-double' : 'bd-layout-item-single'; 
+			classnm += (width==2) ? 'bd-layout-item-double' : 'bd-layout-item-single'; 
 			var warnstr = "";
 			// does the field called row["column"]["name"] exist in the dictionary or component list?
 			if (validFields.indexOf('|'+row["column"]["name"]+'|')==-1) {
 				warnstr = '<div class="bd-bad-column-name">Not in Dictionary</div>';
 			}
-			html += '<li id="layoutitem_'+i+'" class="'+classnm+' db-field-item"><div class="db-edit-control"><a href="#" class="bd-linkbtn layoutFieldEditLink">edit</a> <a href="#" class="bd-linkbtn layoutFieldDeleteLink">delete</a></div><div class="db-sizer-control"><a href="#" class="bd-linkbtn layoutWiderLink">wide</a> <a href="#" class="bd-linkbtn layoutNarrowerLink">narrow</a></div>'+row["column"]["name"]+warnstr+'</li>';
+			html += '<li id="'+blockid+'" class="'+classnm+' db-field-item"><div class="db-edit-control">' +
+					'<a href="#" class="bd-linkbtn layoutFieldEditLink" title="change field name">edit</a> '+
+					'<a href="#" class="bd-linkbtn layoutFieldAddLink" title="insert a new field here">ins field</a> '+
+					'<a href="#" class="bd-linkbtn layoutFieldAddTextLink" title="insert a text block or photo here">ins text</a> '+
+					'<a href="#" class="bd-linkbtn startSortLink" title="rearrange the layout by draging and dropping">move</a> ' +
+					'<a href="#" class="bd-linkbtn layoutFieldDeleteLink" title="delete this block">delete</a> ' +
+					'</div><div class="db-sizer-control"> <a href="#" class="bd-linkbtn layoutWiderLink" title="make two columns wide">wide</a> ' +
+					'<a href="#" class="bd-linkbtn layoutNarrowerLink" title="make one column wide">narrow</a> ' +
+					'<a href="#" class="bd-linkbtn doneSortLink" title="finish moving/arranging and return to editing">done moving</a></div>'+row["column"]["name"]+warnstr+'</li>';
 			
 		} else if (row["type"]=='html') {
-			classnm = 'bd-layout-item-double db-html-item'; 
-			html += '<li id="layoutitem_'+i+'" class="'+classnm+'"><div class="db-edit-control"><a href="#" class="bd-linkbtn layoutHtmlEditLink">edit</a> <a href="#" class="bd-linkbtn layoutHtmlDeleteLink">delete</a></div>'+row["html"]+'</li>';
+			classnm += 'bd-layout-item-double db-html-item'; 
+			var texthtml = row["html"];
+			if (texthtml=='') texthtml = '<div class="empty_space_notice">(click "edit" to add some text or photos)</div>';
+			html += '<li id="'+blockid+'" class="'+classnm+'"><div class="db-edit-control">'+
+					'<a href="#" class="bd-linkbtn layoutHtmlEditLink">edit</a> ' +
+					'<a href="#" class="bd-linkbtn layoutFieldAddLink" title="insert a new field here">ins field</a> '+
+					'<a href="#" class="bd-linkbtn layoutFieldAddTextLink" title="insert a text block or photo here">ins text</a> '+
+					'<a href="#" class="bd-linkbtn startSortLink" title="rearrange the layout by draging and dropping">move</a> ' +
+					'<a href="#" class="bd-linkbtn layoutHtmlDeleteLink">delete</a> ' +
+					'</div><div class="db-sizer-control"> <a href="#" class="bd-linkbtn doneSortLink" title="finish moving/arranging and return to editing">done moving</a></div>'+texthtml+'</li>';
 		}
 	}
 	html += '</ul>';		
-	html += '</div></div>';
+	html += '</div></div><div class="sortingNoticeBanner" style="display:none; margin-top:5px; margin-bottom:15px;">'+sortingNoticeBannerTxt+'</div>';
 	html += '<a class="bd-linkbtn" href="#" id="addLayoutFieldLink">add field</a> <a class="bd-linkbtn" href="#" id="addLayoutHtmlLink">add text & photos block</a>';
 	
 	
 	$("#formLayoutEditorDiv").html(html);	
+	if (scrollToViewID!='') {
+		bringElementIntoView($('#'+scrollToViewID));
+	}
 	
 	$("#addLayoutFieldLink").click(function() {
 		var fieldnames = allFieldNames(true);
@@ -1059,9 +1093,44 @@ function renderFormLayout() {
 		}
 		outitem['layout-width'] = 1;
 		typeFormLayoutArray.push(outitem);
+		touchLayoutItem(typeFormLayoutArray.length - 1);
 		renderAll();
 		return false;
 	});
+	
+	$(".layoutFieldAddLink").click(function() {
+		
+		var fieldnames = allFieldNames(true);
+		var outitem = {};
+		outitem['type'] = 'columns';
+		outitem['column'] = {};
+		if (fieldnames.length>0) {
+			outitem['column']['name'] = fieldnames[0];
+		} else {
+			outitem['column']['name'] = '';
+		}
+		outitem['layout-width'] = 1;
+		var id = $(this).parent().parent()[0].id;
+		var idx = id.split('_')[1];
+		typeFormLayoutArray.splice(idx,0,outitem);
+		touchLayoutItem(idx);
+		renderAll();
+		return false;
+	});	
+	
+	// click handle add html field to layout
+	$(".layoutFieldAddTextLink").click(function() {
+		var outitem = {};
+		outitem['type'] = 'html';
+		outitem['html'] = '';
+		outitem['layout-width'] = 2;
+		var id = $(this).parent().parent()[0].id;
+		var idx = id.split('_')[1];
+		typeFormLayoutArray.splice(idx,0,outitem);
+		touchLayoutItem(idx);
+		renderAll();
+		return false;
+	});		
 	
 	// click handle add html field to layout
 	$("#addLayoutHtmlLink").click(function() {
@@ -1070,19 +1139,21 @@ function renderFormLayout() {
 		outitem['html'] = '';
 		outitem['layout-width'] = 2;
 		typeFormLayoutArray.push(outitem);
+		touchLayoutItem(typeFormLayoutArray.length - 1);
 		renderAll();
 		return false;
 	});	
 	
-	$(".db-sizer-control a").click(function() {
+	$(".db-sizer-control a.layoutWiderLink, .db-sizer-control a.layoutNarrowerLink").click(function() {
 		var idx = $(this).parent().parent()[0].id.split('_')[1];
+		touchLayoutItem(idx);
 		if ($(this).hasClass('layoutWiderLink')) {
 			if (typeFormLayoutArray[idx]['layout-width']<2) {
 				typeFormLayoutArray[idx]['layout-width']++;
 				$(this).parent().parent().removeClass('bd-layout-item-single').addClass('bd-layout-item-double');
 			}
 		} else {
-			if (typeFormLayoutArray[idx]['layout-width']>0) {
+			if (typeFormLayoutArray[idx]['layout-width']>1) {
 				typeFormLayoutArray[idx]['layout-width']--;
 				$(this).parent().parent().removeClass('bd-layout-item-double').addClass('bd-layout-item-single');
 			}
@@ -1093,6 +1164,7 @@ function renderFormLayout() {
 	$(".layoutFieldEditLink").click(function() {
 		var id = $(this).parent().parent()[0].id;
 		var idx = id.split('_')[1];
+		touchLayoutItem(idx);
 		var html = '';
 		html += layoutFieldnameSelectHtml(typeFormLayoutArray[idx]['column']['name'])+' <a href="#" class="bd-linkbtn db-done">done</a>';
 		
@@ -1110,6 +1182,7 @@ function renderFormLayout() {
 		var idx = id.split('_')[1];
 		if (confirm("are you sure?")) {
 			typeFormLayoutArray.splice(idx,1);
+			touchLayoutItem(-1);
 			renderAll();
 		}
 		return false;
@@ -1121,6 +1194,7 @@ function renderFormLayout() {
 		$("#formLayoutEditorDiv a").unbind('click');
 		var id = $(this).parent().parent()[0].id;
 		var idx = id.split('_')[1];
+		touchLayoutItem(idx);
 		var html = '';
 		html += '<textarea id="htmleditorID">'+typeFormLayoutArray[idx]['html']+'</textarea>';
 		$("#HtmlEditorContainer").html(html);
@@ -1183,24 +1257,32 @@ function renderFormLayout() {
 		return false;
 	});		
 
-	$("#startSortLink").click(function() {
+	$(".startSortLink").click(function() {
 		$( "#layout_sortable" ).sortable();
 		$( "#layout_sortable" ).disableSelection();
-		$(this).parent().html('Drag and drop fields, then click <a class="bd-linkbtn" href="#" id="doneSortLink">done arranging</a></div>');
+		$( ".sortingNoticeBanner").show();
 		$( "#layout_sortable" ).addClass('bd-sorting');
-		$("#doneSortLink").click(function(event) {
+		var idxstartsort = $(this).parent().parent()[0].id.split('_')[1];
+		touchLayoutItem(idxstartsort);
+		bringElementIntoView($(this).parent().parent());
+		$(this).parent().parent().addClass('touchlight');		
+		
+		$(".doneSortLink").click(function(event) {
 			// reorder the array typeFormLayoutArray per the final id numbers and redraw.
 			newout = [];
+			var idxclicked = $(this).parent().parent()[0].id.split('_')[1];
 			$("#layout_sortable").children("li").each(function(idx,elm) {
 				var oldidx = elm.id.split('_')[1];
 				newout.push(typeFormLayoutArray[oldidx]);
+				if (oldidx==idxclicked) touchLayoutItem(newout.length - 1);
 			});
 			typeFormLayoutArray = newout;
 			
 			// now add width to loners
 			var nextcol = 0;
 			for(var iitem=0; iitem<typeFormLayoutArray.length; iitem++) {
-				var width = typeFormLayoutArray[iitem]['layout-width'];
+				var width = forceOneOrTwo(typeFormLayoutArray[iitem]['layout-width']);
+				var holdwidth = width;
 				
 				if (nextcol==0) { // we have a
 					nextcol += width;
@@ -1232,6 +1314,20 @@ function renderFormLayout() {
 
 }
 
+function forceOneOrTwo(invar) {
+	if (invar > 2) return 2;
+	if (invar < 1) return 1;
+	return Math.round(invar);
+}
+
+function bringElementIntoView(jqueryEl) {
+	var topPos = jqueryEl.offset().top;
+	var scrollTopCurr = $(window).scrollTop();
+	var viewPortHeight = $(window).height();
+	var elHidden = (topPos < scrollTopCurr) || (topPos > scrollTopCurr + viewPortHeight);
+	
+	if (elHidden) $('html, body').animate({scrollTop: topPos -100 }, 'slow');
+}
 
 /*
  * Turns the layout structure which is intrinsically two column into a flat
@@ -1474,7 +1570,7 @@ function checkValidComponents() {
  * @returns true if we are OK to submit
  */
 function validate() {
-	$("#doneSortLink").click();
+	$(".doneSortLink").last().click();
 	var layoutOk = checkLayoutFilled();
 	var everthingElseOk = checkUndefinedLayoutFields() && checkValidComponents() && checkValidComponentSubFields();
 	if (everthingElseOk) {

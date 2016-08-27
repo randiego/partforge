@@ -1,4 +1,4 @@
-<script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/struct/typeeditview.js?v=28" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/struct/typeeditview.js?v=30" type="TEXT/JAVASCRIPT"></script>
 <script type="text/javascript">
 var typeDataDictionary = <?php echo $this->dbtable->type_data_dictionary ? $this->dbtable->type_data_dictionary : '{}'?>;
 var typeFormLayout = <?php echo $this->dbtable->type_form_layout ? $this->dbtable->type_form_layout : '[]'?>;
@@ -111,16 +111,13 @@ var UserType = '<?php echo $_SESSION['account']->getRole();?>';
     
     $html .= '<h2 class="bd-edit-page-headers">Form Layout</h2>';
     $html .= DBTableRowWhatsNewUser::fetchWhatsNew('PHOTOS_IN_DEFINITIONS','You can now use photos in your definitions.  When you add a text block there is a photo upload button available.','10/19/2015');
+    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_LAYOUT_EDITING','The layout editor has changed.  Now you can insert fields into the middle of the layout with "ins field" and "ins text".  Also, to arrange items, you now click the "move" button and finish with "done moving".','8/27/2016');
     $html .= '<p class="bd-instruction-text">This is the form layout designer.  
 	    	The layout is structured into two columns where fields can span both columns or
-    		only one.  If you click the "add field" link, it will add
-    		the next field from the dictionary that has not yet been added.  So if you are starting from scratch, just
-    		click "add field" until all the fields and components are in the layout.  
-    		Click the "arrange fields" link to drag
-    		and drop the field positions around and to choose a width for each field.  Free form text (HTML) can be
-    		entered into wide blocks by clicking the "add text block" link.  The fields that you enter here are the non-standard header fields.
-    		Standard header fields ("typeversion_id", "effective_date", "disposition", and "item_serial_number") are always
-    		automatically inserted at the top of the layout at runtime.</p>';
+    		only one.  If you click the "add field" button, it will add
+    		the next unused field from the dictionary.  The "edit" button lets you select a different field. 
+    		Click "move" to relocate (drag and drop) or resize (wide or narrow) each field.  Free form text (HTML) and photos can be
+    		with the "add text & photos block" button.</p>';
     $html .= '<div id="formLayoutEditorDiv" class="bd-edit-block"></div>';
     
     $html .= '<div id="HtmlEditorContainer"></div>';
