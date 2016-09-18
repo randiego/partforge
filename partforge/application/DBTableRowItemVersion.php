@@ -1930,7 +1930,8 @@
 						case 'disposition':
 							if ($is_html && $value) {
 								$arr = $this->getDispositionDetails();
-								$out = '<div class="ds">'.self::renderDisposition($fieldtype,$value).'<br /><span style="font-style:italic;" class="nm">by '.TextToHtml(strtoupper(DBTableRowUser::concatNames($arr))).'</span><br /><span style="font-style:italic;" class="tm">'.date('M j, Y G:i',strtotime($arr['effective_date'])).'</span></div>';
+								$last_changed_by_html = !empty($arr) ? '<br /><span style="font-style:italic;" class="nm">by '.TextToHtml(strtoupper(DBTableRowUser::concatNames($arr))).'</span><br /><span style="font-style:italic;" class="tm">'.date('M j, Y G:i',strtotime($arr['effective_date'])).'</span>' : '';
+								$out = '<div class="ds">'.self::renderDisposition($fieldtype,$value).$last_changed_by_html.'</div>';
 							} else {
 								$out = $value;
 							}
