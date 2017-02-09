@@ -465,6 +465,27 @@ CREATE TABLE `reportsubscription` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `taskslog`
+--
+
+CREATE TABLE `taskslog` (
+  `tasklog_id` int(11) NOT NULL auto_increment,
+  `tl_key` varchar(64) default NULL,
+  `tl_last_run` datetime default NULL,
+  `tl_run_duration` float default NULL,
+  `tl_run_peak_memory` float default NULL,
+  PRIMARY KEY  (`tasklog_id`),
+  KEY `tl_key` (`tl_key`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `taskslog`
+--
+
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `terminaltypeobject`
 --
 
