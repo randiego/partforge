@@ -61,6 +61,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
 		
 		// this little dance is to make sure that we get a valid view_category.
 		$this->view_category = is_null($override_view_category) ? $_SESSION['account']->getPreference($this->pref_view_category_name) : $override_view_category;
+		if ($this->_showing_search_results) $this->view_category = '*';
 		if (is_null($this->_override_itemversion_id)) {
 			$this->category_array = $this->category_choices_array($_SESSION['account']->getRole());
 			$this->view_category = $this->ensure_category($this->view_category);

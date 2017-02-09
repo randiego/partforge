@@ -20,19 +20,141 @@ SET time_zone = "+00:00";
 -- Table structure for table `assigned_to_task`
 --
 
-CREATE TABLE IF NOT EXISTS `assigned_to_task` (
-  `assigned_to_task_id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `assigned_to_task` (
+  `assigned_to_task_id` int(11) NOT NULL auto_increment,
   `group_task_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `link_password` varchar(8) DEFAULT NULL,
-  `notified_on` datetime DEFAULT NULL,
-  `reminded_on` datetime DEFAULT NULL,
-  `nevermind_on` datetime DEFAULT NULL,
-  `responded_on` datetime DEFAULT NULL,
-  PRIMARY KEY (`assigned_to_task_id`),
+  `link_password` varchar(8) default NULL,
+  `notified_on` datetime default NULL,
+  `reminded_on` datetime default NULL,
+  `nevermind_on` datetime default NULL,
+  `responded_on` datetime default NULL,
+  PRIMARY KEY  (`assigned_to_task_id`),
   KEY `user_id` (`user_id`),
   KEY `group_task_id` (`group_task_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `assigned_to_task`
+--
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `changecode`
+--
+
+CREATE TABLE `changecode` (
+  `change_code_id` int(11) NOT NULL auto_increment,
+  `change_code` varchar(4) NOT NULL,
+  `change_code_name` varchar(128) default NULL,
+  PRIMARY KEY  (`change_code_id`),
+  KEY `change_code` (`change_code`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=21 ;
+
+--
+-- Dumping data for table `changecode`
+--
+
+INSERT INTO `changecode` VALUES(1, 'DIO', 'Deleted an Item');
+INSERT INTO `changecode` VALUES(2, 'DIV', 'Deleted Item Version');
+INSERT INTO `changecode` VALUES(3, 'AIO', 'Added New Item');
+INSERT INTO `changecode` VALUES(4, 'CIV', 'Changed Item Version');
+INSERT INTO `changecode` VALUES(5, 'AIV', 'Added Item Version');
+INSERT INTO `changecode` VALUES(6, 'ATO', 'Added New Definition');
+INSERT INTO `changecode` VALUES(7, 'RTV', 'Released Definition Version');
+INSERT INTO `changecode` VALUES(8, 'OTO', 'Obsoleted Definition');
+INSERT INTO `changecode` VALUES(9, 'CTV', 'Changed Definition Version');
+INSERT INTO `changecode` VALUES(10, 'ATV', 'Added Definition Version');
+INSERT INTO `changecode` VALUES(11, 'DTV', 'Deleted Definition Version');
+INSERT INTO `changecode` VALUES(12, 'DTO', 'Deleted a Definition');
+INSERT INTO `changecode` VALUES(13, 'AIC', 'Added Item Comment');
+INSERT INTO `changecode` VALUES(14, 'CIC', 'Changed Item Comment');
+INSERT INTO `changecode` VALUES(15, 'DIC', 'Deleted Item Comment');
+INSERT INTO `changecode` VALUES(16, 'AIR', 'Became Used On');
+INSERT INTO `changecode` VALUES(17, 'AIP', 'Added Procedure');
+INSERT INTO `changecode` VALUES(18, 'ATC', 'Added Definition Comment');
+INSERT INTO `changecode` VALUES(19, 'CTC', 'Changed Definition Comment');
+INSERT INTO `changecode` VALUES(20, 'DTC', 'Deleted Definition Comment');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `changelog`
+--
+
+CREATE TABLE `changelog` (
+  `changelog_id` int(11) NOT NULL auto_increment,
+  `user_id` int(11) NOT NULL,
+  `changed_on` datetime NOT NULL,
+  `desc_typeversion_id` int(11) default NULL,
+  `desc_partnumber_alias` int(11) default NULL,
+  `desc_itemversion_id` int(11) default NULL,
+  `desc_typecategory_id` int(11) default NULL,
+  `desc_comment_id` int(11) default NULL,
+  `desc_text` varchar(255) default NULL,
+  `locator_prefix` varchar(2) default NULL,
+  `trigger_itemobject_id` int(11) default NULL,
+  `trigger_typeobject_id` int(11) default NULL,
+  `change_code` varchar(4) NOT NULL,
+  PRIMARY KEY  (`changelog_id`),
+  KEY `user_id` (`user_id`),
+  KEY `trigger_itemobject_id` (`trigger_itemobject_id`),
+  KEY `trigger_typeobject_id` (`trigger_typeobject_id`),
+  KEY `change_code` (`change_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `changelog`
+--
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `changenotifyqueue`
+--
+
+CREATE TABLE `changenotifyqueue` (
+  `changenotifyqueue_id` int(11) NOT NULL auto_increment,
+  `user_id` int(11) NOT NULL,
+  `changelog_id` int(11) NOT NULL,
+  `added_on` datetime NOT NULL,
+  PRIMARY KEY  (`changenotifyqueue_id`),
+  KEY `user_id` (`user_id`),
+  KEY `changelog_id` (`changelog_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `changenotifyqueue`
+--
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `changesubscription`
+--
+
+CREATE TABLE `changesubscription` (
+  `changesubscription_id` int(11) NOT NULL auto_increment,
+  `user_id` int(11) NOT NULL,
+  `added_on` datetime NOT NULL,
+  `itemobject_id` int(11) default NULL,
+  `typeobject_id` int(11) default NULL,
+  `notify_instantly` int(1) default '0',
+  `notify_daily` int(1) default '0',
+  PRIMARY KEY  (`changesubscription_id`),
+  KEY `user_id` (`user_id`),
+  KEY `itemobject_id` (`itemobject_id`),
+  KEY `typeobject_id` (`typeobject_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `changesubscription`
+--
+
 
 -- --------------------------------------------------------
 
@@ -40,15 +162,15 @@ CREATE TABLE IF NOT EXISTS `assigned_to_task` (
 -- Table structure for table `comment`
 --
 
-CREATE TABLE IF NOT EXISTS `comment` (
-  `comment_id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `comment` (
+  `comment_id` int(11) NOT NULL auto_increment,
   `user_id` int(11) NOT NULL COMMENT 'who created this version',
-  `proxy_user_id` int(11) NOT NULL DEFAULT '-1',
+  `proxy_user_id` int(11) NOT NULL default '-1',
   `itemobject_id` int(11) NOT NULL,
-  `record_created` datetime DEFAULT NULL,
+  `record_created` datetime default NULL,
   `comment_text` longtext,
-  `comment_added` datetime DEFAULT NULL,
-  PRIMARY KEY (`comment_id`),
+  `comment_added` datetime default NULL,
+  PRIMARY KEY  (`comment_id`),
   KEY `user_id` (`user_id`),
   KEY `itemobject_id` (`itemobject_id`),
   KEY `proxy_user_id` (`proxy_user_id`)
@@ -58,11 +180,10 @@ CREATE TABLE IF NOT EXISTS `comment` (
 -- Dumping data for table `comment`
 --
 
-INSERT INTO `comment` (`comment_id`, `user_id`, `proxy_user_id`, `itemobject_id`, `record_created`, `comment_text`, `comment_added`) VALUES
-(1, 3, -1, 5, '2015-05-19 07:36:33', 'One small mark on the left stick.  Replaced with spare--like new now.', '2015-05-19 07:36:33'),
-(2, 3, -1, 9, '2015-05-19 07:39:39', 'Slight puffing.  Jenny says it''s fine.', '2015-05-19 07:39:39'),
-(3, 1, -1, 26, '2015-05-19 07:58:10', 'QC Inspected.', '2015-05-19 07:58:10'),
-(4, 1, -1, 25, '2015-05-19 07:58:36', 'QC Inspected.', '2015-05-19 07:58:36');
+INSERT INTO `comment` VALUES(1, 3, -1, 5, '2015-05-19 07:36:33', 'One small mark on the left stick.  Replaced with spare--like new now.', '2015-05-19 07:36:33');
+INSERT INTO `comment` VALUES(2, 3, -1, 9, '2015-05-19 07:39:39', 'Slight puffing.  Jenny says it''s fine.', '2015-05-19 07:39:39');
+INSERT INTO `comment` VALUES(3, 1, -1, 26, '2015-05-19 07:58:10', 'QC Inspected.', '2015-05-19 07:58:10');
+INSERT INTO `comment` VALUES(4, 1, -1, 25, '2015-05-19 07:58:36', 'QC Inspected.', '2015-05-19 07:58:36');
 
 -- --------------------------------------------------------
 
@@ -70,23 +191,28 @@ INSERT INTO `comment` (`comment_id`, `user_id`, `proxy_user_id`, `itemobject_id`
 -- Table structure for table `document`
 --
 
-CREATE TABLE IF NOT EXISTS `document` (
-  `document_id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `document` (
+  `document_id` int(11) NOT NULL auto_increment,
   `comment_id` int(11) NOT NULL,
-  `document_displayed_filename` varchar(64) DEFAULT NULL,
-  `document_stored_filename` varchar(255) DEFAULT NULL,
-  `document_stored_path` varchar(64) DEFAULT '',
-  `document_thumb_exists` int(1) DEFAULT NULL,
-  `optional_description` varchar(32) DEFAULT NULL,
-  `document_filesize` int(11) DEFAULT NULL,
-  `document_file_type` varchar(255) DEFAULT NULL,
+  `document_displayed_filename` varchar(64) default NULL,
+  `document_stored_filename` varchar(255) default NULL,
+  `document_stored_path` varchar(64) default '',
+  `document_thumb_exists` int(1) default NULL,
+  `optional_description` varchar(32) default NULL,
+  `document_filesize` int(11) default NULL,
+  `document_file_type` varchar(255) default NULL,
   `document_date_added` datetime NOT NULL,
-  `user_id` int(11) DEFAULT NULL,
-  `document_path_db_key` int(2) DEFAULT NULL,
-  PRIMARY KEY (`document_id`),
+  `user_id` int(11) default NULL,
+  `document_path_db_key` int(2) default NULL,
+  PRIMARY KEY  (`document_id`),
   KEY `comment_id` (`comment_id`),
   KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `document`
+--
+
 
 -- --------------------------------------------------------
 
@@ -94,20 +220,19 @@ CREATE TABLE IF NOT EXISTS `document` (
 -- Table structure for table `eventlog`
 --
 
-CREATE TABLE IF NOT EXISTS `eventlog` (
-  `event_log_id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `eventlog` (
+  `event_log_id` int(11) NOT NULL auto_increment,
   `event_log_date_added` datetime NOT NULL,
-  `event_log_notify` int(1) DEFAULT '0',
+  `event_log_notify` int(1) default '0',
   `event_log_text` text,
-  PRIMARY KEY (`event_log_id`)
+  PRIMARY KEY  (`event_log_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
 
 --
 -- Dumping data for table `eventlog`
 --
 
-INSERT INTO `eventlog` (`event_log_id`, `event_log_date_added`, `event_log_notify`, `event_log_text`) VALUES
-(1, '2015-05-21 22:54:14', 0, '');
+INSERT INTO `eventlog` VALUES(1, '2015-05-21 22:54:14', 0, '');
 
 -- --------------------------------------------------------
 
@@ -115,12 +240,19 @@ INSERT INTO `eventlog` (`event_log_id`, `event_log_date_added`, `event_log_notif
 -- Table structure for table `globals`
 --
 
-CREATE TABLE IF NOT EXISTS `globals` (
-  `globals_id` int(11) NOT NULL AUTO_INCREMENT,
-  `gl_key` varchar(64) DEFAULT NULL,
+CREATE TABLE `globals` (
+  `globals_id` int(11) NOT NULL auto_increment,
+  `gl_key` varchar(64) default NULL,
   `gl_value` text,
-  PRIMARY KEY (`globals_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+  PRIMARY KEY  (`globals_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=3 ;
+
+--
+-- Dumping data for table `globals`
+--
+
+INSERT INTO `globals` VALUES(1, 'last_task_run', '2017-02-08 21:52:35');
+INSERT INTO `globals` VALUES(2, 'databaseversion', '4');
 
 -- --------------------------------------------------------
 
@@ -128,15 +260,20 @@ CREATE TABLE IF NOT EXISTS `globals` (
 -- Table structure for table `group_task`
 --
 
-CREATE TABLE IF NOT EXISTS `group_task` (
-  `group_task_id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `group_task` (
+  `group_task_id` int(11) NOT NULL auto_increment,
   `class_name` varchar(64) NOT NULL,
   `created_on` datetime NOT NULL,
-  `closed_on` datetime DEFAULT NULL,
+  `closed_on` datetime default NULL,
   `title` text,
-  `redirect_url` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`group_task_id`)
+  `redirect_url` varchar(255) default NULL,
+  PRIMARY KEY  (`group_task_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `group_task`
+--
+
 
 -- --------------------------------------------------------
 
@@ -144,15 +281,20 @@ CREATE TABLE IF NOT EXISTS `group_task` (
 -- Table structure for table `help`
 --
 
-CREATE TABLE IF NOT EXISTS `help` (
-  `help_id` int(11) NOT NULL AUTO_INCREMENT,
-  `controller_name` varchar(255) DEFAULT NULL,
-  `action_name` varchar(255) DEFAULT NULL,
-  `table_name` varchar(255) DEFAULT NULL,
-  `help_tip` varchar(255) DEFAULT NULL,
+CREATE TABLE `help` (
+  `help_id` int(11) NOT NULL auto_increment,
+  `controller_name` varchar(255) default NULL,
+  `action_name` varchar(255) default NULL,
+  `table_name` varchar(255) default NULL,
+  `help_tip` varchar(255) default NULL,
   `help_markup` text,
-  PRIMARY KEY (`help_id`)
+  PRIMARY KEY  (`help_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `help`
+--
+
 
 -- --------------------------------------------------------
 
@@ -160,12 +302,12 @@ CREATE TABLE IF NOT EXISTS `help` (
 -- Table structure for table `itemcomponent`
 --
 
-CREATE TABLE IF NOT EXISTS `itemcomponent` (
-  `itemcomponent_id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `itemcomponent` (
+  `itemcomponent_id` int(11) NOT NULL auto_increment,
   `belongs_to_itemversion_id` int(11) NOT NULL,
   `has_an_itemobject_id` int(11) NOT NULL,
-  `component_name` varchar(80) DEFAULT NULL COMMENT 'field name of this component in the dictionary',
-  PRIMARY KEY (`itemcomponent_id`),
+  `component_name` varchar(80) default NULL COMMENT 'field name of this component in the dictionary',
+  PRIMARY KEY  (`itemcomponent_id`),
   KEY `belongs_to_itemversion_id` (`belongs_to_itemversion_id`),
   KEY `has_an_itemobject_id` (`has_an_itemobject_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=17 ;
@@ -174,23 +316,22 @@ CREATE TABLE IF NOT EXISTS `itemcomponent` (
 -- Dumping data for table `itemcomponent`
 --
 
-INSERT INTO `itemcomponent` (`itemcomponent_id`, `belongs_to_itemversion_id`, `has_an_itemobject_id`, `component_name`) VALUES
-(1, 21, 1, 'camera'),
-(2, 21, 12, 'camera_mount'),
-(3, 21, 15, 'fuselage'),
-(4, 21, 19, 'main_board'),
-(5, 22, 2, 'camera'),
-(6, 22, 13, 'camera_mount'),
-(7, 22, 16, 'fuselage'),
-(8, 22, 17, 'main_board'),
-(9, 23, 21, 'drone'),
-(10, 24, 22, 'drone'),
-(11, 25, 7, 'battery'),
-(12, 25, 22, 'drone'),
-(13, 25, 5, 'transmitter'),
-(14, 26, 8, 'battery'),
-(15, 26, 21, 'drone'),
-(16, 26, 4, 'transmitter');
+INSERT INTO `itemcomponent` VALUES(1, 21, 1, 'camera');
+INSERT INTO `itemcomponent` VALUES(2, 21, 12, 'camera_mount');
+INSERT INTO `itemcomponent` VALUES(3, 21, 15, 'fuselage');
+INSERT INTO `itemcomponent` VALUES(4, 21, 19, 'main_board');
+INSERT INTO `itemcomponent` VALUES(5, 22, 2, 'camera');
+INSERT INTO `itemcomponent` VALUES(6, 22, 13, 'camera_mount');
+INSERT INTO `itemcomponent` VALUES(7, 22, 16, 'fuselage');
+INSERT INTO `itemcomponent` VALUES(8, 22, 17, 'main_board');
+INSERT INTO `itemcomponent` VALUES(9, 23, 21, 'drone');
+INSERT INTO `itemcomponent` VALUES(10, 24, 22, 'drone');
+INSERT INTO `itemcomponent` VALUES(11, 25, 7, 'battery');
+INSERT INTO `itemcomponent` VALUES(12, 25, 22, 'drone');
+INSERT INTO `itemcomponent` VALUES(13, 25, 5, 'transmitter');
+INSERT INTO `itemcomponent` VALUES(14, 26, 8, 'battery');
+INSERT INTO `itemcomponent` VALUES(15, 26, 21, 'drone');
+INSERT INTO `itemcomponent` VALUES(16, 26, 4, 'transmitter');
 
 -- --------------------------------------------------------
 
@@ -198,16 +339,16 @@ INSERT INTO `itemcomponent` (`itemcomponent_id`, `belongs_to_itemversion_id`, `h
 -- Table structure for table `itemobject`
 --
 
-CREATE TABLE IF NOT EXISTS `itemobject` (
-  `itemobject_id` int(11) NOT NULL AUTO_INCREMENT,
-  `cached_current_itemversion_id` int(11) DEFAULT NULL COMMENT 'cached pointer to entry in itemversion table that has latest effective date',
-  `cached_first_ver_date` datetime DEFAULT NULL,
-  `cached_created_by` varchar(128) DEFAULT NULL,
-  `cached_last_ref_date` datetime DEFAULT NULL,
-  `cached_last_ref_person` varchar(128) DEFAULT NULL,
-  `cached_last_comment_date` datetime DEFAULT NULL,
-  `cached_last_comment_person` varchar(128) DEFAULT NULL,
-  PRIMARY KEY (`itemobject_id`),
+CREATE TABLE `itemobject` (
+  `itemobject_id` int(11) NOT NULL auto_increment,
+  `cached_current_itemversion_id` int(11) default NULL COMMENT 'cached pointer to entry in itemversion table that has latest effective date',
+  `cached_first_ver_date` datetime default NULL,
+  `cached_created_by` varchar(128) default NULL,
+  `cached_last_ref_date` datetime default NULL,
+  `cached_last_ref_person` varchar(128) default NULL,
+  `cached_last_comment_date` datetime default NULL,
+  `cached_last_comment_person` varchar(128) default NULL,
+  PRIMARY KEY  (`itemobject_id`),
   KEY `cached_current_itemversion_id` (`cached_current_itemversion_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=27 ;
 
@@ -215,33 +356,32 @@ CREATE TABLE IF NOT EXISTS `itemobject` (
 -- Dumping data for table `itemobject`
 --
 
-INSERT INTO `itemobject` (`itemobject_id`, `cached_current_itemversion_id`, `cached_first_ver_date`, `cached_created_by`, `cached_last_ref_date`, `cached_last_ref_person`, `cached_last_comment_date`, `cached_last_comment_person`) VALUES
-(1, 1, '2015-05-19 07:30:00', 'Sarah Greene', '2015-05-19 07:46:00', 'Justin Brown', NULL, NULL),
-(2, 2, '2015-05-19 07:31:00', 'Sarah Greene', '2015-05-19 07:47:00', 'Justin Brown', NULL, NULL),
-(3, 3, '2015-05-19 07:31:00', 'Sarah Greene', NULL, NULL, NULL, NULL),
-(4, 4, '2015-05-19 07:32:00', 'Sarah Greene', '2015-05-19 07:57:00', 'Justin Brown', NULL, NULL),
-(5, 5, '2015-05-19 07:33:00', 'Sarah Greene', '2015-05-19 07:56:00', 'Justin Brown', '2015-05-19 07:36:33', 'Sarah Greene'),
-(6, 6, '2015-05-19 07:33:00', 'Sarah Greene', NULL, NULL, NULL, NULL),
-(7, 7, '2015-05-19 07:37:00', 'Sarah Greene', '2015-05-19 07:56:00', 'Justin Brown', NULL, NULL),
-(8, 8, '2015-05-19 07:39:00', 'Sarah Greene', '2015-05-19 07:57:00', 'Justin Brown', NULL, NULL),
-(9, 9, '2015-05-19 07:39:00', 'Sarah Greene', NULL, NULL, '2015-05-19 07:39:39', 'Sarah Greene'),
-(10, 10, '2015-05-19 07:39:00', 'Sarah Greene', NULL, NULL, NULL, NULL),
-(11, 11, '2015-05-19 07:41:00', 'Justin Brown', NULL, NULL, NULL, NULL),
-(12, 12, '2015-05-19 07:41:00', 'Justin Brown', '2015-05-19 07:46:00', 'Justin Brown', NULL, NULL),
-(13, 13, '2015-05-19 07:41:00', 'Justin Brown', '2015-05-19 07:47:00', 'Justin Brown', NULL, NULL),
-(14, 14, '2015-05-19 07:43:00', 'Justin Brown', NULL, NULL, NULL, NULL),
-(15, 15, '2015-05-19 07:43:00', 'Justin Brown', '2015-05-19 07:46:00', 'Justin Brown', NULL, NULL),
-(16, 16, '2015-05-19 07:44:00', 'Justin Brown', '2015-05-19 07:47:00', 'Justin Brown', NULL, NULL),
-(17, 17, '2015-05-19 07:45:00', 'Justin Brown', '2015-05-19 07:47:00', 'Justin Brown', NULL, NULL),
-(18, 18, '2015-05-19 07:45:00', 'Justin Brown', NULL, NULL, NULL, NULL),
-(19, 19, '2015-05-19 07:46:00', 'Justin Brown', '2015-05-19 07:46:00', 'Justin Brown', NULL, NULL),
-(20, 20, '2015-05-19 07:46:00', 'Justin Brown', NULL, NULL, NULL, NULL),
-(21, 21, '2015-05-19 07:46:00', 'Justin Brown', '2015-05-19 07:57:00', 'Justin Brown', NULL, NULL),
-(22, 22, '2015-05-19 07:47:00', 'Justin Brown', '2015-05-19 07:56:00', 'Justin Brown', NULL, NULL),
-(23, 23, '2015-05-19 07:55:00', 'Justin Brown', NULL, NULL, NULL, NULL),
-(24, 24, '2015-05-19 07:56:00', 'Justin Brown', NULL, NULL, NULL, NULL),
-(25, 25, '2015-05-19 07:56:00', 'Justin Brown', NULL, NULL, '2015-05-19 07:58:36', 'Administrative User'),
-(26, 26, '2015-05-19 07:57:00', 'Justin Brown', NULL, NULL, '2015-05-19 07:58:10', 'Administrative User');
+INSERT INTO `itemobject` VALUES(1, 1, '2015-05-19 07:30:00', 'Sarah Greene', '2015-05-19 07:46:00', 'Justin Brown', NULL, NULL);
+INSERT INTO `itemobject` VALUES(2, 2, '2015-05-19 07:31:00', 'Sarah Greene', '2015-05-19 07:47:00', 'Justin Brown', NULL, NULL);
+INSERT INTO `itemobject` VALUES(3, 3, '2015-05-19 07:31:00', 'Sarah Greene', NULL, NULL, NULL, NULL);
+INSERT INTO `itemobject` VALUES(4, 4, '2015-05-19 07:32:00', 'Sarah Greene', '2015-05-19 07:57:00', 'Justin Brown', NULL, NULL);
+INSERT INTO `itemobject` VALUES(5, 5, '2015-05-19 07:33:00', 'Sarah Greene', '2015-05-19 07:56:00', 'Justin Brown', '2015-05-19 07:36:33', 'Sarah Greene');
+INSERT INTO `itemobject` VALUES(6, 6, '2015-05-19 07:33:00', 'Sarah Greene', NULL, NULL, NULL, NULL);
+INSERT INTO `itemobject` VALUES(7, 7, '2015-05-19 07:37:00', 'Sarah Greene', '2015-05-19 07:56:00', 'Justin Brown', NULL, NULL);
+INSERT INTO `itemobject` VALUES(8, 8, '2015-05-19 07:39:00', 'Sarah Greene', '2015-05-19 07:57:00', 'Justin Brown', NULL, NULL);
+INSERT INTO `itemobject` VALUES(9, 9, '2015-05-19 07:39:00', 'Sarah Greene', NULL, NULL, '2015-05-19 07:39:39', 'Sarah Greene');
+INSERT INTO `itemobject` VALUES(10, 10, '2015-05-19 07:39:00', 'Sarah Greene', NULL, NULL, NULL, NULL);
+INSERT INTO `itemobject` VALUES(11, 11, '2015-05-19 07:41:00', 'Justin Brown', NULL, NULL, NULL, NULL);
+INSERT INTO `itemobject` VALUES(12, 12, '2015-05-19 07:41:00', 'Justin Brown', '2015-05-19 07:46:00', 'Justin Brown', NULL, NULL);
+INSERT INTO `itemobject` VALUES(13, 13, '2015-05-19 07:41:00', 'Justin Brown', '2015-05-19 07:47:00', 'Justin Brown', NULL, NULL);
+INSERT INTO `itemobject` VALUES(14, 14, '2015-05-19 07:43:00', 'Justin Brown', NULL, NULL, NULL, NULL);
+INSERT INTO `itemobject` VALUES(15, 15, '2015-05-19 07:43:00', 'Justin Brown', '2015-05-19 07:46:00', 'Justin Brown', NULL, NULL);
+INSERT INTO `itemobject` VALUES(16, 16, '2015-05-19 07:44:00', 'Justin Brown', '2015-05-19 07:47:00', 'Justin Brown', NULL, NULL);
+INSERT INTO `itemobject` VALUES(17, 17, '2015-05-19 07:45:00', 'Justin Brown', '2015-05-19 07:47:00', 'Justin Brown', NULL, NULL);
+INSERT INTO `itemobject` VALUES(18, 18, '2015-05-19 07:45:00', 'Justin Brown', NULL, NULL, NULL, NULL);
+INSERT INTO `itemobject` VALUES(19, 19, '2015-05-19 07:46:00', 'Justin Brown', '2015-05-19 07:46:00', 'Justin Brown', NULL, NULL);
+INSERT INTO `itemobject` VALUES(20, 20, '2015-05-19 07:46:00', 'Justin Brown', NULL, NULL, NULL, NULL);
+INSERT INTO `itemobject` VALUES(21, 21, '2015-05-19 07:46:00', 'Justin Brown', '2015-05-19 07:57:00', 'Justin Brown', NULL, NULL);
+INSERT INTO `itemobject` VALUES(22, 22, '2015-05-19 07:47:00', 'Justin Brown', '2015-05-19 07:56:00', 'Justin Brown', NULL, NULL);
+INSERT INTO `itemobject` VALUES(23, 23, '2015-05-19 07:55:00', 'Justin Brown', NULL, NULL, NULL, NULL);
+INSERT INTO `itemobject` VALUES(24, 24, '2015-05-19 07:56:00', 'Justin Brown', NULL, NULL, NULL, NULL);
+INSERT INTO `itemobject` VALUES(25, 25, '2015-05-19 07:56:00', 'Justin Brown', NULL, NULL, '2015-05-19 07:58:36', 'Administrative User');
+INSERT INTO `itemobject` VALUES(26, 26, '2015-05-19 07:57:00', 'Justin Brown', NULL, NULL, '2015-05-19 07:58:10', 'Administrative User');
 
 -- --------------------------------------------------------
 
@@ -249,21 +389,21 @@ INSERT INTO `itemobject` (`itemobject_id`, `cached_current_itemversion_id`, `cac
 -- Table structure for table `itemversion`
 --
 
-CREATE TABLE IF NOT EXISTS `itemversion` (
-  `itemversion_id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `itemversion` (
+  `itemversion_id` int(11) NOT NULL auto_increment,
   `itemobject_id` int(11) NOT NULL,
-  `item_serial_number` varchar(64) DEFAULT NULL,
-  `disposition` varchar(12) DEFAULT '',
-  `cached_serial_number_value` int(11) DEFAULT NULL,
+  `item_serial_number` varchar(64) default NULL,
+  `disposition` varchar(12) default '',
+  `cached_serial_number_value` int(11) default NULL,
   `typeversion_id` int(11) NOT NULL,
-  `partnumber_alias` int(11) NOT NULL DEFAULT '0',
-  `effective_date` datetime DEFAULT NULL COMMENT 'at what time did this item configuration become effective',
+  `partnumber_alias` int(11) NOT NULL default '0',
+  `effective_date` datetime default NULL COMMENT 'at what time did this item configuration become effective',
   `user_id` int(11) NOT NULL COMMENT 'who created this version',
-  `proxy_user_id` int(11) NOT NULL DEFAULT '-1',
-  `record_created` datetime DEFAULT NULL,
+  `proxy_user_id` int(11) NOT NULL default '-1',
+  `record_created` datetime default NULL,
   `dictionary_overrides` longtext,
   `item_data` longtext,
-  PRIMARY KEY (`itemversion_id`),
+  PRIMARY KEY  (`itemversion_id`),
   KEY `itemobject_id` (`itemobject_id`),
   KEY `typeversion_id` (`typeversion_id`),
   KEY `user_id` (`user_id`),
@@ -276,33 +416,32 @@ CREATE TABLE IF NOT EXISTS `itemversion` (
 -- Dumping data for table `itemversion`
 --
 
-INSERT INTO `itemversion` (`itemversion_id`, `itemobject_id`, `item_serial_number`, `disposition`, `cached_serial_number_value`, `typeversion_id`, `partnumber_alias`, `effective_date`, `user_id`, `proxy_user_id`, `record_created`, `dictionary_overrides`, `item_data`) VALUES
-(1, 1, 'CAM001', '', 1, 1, 0, '2015-05-19 07:30:00', 3, -1, '2015-05-19 07:31:31', '', '{"manufacturer_serial_number":"X123456","revision":"B0"}'),
-(2, 2, 'CAM002', '', 2, 1, 0, '2015-05-19 07:31:00', 3, -1, '2015-05-19 07:31:49', '', '{"manufacturer_serial_number":"X123445","revision":"B0"}'),
-(3, 3, 'CAM003', '', 3, 1, 0, '2015-05-19 07:31:00', 3, -1, '2015-05-19 07:32:05', '', '{"manufacturer_serial_number":"X143456","revision":"B1"}'),
-(4, 4, 'YY12945-2014-02', '', NULL, 6, 0, '2015-05-19 07:32:00', 3, -1, '2015-05-19 07:33:07', '', '{"revision":"A1"}'),
-(5, 5, 'YY12045-2014-02', '', NULL, 6, 0, '2015-05-19 07:33:00', 3, -1, '2015-05-19 07:33:21', '', '{"revision":"A1"}'),
-(6, 6, 'YY12946-2014-02', '', NULL, 6, 0, '2015-05-19 07:33:00', 3, -1, '2015-05-19 07:33:42', '', '{"revision":"A1"}'),
-(7, 7, 'LP1K001', '', 1, 7, 0, '2015-05-19 07:37:00', 3, -1, '2015-05-19 07:38:58', '', '{"manufacturer":"Snake Bite"}'),
-(8, 8, 'LP1K002', '', 2, 7, 0, '2015-05-19 07:39:00', 3, -1, '2015-05-19 07:39:06', '', '{"manufacturer":"Snake Bite"}'),
-(9, 9, 'LP1K003', '', 3, 7, 0, '2015-05-19 07:39:00', 3, -1, '2015-05-19 07:39:18', '', '{"manufacturer":"Snake Bite"}'),
-(10, 10, 'LP1K004', '', 4, 7, 0, '2015-05-19 07:39:00', 3, -1, '2015-05-19 07:39:32', '', '{"manufacturer":"Snake Bite"}'),
-(11, 11, 'GIM001', '', 1, 2, 0, '2015-05-19 07:41:00', 2, -1, '2015-05-19 07:41:31', '', '{"revision":"B0"}'),
-(12, 12, 'GIM002', '', 2, 2, 0, '2015-05-19 07:41:00', 2, -1, '2015-05-19 07:41:42', '', '{"revision":"B0"}'),
-(13, 13, 'GIM003', '', 3, 2, 0, '2015-05-19 07:41:00', 2, -1, '2015-05-19 07:41:52', '', '{"revision":"B0"}'),
-(14, 14, 'XCH001', '', 1, 4, 0, '2015-05-19 07:43:00', 2, -1, '2015-05-19 07:43:30', '', '{"body_color":"Orange","motors":"TraxxasQR1","prop_color":"Red+Black"}'),
-(15, 15, 'XCH002', '', 2, 4, 0, '2015-05-19 07:43:00', 2, -1, '2015-05-19 07:43:56', '', '{"body_color":"Black","motors":"TraxxasQR1","prop_color":"Red+Black"}'),
-(16, 16, 'XCH003', '', 3, 4, 0, '2015-05-19 07:44:00', 2, -1, '2015-05-19 07:44:11', '', '{"body_color":"Black","motors":"EstesDart7mm","prop_color":"Black"}'),
-(17, 17, 'MCB001', '', 1, 3, 0, '2015-05-19 07:45:00', 2, -1, '2015-05-19 07:45:49', '', '{"firmware_version":"01.01.23","pcb_revision":"C0"}'),
-(18, 18, 'MCB002', '', 2, 3, 0, '2015-05-19 07:45:00', 2, -1, '2015-05-19 07:46:03', '', '{"firmware_version":"01.01.23","pcb_revision":"C1"}'),
-(19, 19, 'MCB003', '', 3, 3, 0, '2015-05-19 07:46:00', 2, -1, '2015-05-19 07:46:15', '', '{"firmware_version":"01.01.23","pcb_revision":"C1"}'),
-(20, 20, 'MCB004', '', 4, 3, 0, '2015-05-19 07:46:00', 2, -1, '2015-05-19 07:46:25', '', '{"firmware_version":"01.01.23","pcb_revision":"C1"}'),
-(21, 21, 'XTD001', '', 1, 5, 0, '2015-05-19 07:46:00', 2, -1, '2015-05-19 07:47:11', '', ''),
-(22, 22, 'XTD002', '', 2, 5, 0, '2015-05-19 07:47:00', 2, -1, '2015-05-19 07:47:31', '', ''),
-(23, 23, '', 'Pass', NULL, 9, 0, '2015-05-19 07:55:00', 2, -1, '2015-05-19 07:55:48', '', '{"hover_test":true,"low_battery_test":true}'),
-(24, 24, '', 'Pass', NULL, 9, 0, '2015-05-19 07:56:00', 2, -1, '2015-05-19 07:56:27', '', '{"hover_test":true,"low_battery_test":true}'),
-(25, 25, 'XRS001', '', 1, 8, 0, '2015-05-19 07:56:00', 2, -1, '2015-05-19 07:57:18', '', ''),
-(26, 26, 'XRS002', '', 2, 8, 0, '2015-05-19 07:57:00', 2, -1, '2015-05-19 07:57:33', '', '');
+INSERT INTO `itemversion` VALUES(1, 1, 'CAM001', '', 1, 1, 0, '2015-05-19 07:30:00', 3, -1, '2015-05-19 07:31:31', '', '{"manufacturer_serial_number":"X123456","revision":"B0"}');
+INSERT INTO `itemversion` VALUES(2, 2, 'CAM002', '', 2, 1, 0, '2015-05-19 07:31:00', 3, -1, '2015-05-19 07:31:49', '', '{"manufacturer_serial_number":"X123445","revision":"B0"}');
+INSERT INTO `itemversion` VALUES(3, 3, 'CAM003', '', 3, 1, 0, '2015-05-19 07:31:00', 3, -1, '2015-05-19 07:32:05', '', '{"manufacturer_serial_number":"X143456","revision":"B1"}');
+INSERT INTO `itemversion` VALUES(4, 4, 'YY12945-2014-02', '', NULL, 6, 0, '2015-05-19 07:32:00', 3, -1, '2015-05-19 07:33:07', '', '{"revision":"A1"}');
+INSERT INTO `itemversion` VALUES(5, 5, 'YY12045-2014-02', '', NULL, 6, 0, '2015-05-19 07:33:00', 3, -1, '2015-05-19 07:33:21', '', '{"revision":"A1"}');
+INSERT INTO `itemversion` VALUES(6, 6, 'YY12946-2014-02', '', NULL, 6, 0, '2015-05-19 07:33:00', 3, -1, '2015-05-19 07:33:42', '', '{"revision":"A1"}');
+INSERT INTO `itemversion` VALUES(7, 7, 'LP1K001', '', 1, 7, 0, '2015-05-19 07:37:00', 3, -1, '2015-05-19 07:38:58', '', '{"manufacturer":"Snake Bite"}');
+INSERT INTO `itemversion` VALUES(8, 8, 'LP1K002', '', 2, 7, 0, '2015-05-19 07:39:00', 3, -1, '2015-05-19 07:39:06', '', '{"manufacturer":"Snake Bite"}');
+INSERT INTO `itemversion` VALUES(9, 9, 'LP1K003', '', 3, 7, 0, '2015-05-19 07:39:00', 3, -1, '2015-05-19 07:39:18', '', '{"manufacturer":"Snake Bite"}');
+INSERT INTO `itemversion` VALUES(10, 10, 'LP1K004', '', 4, 7, 0, '2015-05-19 07:39:00', 3, -1, '2015-05-19 07:39:32', '', '{"manufacturer":"Snake Bite"}');
+INSERT INTO `itemversion` VALUES(11, 11, 'GIM001', '', 1, 2, 0, '2015-05-19 07:41:00', 2, -1, '2015-05-19 07:41:31', '', '{"revision":"B0"}');
+INSERT INTO `itemversion` VALUES(12, 12, 'GIM002', '', 2, 2, 0, '2015-05-19 07:41:00', 2, -1, '2015-05-19 07:41:42', '', '{"revision":"B0"}');
+INSERT INTO `itemversion` VALUES(13, 13, 'GIM003', '', 3, 2, 0, '2015-05-19 07:41:00', 2, -1, '2015-05-19 07:41:52', '', '{"revision":"B0"}');
+INSERT INTO `itemversion` VALUES(14, 14, 'XCH001', '', 1, 4, 0, '2015-05-19 07:43:00', 2, -1, '2015-05-19 07:43:30', '', '{"body_color":"Orange","motors":"TraxxasQR1","prop_color":"Red+Black"}');
+INSERT INTO `itemversion` VALUES(15, 15, 'XCH002', '', 2, 4, 0, '2015-05-19 07:43:00', 2, -1, '2015-05-19 07:43:56', '', '{"body_color":"Black","motors":"TraxxasQR1","prop_color":"Red+Black"}');
+INSERT INTO `itemversion` VALUES(16, 16, 'XCH003', '', 3, 4, 0, '2015-05-19 07:44:00', 2, -1, '2015-05-19 07:44:11', '', '{"body_color":"Black","motors":"EstesDart7mm","prop_color":"Black"}');
+INSERT INTO `itemversion` VALUES(17, 17, 'MCB001', '', 1, 3, 0, '2015-05-19 07:45:00', 2, -1, '2015-05-19 07:45:49', '', '{"firmware_version":"01.01.23","pcb_revision":"C0"}');
+INSERT INTO `itemversion` VALUES(18, 18, 'MCB002', '', 2, 3, 0, '2015-05-19 07:45:00', 2, -1, '2015-05-19 07:46:03', '', '{"firmware_version":"01.01.23","pcb_revision":"C1"}');
+INSERT INTO `itemversion` VALUES(19, 19, 'MCB003', '', 3, 3, 0, '2015-05-19 07:46:00', 2, -1, '2015-05-19 07:46:15', '', '{"firmware_version":"01.01.23","pcb_revision":"C1"}');
+INSERT INTO `itemversion` VALUES(20, 20, 'MCB004', '', 4, 3, 0, '2015-05-19 07:46:00', 2, -1, '2015-05-19 07:46:25', '', '{"firmware_version":"01.01.23","pcb_revision":"C1"}');
+INSERT INTO `itemversion` VALUES(21, 21, 'XTD001', '', 1, 5, 0, '2015-05-19 07:46:00', 2, -1, '2015-05-19 07:47:11', '', '');
+INSERT INTO `itemversion` VALUES(22, 22, 'XTD002', '', 2, 5, 0, '2015-05-19 07:47:00', 2, -1, '2015-05-19 07:47:31', '', '');
+INSERT INTO `itemversion` VALUES(23, 23, '', 'Pass', NULL, 9, 0, '2015-05-19 07:55:00', 2, -1, '2015-05-19 07:55:48', '', '{"hover_test":true,"low_battery_test":true}');
+INSERT INTO `itemversion` VALUES(24, 24, '', 'Pass', NULL, 9, 0, '2015-05-19 07:56:00', 2, -1, '2015-05-19 07:56:27', '', '{"hover_test":true,"low_battery_test":true}');
+INSERT INTO `itemversion` VALUES(25, 25, 'XRS001', '', 1, 8, 0, '2015-05-19 07:56:00', 2, -1, '2015-05-19 07:57:18', '', '');
+INSERT INTO `itemversion` VALUES(26, 26, 'XRS002', '', 2, 8, 0, '2015-05-19 07:57:00', 2, -1, '2015-05-19 07:57:33', '', '');
 
 -- --------------------------------------------------------
 
@@ -310,16 +449,21 @@ INSERT INTO `itemversion` (`itemversion_id`, `itemobject_id`, `item_serial_numbe
 -- Table structure for table `itemversionarchive`
 --
 
-CREATE TABLE IF NOT EXISTS `itemversionarchive` (
-  `itemversionarchive_id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `itemversionarchive` (
+  `itemversionarchive_id` int(11) NOT NULL auto_increment,
   `itemversion_id` int(11) NOT NULL,
   `cached_user_id` int(11) NOT NULL COMMENT 'who created this version',
-  `record_created` datetime DEFAULT NULL,
+  `record_created` datetime default NULL,
   `item_data` longtext COMMENT 'json representation of item fields',
-  PRIMARY KEY (`itemversionarchive_id`),
+  PRIMARY KEY  (`itemversionarchive_id`),
   KEY `itemversion_id` (`itemversion_id`),
   KEY `cached_user_id` (`cached_user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `itemversionarchive`
+--
+
 
 -- --------------------------------------------------------
 
@@ -327,13 +471,13 @@ CREATE TABLE IF NOT EXISTS `itemversionarchive` (
 -- Table structure for table `partnumbercache`
 --
 
-CREATE TABLE IF NOT EXISTS `partnumbercache` (
-  `partnumber_id` int(11) NOT NULL AUTO_INCREMENT,
-  `part_number` varchar(64) DEFAULT NULL,
-  `part_description` varchar(255) DEFAULT NULL,
+CREATE TABLE `partnumbercache` (
+  `partnumber_id` int(11) NOT NULL auto_increment,
+  `part_number` varchar(64) default NULL,
+  `part_description` varchar(255) default NULL,
   `typeversion_id` int(11) NOT NULL,
-  `partnumber_alias` int(11) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`partnumber_id`),
+  `partnumber_alias` int(11) NOT NULL default '0',
+  PRIMARY KEY  (`partnumber_id`),
   KEY `typeversion_id` (`typeversion_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=16 ;
 
@@ -341,16 +485,15 @@ CREATE TABLE IF NOT EXISTS `partnumbercache` (
 -- Dumping data for table `partnumbercache`
 --
 
-INSERT INTO `partnumbercache` (`partnumber_id`, `part_number`, `part_description`, `typeversion_id`, `partnumber_alias`) VALUES
-(1, '140-234', 'HD Camera', 1, 0),
-(2, '120-200', 'Gimbal Assembly (3cm)', 2, 0),
-(3, '110-100', 'Sym 5x Main Controller Board', 3, 0),
-(4, '100-200', 'Xtreme III Fuselage w Motors', 4, 0),
-(5, '090-120', 'Xtreme III Drone', 5, 0),
-(6, '050-100', 'Broadmaster 6 Channel Transmitter', 6, 0),
-(7, '040-100', '1000 mAh LiPo Pack', 7, 0),
-(8, '999-120', 'Xtreme III Ready To Ship', 8, 0),
-(9, 'TP-FLIGHT', 'Flight Test', 9, 0);
+INSERT INTO `partnumbercache` VALUES(1, '140-234', 'HD Camera', 1, 0);
+INSERT INTO `partnumbercache` VALUES(2, '120-200', 'Gimbal Assembly (3cm)', 2, 0);
+INSERT INTO `partnumbercache` VALUES(3, '110-100', 'Sym 5x Main Controller Board', 3, 0);
+INSERT INTO `partnumbercache` VALUES(4, '100-200', 'Xtreme III Fuselage w Motors', 4, 0);
+INSERT INTO `partnumbercache` VALUES(5, '090-120', 'Xtreme III Drone', 5, 0);
+INSERT INTO `partnumbercache` VALUES(6, '050-100', 'Broadmaster 6 Channel Transmitter', 6, 0);
+INSERT INTO `partnumbercache` VALUES(7, '040-100', '1000 mAh LiPo Pack', 7, 0);
+INSERT INTO `partnumbercache` VALUES(8, '999-120', 'Xtreme III Ready To Ship', 8, 0);
+INSERT INTO `partnumbercache` VALUES(9, 'TP-FLIGHT', 'Flight Test', 9, 0);
 
 -- --------------------------------------------------------
 
@@ -358,12 +501,17 @@ INSERT INTO `partnumbercache` (`partnumber_id`, `part_number`, `part_description
 -- Table structure for table `reportcache`
 --
 
-CREATE TABLE IF NOT EXISTS `reportcache` (
-  `reportcache_id` int(11) NOT NULL AUTO_INCREMENT,
-  `class_name` varchar(255) DEFAULT NULL,
-  `last_run` datetime DEFAULT NULL,
-  PRIMARY KEY (`reportcache_id`)
+CREATE TABLE `reportcache` (
+  `reportcache_id` int(11) NOT NULL auto_increment,
+  `class_name` varchar(255) default NULL,
+  `last_run` datetime default NULL,
+  PRIMARY KEY  (`reportcache_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `reportcache`
+--
+
 
 -- --------------------------------------------------------
 
@@ -371,16 +519,44 @@ CREATE TABLE IF NOT EXISTS `reportcache` (
 -- Table structure for table `reportsubscription`
 --
 
-CREATE TABLE IF NOT EXISTS `reportsubscription` (
-  `reportsubscription_id` int(11) NOT NULL AUTO_INCREMENT,
-  `reportcache_id` int(11) DEFAULT NULL,
-  `user_id` int(11) DEFAULT NULL,
-  `subscription_interval_days` float DEFAULT NULL,
-  `last_sent` datetime DEFAULT NULL,
-  PRIMARY KEY (`reportsubscription_id`),
+CREATE TABLE `reportsubscription` (
+  `reportsubscription_id` int(11) NOT NULL auto_increment,
+  `reportcache_id` int(11) default NULL,
+  `user_id` int(11) default NULL,
+  `subscription_interval_days` float default NULL,
+  `last_sent` datetime default NULL,
+  PRIMARY KEY  (`reportsubscription_id`),
   KEY `reportcache_id` (`reportcache_id`),
   KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `reportsubscription`
+--
+
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `taskslog`
+--
+
+CREATE TABLE `taskslog` (
+  `tasklog_id` int(11) NOT NULL auto_increment,
+  `tl_key` varchar(64) default NULL,
+  `tl_last_run` datetime default NULL,
+  `tl_run_duration` float default NULL,
+  `tl_run_peak_memory` float default NULL,
+  PRIMARY KEY  (`tasklog_id`),
+  KEY `tl_key` (`tl_key`)
+) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=3 ;
+
+--
+-- Dumping data for table `taskslog`
+--
+
+INSERT INTO `taskslog` VALUES(1, 'service_inprocess_workflows', '2017-02-08 21:52:35', 0.00182104, 5.11239e+06);
+INSERT INTO `taskslog` VALUES(2, 'process_watch_notifications', '2017-02-08 21:52:35', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -388,14 +564,19 @@ CREATE TABLE IF NOT EXISTS `reportsubscription` (
 -- Table structure for table `terminaltypeobject`
 --
 
-CREATE TABLE IF NOT EXISTS `terminaltypeobject` (
-  `terminaltypeobject_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) DEFAULT NULL,
-  `allowed_typeobject_id` int(11) DEFAULT NULL,
-  PRIMARY KEY (`terminaltypeobject_id`),
+CREATE TABLE `terminaltypeobject` (
+  `terminaltypeobject_id` int(11) NOT NULL auto_increment,
+  `user_id` int(11) default NULL,
+  `allowed_typeobject_id` int(11) default NULL,
+  PRIMARY KEY  (`terminaltypeobject_id`),
   KEY `allowed_typeobject_id` (`allowed_typeobject_id`),
   KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `terminaltypeobject`
+--
+
 
 -- --------------------------------------------------------
 
@@ -403,23 +584,22 @@ CREATE TABLE IF NOT EXISTS `terminaltypeobject` (
 -- Table structure for table `typecategory`
 --
 
-CREATE TABLE IF NOT EXISTS `typecategory` (
-  `typecategory_id` int(11) NOT NULL AUTO_INCREMENT,
-  `typecategory_name` varchar(64) DEFAULT NULL,
-  `event_stream_reference_prefix` varchar(64) DEFAULT NULL,
-  `is_user_procedure` int(1) DEFAULT NULL,
-  `has_a_serial_number` int(1) DEFAULT NULL,
-  `has_a_disposition` int(1) DEFAULT NULL,
-  PRIMARY KEY (`typecategory_id`)
+CREATE TABLE `typecategory` (
+  `typecategory_id` int(11) NOT NULL auto_increment,
+  `typecategory_name` varchar(64) default NULL,
+  `event_stream_reference_prefix` varchar(64) default NULL,
+  `is_user_procedure` int(1) default NULL,
+  `has_a_serial_number` int(1) default NULL,
+  `has_a_disposition` int(1) default NULL,
+  PRIMARY KEY  (`typecategory_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=3 ;
 
 --
 -- Dumping data for table `typecategory`
 --
 
-INSERT INTO `typecategory` (`typecategory_id`, `typecategory_name`, `event_stream_reference_prefix`, `is_user_procedure`, `has_a_serial_number`, `has_a_disposition`) VALUES
-(1, 'Procedure', '', 1, 0, 1),
-(2, 'Part', 'Became part of', 0, 1, 0);
+INSERT INTO `typecategory` VALUES(1, 'Procedure', '', 1, 0, 1);
+INSERT INTO `typecategory` VALUES(2, 'Part', 'Became part of', 0, 1, 0);
 
 -- --------------------------------------------------------
 
@@ -427,17 +607,22 @@ INSERT INTO `typecategory` (`typecategory_id`, `typecategory_name`, `event_strea
 -- Table structure for table `typecomment`
 --
 
-CREATE TABLE IF NOT EXISTS `typecomment` (
-  `comment_id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `typecomment` (
+  `comment_id` int(11) NOT NULL auto_increment,
   `user_id` int(11) NOT NULL COMMENT 'who created this version',
   `typeobject_id` int(11) NOT NULL,
-  `record_created` datetime DEFAULT NULL,
+  `record_created` datetime default NULL,
   `comment_text` longtext,
-  `comment_added` datetime DEFAULT NULL,
-  PRIMARY KEY (`comment_id`),
+  `comment_added` datetime default NULL,
+  PRIMARY KEY  (`comment_id`),
   KEY `user_id` (`user_id`),
   KEY `typeobject_id` (`typeobject_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `typecomment`
+--
+
 
 -- --------------------------------------------------------
 
@@ -445,15 +630,15 @@ CREATE TABLE IF NOT EXISTS `typecomment` (
 -- Table structure for table `typecomponent`
 --
 
-CREATE TABLE IF NOT EXISTS `typecomponent` (
-  `typecomponent_id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `typecomponent` (
+  `typecomponent_id` int(11) NOT NULL auto_increment,
   `belongs_to_typeversion_id` int(11) NOT NULL,
-  `component_name` varchar(64) DEFAULT NULL COMMENT 'field name of this component in the dictionary',
-  `caption` varchar(255) DEFAULT NULL,
-  `subcaption` varchar(255) DEFAULT NULL,
-  `featured` int(1) DEFAULT NULL,
-  `required` int(1) DEFAULT NULL,
-  PRIMARY KEY (`typecomponent_id`),
+  `component_name` varchar(64) default NULL COMMENT 'field name of this component in the dictionary',
+  `caption` varchar(255) default NULL,
+  `subcaption` varchar(255) default NULL,
+  `featured` int(1) default NULL,
+  `required` int(1) default NULL,
+  PRIMARY KEY  (`typecomponent_id`),
   KEY `belongs_to_typeversion_id` (`belongs_to_typeversion_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=9 ;
 
@@ -461,15 +646,14 @@ CREATE TABLE IF NOT EXISTS `typecomponent` (
 -- Dumping data for table `typecomponent`
 --
 
-INSERT INTO `typecomponent` (`typecomponent_id`, `belongs_to_typeversion_id`, `component_name`, `caption`, `subcaption`, `featured`, `required`) VALUES
-(1, 5, 'camera', '', '', 0, 0),
-(2, 5, 'camera_mount', '', '', 0, 0),
-(3, 5, 'fuselage', '', '', 0, 0),
-(4, 5, 'main_board', '', '', 0, 0),
-(5, 8, 'battery', '', '', 0, 0),
-(6, 8, 'drone', '', '', 0, 0),
-(7, 8, 'transmitter', '', '', 0, 0),
-(8, 9, 'drone', '', '', 0, 0);
+INSERT INTO `typecomponent` VALUES(1, 5, 'camera', '', '', 0, 0);
+INSERT INTO `typecomponent` VALUES(2, 5, 'camera_mount', '', '', 0, 0);
+INSERT INTO `typecomponent` VALUES(3, 5, 'fuselage', '', '', 0, 0);
+INSERT INTO `typecomponent` VALUES(4, 5, 'main_board', '', '', 0, 0);
+INSERT INTO `typecomponent` VALUES(5, 8, 'battery', '', '', 0, 0);
+INSERT INTO `typecomponent` VALUES(6, 8, 'drone', '', '', 0, 0);
+INSERT INTO `typecomponent` VALUES(7, 8, 'transmitter', '', '', 0, 0);
+INSERT INTO `typecomponent` VALUES(8, 9, 'drone', '', '', 0, 0);
 
 -- --------------------------------------------------------
 
@@ -477,7 +661,7 @@ INSERT INTO `typecomponent` (`typecomponent_id`, `belongs_to_typeversion_id`, `c
 -- Table structure for table `typecomponent_typeobject`
 --
 
-CREATE TABLE IF NOT EXISTS `typecomponent_typeobject` (
+CREATE TABLE `typecomponent_typeobject` (
   `typecomponent_id` int(11) NOT NULL,
   `can_have_typeobject_id` int(11) NOT NULL,
   KEY `typecomponent_id` (`typecomponent_id`),
@@ -488,15 +672,14 @@ CREATE TABLE IF NOT EXISTS `typecomponent_typeobject` (
 -- Dumping data for table `typecomponent_typeobject`
 --
 
-INSERT INTO `typecomponent_typeobject` (`typecomponent_id`, `can_have_typeobject_id`) VALUES
-(1, 1),
-(2, 2),
-(4, 3),
-(3, 4),
-(6, 5),
-(8, 5),
-(7, 6),
-(5, 7);
+INSERT INTO `typecomponent_typeobject` VALUES(1, 1);
+INSERT INTO `typecomponent_typeobject` VALUES(2, 2);
+INSERT INTO `typecomponent_typeobject` VALUES(4, 3);
+INSERT INTO `typecomponent_typeobject` VALUES(3, 4);
+INSERT INTO `typecomponent_typeobject` VALUES(6, 5);
+INSERT INTO `typecomponent_typeobject` VALUES(8, 5);
+INSERT INTO `typecomponent_typeobject` VALUES(7, 6);
+INSERT INTO `typecomponent_typeobject` VALUES(5, 7);
 
 -- --------------------------------------------------------
 
@@ -504,23 +687,28 @@ INSERT INTO `typecomponent_typeobject` (`typecomponent_id`, `can_have_typeobject
 -- Table structure for table `typedocument`
 --
 
-CREATE TABLE IF NOT EXISTS `typedocument` (
-  `document_id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `typedocument` (
+  `document_id` int(11) NOT NULL auto_increment,
   `typeobject_id` int(11) NOT NULL,
-  `document_displayed_filename` varchar(64) DEFAULT NULL,
-  `document_stored_filename` varchar(255) DEFAULT NULL,
-  `document_stored_path` varchar(64) DEFAULT '',
-  `document_thumb_exists` int(1) DEFAULT NULL,
-  `optional_description` varchar(32) DEFAULT NULL,
-  `document_filesize` int(11) DEFAULT NULL,
-  `document_file_type` varchar(255) DEFAULT NULL,
+  `document_displayed_filename` varchar(64) default NULL,
+  `document_stored_filename` varchar(255) default NULL,
+  `document_stored_path` varchar(64) default '',
+  `document_thumb_exists` int(1) default NULL,
+  `optional_description` varchar(32) default NULL,
+  `document_filesize` int(11) default NULL,
+  `document_file_type` varchar(255) default NULL,
   `document_date_added` datetime NOT NULL,
-  `user_id` int(11) DEFAULT NULL,
-  `document_path_db_key` int(2) DEFAULT NULL,
-  PRIMARY KEY (`document_id`),
+  `user_id` int(11) default NULL,
+  `document_path_db_key` int(2) default NULL,
+  PRIMARY KEY  (`document_id`),
   KEY `typeobject_id` (`typeobject_id`),
   KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+--
+-- Dumping data for table `typedocument`
+--
+
 
 -- --------------------------------------------------------
 
@@ -528,14 +716,14 @@ CREATE TABLE IF NOT EXISTS `typedocument` (
 -- Table structure for table `typeobject`
 --
 
-CREATE TABLE IF NOT EXISTS `typeobject` (
-  `typeobject_id` int(11) NOT NULL AUTO_INCREMENT,
-  `cached_current_typeversion_id` int(11) DEFAULT NULL COMMENT 'cached pointer to entry in itemversion table that has latest effective date',
-  `cached_item_count` int(11) DEFAULT NULL,
-  `cached_next_serial_number` varchar(64) DEFAULT NULL,
-  `cached_hidden_fields` int(11) DEFAULT '0',
-  `typedisposition` varchar(1) NOT NULL DEFAULT 'A' COMMENT 'A=Active, B=oBsolete',
-  PRIMARY KEY (`typeobject_id`),
+CREATE TABLE `typeobject` (
+  `typeobject_id` int(11) NOT NULL auto_increment,
+  `cached_current_typeversion_id` int(11) default NULL COMMENT 'cached pointer to entry in itemversion table that has latest effective date',
+  `cached_item_count` int(11) default NULL,
+  `cached_next_serial_number` varchar(64) default NULL,
+  `cached_hidden_fields` int(11) default '0',
+  `typedisposition` varchar(1) NOT NULL default 'A' COMMENT 'A=Active, B=oBsolete',
+  PRIMARY KEY  (`typeobject_id`),
   KEY `cached_current_typeversion_id` (`cached_current_typeversion_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=10 ;
 
@@ -543,16 +731,15 @@ CREATE TABLE IF NOT EXISTS `typeobject` (
 -- Dumping data for table `typeobject`
 --
 
-INSERT INTO `typeobject` (`typeobject_id`, `cached_current_typeversion_id`, `cached_item_count`, `cached_next_serial_number`, `cached_hidden_fields`, `typedisposition`) VALUES
-(1, 1, 3, 'CAM004', 0, 'A'),
-(2, 2, 3, 'GIM004', 0, 'A'),
-(3, 3, 4, 'MCB005', 0, 'A'),
-(4, 4, 3, 'XCH004', 0, 'A'),
-(5, 5, 2, 'XTD003', 0, 'A'),
-(6, 6, 3, '', 0, 'A'),
-(7, 7, 4, 'LP1K005', 0, 'A'),
-(8, 8, 2, 'XRS003', 0, 'A'),
-(9, 9, 2, NULL, 0, 'A');
+INSERT INTO `typeobject` VALUES(1, 1, 3, 'CAM004', 0, 'A');
+INSERT INTO `typeobject` VALUES(2, 2, 3, 'GIM004', 0, 'A');
+INSERT INTO `typeobject` VALUES(3, 3, 4, 'MCB005', 0, 'A');
+INSERT INTO `typeobject` VALUES(4, 4, 3, 'XCH004', 0, 'A');
+INSERT INTO `typeobject` VALUES(5, 5, 2, 'XTD003', 0, 'A');
+INSERT INTO `typeobject` VALUES(6, 6, 3, '', 0, 'A');
+INSERT INTO `typeobject` VALUES(7, 7, 4, 'LP1K005', 0, 'A');
+INSERT INTO `typeobject` VALUES(8, 8, 2, 'XRS003', 0, 'A');
+INSERT INTO `typeobject` VALUES(9, 9, 2, NULL, 0, 'A');
 
 -- --------------------------------------------------------
 
@@ -560,26 +747,26 @@ INSERT INTO `typeobject` (`typeobject_id`, `cached_current_typeversion_id`, `cac
 -- Table structure for table `typeversion`
 --
 
-CREATE TABLE IF NOT EXISTS `typeversion` (
-  `typeversion_id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `typeversion` (
+  `typeversion_id` int(11) NOT NULL auto_increment,
   `typeobject_id` int(11) NOT NULL,
   `type_part_number` longtext,
   `type_description` longtext,
-  `serial_number_format` varchar(64) DEFAULT NULL,
-  `serial_number_check_regex` varchar(64) DEFAULT NULL,
-  `serial_number_parse_regex` varchar(64) DEFAULT NULL,
-  `serial_number_caption` varchar(64) DEFAULT NULL,
-  `serial_number_type` int(11) DEFAULT NULL,
+  `serial_number_format` varchar(64) default NULL,
+  `serial_number_check_regex` varchar(64) default NULL,
+  `serial_number_parse_regex` varchar(64) default NULL,
+  `serial_number_caption` varchar(64) default NULL,
+  `serial_number_type` int(11) default NULL,
   `typecategory_id` int(11) NOT NULL COMMENT 'is this type a 1=form or procedure or 2=part or assembly',
-  `versionstatus` varchar(1) NOT NULL DEFAULT 'A' COMMENT 'A=Active, D=Draft, R=Review',
-  `effective_date` datetime DEFAULT NULL COMMENT 'at what time did this type definition become effective',
+  `versionstatus` varchar(1) NOT NULL default 'A' COMMENT 'A=Active, D=Draft, R=Review',
+  `effective_date` datetime default NULL COMMENT 'at what time did this type definition become effective',
   `user_id` int(11) NOT NULL COMMENT 'who created this version',
-  `record_created` datetime DEFAULT NULL,
-  `modified_by_user_id` int(11) DEFAULT NULL,
-  `record_modified` datetime DEFAULT NULL,
+  `record_created` datetime default NULL,
+  `modified_by_user_id` int(11) default NULL,
+  `record_modified` datetime default NULL,
   `type_data_dictionary` longtext,
   `type_form_layout` longtext,
-  PRIMARY KEY (`typeversion_id`),
+  PRIMARY KEY  (`typeversion_id`),
   KEY `typeobject_id` (`typeobject_id`),
   KEY `user_id` (`user_id`),
   KEY `typecategory_id` (`typecategory_id`)
@@ -589,16 +776,15 @@ CREATE TABLE IF NOT EXISTS `typeversion` (
 -- Dumping data for table `typeversion`
 --
 
-INSERT INTO `typeversion` (`typeversion_id`, `typeobject_id`, `type_part_number`, `type_description`, `serial_number_format`, `serial_number_check_regex`, `serial_number_parse_regex`, `serial_number_caption`, `serial_number_type`, `typecategory_id`, `versionstatus`, `effective_date`, `user_id`, `record_created`, `modified_by_user_id`, `record_modified`, `type_data_dictionary`, `type_form_layout`) VALUES
-(1, 1, '140-234', 'HD Camera', 'CAM###', '', '', '', 3, 2, 'A', '2015-05-18 21:49:00', 1, '2015-05-18 21:57:54', 1, '2015-05-18 21:57:54', '{"manufacturer_serial_number":{"type":"varchar","featured":"0","len":"32","required":"0","unique":"0"},"revision":{"type":"varchar","subcaption":"Revision letter and number (e.g., B45) from back","featured":"0","len":"32","required":"0","unique":"0"}}', '[{"type":"columns","columns":[{"name":"manufacturer_serial_number"},{"name":"revision"}]}]'),
-(2, 2, '120-200', 'Gimbal Assembly (3cm)', 'GIM###', '', '', '', 3, 2, 'A', '2015-05-18 21:58:00', 1, '2015-05-18 22:00:20', 1, '2015-05-18 22:00:20', '{"revision":{"type":"varchar","featured":"0","len":"32","required":"0","unique":"0"}}', '[{"type":"columns","columns":[{"name":"revision"}]}]'),
-(3, 3, '110-100', 'Sym 5x Main Controller Board', 'MCB###', '', '', '', 3, 2, 'A', '2015-05-18 22:03:00', 1, '2015-05-18 22:08:09', 1, '2015-05-18 22:08:09', '{"firmware_version":{"type":"varchar","subcaption":"from sticker on board (e.g., 01.02.35)","featured":"0","len":"32","required":"0","unique":"0"},"pcb_revision":{"type":"varchar","caption":"PCB Revision","subcaption":"board revisions","featured":"0","len":"32","required":"0","unique":"0"}}', '[{"type":"columns","columns":[{"name":"firmware_version"},{"name":"pcb_revision"}]}]'),
-(4, 4, '100-200', 'Xtreme III Fuselage w Motors', 'XCH###', '', '', '', 3, 2, 'A', '2015-05-18 22:08:00', 1, '2015-05-18 22:17:54', 1, '2015-05-18 22:22:41', '{"body_color":{"type":"enum","featured":"0","options":{"Orange":"Orange","Black":"Black"},"required":"0"},"motors":{"type":"enum","featured":"0","options":{"TraxxasQR1":"Traxxas QR1","EstesDart7mm":"Estes Dart 3.7v 7mm"},"required":"0"},"prop_color":{"type":"enum","featured":"0","options":{"Red":"Red","Black":"Black","Red+Black":"Red+Black"},"required":"0"}}', '[{"type":"columns","columns":[{"name":"body_color"},{"name":"motors"}]},{"type":"columns","columns":[{"name":"prop_color"}]}]'),
-(5, 5, '090-120', 'Xtreme III Drone', 'XTD###', '', '', '', 3, 2, 'A', '2015-05-18 22:18:00', 1, '2015-05-18 22:22:05', 1, '2015-05-18 22:22:05', '{}', '[{"type":"columns","columns":[{"name":"camera"},{"name":"camera_mount"}]},{"type":"columns","columns":[{"name":"fuselage"},{"name":"main_board"}]}]'),
-(6, 6, '050-100', 'Broadmaster 6 Channel Transmitter', '', '', '', 'manufacturers SN on back', 0, 2, 'A', '2015-05-18 22:22:00', 1, '2015-05-18 22:25:02', 1, '2015-05-18 22:25:02', '{"revision":{"type":"varchar","subcaption":"on back of transmitter","featured":"0","len":"32","required":"0","unique":"0"}}', '[{"type":"columns","columns":[{"name":"revision"}]}]'),
-(7, 7, '040-100', '1000 mAh LiPo Pack', 'LP1K###', '', '', '', 3, 2, 'A', '2015-05-18 22:26:00', 1, '2015-05-18 22:30:01', 1, '2015-05-18 22:30:01', '{"manufacturer":{"type":"varchar","featured":"0","len":"32","required":"0","unique":"0"}}', '[{"type":"columns","columns":[{"name":"manufacturer"}]}]'),
-(8, 8, '999-120', 'Xtreme III Ready To Ship', 'XRS###', '', '', '', 3, 2, 'A', '2015-05-18 22:30:00', 1, '2015-05-18 22:32:42', 1, '2015-05-18 22:32:42', '{}', '[{"type":"columns","columns":[{"name":"battery"},{"name":"drone"}]},{"type":"columns","columns":[{"name":"transmitter"}]}]'),
-(9, 9, 'TP-FLIGHT', 'Flight Test', '', '', '', '', NULL, 1, 'A', '2015-05-19 07:48:00', 1, '2015-05-19 07:51:29', 1, '2015-05-19 07:55:10', '{"hover_test":{"type":"boolean","subcaption":"orange battery.  hold in box for 2 minutes.","featured":"0","required":"0"},"low_battery_test":{"type":"boolean","subcaption":"red battery","featured":"0","required":"0"}}', '[{"type":"columns","columns":[{"name":"drone"}]},{"type":"html","html":"<p><strong>Note: </strong>For the following tests, the test batteries must have green lights on prep fixtures.</p>"},{"type":"columns","columns":[{"name":"hover_test"},{"name":"low_battery_test"}]}]');
+INSERT INTO `typeversion` VALUES(1, 1, '140-234', 'HD Camera', 'CAM###', '', '', '', 3, 2, 'A', '2015-05-18 21:49:00', 1, '2015-05-18 21:57:54', 1, '2015-05-18 21:57:54', '{"manufacturer_serial_number":{"type":"varchar","featured":"0","len":"32","required":"0","unique":"0"},"revision":{"type":"varchar","subcaption":"Revision letter and number (e.g., B45) from back","featured":"0","len":"32","required":"0","unique":"0"}}', '[{"type":"columns","columns":[{"name":"manufacturer_serial_number"},{"name":"revision"}]}]');
+INSERT INTO `typeversion` VALUES(2, 2, '120-200', 'Gimbal Assembly (3cm)', 'GIM###', '', '', '', 3, 2, 'A', '2015-05-18 21:58:00', 1, '2015-05-18 22:00:20', 1, '2015-05-18 22:00:20', '{"revision":{"type":"varchar","featured":"0","len":"32","required":"0","unique":"0"}}', '[{"type":"columns","columns":[{"name":"revision"}]}]');
+INSERT INTO `typeversion` VALUES(3, 3, '110-100', 'Sym 5x Main Controller Board', 'MCB###', '', '', '', 3, 2, 'A', '2015-05-18 22:03:00', 1, '2015-05-18 22:08:09', 1, '2015-05-18 22:08:09', '{"firmware_version":{"type":"varchar","subcaption":"from sticker on board (e.g., 01.02.35)","featured":"0","len":"32","required":"0","unique":"0"},"pcb_revision":{"type":"varchar","caption":"PCB Revision","subcaption":"board revisions","featured":"0","len":"32","required":"0","unique":"0"}}', '[{"type":"columns","columns":[{"name":"firmware_version"},{"name":"pcb_revision"}]}]');
+INSERT INTO `typeversion` VALUES(4, 4, '100-200', 'Xtreme III Fuselage w Motors', 'XCH###', '', '', '', 3, 2, 'A', '2015-05-18 22:08:00', 1, '2015-05-18 22:17:54', 1, '2015-05-18 22:22:41', '{"body_color":{"type":"enum","featured":"0","options":{"Orange":"Orange","Black":"Black"},"required":"0"},"motors":{"type":"enum","featured":"0","options":{"TraxxasQR1":"Traxxas QR1","EstesDart7mm":"Estes Dart 3.7v 7mm"},"required":"0"},"prop_color":{"type":"enum","featured":"0","options":{"Red":"Red","Black":"Black","Red+Black":"Red+Black"},"required":"0"}}', '[{"type":"columns","columns":[{"name":"body_color"},{"name":"motors"}]},{"type":"columns","columns":[{"name":"prop_color"}]}]');
+INSERT INTO `typeversion` VALUES(5, 5, '090-120', 'Xtreme III Drone', 'XTD###', '', '', '', 3, 2, 'A', '2015-05-18 22:18:00', 1, '2015-05-18 22:22:05', 1, '2015-05-18 22:22:05', '{}', '[{"type":"columns","columns":[{"name":"camera"},{"name":"camera_mount"}]},{"type":"columns","columns":[{"name":"fuselage"},{"name":"main_board"}]}]');
+INSERT INTO `typeversion` VALUES(6, 6, '050-100', 'Broadmaster 6 Channel Transmitter', '', '', '', 'manufacturers SN on back', 0, 2, 'A', '2015-05-18 22:22:00', 1, '2015-05-18 22:25:02', 1, '2015-05-18 22:25:02', '{"revision":{"type":"varchar","subcaption":"on back of transmitter","featured":"0","len":"32","required":"0","unique":"0"}}', '[{"type":"columns","columns":[{"name":"revision"}]}]');
+INSERT INTO `typeversion` VALUES(7, 7, '040-100', '1000 mAh LiPo Pack', 'LP1K###', '', '', '', 3, 2, 'A', '2015-05-18 22:26:00', 1, '2015-05-18 22:30:01', 1, '2015-05-18 22:30:01', '{"manufacturer":{"type":"varchar","featured":"0","len":"32","required":"0","unique":"0"}}', '[{"type":"columns","columns":[{"name":"manufacturer"}]}]');
+INSERT INTO `typeversion` VALUES(8, 8, '999-120', 'Xtreme III Ready To Ship', 'XRS###', '', '', '', 3, 2, 'A', '2015-05-18 22:30:00', 1, '2015-05-18 22:32:42', 1, '2015-05-18 22:32:42', '{}', '[{"type":"columns","columns":[{"name":"battery"},{"name":"drone"}]},{"type":"columns","columns":[{"name":"transmitter"}]}]');
+INSERT INTO `typeversion` VALUES(9, 9, 'TP-FLIGHT', 'Flight Test', '', '', '', '', NULL, 1, 'A', '2015-05-19 07:48:00', 1, '2015-05-19 07:51:29', 1, '2015-05-19 07:55:10', '{"hover_test":{"type":"boolean","subcaption":"orange battery.  hold in box for 2 minutes.","featured":"0","required":"0"},"low_battery_test":{"type":"boolean","subcaption":"red battery","featured":"0","required":"0"}}', '[{"type":"columns","columns":[{"name":"drone"}]},{"type":"html","html":"<p><strong>Note: </strong>For the following tests, the test batteries must have green lights on prep fixtures.</p>"},{"type":"columns","columns":[{"name":"hover_test"},{"name":"low_battery_test"}]}]');
 
 -- --------------------------------------------------------
 
@@ -606,25 +792,25 @@ INSERT INTO `typeversion` (`typeversion_id`, `typeobject_id`, `type_part_number`
 -- Table structure for table `user`
 --
 
-CREATE TABLE IF NOT EXISTS `user` (
-  `user_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_enabled` int(1) NOT NULL DEFAULT '1',
+CREATE TABLE `user` (
+  `user_id` int(11) NOT NULL auto_increment,
+  `user_enabled` int(1) NOT NULL default '1',
   `login_id` varchar(64) NOT NULL,
-  `user_cryptpassword` varchar(64) DEFAULT NULL,
-  `login_count` int(11) NOT NULL DEFAULT '0',
-  `last_visit` datetime DEFAULT NULL,
+  `user_cryptpassword` varchar(64) default NULL,
+  `login_count` int(11) NOT NULL default '0',
+  `last_visit` datetime default NULL,
   `account_created` datetime NOT NULL,
-  `user_type` varchar(16) DEFAULT NULL,
-  `pref_rows_per_page` int(11) DEFAULT '30',
-  `pref_view_category` varchar(64) DEFAULT NULL,
-  `first_name` varchar(64) DEFAULT NULL,
-  `last_name` varchar(64) DEFAULT NULL,
-  `email` varchar(64) DEFAULT NULL,
+  `user_type` varchar(16) default NULL,
+  `pref_rows_per_page` int(11) default '30',
+  `pref_view_category` varchar(64) default NULL,
+  `first_name` varchar(64) default NULL,
+  `last_name` varchar(64) default NULL,
+  `email` varchar(64) default NULL,
   `comments` text,
-  `cached_items_created_count` int(11) NOT NULL DEFAULT '0',
-  `has_temporary_password` int(1) NOT NULL DEFAULT '0',
-  `waiting_approval` int(1) NOT NULL DEFAULT '0',
-  PRIMARY KEY (`user_id`),
+  `cached_items_created_count` int(11) NOT NULL default '0',
+  `has_temporary_password` int(1) NOT NULL default '0',
+  `waiting_approval` int(1) NOT NULL default '0',
+  PRIMARY KEY  (`user_id`),
   UNIQUE KEY `login_id` (`login_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=4 ;
 
@@ -632,10 +818,9 @@ CREATE TABLE IF NOT EXISTS `user` (
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`user_id`, `user_enabled`, `login_id`, `user_cryptpassword`, `login_count`, `last_visit`, `account_created`, `user_type`, `pref_rows_per_page`, `pref_view_category`, `first_name`, `last_name`, `email`, `comments`, `cached_items_created_count`, `has_temporary_password`, `waiting_approval`) VALUES
-(1, 1, 'admin', '$1$As0.JB5.$yRHmc8nQxVcKM9QVhRV530', 3, '2015-05-19 07:23:21', '2015-05-18 20:48:42', 'Admin', 30, '', 'Administrative', 'User', '', '', 2, 0, 0),
-(2, 1, 'justin', '$1$Bq3.0h5.$rYEq/atj3kiH0LdDjZWHB0', 0, NULL, '2015-05-19 07:24:33', 'Tech', 30, '', 'Justin', 'Brown', '', '', 16, 0, 0),
-(3, 1, 'sarah', '$1$qS0.rm..$VVLumaEEgN91uBawFW4OC/', 0, NULL, '2015-05-19 07:27:57', 'Tech', 30, '', 'Sarah', 'Greene', '', '', 12, 0, 0);
+INSERT INTO `user` VALUES(1, 1, 'admin', '$1$As0.JB5.$yRHmc8nQxVcKM9QVhRV530', 3, '2015-05-19 07:23:21', '2015-05-18 20:48:42', 'Admin', 30, '', 'Administrative', 'User', '', '', 2, 0, 0);
+INSERT INTO `user` VALUES(2, 1, 'justin', '$1$Bq3.0h5.$rYEq/atj3kiH0LdDjZWHB0', 0, NULL, '2015-05-19 07:24:33', 'Tech', 30, '', 'Justin', 'Brown', '', '', 16, 0, 0);
+INSERT INTO `user` VALUES(3, 1, 'sarah', '$1$qS0.rm..$VVLumaEEgN91uBawFW4OC/', 0, NULL, '2015-05-19 07:27:57', 'Tech', 30, '', 'Sarah', 'Greene', '', '', 12, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -643,16 +828,19 @@ INSERT INTO `user` (`user_id`, `user_enabled`, `login_id`, `user_cryptpassword`,
 -- Table structure for table `userpreferences`
 --
 
-CREATE TABLE IF NOT EXISTS `userpreferences` (
-  `userpreference_id` int(11) NOT NULL AUTO_INCREMENT,
+CREATE TABLE `userpreferences` (
+  `userpreference_id` int(11) NOT NULL auto_increment,
   `user_id` int(11) NOT NULL,
   `pref_key` varchar(63) NOT NULL,
-  `pref_value` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`userpreference_id`),
+  `pref_value` varchar(255) default NULL,
+  PRIMARY KEY  (`userpreference_id`),
   KEY `pref_key` (`pref_key`),
   KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=8 ;
 
+--
+-- Dumping data for table `userpreferences`
+--
 
 
 -- --------------------------------------------------------
@@ -661,44 +849,17 @@ CREATE TABLE IF NOT EXISTS `userpreferences` (
 -- Table structure for table `whats_new_user`
 --
 
-CREATE TABLE IF NOT EXISTS `whats_new_user` (
-  `whats_new_user_id` int(11) NOT NULL AUTO_INCREMENT,
-  `message_key` varchar(33) DEFAULT NULL,
+CREATE TABLE `whats_new_user` (
+  `whats_new_user_id` int(11) NOT NULL auto_increment,
+  `message_key` varchar(33) default NULL,
   `user_id` int(11) NOT NULL,
-  `view_count` int(11) DEFAULT NULL,
-  `hide` int(1) DEFAULT NULL,
-  PRIMARY KEY (`whats_new_user_id`),
+  `view_count` int(11) default NULL,
+  `hide` int(1) default NULL,
+  PRIMARY KEY  (`whats_new_user_id`),
   KEY `message_key` (`message_key`),
   KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
 
-
-CREATE TABLE taskslog (
-  tasklog_id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  tl_key VARCHAR(64),
-  tl_last_run DATETIME,
-  INDEX(tl_key)
-);
-
-ALTER TABLE taskslog ADD COLUMN tl_run_duration FLOAT NULL AFTER tl_last_run;
-ALTER TABLE taskslog ADD COLUMN tl_run_peak_memory FLOAT NULL AFTER tl_run_duration;
-
-DROP TABLE IF EXISTS changelog;
-CREATE TABLE IF NOT EXISTS `changelog` (
-  `changelog_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `changed_on` datetime NOT NULL,
-  `itemobject_id` int(11) DEFAULT NULL,
-  `itemversion_id` int(11) DEFAULT NULL,
-  `typeobject_id` int(11) DEFAULT NULL,
-  `typeversion_id` int(11) DEFAULT NULL,
-  `locator_prefix` VARCHAR(2) DEFAULT NULL,
-  `change_code` VARCHAR(4) NOT NULL,
-  PRIMARY KEY (`changelog_id`),
-  KEY `user_id` (`user_id`),
-  KEY `itemobject_id` (`itemobject_id`),
-  KEY `itemversion_id` (`itemversion_id`),
-  KEY `typeobject_id` (`typeobject_id`),
-  KEY `typeversion_id` (`typeversion_id`),
-  KEY `change_code` (`change_code`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+--
+-- Dumping data for table `whats_new_user`
+--
