@@ -76,7 +76,7 @@ RewriteEngine on
 RewriteCond %{SCRIPT_FILENAME} !-f
 RewriteCond %{SCRIPT_FILENAME} !-d
 RewriteCond %{REQUEST_URI} ^/partforge
-RewriteRule ^(.*)$ /partforge/index.php/$1
+RewriteRule ^.*$ /partforge/index.php
 ```
 
 ##### 4. Create the database.
