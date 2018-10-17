@@ -827,7 +827,7 @@
         	$records_to_delete = DbSchema::getInstance()->getRecords('partnumber_id',"SELECT * FROM partnumbercache WHERE typeversion_id='{$typeversion_id}'");
         	$part_numbers = explode('|',$type_part_number);
         	$part_descriptions = explode('|',$type_description);
-        	if (count($part_number)==count($part_description)) {
+        	if (count($part_numbers)==count($part_descriptions)) {
         		$pns_to_save = array();
         		foreach($part_numbers as $index => $pn) {
         			$pns_to_save[$index] = array('partnumber_alias' => $index, 'part_number' => $part_numbers[$index], 'part_description' => $part_descriptions[$index]);
