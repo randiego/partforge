@@ -1,0 +1,1 @@
+This directory is where the PHP session files are stored.  It should be writeable by PHP.

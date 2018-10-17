@@ -1,1 +1,1 @@
-This directory contains document The class files for the report generating mechanism.
+This directory contains class files for the report generating mechanism.
