@@ -30,7 +30,7 @@ troubleshoot problems on a specific serial number remotely and without disassemb
 
 I've tried installing PartForge on a few different platforms.  Below are my notes for each specific platform.
 
-Common theme: Apache 2+, php 5 versions 5.2.9+ (extensions: curl, gd2, mysql, mysqli; helpful settings: memory_limit=256M, post_max_size=50M), MySQL 5.5+.
+Common theme: Apache 2+, php 5 versions 5.2.9+ or php 7.2+ (extensions: curl, gd2, mysqli; helpful settings: memory_limit=256M+, post_max_size=50M+), MySQL 5.5+ or MariaDB.
 
 #### Installing on Centos/Redhat with shell access
 
@@ -126,10 +126,11 @@ RewriteRule ^.*$ "http://partforge.mydomain.com/" [R,L]
 Modify the /partforge/public/.htaccess file to look like this:
 
 ```
+Options -MultiViews
 RewriteEngine on
 RewriteCond %{SCRIPT_FILENAME} !-f
 RewriteCond %{SCRIPT_FILENAME} !-d
-RewriteRule ^(.*)$ /index.php/$1
+RewriteRule ^.*$ /index.php
 ```
 
 ##### 4. Create the database and user
@@ -144,8 +145,9 @@ If the install.php script reports that your php configuration is not correct or 
 it may be possible to create a file php5.ini with the following contents, and place it in your webroot.
 Refer to GoDaddy's documentation.
 ```
-memory_limit = 256M
-post_max_size = 40M
+memory_limit = 256M;
+post_max_size = 40M;
+magic_quotes_gpc = Off;
 ```   
 
 ##### 6. Use the File Manager to rename the install.php file to install.php.done so that it can no longer be run by site users. 

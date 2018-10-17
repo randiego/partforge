@@ -45,9 +45,9 @@ class MaintenanceTaskRunner {
 		$this->scheduled_tasks = array(
 			array('name' => 'service_inprocess_workflows', 'interval' => 30), // this should really be as responsive as possible
 			array('name' => 'process_watch_notifications', 'interval' => 1), 
-			array('name' => 'update_definition_stats', 'interval' => 5*60),
+			array('name' => 'update_definition_stats', 'interval' => 3600),
 			array('name' => 'update_cached_fields', 'interval' => 8*3600),
-			array('name' => 'update_user_stats', 'interval' => 5*60),
+			array('name' => 'update_user_stats', 'interval' => 3600),
 			array('name' => 'generate_user_reports', 'interval' => 5*60),   // reports have their own intervals, so this is not too frequent
 		);
 		

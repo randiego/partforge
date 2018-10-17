@@ -141,7 +141,7 @@ class ItemDefinitionViewPDF extends ItemViewPDF {
 		$out = '<table border="0.5" cellpadding="5" cellspacing="0"><tr>
 				<td><div><h2>'.TextToHtml($title).'</h2><br />'.$header_html.'</div></td>
 						</tr></table>';
-		$this->setHtmlVSpace(array('h2' => array(0 => array('h'=>'','n' => 0), 1 => array('h'=>'','n' => 0)))); // makes paragraph spacing more sane		
+		$this->setHtmlVSpace(array('h2' => array(0 => array('h'=>0,'n' => 0), 1 => array('h'=>0,'n' => 0)))); // makes paragraph spacing more sane		
 		$this->WriteHTML($out,true,false,false,false);		
 		
 		
@@ -175,7 +175,7 @@ class ItemDefinitionViewPDF extends ItemViewPDF {
 		
 	}
 
-    public function buildDocument($typeversion_id, $queryvars) {
+    public function buildTypeDocument($typeversion_id, $queryvars) {
     	$show_linked_procedures = isset($queryvars['show_linked_procedures']) ? $queryvars['show_linked_procedures'] : false;
     	$this->initializeDocument();
     	$this->setListIndentWidth(4.0);

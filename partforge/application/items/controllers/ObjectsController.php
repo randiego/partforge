@@ -33,6 +33,9 @@ class Items_ObjectsController extends RestControllerActionAbstract
 	 * /items/objects?typeobject_id=12 will return a list of itemobject_ids of the specified type.
 	 * /items/objects?typeobject_id=12&has_an_itemobject_id=123 will restrict the search to return only object IDs
 	 * which have an item object (a component) of 123.
+	 * Adding get_objects=1 will return the current version data of each of the objects in the return set as nested lists of fields
+	 *   just like the corresponding /items/objects/nnn get action instead of the itemobject_ids.  
+	 * When get_objects=1, max_depth can also be specified as with the corresponding /items/objects/nnn get action.
 	 */
 	public function indexAction() {
 		$typeobject_id = isset($this->params['typeobject_id']) ? (is_numeric($this->params['typeobject_id']) ? addslashes($this->params['typeobject_id']) : null) : null;
@@ -46,7 +49,18 @@ class Items_ObjectsController extends RestControllerActionAbstract
 					LEFT JOIN itemcomponent ON itemcomponent.belongs_to_itemversion_id=itemversion.itemversion_id
 					WHERE typeversion.typeobject_id='{$typeobject_id}' {$and_where}
 					ORDER BY itemversion.effective_date");
-			$this->view->itemobject_ids = extract_column($records, 'itemobject_id');
+			
+			$get_objects = isset($this->params['get_objects']) ? $this->params['get_objects']==1 : false;
+			if ($get_objects) {
+				$max_depth = isset($this->params['max_depth']) ? (is_numeric($this->params['max_depth']) ? $this->params['max_depth'] : null) : null;
+				$objects = array();
+				foreach($records as $record) {
+					$objects[] = DBTableRowItemObject::getItemObjectFullNestedArray($record['itemobject_id'],null,$max_depth,0);
+				}
+				$this->view->itemobjects = $objects;
+			} else {
+				$this->view->itemobject_ids = extract_column($records, 'itemobject_id');
+			}
 		}
 	}
 	

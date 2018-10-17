@@ -190,6 +190,15 @@ function step_2() {
 	} else {
 		php_ini_ok('session.auto_start');
 	}
+	if (ini_get('magic_quotes_gpc')) {
+		php_ini_error('magic_quotes_gpc','This must be turned off.');
+		$error = true;
+	} else {
+		php_ini_ok('magic_quotes_gpc');
+	}
+	
+	
+	
 	
 	$minversion = '5.2.9';
 	$toolargeversion = '6.0.0';
@@ -309,13 +318,13 @@ function getSubmittedEmailsAndCheckRequired($paramnames) {
 	return $success;
 }
 
-function get_records($idfieldname,$query) {
+function get_records($connection, $idfieldname,$query) {
 	$out = array();
-	$result = @mysql_query($query);
+	$result = @mysqli_query($connection, $query);
 	if ($result) {
-		$num_results = mysql_num_rows($result);
+		$num_results = mysqli_num_rows($result);
 		for ($i=0; $i < $num_results; $i++) {
-			$row = mysql_fetch_assoc($result);
+			$row = mysqli_fetch_assoc($result);
 			if ($idfieldname=='') {
 				$out[] = $row;
 			} else {
@@ -358,17 +367,17 @@ function step_3(){
 			error_message("All fields are required!");
 		} else {
 			$dbok = true;
-			$connection = mysql_connect($_SESSION['globals']['host'], $_SESSION['globals']['username'], $_SESSION['globals']['password']);
+			$connection = mysqli_connect($_SESSION['globals']['host'], $_SESSION['globals']['username'], $_SESSION['globals']['password']);
 			if (!$connection) {
 				$dbok = false;
 				error_message("Cannot connect to host using the specified username and password.");
 			} else {
-				$db_selected = mysql_select_db($_SESSION['globals']['dbname'], $connection);
+				$db_selected = mysqli_select_db($connection, $_SESSION['globals']['dbname']);
 				if (!$db_selected) {
 					$dbok = false;
 					error_message("Cannot select the specified database.");
 				} else {
-					$recs = get_records('Tables_in_'.$_SESSION['globals']['dbname'],"SHOW TABLES");
+					$recs = get_records($connection, 'Tables_in_'.$_SESSION['globals']['dbname'],"SHOW TABLES");
 					$tablenames = array_keys($recs);
 					if (in_array('typeversion',$tablenames) && count($tablenames) > 5) {
 						$dbok = false;
@@ -389,8 +398,8 @@ function step_3(){
 									$query .= $line;
 							
 									if (preg_match('/;\s*$/', $line)) {							
-										mysql_query($query, $connection);
-										$err = mysql_error();
+										mysqli_query($connection, $query);
+										$err = mysqli_error($connection);
 										if (!empty($err))
 											break;
 										$query = '';

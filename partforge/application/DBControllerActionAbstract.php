@@ -45,9 +45,14 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
         $last_task_run = getGlobal('last_task_run');
         $last_chance_task_interval = 600; // seconds be longer than standard cron interval servicing cron/servicetasks
         if (( is_null($last_task_run) || script_time() > strtotime($last_task_run) + $last_chance_task_interval) && $config->fake_cron_service) {
-        	setGlobal('last_task_run', time_to_mysqldatetime(script_time()));
-        	$TaskRunner = new MaintenanceTaskRunner(array());
-        	$TaskRunner->run();
+        	// now we check to see if DB version is OK because we can't plan to do much without the right DB version
+        	if (Zend_Registry::get('config')->databaseversion == getGlobal('databaseversion')) {
+        		setGlobal('last_task_run', time_to_mysqldatetime(script_time()));
+        		$TaskRunner = new MaintenanceTaskRunner(array());
+        		$TaskRunner->run();
+        	} else {
+        		LoginStatus::getInstance()->setValidUser(false);
+        	}
         }
         
     }

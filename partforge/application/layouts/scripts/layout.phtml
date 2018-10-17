@@ -92,7 +92,7 @@ function fetchMenuLinks() {
 var baseUrl = '<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>';
 $(document).ready(function () {
 	$( ".bd-button, .listrowlink, .minibutton2, .searchbutton" ).button();
-	$('#headmessages').append('<?php echo addslashes(fetchPageBannerDiv());?>');
+	$('#headmessages').append('<?php echo str_replace("\n","",str_replace("\r","", addslashes(fetchPageBannerDiv())));?>');
 	$('#navlist').buttonset();
 });
 </script>

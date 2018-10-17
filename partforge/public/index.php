@@ -33,11 +33,9 @@ Zend_Registry::set('customAcl',$acl);
 $frontController->registerPlugin(new CustomControllerAclManager($acl));
 $frontController->registerPlugin(new Zend_Controller_Plugin_PutHandler());
 
-
 if (!isset($_SESSION['account'])) {
 	$_SESSION['account'] = new DBTableRowUser();
 	$_SESSION['account']->user_type = $acl->defaultRole();
-	error_log("new session was created.\r\n");
 }
 
 /*

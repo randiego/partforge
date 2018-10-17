@@ -247,7 +247,8 @@
         				}
         			}
         		} else {
-        			if ($this->isRequired($fieldname) && trim($this->_fields[$fieldname])=='') {
+        			$regularized_value = DBTableRowItemVersion::varToStandardForm($this->_fields[$fieldname], $this->_fieldtypes[$fieldname]);
+        			if ($this->isRequired($fieldname) &&  (is_null($regularized_value) || ($regularized_value===''))) {
         				$errormsg[$fieldname] = 'Please enter '.$this->formatFieldnameNoColon($fieldname).'.';
         			} elseif (trim($this->_fields[$fieldname])!='' && str_contains($this->_fieldtypes[$fieldname]['type'],'float') && !is_numeric($this->_fields[$fieldname])) {
         				$errormsg[$fieldname] = $this->formatFieldnameNoColon($fieldname).' must be numeric.';

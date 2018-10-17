@@ -5,11 +5,11 @@ RewriteEngine on
 #RewriteCond %{SCRIPT_FILENAME} !-f
 #RewriteCond %{SCRIPT_FILENAME} !-d
 #RewriteCond %{REQUEST_URI} ^/partforge
-#RewriteRule ^(.*)$ /partforge/index.php/$1
+#RewriteRule ^.*$ /partforge/index.php
 
 # If you have defined a domain or subdomain pointing 
 # directly to this (public) directory, use this...
 
 RewriteCond %{SCRIPT_FILENAME} !-f
 RewriteCond %{SCRIPT_FILENAME} !-d
-RewriteRule ^(.*)$ /index.php/$1
+RewriteRule ^.*$ /partforge/index.php

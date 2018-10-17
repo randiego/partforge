@@ -38,6 +38,7 @@ class DbSchema {   // singleton
     protected $_tree_data = array();
     protected $_rel_dep_on_table_array = array();
     protected $_rel_table_is_dep_on_array = array();
+    protected static $_db_link = null;
     
     protected function __construct() {
 		global $DICTIONARY;
@@ -55,26 +56,28 @@ class DbSchema {   // singleton
 		$config = Zend_Registry::get('config');
 		$this->connectMySql($config->db_params->host,$config->db_params->username,$config->db_params->password,$config->db_params->dbname);
 		if ($config->local_testing) {  // to give enough time for stepping through debugger
-			$result = mysql_query("SET SESSION wait_timeout=600;");
+			$result = mysqli_query(self::$_db_link, "SET SESSION wait_timeout=600;");
 		}
 		// the default is really low for this.  Could set globally once, but not sure how to remember
-		$result = mysql_query("SET SESSION group_concat_max_len = 100000;");
+		$result = mysqli_query(self::$_db_link, "SET SESSION group_concat_max_len = 100000;");
     }
         
     protected function connectMySql($host,$username,$password,$dbname) {
-		$db = @mysql_connect($host,$username,$password);
-		if (!$db) {
-			if (mysql_errno() == 1203) { // too many connections
-				$msg = 'Error connecting to database: '.mysql_error().'; The server is too busy at the moment. You may click refresh in your browser or try again later.';
+		self::$_db_link = mysqli_connect($host,$username,$password,$dbname);
+		if (!self::$_db_link) {
+			if (mysqli_errno(self::$_db_link) == 1203) { // too many connections
+				$msg = 'Error connecting to database: '.mysqli_error(self::$_db_link).'; The server is too busy at the moment. You may click refresh in your browser or try again later.';
 			} else {
-				$msg = 'Error connecting to database: '.mysql_error().'; You may click refresh in your browser or try again later.';
+				$msg = 'Error connecting to database: '.mysqli_error(self::$_db_link).'; You may click refresh in your browser or try again later.';
 			}
 			// we should assume that we do not have any framework ready for a call to showdialog if this is the first useable of DbSchema
 			echo block_text_html($msg);
 			die();
 		}
-		
-		mysql_select_db($dbname);
+    }
+    
+    public function getConnectionLink() {
+    	return self::$_db_link;
     }
     
     public static function getInstance()
@@ -355,8 +358,8 @@ class DbSchema {   // singleton
     }
     
     private function handle_mysql_error($source_text) {
-		$err = mysql_errno();
-		$msg = mysql_error();
+		$err = mysqli_errno(self::$_db_link);
+		$msg = mysqli_error(self::$_db_link);
 		throw new Exception("Mysql Error #{$err}, {$msg} in $source_text");
     }
     
@@ -369,17 +372,18 @@ class DbSchema {   // singleton
     public function getRecords($idfieldname,$query) { // function will throw exception on error
 		$out = array();
 		$this->logQuery($query);
-		$result = @mysql_query($query);
+		$result = mysqli_query(self::$_db_link, $query);
 		if ($result) {
-			$num_results = mysql_num_rows($result);
+			$num_results = mysqli_num_rows($result);
 			for ($i=0; $i < $num_results; $i++) {
-				$row = mysql_fetch_assoc($result);
+				$row = mysqli_fetch_assoc($result);
 				if ($idfieldname=='') {
 					$out[] = $row;
 				} else {
 					$out[$row[$idfieldname]] = $row;
 				}
 			}
+            //mysqli_free_result($result);
 		} else {
 			$this->handle_mysql_error("DbSchema::getRecords($idfieldname,$query)");
 		}
@@ -388,11 +392,11 @@ class DbSchema {   // singleton
     
     public function mysqlQuery($query) {
 		$this->logQuery($query);
-    	$result = @mysql_query($query);
+    	$result = @mysqli_query(self::$_db_link, $query);
 		if (!$result) {
 			$this->handle_mysql_error("DbSchema::mysqlQuery($query)");
 		}
-		return mysql_affected_rows();
+		return mysqli_affected_rows(self::$_db_link);
     }
     
     public function nonPrimaryFieldNames($tablename) {
@@ -455,17 +459,17 @@ class DbSchema {   // singleton
 	
 			$query = "insert into {$tablename} (".implode(',',$fieldnames).") values (".implode(',',$valarray).")";
 			$this->logQuery($query);
-			$result = mysql_query($query);
+			$result = mysqli_query(self::$_db_link, $query);
 			// if an insert fails, that probably means this email is already present, so just update instead
 	
 			if (!$result) {
-				if (mysql_errno()!=1062) {
+				if (mysqli_errno(self::$_db_link)!=1062) {
 					$this->handle_mysql_error("DbSchema::saveRecord()-1");
 				} else if ($handle_err_dups_too) {
 					$this->handle_mysql_error("DbSchema::saveRecord()-2");
 				}
 			} else {
-				$fields[$idfieldname] = mysql_insert_id();
+				$fields[$idfieldname] = mysqli_insert_id(self::$_db_link);
 			}
 		} else {
 	
@@ -475,9 +479,9 @@ class DbSchema {   // singleton
 			}
 			$query = "update {$tablename} set ".implode(',',$queryarray)." where {$idfieldname}='".$fields[$idfieldname]."'";
 			$this->logQuery($query);
-			$result = mysql_query($query);
+			$result = mysqli_query(self::$_db_link, $query);
 			if (!$result) {
-				if (mysql_errno()!=1062) {
+				if (mysqli_errno(self::$_db_link)!=1062) {
 					$this->handle_mysql_error("DbSchema::saveRecord()-3");
 				} else if ($handle_err_dups_too) {
 					$this->handle_mysql_error("DbSchema::saveRecord()-4");
@@ -490,7 +494,7 @@ class DbSchema {   // singleton
     public function deleteRecord($tablename,$idfieldvalue,$idfieldname, $limit_clause='LIMIT 1') {
     	$query = "delete from {$tablename} where {$idfieldname}='{$idfieldvalue}' {$limit_clause}";
     	$this->logQuery($query);
-		$result = mysql_query($query);
+		$result = mysqli_query(self::$_db_link,$query);
 		if (!$result) {
 			$this->handle_mysql_error("DbSchema::deleteRecord($tablename,$idfieldvalue,$idfieldname)");
 		}            

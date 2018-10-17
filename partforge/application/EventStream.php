@@ -117,7 +117,7 @@ class EventStream {
 					$streamlines = array_merge($streamlines,$morelines);
 				}
 			}
-			uasort($streamlines,eventstream_cmp);
+			uasort($streamlines,'eventstream_cmp');
 		}
 		return $streamlines;
 	}
@@ -343,7 +343,7 @@ class EventStream {
 			$out[$idx]['last_name'] = $records[$outrec['user_id']]['last_name'];
 		}	
 		
-		uasort($out,eventstream_cmp);
+		uasort($out,'eventstream_cmp');
 		
 		return $out;
 	

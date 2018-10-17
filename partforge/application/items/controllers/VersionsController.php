@@ -29,17 +29,58 @@ class Items_VersionsController extends RestControllerActionAbstract
 	/*
 	 * GET /items/versions
 	*
-	* Return a list of all versions of all items, subject to query variables.  It will return itemversion_id.  Additional information
-	* will need to be queried by calls to /items/versions/n.
+	* Return a list of all versions of all items, subject to query variables.  It will return itemversion_ids or corresponding expanded nested lists.  
 	*
 	* if typeversion_id is specified, all itemversion_id are returned with that specific typeversion_id.  If typeobject_id is specified
 	* then those are returned.  If itemobject_id is specified, then all the versions for that specific itemobject_id is returned.
-	* if the parameter fields=field1,field2,etc. are specified, them we return an array with the itemversion_id as the key and
-	* a sub array with each of the fields given.
+	* 
+	* Adding get_objects=1 will return the current version data of each of the objects in the return set as nested lists of fields
+	*   just like the corresponding /items/objects/nnn get action instead of the itemobject_ids.  
+	* When get_objects=1, max_depth can also be specified as with the corresponding /items/objects/nnn get action.
 	*/
 	public function indexAction() 
 	{
-		$this->noOp();
+		$typeobject_id = isset($this->params['typeobject_id']) ? (is_numeric($this->params['typeobject_id']) ? addslashes($this->params['typeobject_id']) : null) : null;
+		$typeversion_id = isset($this->params['typeversion_id']) ? (is_numeric($this->params['typeversion_id']) ? addslashes($this->params['typeversion_id']) : null) : null;
+		$itemobject_id = isset($this->params['itemobject_id']) ? (is_numeric($this->params['itemobject_id']) ? addslashes($this->params['itemobject_id']) : null) : null;
+		$has_an_itemobject_id = isset($this->params['has_an_itemobject_id']) ? (is_numeric($this->params['has_an_itemobject_id']) ? addslashes($this->params['has_an_itemobject_id']) : null) : null;
+		$records = null;
+		if (!is_null($itemobject_id)) {
+			$and_where = !is_null($has_an_itemobject_id) ? " AND (itemcomponent.has_an_itemobject_id='{$has_an_itemobject_id}')" : '';
+			$records = DbSchema::getInstance()->getRecords('',"SELECT DISTINCT itemversion.itemversion_id FROM itemversion
+					LEFT JOIN typeversion ON typeversion.typeversion_id=itemversion.typeversion_id
+					LEFT JOIN itemcomponent ON itemcomponent.belongs_to_itemversion_id=itemversion.itemversion_id
+					WHERE itemversion.itemobject_id='{$itemobject_id}' {$and_where}
+					ORDER BY itemversion.effective_date");		
+		} elseif (!is_null($typeversion_id)) {
+			$and_where = !is_null($has_an_itemobject_id) ? " AND (itemcomponent.has_an_itemobject_id='{$has_an_itemobject_id}')" : '';
+			$records = DbSchema::getInstance()->getRecords('',"SELECT DISTINCT itemversion.itemversion_id FROM itemversion
+					LEFT JOIN typeversion ON typeversion.typeversion_id=itemversion.typeversion_id
+					LEFT JOIN itemcomponent ON itemcomponent.belongs_to_itemversion_id=itemversion.itemversion_id
+					WHERE typeversion.typeversion_id='{$typeversion_id}' {$and_where}
+					ORDER BY itemversion.effective_date");		
+		} elseif (!is_null($typeobject_id)) {
+			$and_where = !is_null($has_an_itemobject_id) ? " AND (itemcomponent.has_an_itemobject_id='{$has_an_itemobject_id}')" : '';
+			$records = DbSchema::getInstance()->getRecords('',"SELECT DISTINCT itemversion.itemversion_id FROM itemversion
+					LEFT JOIN typeversion ON typeversion.typeversion_id=itemversion.typeversion_id
+					LEFT JOIN itemcomponent ON itemcomponent.belongs_to_itemversion_id=itemversion.itemversion_id
+					WHERE typeversion.typeobject_id='{$typeobject_id}' {$and_where}
+					ORDER BY itemversion.effective_date");
+		}
+		
+		if (!is_null($records)) {
+			$get_objects = isset($this->params['get_objects']) ? $this->params['get_objects']==1 : false;
+			if ($get_objects) {
+				$max_depth = isset($this->params['max_depth']) ? (is_numeric($this->params['max_depth']) ? $this->params['max_depth'] : null) : null;
+				$objects = array();
+				foreach($records as $record) {
+					$objects[] = DBTableRowItemObject::getItemVersionFullNestedArray($record['itemversion_id'],$max_depth,0);
+				}
+				$this->view->itemversions = $objects;
+			} else {
+				$this->view->itemversion_ids = extract_column($records, 'itemversion_id');
+			}			
+		}
 	}
 
 	/*
@@ -77,7 +118,7 @@ class Items_VersionsController extends RestControllerActionAbstract
 					$Pdf->Output(make_filename_safe('ItemView_'.$ItemVersion->part_number.'_'.$ItemVersion->item_serial_number.'.pdf'),'D');
 					exit;
 				case 'nested':
-					foreach(DBTableRowItemObject::getItemObjectFullNestedArray($ItemVersion->itemobject_id,$ItemVersion->effective_date,$max_depth,0) as $fieldname => $value) {
+					foreach(DBTableRowItemObject::getItemVersionFullNestedArray($ItemVersion->itemversion_id,$max_depth,0) as $fieldname => $value) {
 						$this->view->{$fieldname} = $value;
 					}
 					break;

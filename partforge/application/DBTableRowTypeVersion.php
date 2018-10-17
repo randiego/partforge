@@ -1530,7 +1530,7 @@
          */
         static function markupDiffBetweenTextBlocks($was,$is) {
         	require_once("PHPFineDiff/finediff.php");
-        	$opcodes = FineDiff::getDiffOpcodes($was, $is, FineDiff::wordDelimiters /* , default granularity is set to character */);
+        	$opcodes = FineDiff::getDiffOpcodes($was, $is, FineDiff::$characterGranularity /* , default granularity is set to character */);
         	return FineDiff::renderDiffToHTMLFromOpcodes($was, $opcodes);
         }        
 

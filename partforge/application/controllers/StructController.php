@@ -868,7 +868,7 @@ class StructController extends DBControllerActionAbstract
     
     public static function renderItemDefinitionViewPdf($typeversion_id, $queryvars=array()) {
     	$Pdf = new ItemDefinitionViewPDF();
-    	$Pdf->buildDocument($typeversion_id, $queryvars);
+    	$Pdf->buildTypeDocument($typeversion_id, $queryvars);
     	
     	// probably a more efficient way, but lets get the typeobject_id
     	$TypeVersion = new DBTableRowTypeVersion();

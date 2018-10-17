@@ -87,7 +87,7 @@ class ReportDataCommentListView extends ReportDataWithCategory {
 		$DBTableRowQuery->addJoinClause("LEFT JOIN itemversion on itemversion.itemversion_id = itemobject.cached_current_itemversion_id")
 						->addSelectFields('itemversion.item_serial_number');
 		
-		$iv_alias = itemversion; //$DBTableRowQuery->getJoinAlias('itemversion');
+		$iv_alias = 'itemversion'; //$DBTableRowQuery->getJoinAlias('itemversion');
 		$DBTableRowQuery->addSelectFields("
 				IF ( itemobject.cached_last_comment_date IS NULL OR  itemobject.cached_last_comment_date <= {$iv_alias}.effective_date,
 					IF (itemobject.cached_last_ref_date IS NULL OR itemobject.cached_last_ref_date <= {$iv_alias}.effective_date, {$iv_alias}.effective_date, itemobject.cached_last_ref_date ),

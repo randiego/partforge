@@ -160,7 +160,7 @@ class DefinitionEventStream {
 			$out[$idx]['last_name'] = $records[$outrec['user_id']]['last_name'];
 		}	
 		
-		uasort($out,defeventstream_cmp);
+		uasort($out,'defeventstream_cmp');
 		
 		return $out;
 	

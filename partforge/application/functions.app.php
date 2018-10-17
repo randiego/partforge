@@ -30,10 +30,6 @@ define('AUTOPROPAGATING_QUERY_PARAMS','pageno,search_string,search_date_from,sea
 
 require_once('functions.common.php');
 
-function show_db_error() { // this function must be defined for
-	showdialog('Error', 'There was a database error: '.mysql_error().'<br />Click refresh in your browser to retry, or try again later.',array());
-}
-
 /**
  * This is a simple substitution engine grabbed from
  * http://stackoverflow.com/questions/5815028/creating-a-simple-but-flexible-templating-engine
@@ -696,7 +692,7 @@ function fetchPageBannerDiv() {
 		}
 	}	
 	
-	if ($_SESSION['account']->user_type=='Admin') {
+	if (($_SESSION['account']->user_type=='Admin') && !Zend_Registry::get('config')->config_for_testing) { // we don't show if its a test
 		$installfile = htmlentities(Zend_Registry::get('config')->document_path_base.'/install.php');
 		if (file_exists($installfile)) {
 			$html .= '<div class="pageBannerDiv">Warning: The installation file "'.htmlentities($installfile).'" should be removed to prevent accidental or malicious reconfiguration.</div>';
@@ -893,6 +889,6 @@ function checkWasChangedItemField(&$changelist ,$name, $was=null, $is=null) {
 function fetch_like_query($str,$opening='%', $closing='%') {
 	$e = '=';
 	$str = str_replace(array($e, '_', '%'), array($e.$e, $e.'_', $e.'%'), $str);
-	$escaped = mysql_real_escape_string($str);
+	$escaped = mysqli_real_escape_string(DbSchema::getInstance()->getConnectionLink(), $str);
 	return "LIKE '{$opening}{$escaped}{$closing}' ESCAPE '='";
 }

@@ -260,7 +260,7 @@ class ItemViewPDF extends TCPDF {
 
 		}
 		$html .= '</table>';
-		$this->setHtmlVSpace(array('p' => array(0 => array('h'=>'','n' => 1), 1 => array('h'=>'','n' => 1)))); // makes paragraph spacing more sane
+		$this->setHtmlVSpace(array('p' => array(0 => array('h'=>0,'n' => 1), 1 => array('h'=>0,'n' => 1)))); // makes paragraph spacing more sane
 		$this->WriteHTML($html, true, false, false, false, '');
 	}
 

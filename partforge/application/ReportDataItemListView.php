@@ -468,7 +468,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
 		
 		if ($need_to_load_ItemVersion && (count($this->addon_fields_list)>0)) {
 			foreach($this->addon_fields_list as $fieldname => $fieldtype) {
-				if (isset($ItemVersion->{$fieldname}) && (trim($ItemVersion->{$fieldname})!=='')) {
+				if (isset($ItemVersion->{$fieldname})) {
 					$detail_out[$fieldname] = $ItemVersion->formatPrintField($fieldname, true, false, true);
 				}
 				$fieldtype2 = $ItemVersion->getFieldType($fieldname);

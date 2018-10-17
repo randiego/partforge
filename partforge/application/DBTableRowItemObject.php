@@ -143,6 +143,16 @@ class DBTableRowItemObject extends DBTableRow {
 		");
 	}
 	
+	/**
+	 * returns a nested dictionary of fields given a specific itemobject_id and optionally a date (to know which version should be retrieved)
+	 * 
+	 * @param int $itemobject_id
+	 * @param date string $effective_date if specified, locate the version that was active at or before this date
+	 * @param int $max_depth number of levels to descend
+	 * @param int $level the current level of recursion
+	 * @param array of int $parents breadcrumbs
+	 * @return dictionary of fields values, with subfields expacted as their own dictionaries.
+	 */
 	static function getItemObjectFullNestedArray($itemobject_id,$effective_date=null, $max_depth=null,$level=0,$parents = array()) {
 		$out = array();
 		$ItemVersion = new DBTableRowItemVersion();
@@ -167,5 +177,42 @@ class DBTableRowItemObject extends DBTableRow {
 		return $out;
 	}	
 
+	/**
+	 * returns a nested dictionary of fields given a specific itemversion_id.  Unlike getItemObjectFullNestedArray this starts with the
+	 * specified itemVERSION_id instead of inferring the version from the itemobject_id and the effective_date.  For sub components, though,
+	 * it will recurse into the getItemObjectFullNestedArray function and use effective dates for determining versions of the components.
+	 * 
+	 * @param int $itemversion_id
+	 * @param int $max_depth number of levels to descend
+	 * @param int $level the current level of recursion
+	 * @param array of int $parents breadcrumbs
+	 * @return dictionary of fields values, with subfields expacted as their own dictionaries.
+	 */
+
+	static function getItemVersionFullNestedArray($itemversion_id,$max_depth=null,$level=0,$parents = array()) {
+		$out = array();
+		$ItemVersion = new DBTableRowItemVersion();
+		if ($ItemVersion->getRecordById($itemversion_id)) {
+	
+			foreach($ItemVersion->getExportFieldTypes() as $fieldname => $fieldtype) {
+				if (isset($ItemVersion->{$fieldname})) {
+					if ($fieldtype['type']=='component') {
+						if ((is_null($max_depth) || ($max_depth >$level)) && !in_array($ItemVersion->{$fieldname},$parents)) {
+							$new_parents = array_merge($parents, array($ItemVersion->itemobject_id));
+							// we then recurse into getItemObjectFullNestedArray to fetch all the components using effective_dates to determine the version
+							$out[$fieldname] = self::getItemObjectFullNestedArray($ItemVersion->{$fieldname},$ItemVersion->effective_date,$max_depth,$level+1,$new_parents);
+						} else {
+							$value_array = $ItemVersion->getComponentValueAsArray($fieldname);
+							$out[$fieldname] = $value_array[$ItemVersion->{$fieldname}];
+						}
+					} else {
+						$out[$fieldname] = $ItemVersion->{$fieldname};
+					}
+				}
+			}
+		}
+		return $out;
+	}
+	
 	
 }

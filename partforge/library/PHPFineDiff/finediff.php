@@ -389,7 +389,7 @@ class FineDiff {
 	*/
 	private function _processGranularity($from_segment, $to_segment) {
 		$delimiters = $this->granularityStack[$this->stackpointer++];
-		$has_next_stage = $this->stackpointer < count($this->granularityStack);
+		$has_next_stage = is_array($this->granularityStack) && ($this->stackpointer < count($this->granularityStack));
 		foreach ( FineDiff::doFragmentDiff($from_segment, $to_segment, $delimiters) as $fragment_edit ) {
 			// increase granularity
 			if ( $fragment_edit instanceof FineDiffReplaceOp && $has_next_stage ) {
