@@ -46,7 +46,7 @@ $(document).ready(function() {
 		});
     }
     	
-	activatefollowButton(followUrl,"");
+	activatefollowButton(followUrl,"",true);
     
 	/*
     $('#followButton').button( "option", "icons", { primary: "ui-icon-signal-diag"} );

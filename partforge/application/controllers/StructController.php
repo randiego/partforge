@@ -820,10 +820,11 @@ class StructController extends DBControllerActionAbstract
     				$this->navigator->jumpToView('itemdefinitionview',null,array('resetview' => 1,'typeversion_id' => $this->params['to_typeversion_id'],'msgi' => 1));
     				
     			case isset($this->params['btnFollow']):
-    				DBTableRowChangeSubscription::setFollowing($_SESSION['account']->user_id, null, $this->params['typeobject_id'], $this->params['notify_instantly'], $this->params['notify_daily']);
+    				DBTableRowChangeSubscription::setFollowing($_SESSION['account']->user_id, null, $this->params['typeobject_id'], $this->params['notify_instantly'], $this->params['notify_daily'], $this->params['follow_items_too']);
     				$_SESSION['account']->setPreference('followNotifyTimeHHMM', $this->params['followNotifyTimeHHMM']);
     				$_SESSION['account']->setPreference('followInstantly', $this->params['notify_instantly']);
     				$_SESSION['account']->setPreference('followDaily', $this->params['notify_daily']);
+    				$_SESSION['account']->setPreference('followItemsToo', $this->params['follow_items_too']);
     				$this->navigator->jumpToView(null,null,array('typeobject_id' => $this->params['typeobject_id']));
     			case isset($this->params['btnUnFollow']):
     				DBTableRowChangeSubscription::clearFollowing($_SESSION['account']->user_id, null, $this->params['typeobject_id']);

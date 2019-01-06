@@ -62,7 +62,19 @@ class WatchListReporter {
 			$DBTableRowQuery->setOrderByClause("ORDER BY changelog.changed_on asc");
 			$DBTableRowQuery->addAndWhere(" and (changelog.changed_on>='".time_to_mysqldatetime($start_time)."')");
 			$DBTableRowQuery->addAndWhere(" and (changelog.changed_on<='".time_to_mysqldatetime($end_time)."')");
-			$DBTableRowQuery->addAndWhere(" and Exists (select 1 from changesubscription where ((changesubscription.typeobject_id = changelog.trigger_typeobject_id) or (changesubscription.itemobject_id = changelog.trigger_itemobject_id)) and (changesubscription.user_id='{$user_id}')  and (changesubscription.notify_daily=1))");
+			$DBTableRowQuery->addAndWhere(" and Exists (select 1 from changesubscription where (
+						  (
+						    (changelog.trigger_itemobject_id IS NULL) and
+						    (changesubscription.typeobject_id = changelog.trigger_typeobject_id)
+						  ) or
+						  (
+						    (changelog.trigger_itemobject_id IS NOT NULL) and 
+						    ( 
+						       (changesubscription.itemobject_id = changelog.trigger_itemobject_id) or 
+						       ( (changesubscription.typeobject_id = changelog.trigger_typeobject_id) and  (changesubscription.follow_items_too=1) )
+						     )
+						  )					
+					) and (changesubscription.user_id='{$user_id}')  and (changesubscription.notify_daily=1))");
 			$records = DbSchema::getInstance()->getRecords('',$DBTableRowQuery->getQuery());
 			
 			DBTableRowUser::setUserPreference($user_id, 'lastFollowNotifyTimeDateAndHHMM', date('Y-m-d H:i', $end_time));			

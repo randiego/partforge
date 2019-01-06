@@ -3,13 +3,14 @@ var typeObjectId = <?php echo $this->dbtable->typeobject_id;?>;
 var pdfViewUrl = "<?php echo $this->navigator->getCurrentViewUrl('itemdefinitionviewpdf',null,array('typeversion_id' => $this->dbtable->typeversion_id, 'show_linked_procedures' => '_LINKEDPROCS_'));?>";
 var isAPart = <?php echo $this->dbtable->typecategory_id==2 ? 1 : 0;?>;
 var thisDefinitionViewUrl = "<?php echo $this->navigator->getCurrentViewUrl('itemdefinitionview','struct',array('typeobject_id' => $this->dbtable->typeobject_id));?>";
-var followUrl = "<?php echo $this->navigator->getCurrentHandlerUrl('btnFollow',null,null,array('typeobject_id' => $this->dbtable->typeobject_id, 'followNotifyTimeHHMM' => '_FOLLOWNOTIFYTIMEHHMM_', 'notify_instantly' => '_NOTIFYINSTANTLY_', 'notify_daily' => '_NOTIFYDAILY_'));?>";
+var followUrl = "<?php echo $this->navigator->getCurrentHandlerUrl('btnFollow',null,null,array('typeobject_id' => $this->dbtable->typeobject_id, 'followNotifyTimeHHMM' => '_FOLLOWNOTIFYTIMEHHMM_', 'notify_instantly' => '_NOTIFYINSTANTLY_', 'notify_daily' => '_NOTIFYDAILY_', 'follow_items_too' => '_ALLITEMS_'));?>";
 var followInstantly =  "<?php echo $_SESSION['account']->getPreference('followInstantly');?>";
 var followDaily =  "<?php echo $_SESSION['account']->getPreference('followDaily');?>";
+var followItemsToo =  "<?php echo $_SESSION['account']->getPreference('followItemsToo');?>";
 var followNotifyTimeHHMM =  "<?php echo $_SESSION['account']->getPreference('followNotifyTimeHHMM');?>";
 var followNotifyEmailMsg =  "<?php echo implode('  ',$_SESSION['account']->reasonsWhyCantRecieveWatchNotices());?>";
 </script>
-<script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/struct/itemdefinitionview.js?v=3" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/struct/itemdefinitionview.js?v=4" type="TEXT/JAVASCRIPT"></script>
 
 <?php
 global $itemcounts, $typerefs;

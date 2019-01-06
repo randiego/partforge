@@ -159,7 +159,14 @@ class UtilsController extends DBControllerActionAbstract
 						setGlobal('databaseversion', $databaseversion);
 					}					
 						
-			
+					if ($databaseversion=='4') {
+						$msgs[] = 'Upgrading to version 5: changesubscription table additions - Jan 2019';
+						DbSchema::getInstance()->mysqlQuery("ALTER TABLE `changesubscription` ADD COLUMN `follow_items_too` INT(1) DEFAULT 1 AFTER `typeobject_id`");
+						$databaseversion = '5';
+						setGlobal('databaseversion', $databaseversion);
+					}
+						
+					
 			}
 		}
 		$this->view->currentversion = getGlobal('databaseversion');

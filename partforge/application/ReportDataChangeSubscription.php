@@ -82,9 +82,11 @@ class ReportDataChangeSubscription extends ReportDataWithCategory {
 				    	->addSelectFields('partnumbercache.part_number, partnumbercache.part_description')
 				    	->addSelectFields('IF(io_tc.is_user_procedure=1, itemobject.cached_first_ver_date, "") as procedure_date')
 				    	->addSelectFields('IF(io_tc.is_user_procedure=1,"",itemversion.item_serial_number) as item_serial_number')
-				    	->addSelectFields('IF((io_tc.is_user_procedure IS NULL) and (to_tc.is_user_procedure=1) ,"All Procedures + Definition",
-						    			   IF((io_tc.is_user_procedure IS NULL) and (to_tc.is_user_procedure=0) ,"All Parts + Definition",
-					    			       IF((io_tc.is_user_procedure IS NOT NULL) and (io_tc.is_user_procedure=1) ,"Procedure","Part"))) as watching_changes_to');
+				    	->addSelectFields('IF((io_tc.is_user_procedure IS NULL) and (to_tc.is_user_procedure=1) and (changesubscription.follow_items_too=1) ,"All Procedures + Definition",
+									       IF((io_tc.is_user_procedure IS NULL) and (to_tc.is_user_procedure=1) and (changesubscription.follow_items_too=0) ,"Definition Only",
+						    			   IF((io_tc.is_user_procedure IS NULL) and (to_tc.is_user_procedure=0) and (changesubscription.follow_items_too=1) ,"All Parts + Definition",
+							    		   IF((io_tc.is_user_procedure IS NULL) and (to_tc.is_user_procedure=0) and (changesubscription.follow_items_too=0) ,"Definition Only",
+					    			       IF((io_tc.is_user_procedure IS NOT NULL) and (io_tc.is_user_procedure=1) ,"Procedure","Part"))))) as watching_changes_to');
     	 		
     }
 	

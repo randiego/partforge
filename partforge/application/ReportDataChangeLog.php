@@ -111,7 +111,19 @@ class ReportDataChangeLog extends ReportDataWithCategory {
 			case 'WATCHING24': 
 				$DBTableRowQuery->addAndWhere(" and (changelog.changed_on>'{$yesterday_mysql}')");
 			case 'WATCHING': 
-				$DBTableRowQuery->addAndWhere(" and Exists (select 1 from changesubscription where ((changesubscription.typeobject_id = changelog.trigger_typeobject_id) or (changesubscription.itemobject_id = changelog.trigger_itemobject_id)) and (changesubscription.user_id='{$this->_user_id}'))");
+				$DBTableRowQuery->addAndWhere(" and Exists (select 1 from changesubscription where (
+				        (
+						    (changelog.trigger_itemobject_id IS NULL) and
+						    (changesubscription.typeobject_id = changelog.trigger_typeobject_id)
+						  ) or
+						  (
+						    (changelog.trigger_itemobject_id IS NOT NULL) and 
+						    ( 
+						       (changesubscription.itemobject_id = changelog.trigger_itemobject_id) or 
+						       ( (changesubscription.typeobject_id = changelog.trigger_typeobject_id) and  (changesubscription.follow_items_too=1) )
+						     )
+						  )
+				      ) and (changesubscription.user_id='{$this->_user_id}'))");
 				break;
 			case 'MINE24':
 				$DBTableRowQuery->addAndWhere(" and (changelog.changed_on>'{$yesterday_mysql}')");

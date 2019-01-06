@@ -42,7 +42,7 @@ function timeSelectHtmlForWatches(selectTagId, classId, timevalueHHMM) {
  * Used whereever a followButton id is located to construct dialog and add click handler to.  
  * @param followUrl string url with constants _FOLLOWNOTIFYTIMEHHMM_, _NOTIFYINSTANTLY_, _NOTIFYDAILY_ to be substituted with the form results
  */
-function activatefollowButton(followUrl,footnote_text) {
+function activatefollowButton(followUrl,footnote_text,ask_all_items) {
 	if ($('#followButton').length) {
 		// create the popup follow dialog
 		$('<div />').attr('id','followDialogContainer').attr('title',"When something changes...").hide().appendTo('body');
@@ -50,6 +50,7 @@ function activatefollowButton(followUrl,footnote_text) {
 		h += '<label><input type="checkbox" name="notify_instantly" value="1" '+(followInstantly==1 ? 'checked="checked"' : '')+' />Email Me Instantly</label><br />';
 		h += '<label><input type="checkbox" name="notify_daily" value="1" '+(followDaily==1 ? 'checked="checked"' : '')+' />Send Me a Daily Summary at </label>'+timeSelectHtmlForWatches('timevalueHHMM', '', followNotifyTimeHHMM)+'<br /><div style="margin-left: 20px;"><span class="paren">(time is same for all your daily watches.)</span></div>';
 		h += '<label><input type="checkbox" name="no_notify" value="1" checked="checked" disabled="disabled" />Show on my Watchlist (Activity Tab)</label><br />';
+		if (ask_all_items) h += '<label><input type="checkbox" name="follow_items_too" value="1" '+(followItemsToo==1 ? 'checked="checked"' : '')+' />Also Include Any Items of This Type</label><br />';
 		if (footnote_text!='') h += '<div style="margin-top:10px;"><span class="paren">'+footnote_text+'</span></div>';
 		if (followNotifyEmailMsg!='') h += '<div style="margin-top:10px;"><span class="paren_red">Please fix the following problem before you can receive notifications: '+followNotifyEmailMsg+'</span></div>';
 		$('#followDialogContainer').html(h);
@@ -66,6 +67,9 @@ function activatefollowButton(followUrl,footnote_text) {
 						filledUrl = filledUrl.replace('_FOLLOWNOTIFYTIMEHHMM_',$('#timevalueHHMM').val());
 						filledUrl = filledUrl.replace('_NOTIFYINSTANTLY_',$('#followDialogContainer input[name="notify_instantly"]:checked').val() ? '1' : '0');
 						filledUrl = filledUrl.replace('_NOTIFYDAILY_',$('#followDialogContainer input[name="notify_daily"]:checked').val() ? '1' : '0');
+						if (ask_all_items) {
+							filledUrl = filledUrl.replace('_ALLITEMS_',$('#followDialogContainer input[name="follow_items_too"]:checked').val() ? '1' : '0');
+						}
 						window.location.href = filledUrl;
 						$( this ).dialog( "close" );
 					},
