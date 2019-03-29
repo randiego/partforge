@@ -1,4 +1,5 @@
 $(document).ready(function() {
-	$('select.changeselectbox').comboboxjumper();	    
+	$('select.changeselectbox').comboboxjumper();	
+	activateLinkToPageButton('#linkToPageButton',linkToPageUrl);
 });
 

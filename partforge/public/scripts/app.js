@@ -84,6 +84,39 @@ function activatefollowButton(followUrl,footnote_text,ask_all_items) {
 	}
 }
 
+/**
+ * Used to configure a popup dialog for showing the link to the current page
+ */
+function activateLinkToPageButton(element,linkToPageUrl) {
+	if ($(element).length) {
+		// create the popup link-to-page dialog
+		$('<div />').attr('id','linkToPageDialogContainer').attr('title',"Link to This Page").hide().appendTo('body');
+		var h = '';
+		h += '<div style="margin-top:10px;">Copy to clipboard: Ctrl+C</div>';
+		h += '<div style="margin-top:10px;"><input style="width:100%;" name="urlbox" type="text" value="'+linkToPageUrl+'"></div>';
+		h += '<div style="margin-top:10px;" id="qrcode"></div>';
+		$('#linkToPageDialogContainer').html(h);
+		$('#qrcode').qrcode(linkToPageUrl);
+		// now connect the on click handler that will override the normal link
+		$(element).click(function(link) {
+			var contentdiv = $('#linkToPageDialogContainer');			
+			dialogdiv = contentdiv.dialog({
+				position: { my: "left top", at: "right bottom", of: link },
+				width: 300,
+				height: 'auto',
+				buttons: {
+					"Close": function() {
+						$( this ).dialog( "close" );
+					}
+				},			
+				close: function(event,ui) {$(this).dialog('destroy');}
+			});
+			$('input[name="urlbox"]').select();  // preselects the text for easy copy
+			return false; // prevents the default link
+		});
+	}
+}
+
 
 /* include any js files here */
 

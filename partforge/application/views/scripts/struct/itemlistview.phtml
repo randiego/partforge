@@ -1,5 +1,8 @@
+<script type="text/javascript">
+var linkToPageUrl = "<?php echo DBTableRowTypeVersion::getListViewAbsoluteUrl($this->report_data->getViewCategory(),$this->is_user_procedure ? null : $_SESSION['account']->getPreference('chkShowProcMatrix'));?>";
+</script>
 <?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
-<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemlistview.js?v=3" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemlistview.js?v=4" type="TEXT/JAVASCRIPT"></script>
 <?php
     $this->layout()->title = $this->is_user_procedure ? 'List of Procedures' : 'List of Parts';
     $this->layout()->setLayout('layout');
@@ -54,8 +57,7 @@
     if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'ui:nonterminalbling')) {
 	    if (is_numeric($this->report_data->getViewCategory())) {
 		    $minibuttons->add_item( $this->navigator->getCurrentHandlerUrl('btnSavetoCSV'),"Save to Spreadsheet", 'Save all data for current search results into spreadsheet-readable (.csv) file');
-	    	$this_url =  DBTableRowTypeVersion::getListViewAbsoluteUrl($this->report_data->getViewCategory(),$this->is_user_procedure ? null : $_SESSION['account']->getPreference('chkShowProcMatrix'));
-		    $minibuttons->add_link( linkify('#','Link to Page','Copy of link to this page with current filter settings','bd-button',"window.prompt ('Copy to clipboard: Ctrl+C, Enter', '".$this_url."');"));
+		    $minibuttons->add_link( linkify('#','Link to Page','Copy of link to this page with current filter settings','bd-button',"",'','linkToPageButton'));
 	    }
     }
     

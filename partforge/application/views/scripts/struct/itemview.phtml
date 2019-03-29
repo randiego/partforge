@@ -6,10 +6,10 @@ var followInstantly =  "<?php echo $_SESSION['account']->getPreference('followIn
 var followDaily =  "<?php echo $_SESSION['account']->getPreference('followDaily');?>";
 var followNotifyTimeHHMM =  "<?php echo $_SESSION['account']->getPreference('followNotifyTimeHHMM');?>";
 var followNotifyEmailMsg =  "<?php echo implode('  ',$_SESSION['account']->reasonsWhyCantRecieveWatchNotices());?>";
-
+var linkToPageUrl = "<?php echo $this->dbtable->absoluteUrl();?>";
 </script>
 <?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
-<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemview.js?v=9" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemview.js?v=10" type="TEXT/JAVASCRIPT"></script>
 
 <?php
 
@@ -72,7 +72,7 @@ $html_head .= '<div id="itemviewSearchBlock">
 
 if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'ui:nonterminalbling')) {
 	// let user copy a link to this page
-	$detailslinks[] = linkify('#','Link to Page','Copy of link to this page','bd-button',"window.prompt ('Copy to clipboard: Ctrl+C, Enter', '".$this->dbtable->absoluteUrl()."');");
+	$detailslinks[] = linkify('#','Link to Page','Copy of link to this page','bd-button',"",'','linkToPageButton');
 	// this is sneaky, but this link will actually work if the JS is not executed, but is normally overridden by the JS.
 	$pdf_url = $this->navigator->getCurrentViewUrl('itemviewpdf',null,array('itemversion_id' => $this->dbtable->itemversion_id));
 	$detailslinks[] = linkify($pdf_url,'PDF','Open a printable PDF view of this page','bd-button','','','pdfButton');
@@ -169,6 +169,7 @@ $html .= '<div class="tablewrap">';
 $html .= '<div class="buttonrow">'.implode('&nbsp;',$detailslinks).'</div>';
 
 $html .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_WATCH_BUTTON','Click the "Watch" button to create a personal watchlist and receive email notifications when something changes on this page.','6/16/2016');
+$html .= DBTableRowWhatsNewUser::fetchWhatsNew('QR_CODE_IN_LINK_TO_PAGE','Click the "Link to Page" button to see a QR code you can scan with your phone camera to take you directly to this page.','3/28/2019');
 
 $fields_to_remove = array();
 

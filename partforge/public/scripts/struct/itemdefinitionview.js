@@ -47,6 +47,7 @@ $(document).ready(function() {
     }
     	
 	activatefollowButton(followUrl,"",true);
+	activateLinkToPageButton('#linkToPageButton',linkToPageUrl);
     
 	/*
     $('#followButton').button( "option", "icons", { primary: "ui-icon-signal-diag"} );
