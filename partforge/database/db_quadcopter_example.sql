@@ -73,7 +73,7 @@ INSERT INTO `comment` (`comment_id`, `user_id`, `proxy_user_id`, `itemobject_id`
 CREATE TABLE IF NOT EXISTS `document` (
   `document_id` int(11) NOT NULL AUTO_INCREMENT,
   `comment_id` int(11) NOT NULL,
-  `document_displayed_filename` varchar(64) DEFAULT NULL,
+  `document_displayed_filename` varchar(255) DEFAULT NULL,
   `document_stored_filename` varchar(255) DEFAULT NULL,
   `document_stored_path` varchar(64) DEFAULT '',
   `document_thumb_exists` int(1) DEFAULT NULL,
@@ -507,7 +507,7 @@ INSERT INTO `typecomponent_typeobject` (`typecomponent_id`, `can_have_typeobject
 CREATE TABLE IF NOT EXISTS `typedocument` (
   `document_id` int(11) NOT NULL AUTO_INCREMENT,
   `typeobject_id` int(11) NOT NULL,
-  `document_displayed_filename` varchar(64) DEFAULT NULL,
+  `document_displayed_filename` varchar(255) DEFAULT NULL,
   `document_stored_filename` varchar(255) DEFAULT NULL,
   `document_stored_path` varchar(64) DEFAULT '',
   `document_thumb_exists` int(1) DEFAULT NULL,

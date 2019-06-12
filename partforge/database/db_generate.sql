@@ -72,7 +72,7 @@ CREATE TABLE `comment` (
 CREATE TABLE `document` (
   `document_id` int(11) NOT NULL AUTO_INCREMENT,
   `comment_id` int(11) NOT NULL,
-  `document_displayed_filename` varchar(64) DEFAULT NULL,
+  `document_displayed_filename` varchar(255) DEFAULT NULL,
   `document_stored_filename` varchar(255) DEFAULT NULL,
   `document_stored_path` varchar(64) DEFAULT '',
   `document_thumb_exists` int(1) DEFAULT NULL,
@@ -367,7 +367,7 @@ CREATE TABLE `typecomponent_typeobject` (
 CREATE TABLE `typedocument` (
   `document_id` int(11) NOT NULL AUTO_INCREMENT,
   `typeobject_id` int(11) NOT NULL,
-  `document_displayed_filename` varchar(64) DEFAULT NULL,
+  `document_displayed_filename` varchar(255) DEFAULT NULL,
   `document_stored_filename` varchar(255) DEFAULT NULL,
   `document_stored_path` varchar(64) DEFAULT '',
   `document_thumb_exists` int(1) DEFAULT NULL,
