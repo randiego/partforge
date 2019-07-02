@@ -92,14 +92,52 @@
 			        			'featured' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = show this value in headline descriptions of this part or procedure.  By making a handful (say, 1 to 3) of your fields featured, you provide a nice at-a-glance summary of this part or procedure while sparing viewers the gory details.'));
         	
         	$out = array(
-        		'varchar' => array('parameters' => array('len' => array('type' => 'string', 'help' => 'Maximum length that can be entered.  Leave blank for no limits.'), 'required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank'), 'unique' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => 'If true, when the user enters a non-blank value, then this value must be unique for all current instances of this part.  This will normally be used for alternate unique serial numbers.'), 'input_cols' => array('help' => 'the width of the input box.')), 'help' => 'This data type is used to represent a single line of text.'),
-        		'text' => array('parameters' => array('required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank'), 'input_cols' => array('help' => 'the width of the input box.'), 'input_rows' => array()), 'help' => 'This data type is used to represent a multiline block of text.'),
-        		'enum' => array('parameters' => array('options' => array('type' => 'hashtable'), 'required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank')), 'help' => 'This data type provides a drop-down selector box where you can select one item from the dropdown.  The options list contains the items the user can select from.  Each line represents one choice.  The line is in the form Value=Description.  The Value is what is stored in the database, the Description is what is presented to the user in the list.'),
-        		'boolean' => array('parameters' => array('required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank')), 'help' => 'This data type represents a boolean with a Yes, No radio button pair.  For new records, neither Yes or No is selected.'),
-          		'date' => array('parameters' => array('required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank')), 'help' => 'This data type provides a calender dropdown for entering a date.'),
-        		'datetime' => array('parameters' => array('required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank')), 'help' => 'This data type provides an enhanced calendar/time drop down for enter a full date/time expression.'),
-        		'float' => array('parameters' => array('required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank'), 'minimum' => array('type' => 'string', 'help' => 'Warn the user if they enter a value less than this.  Leave blank if no minimum.'), 'maximum' => array('type' => 'string', 'help' => 'Warn the user if they enter a value greater than this.  Leave blank if no maximum.'), 'units' => array('type' => 'string', 'help' => 'Unit of measure (example: %) that will appear in the subcaption.  See above for special characters.')), 'help' => 'This data type is used for entering a number.  If minimum or maximum fields are entered, the user is warned when values are out of range.  A user can still enter a value out of range, but they will be warned and a red message shown.  A subcaption is automatically generated that indicates the allowed input range and units.  '),
-        		'component_subfield' => array('parameters' => array('component_name' => array('type' => 'string', 'help' => 'This is the component containing the subfield'),  'embedded_in_typeobject_id' => array('type' => 'string', 'help' => 'If the component is define allowing more than one type, you have to specify which type.'),  'component_subfield' => array('type' => 'string', 'help' => 'The name of the field as it appears within the component object.'),    'required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank')), 'help' => 'If you have any components defined, this data type can be used to represent a field within one of the components.  This provides a convenient way for the user to edit the fields within one of the associated components as if it were part of this record.  Changes made to this field by the user will force a new version of the associated component.  You must enter the component name exactly as it appears in your list of compoents.  Similarly, the component_subfield must be an exact match of the fieldname in the dictionary of the component.'),
+        		'varchar' => array('parameters' => array(
+        				'len' => array('type' => 'string', 'help' => 'Maximum length that can be entered.  Leave blank for no limits.'), 
+        				'required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank'), 
+        				'unique' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => 'If true, when the user enters a non-blank value, then this value must be unique for all current instances of this part.  This will normally be used for alternate unique serial numbers.'), 
+        				'input_cols' => array('help' => 'the width of the input box.')
+        				), 
+        				'help' => 'This data type is used to represent a single line of text.'),
+        		'text' => array('parameters' => array(
+        				'required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank'), 
+        				'input_cols' => array('help' => 'the width of the input box.'), 
+        				'input_rows' => array()
+        				), 
+        				'help' => 'This data type is used to represent a multiline block of text.'),
+        		'enum' => array('parameters' => array(
+        				'options' => array('type' => 'hashtable'), 
+        				'required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank')
+        				), 
+        				'help' => 'This data type provides a drop-down selector box where you can select one item from the dropdown.  The options list contains the items the user can select from.  Each line represents one choice.  The line is in the form Value=Description.  The Value is what is stored in the database, the Description is what is presented to the user in the list.'),
+        		'boolean' => array('parameters' => array(
+        				'required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank'),
+        				'minimum' => array('type' => 'pickone', 'values' => array('','0','1'), 'help' => 'For Booleans, 0=No and 1=Yes.  If Yes is the acceptable answer, set 1 for both minimum and maximum.  If No, set 0 for each.  If either Yes or No is fine, leave blank.'),
+        				'maximum' => array('type' => 'pickone', 'values' => array('','0','1'), 'help' => 'See explanation for minimum.'),
+        				), 
+        				'help' => 'This data type represents a boolean with a Yes, No radio button pair.  For new records, neither Yes or No is selected.'),
+          		'date' => array('parameters' => array(
+          				'required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank')
+          				), 
+          				'help' => 'This data type provides a calender dropdown for entering a date.'),
+        		'datetime' => array('parameters' => array(
+        				'required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank')
+        				), 
+        				'help' => 'This data type provides an enhanced calendar/time drop down for enter a full date/time expression.'),
+        		'float' => array('parameters' => array(
+        				'required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank'), 
+        				'minimum' => array('type' => 'string', 'help' => 'Warn the user if they enter a value less than this.  Leave blank if no minimum.'), 
+        				'maximum' => array('type' => 'string', 'help' => 'Warn the user if they enter a value greater than this.  Leave blank if no maximum.'), 
+        				'units' => array('type' => 'string', 'help' => 'Unit of measure (example: %) that will appear in the subcaption.  See above for special characters.')
+        				), 
+        				'help' => 'This data type is used for entering a number.  If minimum or maximum fields are entered, the user is warned when values are out of range.  A user can still enter a value out of range, but they will be warned and a red message shown.  A subcaption is automatically generated that indicates the allowed input range and units.  '),
+        		'component_subfield' => array('parameters' => array(
+        				'component_name' => array('type' => 'string', 'help' => 'This is the component containing the subfield'),  
+        				'embedded_in_typeobject_id' => array('type' => 'string', 'help' => 'If the component is define allowing more than one type, you have to specify which type.'),  
+        				'component_subfield' => array('type' => 'string', 'help' => 'The name of the field as it appears within the component object.'),    
+        				'required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank')
+        				), 
+        				'help' => 'If you have any components defined, this data type can be used to represent a field within one of the components.  This provides a convenient way for the user to edit the fields within one of the associated components as if it were part of this record.  Changes made to this field by the user will force a new version of the associated component.  You must enter the component name exactly as it appears in your list of compoents.  Similarly, the component_subfield must be an exact match of the fieldname in the dictionary of the component.'),
         	);
         	
         	// map in defaults with lower priority

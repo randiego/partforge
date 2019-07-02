@@ -257,16 +257,24 @@
         	}
         }
 
-        public static function composeSubcaptionWithValidation($subcaption, $min, $max, $units, $html=true) {
+        public static function composeSubcaptionWithValidation($subcaption, $min, $max, $units, $type, $html=true) {
         	$min = trim($min);
         	$max = trim($max);
         	$units = trim($units);
         	$out = array();
         	if (is_numeric($min) && is_numeric($max)) {
-        		if ($min==$max) {
-        			$out[] = 'exactly '.$min;
+        		if ($type=='boolean') {
+        			if ($min==1) {
+        				$out[] = 'Yes';
+        			} else if ($max==0) {
+        				$out[] = 'No';
+        			}
         		} else {
-	        		$out[] = $min.' to '.$max;
+	        		if ($min==$max) {
+	        			$out[] = 'exactly '.$min;
+	        		} else {
+		        		$out[] = $min.' to '.$max;
+	        		}
         		}
         	} else if (is_numeric($min)) {
         		$out[] = ($html ? '&gt;' : '>').' '.$min;
@@ -284,8 +292,8 @@
             if (isset($this->_fieldtypes[$string]['subcaption']) && ($this->_fieldtypes[$string]['subcaption']!='')) {
             	$subcaption = $this->_fieldtypes[$string]['subcaption'];
             }
-            if ($this->_fieldtypes[$string]['type']=='float') {
-	            $subcaption = self::composeSubcaptionWithValidation($subcaption, $this->_fieldtypes[$string]['minimum'], $this->_fieldtypes[$string]['maximum'], $this->_fieldtypes[$string]['units']);
+            if (in_array($this->_fieldtypes[$string]['type'], array('float','boolean'))) {
+	            $subcaption = self::composeSubcaptionWithValidation($subcaption, $this->_fieldtypes[$string]['minimum'], $this->_fieldtypes[$string]['maximum'], $this->_fieldtypes[$string]['units'], $this->_fieldtypes[$string]['type'], true);
             }
             if ($subcaption) {
                 $out .= '<br><span class="paren">'.$subcaption.'</span>';

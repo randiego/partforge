@@ -160,13 +160,21 @@ function renderCaption(name,caption_field) {
 /*
  * This takes the edit checking parameters and converts them to a subcaption
  */
-function renderSubcaptionHtml(subcaption, min, max, units) {
+function renderSubcaptionHtml(subcaption, min, max, units, type) {
 	var out = [];
 	if (IsNumeric(min) && IsNumeric(max)) {
-		if (min==max) {
-			out.push('exactly '+min);
+		if (type=="boolean") {
+			if (min=="1") {
+				out.push('Yes');
+			} else if (max=="0") {
+				out.push('No');
+			}
 		} else {
-			out.push(min + ' to ' + max);
+			if (min==max) {
+				out.push('exactly '+min);
+			} else {
+				out.push(min + ' to ' + max);
+			}
 		}
 	} else if (IsNumeric(min)) {
 		out.push('&gt; '+min);
@@ -193,7 +201,7 @@ function renderListOfDictItems() {
 	for(var i=0; i<typeDictionaryArray.length; i++) {
 		var f = typeDictionaryArray[i];
 		var subcaption = blankIfUndefined(f["subcaption"]);
-		var subcaption = renderSubcaptionHtml(subcaption, blankIfUndefined(f["minimum"]), blankIfUndefined(f["maximum"]), blankIfUndefined(f["units"]));
+		var subcaption = renderSubcaptionHtml(subcaption, blankIfUndefined(f["minimum"]), blankIfUndefined(f["maximum"]), blankIfUndefined(f["units"]), blankIfUndefined(f["type"]));
 		var delete_btn = !isWriteProtected(f["name"]) ? '<a data-key="'+i+'" class="bd-linkbtn dictlinedeletelink" href="#">delete</a>' : '';
 	    html += '<tr>';
 	    html += '<td>'+f["name"]+'</td><td>'+f["type"]+'</td><td>'+renderCaption(f["name"],f["caption"])+'<br /><span class="paren">'+subcaption+'</span></td><td>'+blankIfUndefined(f["featured"])+'</td><td>'+blankIfUndefined(f["required"])+'</td><td>'+blankIfUndefined(f["minimum"])+'</td><td>'+blankIfUndefined(f["maximum"])+'</td><td>'+blankIfUndefined(f["units"])+'</td>';
@@ -434,6 +442,16 @@ function saveDictItemEditorToBuff(containerSet,showAlerts,isNew,key) {
 		alert('the minimum value must be less than the maximum value');
 		ok = false;		
 	}
+	
+	if (dictEditBuff['type']=="boolean") {
+		// both max and min must be undefine if either is undefined.
+		if (((typeof dictEditBuff['minimum'] == "undefined") && (typeof dictEditBuff['maximum'] != "undefined"))
+				|| ((typeof dictEditBuff['minimum'] != "undefined") && (typeof dictEditBuff['maximum'] == "undefined"))) {
+			alert('both maximum and minimum need to be set or both unset.');
+			ok = false;				
+		}
+	}	
+	
 	return ok;
 }
 

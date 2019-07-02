@@ -757,6 +757,21 @@ class StructController extends DBControllerActionAbstract
     	if (isset($this->params['form'])) {
     		switch (true)
     		{
+
+    			// Handling for Add New Linked Procedure/Part
+    			case isset($this->params['btnNewLinked']):
+    				// $initialize and $typeversion_id are set as params.
+    				$return_url = $this->navigator->getCurrentHandlerUrl('btnDoneTryingToCreateLinked','itemdefinitionview',null,array('typeversion_id' => $this->params['typeversion_id']));
+    				$_SESSION['most_recent_new_typeversion_id'] = 'new';  // this should get changed by a successfull change
+    				$this->navigator->setReturn($return_url)->CallView('editview',null,array('table' => 'typeversion','typeversion_id' => 'new', 'initialize' => $this->params['initialize'], 'return_url' => $return_url, 'resetview' => 1));
+    			case isset($this->params['btnDoneTryingToCreateLinked']):
+    				if (is_numeric($_SESSION['most_recent_new_typeversion_id'])) {
+    					$this->navigator->jumpToView('itemdefinitionview','',array('typeversion_id' => $_SESSION['most_recent_new_typeversion_id']));
+    				} else {
+    					$this->navigator->jumpToView(null,null,array('typeversion_id' => $this->params['typeversion_id']));
+    				}
+    				
+    			// Handling New versions of current type
     			case isset($this->params['btnNewVersion']):
     				$return_url = $this->navigator->getCurrentHandlerUrl('btnDoneTryingToCreateNew','itemdefinitionview',null,array('typeversion_id' => $this->params['typeversion_id']));
     				$_SESSION['most_recent_new_typeversion_id'] = 'new';  // this should get changed by a successfull change

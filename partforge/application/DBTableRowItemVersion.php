@@ -1076,7 +1076,15 @@
             			$max_ok = ($val <=$max);
             			if (!$max_ok) $errormsg[$fieldname] = 'The value "'.$val.'" for '.$caption.' should not be greater than '.$max;
             		}            		
+	            } elseif (($ft['type']=='boolean') && !is_null($val) && ($val!=='')) {  // the non-numeric and empty case is handled by the parent method
+            		$min = trim($ft['minimum']);
+            		$max = trim($ft['maximum']);
+            		if (is_numeric($min) && is_numeric($max)) {
+            			if (($min=="1") && !$val) $errormsg[$fieldname] = $caption.' should be Yes';
+            			if (($max=="0") && $val) $errormsg[$fieldname] = $caption.' should be No';
+            		}
             	}
+            	
             }
         	
             parent::validateFields($fieldnames,$errormsg);
@@ -1726,7 +1734,7 @@
 				case 'boolean' :
 					// put in an "X" so we can unselect (effectively unanswering) this.
 					$jsclear = "clear_field('".$fieldname."'); return false;";
-					return '<a class="boolean_clearer" href="#" onclick="'.$jsclear.'" style="float:right;" title="unset this field" data-fname="'.$fieldname.'"><IMG style="vertical-align:middle;" src="'.Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/images/deleteicon.png" width="16" height="16" border="0" alt="delete"></a>'
+					return '<a class="boolean_clearer" href="#" onclick="'.$jsclear.'" style="float:right;" title="unset this field" data-fname="'.$fieldname.'"><IMG style="vertical-align:middle;" src="'.Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/images/undoicon.gif" width="16" height="16" border="0" alt="delete"></a>'
 							.parent::formatInputTag($fieldname, $display_options);
 										
 				default:

@@ -69,8 +69,7 @@ $is_a_part = $this->dbtable->typecategory_id==2;
 			$init['list_of_typecomponents'] = "new,{$component_name},{$dbtable->typeobject_id}";
 			$init['typecategory_id'] = $is_procedure_flag ? 1 : 2;
 			$init['effective_date'] = time_to_mysqldatetime(script_time());
-			$return_url = $navigator->getCurrentViewUrl(null,null,array('typeobject_id' => $dbtable->typeobject_id));
-			$html .= linkify($navigator->getCurrentViewUrl('editview',null,array('table' => 'typeversion', 'typeversion_id' => 'new', 'resetview' => 1, 'initialize' => $init, 'return_url' => $return_url)),'Add '.$section_heading.' Definition','Start a new '.$section_heading.' Definition and add the current definition as a component','minibutton2');
+			$html .= linkify($navigator->getCurrentHandlerUrl('btnNewLinked',null,null,array('typeversion_id' => $dbtable->typeversion_id, 'initialize' => $init)),'Add '.$section_heading.' Definition','Start a new '.$section_heading.' Definition and add the current definition as a component','minibutton2');			
 		}		
 		
 		if ($non_zero_count) {

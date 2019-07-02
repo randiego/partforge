@@ -228,7 +228,7 @@ class ItemViewPDF extends TCPDF {
 
 					$fieldtype = $this->dbtable->getFieldType($fieldname);
 					$label = $fieldtype['caption'].":";
-					$sublabel = TableRow::composeSubcaptionWithValidation($fieldtype['subcaption'], $fieldtype['minimum'], $fieldtype['maximum'], $fieldtype['units'],true);
+					$sublabel = TableRow::composeSubcaptionWithValidation($fieldtype['subcaption'], $fieldtype['minimum'], $fieldtype['maximum'], $fieldtype['units'],$fieldtype['type'],true);
 					
 					$label = $this->clean_html($label);
 					$sublabel = $this->clean_html($sublabel);

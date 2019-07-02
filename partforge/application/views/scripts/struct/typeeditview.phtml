@@ -1,4 +1,4 @@
-<script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/struct/typeeditview.js?v=30" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/struct/typeeditview.js?v=31" type="TEXT/JAVASCRIPT"></script>
 <script type="text/javascript">
 var typeDataDictionary = <?php echo $this->dbtable->type_data_dictionary ? $this->dbtable->type_data_dictionary : '{}'?>;
 var typeFormLayout = <?php echo $this->dbtable->type_form_layout ? $this->dbtable->type_form_layout : '[]'?>;
@@ -95,6 +95,7 @@ var UserType = '<?php echo $_SESSION['account']->getRole();?>';
     		will NOT prevent a user from saving data, even if it is incomplete or out of range.</p>';
     $html .= DBTableRowWhatsNewUser::fetchWhatsNew('SORTED_DICTIONARY','The dictionary is now sorted alphabetically.  Previously it was sorted in the order entered.','1/22/2015');
     $html .= DBTableRowWhatsNewUser::fetchWhatsNew('MIN_MAX_DICTIONARY_ATTR','float data types now have minimum, maximum, and units attributes.  Read the explanation above and in the dictionary editor for more information.','1/31/2015');
+    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('MIN_MAX_DICTIONARY_ATTR2','boolean data types now have minimum, maximum attributes.  Read the explanation in the dictionary editor for more information.','4/28/2019');
     $html .= DBTableRowWhatsNewUser::fetchWhatsNew('SPECIAL_CHARS_HTML','you can now enter special characters and markup in captions and subcaption using HTML.  See the help text when editing a caption for more information.','3/15/2015');
     $html .= '<div id="dictionaryEditorDiv" class="bd-edit-block"></div>';
     
