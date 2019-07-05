@@ -64,11 +64,13 @@ class Items_DocumentsController extends RestControllerActionAbstract
 		$Document = new DBTableRowDocument();
 		if ($Document->getRecordById($this->params['id'])) {
 			if ($Document->document_thumb_exists) {
-				$fmt = isset($this->params['fmt']) ? $this->params['fmt'] : 'medium';
+				$fmt = isset($this->params['fmt']) ? $this->params['fmt'] : 'full';
 				if ($fmt=='thumbnail') {
 					$Document->outputThumbnailImageToBrowser();
 				} else if ($fmt=='medium') {
 					$Document->outputMediumImageToBrowser();
+				} else if ($fmt=='full') {
+					$Document->outputToBrowser(false);
 				}
 			} else {
 				$Document->outputToBrowser(true);

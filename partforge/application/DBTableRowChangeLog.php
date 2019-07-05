@@ -87,7 +87,7 @@ class DBTableRowChangeLog extends DBTableRow {
 			$Rec->desc_partnumber_alias = $IV->partnumber_alias;
 			$Rec->desc_typecategory_id = $IV->typecategory_id;
 			$Rec->desc_comment_id = $comment_id;
-			$Rec->desc_text = substr($comment_text,0,255);
+			$Rec->desc_text = strlen($comment_text) > 255 ? substr($comment_text,0,255) : $comment_text;
 			$Rec->trigger_itemobject_id = $IV->itemobject_id;
 			$Rec->trigger_typeobject_id = $IV->tv__typeobject_id;
 			$Rec->save();
@@ -191,7 +191,7 @@ class DBTableRowChangeLog extends DBTableRow {
 			$Rec->desc_typeversion_id = $TV->typeversion_id;
 			$Rec->desc_typecategory_id = $TV->typecategory_id;
 			$Rec->desc_comment_id = $comment_id;
-			$Rec->desc_text = substr($comment_text,0,255);
+			$Rec->desc_text = strlen($comment_text) > 255 ? substr($comment_text,0,255) : $comment_text;
 			$Rec->trigger_typeobject_id = $TV->typeobject_id;
 			$Rec->save();
 			DBTableRowChangeSubscription::triggerChangeNotice($Rec);
@@ -238,7 +238,7 @@ class DBTableRowChangeLog extends DBTableRow {
 		$Rec->locator_prefix = '';
 		$Rec->change_code = 'DTO';
 		$Rec->trigger_typeobject_id = $typeobject_id;
-		$Rec->desc_text = substr($text,0,255);
+		$Rec->desc_text = strlen($text) > 255 ? substr($text,0,255) : $text;
 		$Rec->save();
 		DBTableRowChangeSubscription::triggerChangeNotice($Rec);
 	}

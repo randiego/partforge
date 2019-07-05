@@ -27,7 +27,7 @@ class Types_DocumentsController extends RestControllerActionAbstract
 {
 	
 	/*
-	 * GET /items/documents?comment_id=N&format=json
+	 * GET /types/documents?comment_id=N&format=json
 	 * 
 	 * Return a list of documents for the specified comment_id
 	 * Input (at minimum):
@@ -47,11 +47,13 @@ class Types_DocumentsController extends RestControllerActionAbstract
 		$Document = new DBTableRowTypeDocument();
 		if ($Document->getRecordById($this->params['id'])) {
 			if ($Document->document_thumb_exists) {
-				$fmt = isset($this->params['fmt']) ? $this->params['fmt'] : 'medium';
+				$fmt = isset($this->params['fmt']) ? $this->params['fmt'] : 'full';
 				if ($fmt=='thumbnail') {
 					$Document->outputThumbnailImageToBrowser();
 				} else if ($fmt=='medium') {
 					$Document->outputMediumImageToBrowser();
+				} else if ($fmt=='full') {
+					$Document->outputToBrowser(false);
 				} else if (($fmt=='customwidth') && is_numeric($this->params['width'])) {
 					$Document->outputCustomSizeImageToBrowser($this->params['width']);
 				}
@@ -115,7 +117,7 @@ class Types_DocumentsController extends RestControllerActionAbstract
 	}
 	
 	/*
-	 * PUT /items/documents/:id?format=json
+	 * PUT /types/documents/:id?format=json
 	 * 
 	 * Update fields in the document table as specified by document_id = id
 	 * 

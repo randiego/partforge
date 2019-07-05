@@ -525,7 +525,7 @@ class EventStream {
 			list($document_id,$document_filesize,$document_displayed_filename,$document_stored_filename,$document_stored_path,$document_file_type,$document_thumb_exists) = explode(',',$document_packed);
 			$document_stored_filename = hextobin($document_stored_filename); // we had to store this earlier for safety
 			$document_displayed_filename = hextobin($document_displayed_filename); // we had to store this earlier for safety
-			$filename_url = $baseUrl.'/items/documents/'.$document_id;
+			$filename_url = $baseUrl.'/items/documents/'.$document_id."?fmt=medium";
 			$size = number_format(ceil($document_filesize / 1024)).' KB';
 			
 			$fname = $document_displayed_filename.' <span class="size">'.$size.'</span>';
@@ -705,7 +705,7 @@ class EventStream {
 						list($document_id,$document_filesize,$document_displayed_filename,$document_stored_filename,$document_stored_path,$document_file_type,$document_thumb_exists) = explode(',',$document_packed);
 						$document_stored_filename = hextobin($document_stored_filename); // we had to store this earlier for safety
 						$document_displayed_filename = hextobin($document_displayed_filename); // we had to store this earlier for safety
-						$filename_url = $baseUrl.'/items/documents/'.$document_id;
+						$filename_url = $baseUrl.'/items/documents/'.$document_id."?fmt=medium";
 						$documents_html .= '<li><a href="'.$filename_url.'">'.$document_displayed_filename.'</a></li>';
 					}
 					$documents_html .= '</ul>';

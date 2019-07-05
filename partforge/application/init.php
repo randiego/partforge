@@ -27,7 +27,7 @@
 $config = array();
 $config['banner_array'] = array();   // an array of html banners to show at the top of the application.
 $config['application_title'] = 'PartForge'; // appears in title tag and other places
-$config['cached_code_version'] = '59';  // for css and js files, this appended as ?v=N to the end to force reload to browse.  Increment when css or js files changes.
+$config['cached_code_version'] = '60';  // for css and js files, this appended as ?v=N to the end to force reload to browse.  Increment when css or js files changes.
 $config['databaseversion'] = '5';
 $config['config_for_testing'] = false; // Makes a few minor changes to improve testability when we are running as a test instance during automated testing.
 
