@@ -1654,7 +1654,7 @@
 	        	foreach($fieldtype['can_have_typeobject_id'] as $typeobject_id) {
 	        		// need to determine typeversion_id in case we want to create a new item here:
 	        		$TV = DbSchema::getInstance()->dbTableRowObjectFactory('typeversion',false,'');
-	        		$TV->getCurrentRecordByObjectId($typeobject_id,$this->_typeversion_digest['effective_date']);
+	        		$TV->getCurrentRecordByObjectId($typeobject_id);
 	        		$typeversion_id = $TV->typeversion_id;
 	        		//this line not needed, but I feel better checking
 	        		if (!$typeversion_id) throw new Exception("formatInputTag(): typeversion_id not found");
