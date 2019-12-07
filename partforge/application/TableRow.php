@@ -277,9 +277,9 @@
 	        		}
         		}
         	} else if (is_numeric($min)) {
-        		$out[] = ($html ? '&gt;' : '>').' '.$min;
+        		$out[] = ($html ? '&ge;' : '>=').' '.$min;
         	} else if (is_numeric($max)) {
-        		$out[] = ($html ? '&lt;' : '<').' '.$max;
+        		$out[] = ($html ? '&le;' : '<=').' '.$max;
         	}
         	if ($units) $out[] = $units;
         	$synthcap = count($out) > 0 ? implode(' ',$out) : '';

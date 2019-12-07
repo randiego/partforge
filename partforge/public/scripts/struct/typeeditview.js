@@ -177,9 +177,9 @@ function renderSubcaptionHtml(subcaption, min, max, units, type) {
 			}
 		}
 	} else if (IsNumeric(min)) {
-		out.push('&gt; '+min);
+		out.push('&ge; '+min);
 	} else if (IsNumeric(max)) {
-		out.push('&lt; '+max);
+		out.push('&le; '+max);
 	}
 	if ((typeof units != 'undefined') && (units.length > 0)) out.push(units);
 	var synthcap = out.length > 0 ? out.join(' ') : '';
