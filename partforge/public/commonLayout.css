@@ -1970,6 +1970,10 @@ table.edittable .cell_error .paren {
 	color: #555;
 }
 
+.paren a.paren {
+  color: inherit;
+}
+
 div#eventlog {
 	background-color: #FCC;
 	border: 1px solid #999;

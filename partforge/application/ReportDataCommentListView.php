@@ -29,7 +29,6 @@ class ReportDataCommentListView extends ReportDataWithCategory {
 	private $can_delete = false;
 	private $baseUrl = '';
 	private $_recent_row_age = null;
-	private $_itemversion_cache = null;
 	
 	public function __construct() {
 		parent::__construct('comment');
@@ -143,7 +142,7 @@ class ReportDataCommentListView extends ReportDataWithCategory {
 			$detail_out[$fieldname] = TextToHtml($record[$fieldname]);
 		}
 		$detail_out['item_serial_number'] = linkify( $edit_url, $record['item_serial_number'], 'View');
-		list($comment_html,$dummy) = EventStream::textToHtmlWithEmbeddedCodes($record['comment_text'], $navigator, 'ET_COM', $this->_itemversion_cache);
+		list($comment_html,$dummy) = EventStream::textToHtmlWithEmbeddedCodes($record['comment_text'], $navigator, 'ET_COM');
 		$detail_out['comment_text'] = '<div class="excerpt" style="display: block; width:400px; max-width:400px;">'.$comment_html.'</div>';
 		
 		$detail_out['comment_added'] = empty($record['comment_added']) ? '' : date('M j, Y G:i',strtotime($record['comment_added']));

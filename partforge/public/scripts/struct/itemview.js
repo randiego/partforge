@@ -31,6 +31,16 @@ function initPanelScrollSaver() {
 	}
 }
 
+function scrollRightSideToVersionId(version_id) {
+	//$('#itemversion_ck_' + version_id).parent().parent().get(0).scrollIntoView();
+	$container = $('#rightpanel');
+	$scrollTo = $('#itemversion_ck_' + version_id).parent().parent();
+	$container.animate({
+	    scrollTop: $scrollTo.offset().top - $container.offset().top + $container.scrollTop()
+	});
+	return false;
+}
+
 $(document).ready(function() {
 	
 	$('#AddAnotherID').effect("highlight", {color:"#3F3"}, 10000);

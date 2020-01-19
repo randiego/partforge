@@ -887,6 +887,21 @@ function checkWasChangedItemField(&$changelist ,$name, $was=null, $is=null) {
 	}
 }
 
+function checkWasChangedItemFieldByFieldname(&$changelist, $fieldname, $was=null, $is=null) {
+	$was_value_empty = is_null($was) || ($was==='');
+	$is_value_empty = is_null($is) || ($is==='');
+	if (strcmp($was, $is) !== 0) {
+		if (($was_value_empty && !$is_value_empty)) {
+			$changelist[$fieldname] = "set to '{$is}'";
+		} else if ((!$was_value_empty && $is_value_empty)) {
+			$changelist[$fieldname] = "deleted";
+		} else {
+			$to_text = markupDiffBetweenTextBlocks($was, $is);
+			$changelist[$fieldname] = "set to '{$is}'";
+		}
+	}
+}
+
 function fetch_like_query($str,$opening='%', $closing='%') {
 	$e = '=';
 	$str = str_replace(array($e, '_', '%'), array($e.$e, $e.'_', $e.'%'), $str);

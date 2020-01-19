@@ -38,6 +38,7 @@ class DbSchema {   // singleton
     protected $_tree_data = array();
     protected $_rel_dep_on_table_array = array();
     protected $_rel_table_is_dep_on_array = array();
+    protected $_itemversion_object_cache = array();
     protected static $_db_link = null;
     
     protected function __construct() {
@@ -82,11 +83,25 @@ class DbSchema {   // singleton
     
     public static function getInstance()
     {
-	if (null === self::$_instance) {
-	    self::$_instance = new self();
-	}
+    	if (null === self::$_instance) {
+    		self::$_instance = new self();
+    	}
 
-	return self::$_instance;
+    	return self::$_instance;
+    }
+    
+    /**
+     * This is a common interface for loading/caching an DBTableRowItemVersion record fetched by itemversion_id.
+     * It's just for efficiency when displaying itemview pages and mainly used in EventStream
+     * @param integer $itemversion_id
+     * @return DBTableRowItemVersion object:
+     */
+    public function getItemVersionCachedRecordById($itemversion_id) {
+    	if (!isset($this->_itemversion_object_cache[$itemversion_id])) {
+    		$this->_itemversion_object_cache[$itemversion_id] = $this->dbTableRowObjectFactory('itemversion',false,'');
+    		$this->_itemversion_object_cache[$itemversion_id]->getRecordById($itemversion_id);
+    	}    	
+    	return $this->_itemversion_object_cache[$itemversion_id];
     }
     
     private function dbFieldTypeToSchemaType($dbfieldtypes) {

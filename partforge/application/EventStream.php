@@ -158,6 +158,63 @@ class EventStream {
 		
 		return $count;
 	}
+		
+	/**
+	 * Create a chronology of changes to the field values indexed by fieldname.  This will be used
+	 * to decorate the print fields in the itemview table.
+	 * @param DBTableRowItemVersion $ItemVersionBase
+	 * @return array of array of array(value, itemversion Id, date change was made)
+	 */
+	static public function changeHistoryforFields(DBTableRowItemVersion $ItemVersionBase) {
+
+		$out = array();
+
+		$query = "SELECT *, (SELECT count(*) FROM itemversionarchive WHERE itemversionarchive.itemversion_id=itemversion.itemversion_id) as archive_count,
+		(SELECT min(record_created) FROM itemversionarchive WHERE itemversionarchive.itemversion_id=itemversion.itemversion_id) as oldest_record_created
+		FROM itemversion WHERE itemobject_id='{$ItemVersionBase->itemobject_id}' ORDER BY effective_date";
+		$records = DbSchema::getInstance()->getRecords('itemversion_id',$query);
+		$PreviousItemVersion = DbSchema::getInstance()->dbTableRowObjectFactory('itemversion',false,'');
+		$PreviousItemVersion->typeversion_id = $ItemVersionBase->typeversion_id;
+		foreach($records as $itemversion_id => $record) {
+			// get itemversion record
+			$ItemVersion = DbSchema::getInstance()->getItemVersionCachedRecordById($itemversion_id);
+			$fieldchanges = $ItemVersion->itemDifferencesFrom($PreviousItemVersion, false, true);
+			$datestr = date('M j, Y',strtotime($ItemVersion->effective_date));
+			foreach($fieldchanges as $fieldname => $value) {
+				if (!isset($out[$fieldname])) { 
+					$out[$fieldname] = array(array($value,$itemversion_id, $ItemVersion->effective_date));
+				} else {
+					$out[$fieldname][] = array($value,$itemversion_id, $ItemVersion->effective_date);
+				}
+			}
+
+			$PreviousItemVersion = $ItemVersion;
+		}
+		
+		$prunedout = array();
+		foreach($out as $fieldname => $changes) {
+			if ((count($changes)==1)) {
+				unset($changes[0]);
+			}
+			if (count($changes) > 0) $prunedout[$fieldname] = $changes;
+		}
+		return $prunedout;
+	}
+	
+	/**
+	 * Create the html that gets appended to the html field value shown in the itemview form
+	 */
+	static public function changeHistoryToHtmlPrintFieldDecoration($singlefieldhistory) {
+		$html = '';
+		end($singlefieldhistory);     // which is the last element?
+		$lastindex = key($singlefieldhistory);
+		foreach($singlefieldhistory as $index => $change) {
+			$fmtdate = linkify('#', date('M j, Y',strtotime($change[2])),"Scroll to Version",'paren',"scrollRightSideToVersionId($change[1])");
+			$formattedchange = ($index==$lastindex) && (substr($change[0],0,6)=='set to') ?  'last set '.$fmtdate : $change[0].' on '.$fmtdate;
+			$html .= '<span class="paren"><br />'.$formattedchange.'</span>';
+		}
+		return $html;
+	}
 
 	public function assembleStreamArray($indented_component_name='', $end_date=null) {
 		$config = Zend_Registry::get('config');
@@ -177,8 +234,7 @@ class EventStream {
 		$is_first = true;
 		foreach($records as $itemversion_id => $record) {
 			// get itemversion record
-			$ItemVersion = DbSchema::getInstance()->dbTableRowObjectFactory('itemversion',false,'');
-			$ItemVersion->getRecordById($itemversion_id);
+			$ItemVersion = DbSchema::getInstance()->getItemVersionCachedRecordById($itemversion_id);
 				
 			// build new event record
 			$itemevent = array();
@@ -439,22 +495,15 @@ class EventStream {
 	 * @param string $event_description plain text but with some markdown
 	 * @param navigator $navigator
 	 * @param string $event_type ('ET_PROCREF', or ...)
-	 * @param array of objects $ItemVersionCache
 	 * @param array $event_description_array
 	 * @return mixed array($event_description still in plain text but now with <html>tags inserted for the itemversion markdown.)
 	 */
-	public static function itemversionMarkupToHtmlTags($event_description, $navigator, $event_type, &$ItemVersionCache, &$event_description_array, $include_html_wrapper=true) {
+	public static function itemversionMarkupToHtmlTags($event_description, $navigator, $event_type, &$event_description_array, $include_html_wrapper=true) {
 		$event_description_array = array();
 		$match = preg_match_all('/<itemversion>([0-9]+)<\/itemversion>/i',$event_description,$out);
 		// $out[0] has the whole opening and closing tag.  $out[1] has only the enclosed itemversion_id
 		foreach($out[1] as $sub_index => $itemversion_id) {
-			if (!isset($ItemVersionCache[$itemversion_id])) {
-				$ItemVersion = DbSchema::getInstance()->dbTableRowObjectFactory('itemversion',false,'');
-				$ItemVersion->getRecordById($itemversion_id);
-				$ItemVersionCache[$itemversion_id] = $ItemVersion;
-			} else {
-				$ItemVersion = $ItemVersionCache[$itemversion_id];
-			}
+			$ItemVersion = DbSchema::getInstance()->getItemVersionCachedRecordById($itemversion_id);
 			$event_description_array[$itemversion_id] = array();
 			$serial_identifier = empty($ItemVersion->item_serial_number) ? '' : ' ('.TextToHtml($ItemVersion->item_serial_number).')';
 			$part_name = TextToHtml($ItemVersion->tv__type_description).$serial_identifier;
@@ -503,12 +552,12 @@ class EventStream {
 	 * data.  $navigator can be null, in which case this is a display only thing that is returned.
 	 * $description_is_html true means that the only conversion to be done is expanding <itemversion> markup.
 	 */
-	public static function textToHtmlWithEmbeddedCodes($event_description, $navigator, $event_type, &$ItemVersionCache, $description_is_html=false) {		
+	public static function textToHtmlWithEmbeddedCodes($event_description, $navigator, $event_type, $description_is_html=false) {		
 		// convert to htmlentities, then pick out all the <itemversion>NNN</itemversion> tags. (Note that these are themselves converted to entities)
 		$event_description_array = array();
 		if (!$description_is_html) $event_description = self::embeddedLocatorsToItemVersionTags($event_description);
 		if (!$description_is_html) $event_description = self::embeddedLinksToHtmlTags($event_description);
-		$event_description = self::itemversionMarkupToHtmlTags($event_description, $navigator, $event_type, $ItemVersionCache, $event_description_array, !$description_is_html);
+		$event_description = self::itemversionMarkupToHtmlTags($event_description, $navigator, $event_type, $event_description_array, !$description_is_html);
 		if (!$description_is_html) $event_description = self::textToHtmlwithEmbeddedHtml($event_description);
 		return array($event_description,$event_description_array);
 	}
@@ -750,7 +799,6 @@ class EventStream {
 	public static function eventStreamRecordsToLines($records,$dbtable, $navigator=null) {
 	
 		$references_by_typeobject_id = array();
-		$ItemVersionCache = array(); // this is used to temporarily hold DBTableRowItemVersion records for speed
 		$return_url = !is_null($navigator) ? $navigator->getCurrentViewUrl(null,null,array('itemversion_id' => $dbtable->itemversion_id)) : '';
 		
 		/*
@@ -781,7 +829,7 @@ class EventStream {
 			}
 			$error = '';
 			if ($record['error_message']) {
-				list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($record['error_message'], $navigator, $record['event_type_id'],$ItemVersionCache);
+				list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($record['error_message'], $navigator, $record['event_type_id']);
 				$error = '<div class="event_error">'.$event_description.'</div>';
 			}
 
@@ -794,7 +842,7 @@ class EventStream {
 				$version_url = !is_null($navigator) ? $navigator->getCurrentViewUrl('itemview','',$query_params) : '';
 			}
 
-			list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($record['event_description'], $navigator, $record['event_type_id'],$ItemVersionCache, $record['description_is_html']);
+			list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($record['event_description'], $navigator, $record['event_type_id'], $record['description_is_html']);
 			$line = array(
 					'event_type_id' => $record['event_type_id'],
 					'this_itemversion_id' => $record['this_itemversion_id'],

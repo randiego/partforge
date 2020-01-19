@@ -9,8 +9,7 @@ var followNotifyEmailMsg =  "<?php echo implode('  ',$_SESSION['account']->reaso
 var linkToPageUrl = "<?php echo $this->dbtable->absoluteUrl();?>";
 </script>
 <?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
-<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemview.js?v=10" type="TEXT/JAVASCRIPT"></script>
-
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemview.js?v=11" type="TEXT/JAVASCRIPT"></script>
 <?php
 
 $title = $this->dbtable->getPageTypeTitleHtml().($this->dbtable->item_serial_number ? ' - '.TextToHtml($this->dbtable->item_serial_number) : '');
@@ -175,8 +174,6 @@ $fields_to_remove = array();
 
 $fieldlayout = $this->dbtable->getEditViewFieldLayout($this->dbtable->getEditFieldNames(array('')),$fields_to_remove,'itemview');
 
-
-
 if (!empty($fieldlayout)) {
 	$html .= ($join_name!='') ? $this->fetchJoinHeaderHtml($join_name, $target) : '';
 	$html .= '<div class="edittablewrapper"><table class="edittable">
@@ -185,17 +182,12 @@ if (!empty($fieldlayout)) {
 				 <col class="table_label_width">
 				 <col class="table_value_width">';
 		
-	// don't show fields as editable if editing of this record is not allowed
-	$editable = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'table:'.$this->dbtable->getTableName(),'edit')
-	&& !$this->dbtable->isEditOperationBlocked('save',$this->dbtable->getTableName());
-	$editable = false;
-
 	$this->dbtable->_navigator = $this->navigator; // need this for generating print view.
 	
 	$errormsg = array();
 	$this->dbtable->validateFields($this->dbtable->getSaveFieldNames(),$errormsg);	
 	
-	$html .= DBTableRowItemVersion::fetchItemVersionEditTableTR($fieldlayout, $this->dbtable, $errormsg, '', $editable);
+	$html .= DBTableRowItemVersion::fetchItemVersionEditTableTR($fieldlayout, $this->dbtable, $errormsg, '', false, null, $this->fieldhistory);
 	$html .= '</table></div>
 		';
 }

@@ -46,7 +46,7 @@ class DBEditViewItemVersion extends DBEditView {
 			$editable = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'table:'.$this->dbtable->getTableName(),'edit')
                 && !$this->dbtable->isEditOperationBlocked('save',$this->dbtable->getTableName());
 
-			$html .= DBTableRowItemVersion::fetchItemVersionEditTableTR($fieldlayout, $this->dbtable, $this->error_msg_array, '', $editable);
+			$html .= DBTableRowItemVersion::fetchItemVersionEditTableTR($fieldlayout, $this->dbtable, $this->error_msg_array, '', $editable, null, array());
 			$html .= '</table>
 			';
 		}

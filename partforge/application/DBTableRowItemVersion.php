@@ -377,7 +377,6 @@
 		 * @return multitype:multitype:string Ambigous <string, unknown>
 		 */
 		public static function ArchiveEditChanges($itemversion_id, $Navigator=null) {
-			$ItemVersionsCache = array();  // this is for temporary storage of other referred to objects
 			$ItemVersionCurr = new DBTableRowItemVersion();
 			$ItemVersionCurr->getRecordById($itemversion_id);
 			
@@ -403,7 +402,7 @@
 				}
 				
 				// figure out the difference using the standard EventStream method.				
-				list($description_html,$dummy) = EventStream::textToHtmlWithEmbeddedCodes($ItemVersionCurr->itemDifferencesFrom($ItemVersionArc,true), $Navigator, 'ET_CHG', $ItemVersionsCache, true);
+				list($description_html,$dummy) = EventStream::textToHtmlWithEmbeddedCodes($ItemVersionCurr->itemDifferencesFrom($ItemVersionArc,true), $Navigator, 'ET_CHG', true);
 				$desc_arr = array();
 				if (trim($description_html)!='') $desc_arr[] = $description_html;
 				if (strtotime($ItemVersionCurr->effective_date)!=strtotime($ItemVersionArc->effective_date)) {
@@ -434,8 +433,10 @@
 		 * give this method another object of the same type, and it finds any differences
 		 * and output them as a textual description of the change.  This is used in generating
 		 * the difference messages in the EventStream.
+		 * As an alternate output format (for decorating the table view), the output is generated 
+		 * as an array indexed by field name if $output_by_fieldname is true.
 		 */
-		public function itemDifferencesFrom(self $CompareItem, $say_more_about_starting_state=false) {
+		public function itemDifferencesFrom(self $CompareItem, $say_more_about_starting_state=false, $output_by_fieldname=false) {
 			$list = array();
 			
             list($this_item_data,$this_fieldnames_converted) 	= $this->propertyFieldsToItemData();
@@ -444,16 +445,32 @@
             // check the header items
             
             if ($this->part_number!=$CompareItem->part_number) {
-            	$list[] = "<b>Part Number Alias</b> changed from '".$CompareItem->formatPrintField('part_number',false)."' to '".$this->formatPrintField('part_number',false)."'";
+            	if ($output_by_fieldname) {
+            		$list['part_number'] = "set to '".$this->formatPrintField('part_number',false)."'";
+            	} else {
+	            	$list[] = "<b>Part Number Alias</b> changed from '".$CompareItem->formatPrintField('part_number',false)."' to '".$this->formatPrintField('part_number',false)."'";
+            	}
             }
             if ($this->disposition!=$CompareItem->disposition) {
-            	$list[] = "<b>Disposition</b> changed from '".$CompareItem->formatPrintField('disposition',false)."' to '".$this->formatPrintField('disposition',false)."'";
+            	if ($output_by_fieldname) {
+            		$list['disposition'] = "set to '".$this->formatPrintField('disposition',false)."'";
+            	} else {
+	            	$list[] = "<b>Disposition</b> changed from '".$CompareItem->formatPrintField('disposition',false)."' to '".$this->formatPrintField('disposition',false)."'";
+            	}
             }
             if ($this->item_serial_number!=$CompareItem->item_serial_number) {
-            	$list[] = "<b>Serial Number</b> changed from '".$CompareItem->formatPrintField('item_serial_number',false)."' to '".$this->formatPrintField('item_serial_number',false)."'";
+            	if ($output_by_fieldname) {
+            		$list['item_serial_number'] = "set to '".$this->formatPrintField('item_serial_number',false)."'";
+            	} else {
+	            	$list[] = "<b>Serial Number</b> changed from '".$CompareItem->formatPrintField('item_serial_number',false)."' to '".$this->formatPrintField('item_serial_number',false)."'";
+            	}
             }
             if ($this->typeversion_id!=$CompareItem->typeversion_id) {
-            	$list[] = "<b>Type Version</b> changed from '".$CompareItem->formatPrintField('typeversion_id',false)."' to '".$this->formatPrintField('typeversion_id',false)."'";
+            	if ($output_by_fieldname) {
+            		$list['typeversion_id'] = "set to '".$this->formatPrintField('typeversion_id',false)."'";
+            	} else {
+	            	$list[] = "<b>Type Version</b> changed from '".$CompareItem->formatPrintField('typeversion_id',false)."' to '".$this->formatPrintField('typeversion_id',false)."'";
+            	}
             }
             
             // check the properties
@@ -461,11 +478,19 @@
 			// need to look at detailed differences:
 			$properties_deleted = array_diff($compare_fieldnames_converted,$this_fieldnames_converted);
 			foreach($properties_deleted as $fieldname) {
-				$item[] = '<b>'.$CompareItem->formatFieldnameNoColon($fieldname)."</b> deleted";
+				if ($output_by_fieldname) {
+					$item[$fieldname] = "deleted";
+				} else {
+					$item[] = '<b>'.$CompareItem->formatFieldnameNoColon($fieldname)."</b> deleted";
+				}
 			}
 			$properties_added = array_diff($this_fieldnames_converted,$compare_fieldnames_converted);
 			foreach($properties_added as $fieldname) {
-				$list[] = '<b>'.$this->formatFieldnameNoColon($fieldname)."</b> added with value '".$this->formatPrintField($fieldname,false)."'";
+				if ($output_by_fieldname) {
+					$list[$fieldname] = "added with value '".$this->formatPrintField($fieldname,false)."'";
+				} else {
+					$list[] = '<b>'.$this->formatFieldnameNoColon($fieldname)."</b> added with value '".$this->formatPrintField($fieldname,false)."'";
+				}
 			}
 			
 			// Now see if any of the properties that are in both the old and new have a changed value
@@ -476,7 +501,11 @@
 				$compare_value = self::varToStandardForm($CompareItem->{$fieldname},$compare_type);
 				$this_value_empty = is_null($this_value) || ($this_value==='');
 				$compare_value_empty = is_null($compare_value) || ($compare_value==='');
-				checkWasChangedItemField($list ,$CompareItem->formatFieldnameNoColon($fieldname), $CompareItem->formatPrintField($fieldname,false), $this->formatPrintField($fieldname,false));
+				if ($output_by_fieldname) {
+					checkWasChangedItemFieldByFieldname($list ,$fieldname, $CompareItem->formatPrintField($fieldname,false), $this->formatPrintField($fieldname,false));
+				} else {
+					checkWasChangedItemField($list ,$CompareItem->formatFieldnameNoColon($fieldname), $CompareItem->formatPrintField($fieldname,false), $this->formatPrintField($fieldname,false));
+				}
 			}
 			
 			/* 
@@ -497,7 +526,11 @@
 				} else {
 					$compare_value = $CompareItem->formatPrintField($fieldname,false);
 				}
-				checkWasChangedItemField($list ,$CompareItem->formatFieldnameNoColon($fieldname), $compare_value, null);
+				if ($output_by_fieldname) {
+					checkWasChangedItemFieldByFieldname($list ,$fieldname, $compare_value, null);
+				} else {
+					checkWasChangedItemField($list ,$CompareItem->formatFieldnameNoColon($fieldname), $compare_value, null);
+				}
 			}
 			
 			foreach(array_keys($changed_components) as $fieldname) {
@@ -510,7 +543,11 @@
 					$compare_value = $CompareItem->formatPrintField($fieldname,false);
 					$this_value = $this->formatPrintField($fieldname,false).": <itemversion>{$itemversion_id}</itemversion>";
 				}
-				checkWasChangedItemField($list ,$CompareItem->formatFieldnameNoColon($fieldname), $compare_value, $this_value);
+				if ($output_by_fieldname) {
+					checkWasChangedItemFieldByFieldname($list ,$fieldname, $compare_value, $this->formatPrintField($fieldname,false));
+				} else {
+					checkWasChangedItemField($list ,$CompareItem->formatFieldnameNoColon($fieldname), $compare_value, $this_value);
+				}
 			}
 			
 			foreach(array_keys($added_components) as $fieldname) {
@@ -520,10 +557,14 @@
 					$itemversion_id = DBTableRowItemVersion::getItemVersionIdFromByObjectId($this->{$fieldname},$this->effective_date);
 					$this_value = $this->formatPrintField($fieldname,false).": <itemversion>{$itemversion_id}</itemversion>";
 				}
-				checkWasChangedItemField($list ,$this->formatFieldnameNoColon($fieldname), null, $this_value);
+				if ($output_by_fieldname) {
+					checkWasChangedItemFieldByFieldname($list ,$fieldname, null, $this->formatPrintField($fieldname,false));
+				} else {
+					checkWasChangedItemField($list ,$this->formatFieldnameNoColon($fieldname), null, $this_value);
+				}
 			}
 
-			return count($list)>1 ? '<ul class="changelist"><li>'.implode('</li><li>',$list).'</li></ul>' : implode(',',$list);
+			return $output_by_fieldname ? $list : (count($list)>1 ? '<ul class="changelist"><li>'.implode('</li><li>',$list).'</li></ul>' : implode(',',$list));
 		}
 		
 		/**
@@ -2165,7 +2206,7 @@
 		 * @throws Exception
 		 * @return string
 		 */
-		static function fetchItemVersionEditTableTR($fieldlayout, TableRow $dbtable, $errormsg=array(), $optionss='',$editable=true, $callBackFunction=null) {
+		static function fetchItemVersionEditTableTR($fieldlayout, TableRow $dbtable, $errormsg=array(), $optionss='',$editable=true, $callBackFunction=null, $fieldhistory=array()) {
 			$html = '';
 			$editfields = $dbtable->getEditFieldNames();
 			$dbtable->applyDictionaryOverridesToFieldTypes();
@@ -2225,6 +2266,9 @@
 							$rhs_html = $dbtable->formatInputTag($fieldname, $options);
 						} else {
 							$rhs_html = $dbtable->formatPrintField($fieldname);
+							if (isset($fieldhistory[$fieldname])) {
+								$rhs_html .= EventStream::changeHistoryToHtmlPrintFieldDecoration($fieldhistory[$fieldname]);
+							}
 						}
 						
 						$html .= '<TH class="'.implode(' ',$cell_class).'">'.$dbtable->formatFieldname($fieldname,$marker).'</TH>

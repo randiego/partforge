@@ -691,6 +691,7 @@ class StructController extends DBControllerActionAbstract
         } 
         $this->view->earliest_date = $earliest_date;        
         $this->view->streamrecords = EventStream::getNestedEventStreamRecords($ItemVersion,$earliest_date);
+        $this->view->fieldhistory = EventStream::changeHistoryforFields($ItemVersion);
         
         $ItemVersion->startSelfTouchedTimer(); // the ideas is that we want to touch anything we view.
         $this->view->queryvars = $this->params;

@@ -265,7 +265,6 @@ class DefinitionEventStream {
 	public static function eventStreamRecordsToLines($records, $dbtable, $navigator=null) {
 		
 		
-		$ItemVersionCache = array(); // this is used to temporarily hold DBTableRowItemVersion records for speed
 		$return_url = !is_null($navigator) ? $navigator->getCurrentViewUrl(null,null,array('typeversion_id' => $dbtable->typeversion_id)) : '';
 		
 		/*
@@ -296,7 +295,7 @@ class DefinitionEventStream {
 			}
 			$error = '';
 			if ($record['error_message']) {
-				list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($record['error_message'], $navigator, $record['event_type_id'],$ItemVersionCache);
+				list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($record['error_message'], $navigator, $record['event_type_id']);
 				$error = '<div class="event_error">'.$event_description.'</div>';
 			}
 		
@@ -309,7 +308,7 @@ class DefinitionEventStream {
 				$version_url = !is_null($navigator) ? $navigator->getCurrentViewUrl('itemdefinitionview','',$query_params) : '';
 			}
 		
-			list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($record['event_description'], $navigator, $record['event_type_id'],$ItemVersionCache);
+			list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($record['event_description'], $navigator, $record['event_type_id']);
 			$line = array(
 					'event_type_id' => $record['event_type_id'],
 					'this_typeversion_id' => $record['this_typeversion_id'],
