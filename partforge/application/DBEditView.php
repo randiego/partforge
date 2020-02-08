@@ -72,9 +72,9 @@ class DBEditView {
 			$links = $line['links'];
 			unset($line['links']);
 			foreach($line as $key => $field) {
-				$html .= '<td>'.$field.'</td>';
+				$html .= '<td>'.nbsp_ifblank($field).'</td>';
 			}
-			if ($has_links) $html .= '<td>'.implode(' ',$links).'</td>';
+			if ($has_links) $html .= '<td>'.nbsp_ifblank(implode(' ',$links)).'</td>';
 			$html .= '</tr>';
 		}
 		$html .= '</table>';

@@ -835,9 +835,9 @@ function fetchPrintTableTR($fieldnames,TableRow $dbtable) {
 	foreach($fieldnames as $fieldname) {
 		$html .= '<TR>
 				<TH>'.$dbtable->formatFieldname($fieldname).'</TH>
-						<TD>'.$dbtable->formatPrintField($fieldname).'</TD>
-								</TR>
-								';
+				<TD>'.nbsp_ifblank($dbtable->formatPrintField($fieldname)).'</TD>
+				</TR>
+			';
 	}
 	return $html;
 }

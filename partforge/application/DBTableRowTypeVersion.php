@@ -1183,7 +1183,7 @@
         } 
        
         
-        public function formatPrintField($fieldname, $is_html=true, $nowrap=false) {
+        public function formatPrintField($fieldname, $is_html=true, $nowrap=true) {
         	$fieldtype = $this->getFieldType($fieldname);
         	$value = $this->$fieldname;
         	switch($fieldname) {
@@ -1309,7 +1309,7 @@
         				$subcaption = $idx==0 ? ($is_a_part ? '<br><span class="paren">First Letter Caps</span>' : '<br><span class="paren">First Letter Caps.  Phrase like an action or report name: "Board Calibration" or "Calibration Datasheet"</span>') : '';
         				$html .= '<tr class="proc_name_row"><th>'.$caption.'<span class="req_field"> *</span>:'.$subcaption.'</th><td colspan="3">
                                   <input class="inputboxclass" type="text" maxlength="64" size="50" value="'.(isset($pds[$idx]) ? $pds[$idx] : '').'" name="type_descriptions['.$idx.']">
-                                  '.(count($btns)>0 ? '<br />'.implode(' ',$btns) : '').'</td></tr>';
+                                  '.(count($btns)>0 ? '<br />'.implode(' ',$btns) : '&nbsp;').'</td></tr>';
         			}
         		} else {
         			$pns = explode('|',$this->type_part_number);

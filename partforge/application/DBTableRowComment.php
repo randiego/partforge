@@ -197,7 +197,7 @@
 			return parent::formatInputTag($fieldname, $display_options);
 		}
 		
-		public function formatPrintField($fieldname, $is_html=true, $nowrap=false) {
+		public function formatPrintField($fieldname, $is_html=true, $nowrap=true) {
 			$fieldtype = $this->getFieldType($fieldname);
 			$value = $this->$fieldname;
 			switch($fieldname) {

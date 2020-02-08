@@ -513,8 +513,8 @@ class EventStream {
 			if (in_array($event_type,array('ET_PROCREF','ET_PARTREF'))) {
 				foreach($ItemVersion->getFeaturedFieldTypes() as $fieldname => $fieldtype) {
 					if (trim($ItemVersion->{$fieldname})!=='') {
-						$features[] = '<li><span class="label">'.$ItemVersion->formatFieldnameNoColon($fieldname).':</span> <span class="value">'.$ItemVersion->formatPrintField($fieldname, true, false, true).'</span></li>';
-						$features_structured[] = array('name' => $ItemVersion->formatFieldnameNoColon($fieldname), 'value' => $ItemVersion->formatPrintField($fieldname, true, false, true));
+						$features[] = '<li><span class="label">'.$ItemVersion->formatFieldnameNoColon($fieldname).':</span> <span class="value">'.$ItemVersion->formatPrintField($fieldname, true, true, true).'</span></li>';
+						$features_structured[] = array('name' => $ItemVersion->formatFieldnameNoColon($fieldname), 'value' => $ItemVersion->formatPrintField($fieldname, true, true, true));
 					}
 				}
 				$featuresstr = implode('',$features);
@@ -962,9 +962,9 @@ class EventStream {
 					$row['Pass/Fail'] = DBTableRowItemVersion::renderDisposition($dbtable->getFieldType('disposition'),$reference['disposition']);
 					$dimmed_class_attr = $reference['is_future_version'] ? ' class="bd-dimmed"' : '';
 					$html_dashboard .= '<tr'.$dimmed_class_attr.'>
-				<td>'.$row['Date'].'</td>
-	        	<td>'.$row['Data'].'</td>
-	        	<td>'.$row['Pass/Fail'].'</td>
+				<td>'.nbsp_ifblank($row['Date']).'</td>
+	        	<td>'.nbsp_ifblank($row['Data']).'</td>
+	        	<td>'.nbsp_ifblank($row['Pass/Fail']).'</td>
 	        	</tr>';
 				}
 				$html_dashboard .= '</table>';

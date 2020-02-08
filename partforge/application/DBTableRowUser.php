@@ -485,7 +485,7 @@
 	    	return $records;
 	    }
 
-	    public function formatPrintField($fieldname, $is_html=true, $nowrap=false, $show_float_units=false) {
+	    public function formatPrintField($fieldname, $is_html=true, $nowrap=true, $show_float_units=false) {
 	    	$fieldtype = $this->getFieldType($fieldname);
 	    	$value = $this->$fieldname;
 	    	switch($fieldname) {

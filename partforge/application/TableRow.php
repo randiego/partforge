@@ -337,7 +337,7 @@
             }
             $line = array();
             foreach($fields as $field) {
-                    $line[] = str_replace($delimiter,$replace_delim,$this->formatPrintField($field, false, true));
+                    $line[] = str_replace($delimiter,$replace_delim,$this->formatPrintField($field, false));
             }
             return implode($delimiter,$line);
         }
@@ -417,7 +417,7 @@
 		/*
 		 * TODO: some of these types should be moved into DBTableRow (left_join ?)
 		 */
-		public function formatPrintField($fieldname, $is_html=true,$nowrap=false) {
+		public function formatPrintField($fieldname, $is_html=true,$nowrap=true) {
 			$fieldtype = $this->getFieldType($fieldname);
 			$value = $this->$fieldname;
 			if ($fieldtype['type'] == 'print_function') {
@@ -447,7 +447,7 @@
 			} else {
 				$width = isset($fieldtype['print_width']) ? $fieldtype['print_width'] : DEFAULT_FIELD_PRINT_WIDTH;
 				if ($is_html) {
-					return $nowrap ? nbsp_ifblank(TextToHtml($value)) : text_to_wrappedhtml($value,$width);
+					return $nowrap ? TextToHtml($value) : text_to_wrappedhtml($value,$width);
 				} else {
 					return $nowrap ? $value : wrapemailtext( $value, $width, "\r\n");
 				}

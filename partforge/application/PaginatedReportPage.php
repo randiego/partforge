@@ -294,15 +294,15 @@ class PaginatedReportPage {
 
 				// add extra row before this record.
 				if ($detail_out['fmt_row_break']) {
-					$table_html .= '<TR class="row_break"><TD COLSPAN="'.$column_count.'"></TD></TR>'; 
+					$table_html .= '<TR class="row_break"><TD COLSPAN="'.$column_count.'">&nbsp;</TD></TR>'; 
 				}
 				
-				$table_html .= '<TR class="'.$detail_out['tr_class'].'">'.($this->_report_data_obj->show_row_enumeration ? '<TD class="enumeration">'.$detail_out['record_number'].'</TD>' : '');
+				$table_html .= '<TR class="'.$detail_out['tr_class'].'">'.($this->_report_data_obj->show_row_enumeration ? '<TD class="enumeration">'.nbsp_ifblank($detail_out['record_number']).'</TD>' : '');
 				foreach(array_keys($header_fields_array) as $fieldname) {
 					if ($this->_report_data_obj->group_rows && !$detail_out['fmt_row_break'] && in_array($fieldname,$this->_report_data_obj->row_break_group_fields)) {
 						$table_html .= '<TD>&nbsp;</TD>';
 					} else {
-						$table_html .= '<TD'.(isset($detail_out['td_class'][$fieldname]) ? ' class="'.$detail_out['td_class'][$fieldname].'"' : '').'>'.$detail_out[$fieldname].'</TD>';
+						$table_html .= '<TD'.(isset($detail_out['td_class'][$fieldname]) ? ' class="'.$detail_out['td_class'][$fieldname].'"' : '').'>'.nbsp_ifblank($detail_out[$fieldname]).'</TD>';
 					}
 				}
 				
@@ -316,7 +316,7 @@ class PaginatedReportPage {
 				
 				$table_html .= '</TR>';
 			}
-			$table_html .= $this->_report_data_obj->group_rows ? '<TR class="row_bottom"><TD COLSPAN="'.$column_count.'"></TD></TR>' : ''; 
+			$table_html .= $this->_report_data_obj->group_rows ? '<TR class="row_bottom"><TD COLSPAN="'.$column_count.'">&nbsp;</TD></TR>' : ''; 
 			$table_html .= '</TABLE>';
 		} else {
 			$table_html = '<div class="noentriesfound">No Entries Found</div>';
@@ -331,7 +331,7 @@ class PaginatedReportPage {
 				'.$table_html.'
 			</td>
 		</tr>
-		<tr><td nowrap valign="MIDDLE">'.$this->rows_select_tag_if_enough_rows($numrows, $_SESSION['account']->pref_rows_per_page).'</td><td align="right">'.(($right_pagination_url && (count($header_fields_array) > 4)) ? linkify($right_pagination_url,'&raquo;&raquo;','Next Page') : '&nbsp;').'</td></tr>
+		<tr><td nowrap valign="MIDDLE">'.nbsp_ifblank($this->rows_select_tag_if_enough_rows($numrows, $_SESSION['account']->pref_rows_per_page)).'</td><td align="right">'.(($right_pagination_url && (count($header_fields_array) > 4)) ? linkify($right_pagination_url,'&raquo;&raquo;','Next Page') : '&nbsp;').'</td></tr>
 		</table>
 		<div class="paginationline">'.$paginationline_html.'</div>
 ';
