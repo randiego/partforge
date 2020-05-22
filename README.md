@@ -170,7 +170,7 @@ is printed out and physically attached to assemblies, or is saved on a communal 
 and about a quarter use it daily. 
 
 Thanks go to Damon Jackson for being such an enthusiastic evangelist for PartForge within QD, Jeremy Terry for a constant stream of great suggestions
-(sorry I didn't get them done before you left!), Dinesh Martin for thoughtful suggestions and pushing the API development to where it was useful and, Will Neils, Andreas Aman and 
+(sorry I didn't get them done before you left!), Dinesh Martien for thoughtful suggestions and pushing the API development to where it was useful and, Will Neils, Andreas Amann and 
 many more for excellent feedback and clever new ways to work with the constraints of what I wrote.  
 
 --Randy Black
