@@ -75,7 +75,7 @@ define( 'LOGGED_IN_USER_IS_CREATOR', '-1'); // used for db field user.proxy_user
 
 $config['scheme'] = $config['local_testing'] ? 'http' : 'http';
 
-error_reporting (E_ALL ^ E_NOTICE ^ E_USER_NOTICE);
+error_reporting(E_ERROR | E_WARNING | E_PARSE);
 ini_set('display_errors',1);
 
 // get local configuration
