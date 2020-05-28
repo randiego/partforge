@@ -21,15 +21,13 @@
 ## @license GPL-3.0+ <http://spdx.org/licenses/GPL-3.0+>
 ##
 ##
-##	Every table has a primary index as the first entry.
-##	Cross-referencing indexes between pages always have the same name and type INT.
-##	Field names should look descriptive when underscores are removed and each first letter capitalized
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `assigned_to_task`
 --
 
-CREATE TABLE `assigned_to_task` (
+CREATE TABLE IF NOT EXISTS `assigned_to_task` (
   `assigned_to_task_id` int(11) NOT NULL AUTO_INCREMENT,
   `group_task_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
@@ -41,7 +39,111 @@ CREATE TABLE `assigned_to_task` (
   PRIMARY KEY (`assigned_to_task_id`),
   KEY `user_id` (`user_id`),
   KEY `group_task_id` (`group_task_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `changecode`
+--
+
+CREATE TABLE IF NOT EXISTS `changecode` (
+  `change_code_id` int(11) NOT NULL AUTO_INCREMENT,
+  `change_code` varchar(4) NOT NULL,
+  `change_code_name` varchar(128) DEFAULT NULL,
+  PRIMARY KEY (`change_code_id`),
+  KEY `change_code` (`change_code`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=21 ;
+
+--
+-- Dumping data for table `changecode`
+--
+
+INSERT INTO `changecode` (`change_code_id`, `change_code`, `change_code_name`) VALUES
+(1, 'DIO', 'Deleted an Item'),
+(2, 'DIV', 'Deleted Item Version'),
+(3, 'AIO', 'Added New Item'),
+(4, 'CIV', 'Changed Item Version'),
+(5, 'AIV', 'Added Item Version'),
+(6, 'ATO', 'Added New Definition'),
+(7, 'RTV', 'Released Definition Version'),
+(8, 'OTO', 'Obsoleted Definition'),
+(9, 'CTV', 'Changed Definition Version'),
+(10, 'ATV', 'Added Definition Version'),
+(11, 'DTV', 'Deleted Definition Version'),
+(12, 'DTO', 'Deleted a Definition'),
+(13, 'AIC', 'Added Item Comment'),
+(14, 'CIC', 'Changed Item Comment'),
+(15, 'DIC', 'Deleted Item Comment'),
+(16, 'AIR', 'Became Used On'),
+(17, 'AIP', 'Added Procedure'),
+(18, 'ATC', 'Added Definition Comment'),
+(19, 'CTC', 'Changed Definition Comment'),
+(20, 'DTC', 'Deleted Definition Comment');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `changelog`
+--
+
+CREATE TABLE IF NOT EXISTS `changelog` (
+  `changelog_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `changed_on` datetime NOT NULL,
+  `desc_typeversion_id` int(11) DEFAULT NULL,
+  `desc_partnumber_alias` int(11) DEFAULT NULL,
+  `desc_itemversion_id` int(11) DEFAULT NULL,
+  `desc_typecategory_id` int(11) DEFAULT NULL,
+  `desc_comment_id` int(11) DEFAULT NULL,
+  `desc_text` varchar(255) DEFAULT NULL,
+  `locator_prefix` varchar(2) DEFAULT NULL,
+  `trigger_itemobject_id` int(11) DEFAULT NULL,
+  `trigger_typeobject_id` int(11) DEFAULT NULL,
+  `change_code` varchar(4) NOT NULL,
+  PRIMARY KEY (`changelog_id`),
+  KEY `user_id` (`user_id`),
+  KEY `trigger_itemobject_id` (`trigger_itemobject_id`),
+  KEY `trigger_typeobject_id` (`trigger_typeobject_id`),
+  KEY `change_code` (`change_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `changenotifyqueue`
+--
+
+CREATE TABLE IF NOT EXISTS `changenotifyqueue` (
+  `changenotifyqueue_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `changelog_id` int(11) NOT NULL,
+  `added_on` datetime NOT NULL,
+  PRIMARY KEY (`changenotifyqueue_id`),
+  KEY `user_id` (`user_id`),
+  KEY `changelog_id` (`changelog_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `changesubscription`
+--
+
+CREATE TABLE IF NOT EXISTS `changesubscription` (
+  `changesubscription_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `added_on` datetime NOT NULL,
+  `itemobject_id` int(11) DEFAULT NULL,
+  `typeobject_id` int(11) DEFAULT NULL,
+  `follow_items_too` int(1) DEFAULT '1',
+  `notify_instantly` int(1) DEFAULT '0',
+  `notify_daily` int(1) DEFAULT '0',
+  PRIMARY KEY (`changesubscription_id`),
+  KEY `user_id` (`user_id`),
+  KEY `itemobject_id` (`itemobject_id`),
+  KEY `typeobject_id` (`typeobject_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -49,7 +151,7 @@ CREATE TABLE `assigned_to_task` (
 -- Table structure for table `comment`
 --
 
-CREATE TABLE `comment` (
+CREATE TABLE IF NOT EXISTS `comment` (
   `comment_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL COMMENT 'who created this version',
   `proxy_user_id` int(11) NOT NULL DEFAULT '-1',
@@ -61,7 +163,7 @@ CREATE TABLE `comment` (
   KEY `user_id` (`user_id`),
   KEY `itemobject_id` (`itemobject_id`),
   KEY `proxy_user_id` (`proxy_user_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -69,7 +171,7 @@ CREATE TABLE `comment` (
 -- Table structure for table `document`
 --
 
-CREATE TABLE `document` (
+CREATE TABLE IF NOT EXISTS `document` (
   `document_id` int(11) NOT NULL AUTO_INCREMENT,
   `comment_id` int(11) NOT NULL,
   `document_displayed_filename` varchar(255) DEFAULT NULL,
@@ -85,7 +187,7 @@ CREATE TABLE `document` (
   PRIMARY KEY (`document_id`),
   KEY `comment_id` (`comment_id`),
   KEY `user_id` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -93,13 +195,13 @@ CREATE TABLE `document` (
 -- Table structure for table `eventlog`
 --
 
-CREATE TABLE `eventlog` (
+CREATE TABLE IF NOT EXISTS `eventlog` (
   `event_log_id` int(11) NOT NULL AUTO_INCREMENT,
   `event_log_date_added` datetime NOT NULL,
   `event_log_notify` int(1) DEFAULT '0',
   `event_log_text` text,
   PRIMARY KEY (`event_log_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -107,12 +209,19 @@ CREATE TABLE `eventlog` (
 -- Table structure for table `globals`
 --
 
-CREATE TABLE `globals` (
+CREATE TABLE IF NOT EXISTS `globals` (
   `globals_id` int(11) NOT NULL AUTO_INCREMENT,
   `gl_key` varchar(64) DEFAULT NULL,
   `gl_value` text,
   PRIMARY KEY (`globals_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
+
+--
+-- Dumping data for table `globals`
+--
+
+INSERT INTO `globals` (`globals_id`, `gl_key`, `gl_value`) VALUES
+(1, 'databaseversion', '5');
 
 -- --------------------------------------------------------
 
@@ -120,7 +229,7 @@ CREATE TABLE `globals` (
 -- Table structure for table `group_task`
 --
 
-CREATE TABLE `group_task` (
+CREATE TABLE IF NOT EXISTS `group_task` (
   `group_task_id` int(11) NOT NULL AUTO_INCREMENT,
   `class_name` varchar(64) NOT NULL,
   `created_on` datetime NOT NULL,
@@ -128,7 +237,7 @@ CREATE TABLE `group_task` (
   `title` text,
   `redirect_url` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`group_task_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -136,7 +245,7 @@ CREATE TABLE `group_task` (
 -- Table structure for table `help`
 --
 
-CREATE TABLE `help` (
+CREATE TABLE IF NOT EXISTS `help` (
   `help_id` int(11) NOT NULL AUTO_INCREMENT,
   `controller_name` varchar(255) DEFAULT NULL,
   `action_name` varchar(255) DEFAULT NULL,
@@ -144,7 +253,7 @@ CREATE TABLE `help` (
   `help_tip` varchar(255) DEFAULT NULL,
   `help_markup` text,
   PRIMARY KEY (`help_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -152,7 +261,7 @@ CREATE TABLE `help` (
 -- Table structure for table `itemcomponent`
 --
 
-CREATE TABLE `itemcomponent` (
+CREATE TABLE IF NOT EXISTS `itemcomponent` (
   `itemcomponent_id` int(11) NOT NULL AUTO_INCREMENT,
   `belongs_to_itemversion_id` int(11) NOT NULL,
   `has_an_itemobject_id` int(11) NOT NULL,
@@ -160,7 +269,7 @@ CREATE TABLE `itemcomponent` (
   PRIMARY KEY (`itemcomponent_id`),
   KEY `belongs_to_itemversion_id` (`belongs_to_itemversion_id`),
   KEY `has_an_itemobject_id` (`has_an_itemobject_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -168,7 +277,7 @@ CREATE TABLE `itemcomponent` (
 -- Table structure for table `itemobject`
 --
 
-CREATE TABLE `itemobject` (
+CREATE TABLE IF NOT EXISTS `itemobject` (
   `itemobject_id` int(11) NOT NULL AUTO_INCREMENT,
   `cached_current_itemversion_id` int(11) DEFAULT NULL COMMENT 'cached pointer to entry in itemversion table that has latest effective date',
   `cached_first_ver_date` datetime DEFAULT NULL,
@@ -179,7 +288,7 @@ CREATE TABLE `itemobject` (
   `cached_last_comment_person` varchar(128) DEFAULT NULL,
   PRIMARY KEY (`itemobject_id`),
   KEY `cached_current_itemversion_id` (`cached_current_itemversion_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -187,7 +296,7 @@ CREATE TABLE `itemobject` (
 -- Table structure for table `itemversion`
 --
 
-CREATE TABLE `itemversion` (
+CREATE TABLE IF NOT EXISTS `itemversion` (
   `itemversion_id` int(11) NOT NULL AUTO_INCREMENT,
   `itemobject_id` int(11) NOT NULL,
   `item_serial_number` varchar(64) DEFAULT NULL,
@@ -208,7 +317,7 @@ CREATE TABLE `itemversion` (
   KEY `item_serial_number` (`item_serial_number`),
   KEY `cached_serial_number_value` (`cached_serial_number_value`),
   KEY `proxy_user_id` (`proxy_user_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -216,7 +325,7 @@ CREATE TABLE `itemversion` (
 -- Table structure for table `itemversionarchive`
 --
 
-CREATE TABLE `itemversionarchive` (
+CREATE TABLE IF NOT EXISTS `itemversionarchive` (
   `itemversionarchive_id` int(11) NOT NULL AUTO_INCREMENT,
   `itemversion_id` int(11) NOT NULL,
   `cached_user_id` int(11) NOT NULL COMMENT 'who created this version',
@@ -225,7 +334,7 @@ CREATE TABLE `itemversionarchive` (
   PRIMARY KEY (`itemversionarchive_id`),
   KEY `itemversion_id` (`itemversion_id`),
   KEY `cached_user_id` (`cached_user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -233,7 +342,7 @@ CREATE TABLE `itemversionarchive` (
 -- Table structure for table `partnumbercache`
 --
 
-CREATE TABLE `partnumbercache` (
+CREATE TABLE IF NOT EXISTS `partnumbercache` (
   `partnumber_id` int(11) NOT NULL AUTO_INCREMENT,
   `part_number` varchar(64) DEFAULT NULL,
   `part_description` varchar(255) DEFAULT NULL,
@@ -241,7 +350,7 @@ CREATE TABLE `partnumbercache` (
   `partnumber_alias` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`partnumber_id`),
   KEY `typeversion_id` (`typeversion_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -249,12 +358,12 @@ CREATE TABLE `partnumbercache` (
 -- Table structure for table `reportcache`
 --
 
-CREATE TABLE `reportcache` (
+CREATE TABLE IF NOT EXISTS `reportcache` (
   `reportcache_id` int(11) NOT NULL AUTO_INCREMENT,
   `class_name` varchar(255) DEFAULT NULL,
   `last_run` datetime DEFAULT NULL,
   PRIMARY KEY (`reportcache_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -262,7 +371,7 @@ CREATE TABLE `reportcache` (
 -- Table structure for table `reportsubscription`
 --
 
-CREATE TABLE `reportsubscription` (
+CREATE TABLE IF NOT EXISTS `reportsubscription` (
   `reportsubscription_id` int(11) NOT NULL AUTO_INCREMENT,
   `reportcache_id` int(11) DEFAULT NULL,
   `user_id` int(11) DEFAULT NULL,
@@ -271,7 +380,23 @@ CREATE TABLE `reportsubscription` (
   PRIMARY KEY (`reportsubscription_id`),
   KEY `reportcache_id` (`reportcache_id`),
   KEY `user_id` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `taskslog`
+--
+
+CREATE TABLE IF NOT EXISTS `taskslog` (
+  `tasklog_id` int(11) NOT NULL AUTO_INCREMENT,
+  `tl_key` varchar(64) DEFAULT NULL,
+  `tl_last_run` datetime DEFAULT NULL,
+  `tl_run_duration` float DEFAULT NULL,
+  `tl_run_peak_memory` float DEFAULT NULL,
+  PRIMARY KEY (`tasklog_id`),
+  KEY `tl_key` (`tl_key`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -279,14 +404,14 @@ CREATE TABLE `reportsubscription` (
 -- Table structure for table `terminaltypeobject`
 --
 
-CREATE TABLE `terminaltypeobject` (
+CREATE TABLE IF NOT EXISTS `terminaltypeobject` (
   `terminaltypeobject_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) DEFAULT NULL,
   `allowed_typeobject_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`terminaltypeobject_id`),
   KEY `allowed_typeobject_id` (`allowed_typeobject_id`),
   KEY `user_id` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -294,7 +419,7 @@ CREATE TABLE `terminaltypeobject` (
 -- Table structure for table `typecategory`
 --
 
-CREATE TABLE `typecategory` (
+CREATE TABLE IF NOT EXISTS `typecategory` (
   `typecategory_id` int(11) NOT NULL AUTO_INCREMENT,
   `typecategory_name` varchar(64) DEFAULT NULL,
   `event_stream_reference_prefix` varchar(64) DEFAULT NULL,
@@ -302,12 +427,15 @@ CREATE TABLE `typecategory` (
   `has_a_serial_number` int(1) DEFAULT NULL,
   `has_a_disposition` int(1) DEFAULT NULL,
   PRIMARY KEY (`typecategory_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=3 ;
+
+--
+-- Dumping data for table `typecategory`
+--
 
 INSERT INTO `typecategory` (`typecategory_id`, `typecategory_name`, `event_stream_reference_prefix`, `is_user_procedure`, `has_a_serial_number`, `has_a_disposition`) VALUES
 (1, 'Procedure', '', 1, 0, 1),
 (2, 'Part', 'Became part of', 0, 1, 0);
-
 
 -- --------------------------------------------------------
 
@@ -315,7 +443,7 @@ INSERT INTO `typecategory` (`typecategory_id`, `typecategory_name`, `event_strea
 -- Table structure for table `typecomment`
 --
 
-CREATE TABLE `typecomment` (
+CREATE TABLE IF NOT EXISTS `typecomment` (
   `comment_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL COMMENT 'who created this version',
   `typeobject_id` int(11) NOT NULL,
@@ -325,7 +453,7 @@ CREATE TABLE `typecomment` (
   PRIMARY KEY (`comment_id`),
   KEY `user_id` (`user_id`),
   KEY `typeobject_id` (`typeobject_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -333,7 +461,7 @@ CREATE TABLE `typecomment` (
 -- Table structure for table `typecomponent`
 --
 
-CREATE TABLE `typecomponent` (
+CREATE TABLE IF NOT EXISTS `typecomponent` (
   `typecomponent_id` int(11) NOT NULL AUTO_INCREMENT,
   `belongs_to_typeversion_id` int(11) NOT NULL,
   `component_name` varchar(64) DEFAULT NULL COMMENT 'field name of this component in the dictionary',
@@ -343,7 +471,7 @@ CREATE TABLE `typecomponent` (
   `required` int(1) DEFAULT NULL,
   PRIMARY KEY (`typecomponent_id`),
   KEY `belongs_to_typeversion_id` (`belongs_to_typeversion_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -351,7 +479,7 @@ CREATE TABLE `typecomponent` (
 -- Table structure for table `typecomponent_typeobject`
 --
 
-CREATE TABLE `typecomponent_typeobject` (
+CREATE TABLE IF NOT EXISTS `typecomponent_typeobject` (
   `typecomponent_id` int(11) NOT NULL,
   `can_have_typeobject_id` int(11) NOT NULL,
   KEY `typecomponent_id` (`typecomponent_id`),
@@ -364,7 +492,7 @@ CREATE TABLE `typecomponent_typeobject` (
 -- Table structure for table `typedocument`
 --
 
-CREATE TABLE `typedocument` (
+CREATE TABLE IF NOT EXISTS `typedocument` (
   `document_id` int(11) NOT NULL AUTO_INCREMENT,
   `typeobject_id` int(11) NOT NULL,
   `document_displayed_filename` varchar(255) DEFAULT NULL,
@@ -380,7 +508,7 @@ CREATE TABLE `typedocument` (
   PRIMARY KEY (`document_id`),
   KEY `typeobject_id` (`typeobject_id`),
   KEY `user_id` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -388,7 +516,7 @@ CREATE TABLE `typedocument` (
 -- Table structure for table `typeobject`
 --
 
-CREATE TABLE `typeobject` (
+CREATE TABLE IF NOT EXISTS `typeobject` (
   `typeobject_id` int(11) NOT NULL AUTO_INCREMENT,
   `cached_current_typeversion_id` int(11) DEFAULT NULL COMMENT 'cached pointer to entry in itemversion table that has latest effective date',
   `cached_item_count` int(11) DEFAULT NULL,
@@ -397,7 +525,7 @@ CREATE TABLE `typeobject` (
   `typedisposition` varchar(1) NOT NULL DEFAULT 'A' COMMENT 'A=Active, B=oBsolete',
   PRIMARY KEY (`typeobject_id`),
   KEY `cached_current_typeversion_id` (`cached_current_typeversion_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -405,7 +533,7 @@ CREATE TABLE `typeobject` (
 -- Table structure for table `typeversion`
 --
 
-CREATE TABLE `typeversion` (
+CREATE TABLE IF NOT EXISTS `typeversion` (
   `typeversion_id` int(11) NOT NULL AUTO_INCREMENT,
   `typeobject_id` int(11) NOT NULL,
   `type_part_number` longtext,
@@ -428,7 +556,7 @@ CREATE TABLE `typeversion` (
   KEY `typeobject_id` (`typeobject_id`),
   KEY `user_id` (`user_id`),
   KEY `typecategory_id` (`typecategory_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -436,7 +564,7 @@ CREATE TABLE `typeversion` (
 -- Table structure for table `user`
 --
 
-CREATE TABLE `user` (
+CREATE TABLE IF NOT EXISTS `user` (
   `user_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_enabled` int(1) NOT NULL DEFAULT '1',
   `login_id` varchar(64) NOT NULL,
@@ -456,10 +584,14 @@ CREATE TABLE `user` (
   `waiting_approval` int(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`user_id`),
   UNIQUE KEY `login_id` (`login_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
 
-INSERT INTO `user` (`user_id`, `user_enabled`, `login_id`, `user_cryptpassword`, `login_count`, `last_visit`, `account_created`, `user_type`, `pref_rows_per_page`, `pref_view_category`, `first_name`, `last_name`, `email`, `comments`, `cached_items_created_count`) VALUES
-(1, 1, 'admin', '$1$As0.JB5.$yRHmc8nQxVcKM9QVhRV530', 1, '2015-05-18 20:50:59', '2015-05-18 20:48:42', 'Admin', 30, '', 'Administrative', 'User', '', '', 0);
+--
+-- Dumping data for table `user`
+--
+
+INSERT INTO `user` (`user_id`, `user_enabled`, `login_id`, `user_cryptpassword`, `login_count`, `last_visit`, `account_created`, `user_type`, `pref_rows_per_page`, `pref_view_category`, `first_name`, `last_name`, `email`, `comments`, `cached_items_created_count`, `has_temporary_password`, `waiting_approval`) VALUES
+(1, 1, 'admin', '$1$As0.JB5.$yRHmc8nQxVcKM9QVhRV530', 1, '2015-05-18 20:50:59', '2015-05-18 20:48:42', 'Admin', 30, '', 'Administrative', 'User', '', '', 0, 0, 0);
 
 -- --------------------------------------------------------
 
@@ -467,7 +599,7 @@ INSERT INTO `user` (`user_id`, `user_enabled`, `login_id`, `user_cryptpassword`,
 -- Table structure for table `userpreferences`
 --
 
-CREATE TABLE `userpreferences` (
+CREATE TABLE IF NOT EXISTS `userpreferences` (
   `userpreference_id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `pref_key` varchar(63) NOT NULL,
@@ -475,7 +607,7 @@ CREATE TABLE `userpreferences` (
   PRIMARY KEY (`userpreference_id`),
   KEY `pref_key` (`pref_key`),
   KEY `user_id` (`user_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -483,7 +615,7 @@ CREATE TABLE `userpreferences` (
 -- Table structure for table `whats_new_user`
 --
 
-CREATE TABLE `whats_new_user` (
+CREATE TABLE IF NOT EXISTS `whats_new_user` (
   `whats_new_user_id` int(11) NOT NULL AUTO_INCREMENT,
   `message_key` varchar(33) DEFAULT NULL,
   `user_id` int(11) NOT NULL,
@@ -492,24 +624,5 @@ CREATE TABLE `whats_new_user` (
   PRIMARY KEY (`whats_new_user_id`),
   KEY `message_key` (`message_key`),
   KEY `user_id` (`user_id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
-DROP TABLE IF EXISTS changelog;
-CREATE TABLE IF NOT EXISTS `changelog` (
-  `changelog_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `changed_on` datetime NOT NULL,
-  `itemobject_id` int(11) DEFAULT NULL,
-  `itemversion_id` int(11) DEFAULT NULL,
-  `typeobject_id` int(11) DEFAULT NULL,
-  `typeversion_id` int(11) DEFAULT NULL,
-  `locator_prefix` VARCHAR(2) DEFAULT NULL,
-  `change_code` VARCHAR(4) NOT NULL,
-  PRIMARY KEY (`changelog_id`),
-  KEY `user_id` (`user_id`),
-  KEY `itemobject_id` (`itemobject_id`),
-  KEY `itemversion_id` (`itemversion_id`),
-  KEY `typeobject_id` (`typeobject_id`),
-  KEY `typeversion_id` (`typeversion_id`),
-  KEY `change_code` (`change_code`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;

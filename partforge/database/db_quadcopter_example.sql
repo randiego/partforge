@@ -1,19 +1,26 @@
--- phpMyAdmin SQL Dump
--- version 3.5.1
--- http://www.phpmyadmin.net
---
--- Host: 127.0.0.1
--- Generation Time: Feb 25, 2016 at 07:49 AM
--- Server version: 5.5.24-log
--- PHP Version: 5.2.9-2
-
-SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
-SET time_zone = "+00:00";
-
---
--- Database: `partforgedb`
---
-
+##
+## PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
+##
+## Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+##
+## This file is part of PartForge
+##
+## PartForge is free software: you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## any later version.
+##
+## PartForge is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with PartForge.  If not, see <http://www.gnu.org/licenses/>.
+##
+## @license GPL-3.0+ <http://spdx.org/licenses/GPL-3.0+>
+##
+##
 -- --------------------------------------------------------
 
 --
@@ -32,6 +39,110 @@ CREATE TABLE IF NOT EXISTS `assigned_to_task` (
   PRIMARY KEY (`assigned_to_task_id`),
   KEY `user_id` (`user_id`),
   KEY `group_task_id` (`group_task_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `changecode`
+--
+
+CREATE TABLE IF NOT EXISTS `changecode` (
+  `change_code_id` int(11) NOT NULL AUTO_INCREMENT,
+  `change_code` varchar(4) NOT NULL,
+  `change_code_name` varchar(128) DEFAULT NULL,
+  PRIMARY KEY (`change_code_id`),
+  KEY `change_code` (`change_code`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=21 ;
+
+--
+-- Dumping data for table `changecode`
+--
+
+INSERT INTO `changecode` (`change_code_id`, `change_code`, `change_code_name`) VALUES
+(1, 'DIO', 'Deleted an Item'),
+(2, 'DIV', 'Deleted Item Version'),
+(3, 'AIO', 'Added New Item'),
+(4, 'CIV', 'Changed Item Version'),
+(5, 'AIV', 'Added Item Version'),
+(6, 'ATO', 'Added New Definition'),
+(7, 'RTV', 'Released Definition Version'),
+(8, 'OTO', 'Obsoleted Definition'),
+(9, 'CTV', 'Changed Definition Version'),
+(10, 'ATV', 'Added Definition Version'),
+(11, 'DTV', 'Deleted Definition Version'),
+(12, 'DTO', 'Deleted a Definition'),
+(13, 'AIC', 'Added Item Comment'),
+(14, 'CIC', 'Changed Item Comment'),
+(15, 'DIC', 'Deleted Item Comment'),
+(16, 'AIR', 'Became Used On'),
+(17, 'AIP', 'Added Procedure'),
+(18, 'ATC', 'Added Definition Comment'),
+(19, 'CTC', 'Changed Definition Comment'),
+(20, 'DTC', 'Deleted Definition Comment');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `changelog`
+--
+
+CREATE TABLE IF NOT EXISTS `changelog` (
+  `changelog_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `changed_on` datetime NOT NULL,
+  `desc_typeversion_id` int(11) DEFAULT NULL,
+  `desc_partnumber_alias` int(11) DEFAULT NULL,
+  `desc_itemversion_id` int(11) DEFAULT NULL,
+  `desc_typecategory_id` int(11) DEFAULT NULL,
+  `desc_comment_id` int(11) DEFAULT NULL,
+  `desc_text` varchar(255) DEFAULT NULL,
+  `locator_prefix` varchar(2) DEFAULT NULL,
+  `trigger_itemobject_id` int(11) DEFAULT NULL,
+  `trigger_typeobject_id` int(11) DEFAULT NULL,
+  `change_code` varchar(4) NOT NULL,
+  PRIMARY KEY (`changelog_id`),
+  KEY `user_id` (`user_id`),
+  KEY `trigger_itemobject_id` (`trigger_itemobject_id`),
+  KEY `trigger_typeobject_id` (`trigger_typeobject_id`),
+  KEY `change_code` (`change_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `changenotifyqueue`
+--
+
+CREATE TABLE IF NOT EXISTS `changenotifyqueue` (
+  `changenotifyqueue_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `changelog_id` int(11) NOT NULL,
+  `added_on` datetime NOT NULL,
+  PRIMARY KEY (`changenotifyqueue_id`),
+  KEY `user_id` (`user_id`),
+  KEY `changelog_id` (`changelog_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `changesubscription`
+--
+
+CREATE TABLE IF NOT EXISTS `changesubscription` (
+  `changesubscription_id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `added_on` datetime NOT NULL,
+  `itemobject_id` int(11) DEFAULT NULL,
+  `typeobject_id` int(11) DEFAULT NULL,
+  `follow_items_too` int(1) DEFAULT '1',
+  `notify_instantly` int(1) DEFAULT '0',
+  `notify_daily` int(1) DEFAULT '0',
+  PRIMARY KEY (`changesubscription_id`),
+  KEY `user_id` (`user_id`),
+  KEY `itemobject_id` (`itemobject_id`),
+  KEY `typeobject_id` (`typeobject_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
@@ -120,7 +231,14 @@ CREATE TABLE IF NOT EXISTS `globals` (
   `gl_key` varchar(64) DEFAULT NULL,
   `gl_value` text,
   PRIMARY KEY (`globals_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
+
+--
+-- Dumping data for table `globals`
+--
+
+INSERT INTO `globals` (`globals_id`, `gl_key`, `gl_value`) VALUES
+(1, 'databaseversion', '5');
 
 -- --------------------------------------------------------
 
@@ -381,6 +499,22 @@ CREATE TABLE IF NOT EXISTS `reportsubscription` (
   KEY `reportcache_id` (`reportcache_id`),
   KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `taskslog`
+--
+
+CREATE TABLE IF NOT EXISTS `taskslog` (
+  `tasklog_id` int(11) NOT NULL AUTO_INCREMENT,
+  `tl_key` varchar(64) DEFAULT NULL,
+  `tl_last_run` datetime DEFAULT NULL,
+  `tl_run_duration` float DEFAULT NULL,
+  `tl_run_peak_memory` float DEFAULT NULL,
+  PRIMARY KEY (`tasklog_id`),
+  KEY `tl_key` (`tl_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 
@@ -653,8 +787,6 @@ CREATE TABLE IF NOT EXISTS `userpreferences` (
   KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=8 ;
 
-
-
 -- --------------------------------------------------------
 
 --
@@ -672,33 +804,3 @@ CREATE TABLE IF NOT EXISTS `whats_new_user` (
   KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
 
-
-CREATE TABLE taskslog (
-  tasklog_id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
-  tl_key VARCHAR(64),
-  tl_last_run DATETIME,
-  INDEX(tl_key)
-);
-
-ALTER TABLE taskslog ADD COLUMN tl_run_duration FLOAT NULL AFTER tl_last_run;
-ALTER TABLE taskslog ADD COLUMN tl_run_peak_memory FLOAT NULL AFTER tl_run_duration;
-
-DROP TABLE IF EXISTS changelog;
-CREATE TABLE IF NOT EXISTS `changelog` (
-  `changelog_id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) NOT NULL,
-  `changed_on` datetime NOT NULL,
-  `itemobject_id` int(11) DEFAULT NULL,
-  `itemversion_id` int(11) DEFAULT NULL,
-  `typeobject_id` int(11) DEFAULT NULL,
-  `typeversion_id` int(11) DEFAULT NULL,
-  `locator_prefix` VARCHAR(2) DEFAULT NULL,
-  `change_code` VARCHAR(4) NOT NULL,
-  PRIMARY KEY (`changelog_id`),
-  KEY `user_id` (`user_id`),
-  KEY `itemobject_id` (`itemobject_id`),
-  KEY `itemversion_id` (`itemversion_id`),
-  KEY `typeobject_id` (`typeobject_id`),
-  KEY `typeversion_id` (`typeversion_id`),
-  KEY `change_code` (`change_code`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
