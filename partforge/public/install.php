@@ -217,6 +217,7 @@ function step_2() {
 	if (!check_extension('gd')) $error = true;   // supposedly this means gd2
 	if (!check_extension('mysqli')) $error = true;
 	if (!check_extension('json')) $error = true;
+	if (!check_extension('mbstring')) $error = true;
 	
 	// prepare config file
 	
