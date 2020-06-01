@@ -62,7 +62,7 @@ class CsvGenerator {
     
     public function outputToBrowser($filename='') {
         if ($filename=='') $filename = $this->_params['filename'];
-        $records = $this->_report_data->get_records($this->_params, $this->_params['search_string'],'');
+        $records = $this->_report_data->get_records($this->_params, isset($this->_params['search_string']) ? $this->_params['search_string'] : '','');
         $records_out = array();
         foreach($records as $index => $record) {
             $out_rec = array();

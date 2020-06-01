@@ -53,6 +53,9 @@ class DBTableRowDocument extends DBTableRow {
 	
 	public static function fileNameToIconName($filename) {
 		$decomp = pathinfo ( $filename );
+		if (!isset($decomp['extension'])) {
+			return '';
+		}
 		$ext = strtolower($decomp['extension']);
 				
 		$iconfiles = array(	'pdf' => 'pdficon.gif',

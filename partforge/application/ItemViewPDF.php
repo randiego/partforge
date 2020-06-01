@@ -24,7 +24,7 @@
  */
 
 // freesans=161K , dejavusans=198K, helvetica=12K (no sym), dejavusanscondensed=149, dejavusansextralight=56K (missing stuff)
-define ('PDF_FONT_NAME_MAIN', 'freesans');
+define ('MY_PDF_FONT_NAME_MAIN', 'freesans');
 
 require_once('tcpdf/tcpdf.php');
 
@@ -48,7 +48,7 @@ class ItemViewPDF extends TCPDF {
 		
 	public function __construct() {
 		parent::__construct('P', 'mm', 'LETTER');
-		$this->_myfont = PDF_FONT_NAME_MAIN;  
+		$this->_myfont = MY_PDF_FONT_NAME_MAIN;  
 		$this->setFontSubsetting(true);
 		$this->SetFont($this->_myfont,'I',10);
 	}
@@ -83,7 +83,7 @@ class ItemViewPDF extends TCPDF {
 
 	public function MyMultiCell($w, $h, $html, $border=0, $align='L', $fill=false) {
 		$html = $this->clean_html($html);
-		return parent::writeHTMLCell($w, $h, $x, $y, $html, $border, 1, $fill, true, $align, true);
+		return parent::writeHTMLCell($w, $h, '', '', $html, $border, 1, $fill, true, $align, true);
 	}
 
 	public function sectionHeader($title) {
@@ -228,7 +228,7 @@ class ItemViewPDF extends TCPDF {
 
 					$fieldtype = $this->dbtable->getFieldType($fieldname);
 					$label = $fieldtype['caption'].":";
-					$sublabel = TableRow::composeSubcaptionWithValidation($fieldtype['subcaption'], $fieldtype['minimum'], $fieldtype['maximum'], $fieldtype['units'],$fieldtype['type'],true);
+					$sublabel = TableRow::composeSubcaptionWithValidation($fieldtype,true);
 					
 					$label = $this->clean_html($label);
 					$sublabel = $this->clean_html($sublabel);
@@ -411,7 +411,7 @@ class ItemViewPDF extends TCPDF {
 		}
 
 		$EventStream = new EventStream($this->dbtable->itemobject_id);
-		list($lines,$references_by_typeobject_id) = EventStream::eventStreamRecordsToLines($EventStream->assembleStreamArray(),$this->dbtable, $this->navigator);
+		list($lines,$references_by_typeobject_id) = EventStream::eventStreamRecordsToLines($EventStream->assembleStreamArray(),$this->dbtable);
 		$this->Ln(5);
 
 		if ($this->show_procedure_tables) {

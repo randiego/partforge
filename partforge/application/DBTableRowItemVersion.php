@@ -194,15 +194,16 @@
          */
 	    static public function varToStandardForm($var,$fieldtype) {
 			$is_null_str = (($var==='') || is_null($var));
-			if ($fieldtype['type'] == 'datetime') {
+			$type = isset($fieldtype['type']) ? $fieldtype['type'] : '';
+			if ($type == 'datetime') {
 				$lit = !$is_null_str ? time_to_mysqldatetime(strtotime($var)) : null;
-			} else if ($fieldtype['type'] == 'date') {
+			} else if ($type == 'date') {
 				$lit = !$is_null_str ? time_to_mysqldate(strtotime($var)) : null;
-			} else if ($fieldtype['type'] == 'int') {
+			} else if ($type == 'int') {
 				$lit = !$is_null_str ? round($var) : null;
-			} else if ($fieldtype['type'] == 'float') {
+			} else if ($type == 'float') {
 				$lit = !$is_null_str ? (float) $var : null;
-			} else if ($fieldtype['type'] == 'boolean') {
+			} else if ($type == 'boolean') {
 				$lit = !$is_null_str ? (boolean) $var : null;
 			} else if (is_array($var)) {
 				$lit = serialize($var);
@@ -224,7 +225,7 @@
         	$fieldnames_converted = array();
         	// check all dictionary properties
         	foreach($this->_typeversion_digest['addon_property_fields'] as $dictionary_field_name) {
-				$item_data[$dictionary_field_name] = self::varToStandardForm($this->_fields[$dictionary_field_name],$this->getFieldType($dictionary_field_name));
+				$item_data[$dictionary_field_name] = self::varToStandardForm(isset($this->_fields[$dictionary_field_name]) ? $this->_fields[$dictionary_field_name] : null,$this->getFieldType($dictionary_field_name));
 				if (!in_array($dictionary_field_name,$fieldnames_converted)) $fieldnames_converted[] = $dictionary_field_name;
         	}
         	
@@ -1089,7 +1090,7 @@
             
             // unique value checking
             foreach ($fieldnames as $fieldname) {
-            	if (($this->_fieldtypes[$fieldname]['unique']) && $this->{$fieldname}) {
+            	if (isset($this->_fieldtypes[$fieldname]['unique']) && $this->{$fieldname}) {
             		$serialnumbers = $this->getItemsWithPropertyMatching($fieldname,$this->{$fieldname});
             		if (count($serialnumbers)>0) {
             			$errormsg[$fieldname] = 'The value "'.$this->{$fieldname}.'" for '.$this->formatFieldnameNoColon($fieldname).' must be unique.  However this same value also appears in '.implode(' and ',$serialnumbers).'.';
@@ -1102,9 +1103,9 @@
             	$ft = $this->_fieldtypes[$fieldname];
             	$val = $this->{$fieldname};
             	$caption = $this->formatFieldnameNoColon($fieldname);
-            	if (($ft['type']=='float') && is_numeric($val)) {  // the non-numeric and empty case is handled by the parent method
-            		$min = trim($ft['minimum']);
-            		$max = trim($ft['maximum']);
+            	if (isset($ft['type']) && ($ft['type']=='float') && is_numeric($val)) {  // the non-numeric and empty case is handled by the parent method
+            		$min = isset($ft['minimum']) ? trim($ft['minimum']) : '';
+            		$max = isset($ft['maximum']) ? trim($ft['maximum']) : '';
             		if (is_numeric($min) && is_numeric($max)) {
             			$min_ok = ($val >=$min); 
             			$max_ok = ($val <=$max);
@@ -1117,9 +1118,9 @@
             			$max_ok = ($val <=$max);
             			if (!$max_ok) $errormsg[$fieldname] = 'The value "'.$val.'" for '.$caption.' should not be greater than '.$max;
             		}            		
-	            } elseif (($ft['type']=='boolean') && !is_null($val) && ($val!=='')) {  // the non-numeric and empty case is handled by the parent method
-            		$min = trim($ft['minimum']);
-            		$max = trim($ft['maximum']);
+	            } elseif (isset($ft['type']) && ($ft['type']=='boolean') && !is_null($val) && ($val!=='')) {  // the non-numeric and empty case is handled by the parent method
+            		$min = isset($ft['minimum']) ? trim($ft['minimum']) : '';
+            		$max = isset($ft['maximum']) ? trim($ft['maximum']) : '';
             		if (is_numeric($min) && is_numeric($max)) {
             			if (($min=="1") && !$val) $errormsg[$fieldname] = $caption.' should be Yes';
             			if (($max=="0") && $val) $errormsg[$fieldname] = $caption.' should be No';
@@ -1291,11 +1292,14 @@
         	// extract the component values (just the value of itemcomponent_id) from the just processed record
         	$this->_last_loaded_component_objects = array(); 
         	foreach(explode(';',$list_of_itemcomponents) as $itemcomponent) {
-        		list($itemcomponent_id, $component_name, $has_an_itemobject_id) = explode(',',$itemcomponent);
-        		$this->{$component_name} = $has_an_itemobject_id; 		
-        		if (in_array($component_name,$this->_typeversion_digest['components_in_defined_subfields'])) {
-        			$this->_last_loaded_component_objects[$component_name] = $this->_dbschema->dbTableRowObjectFactory('itemversion',false,'');
-        			$this->_last_loaded_component_objects[$component_name]->getCurrentRecordByObjectId($has_an_itemobject_id,$effective_date);
+        		$component_params = explode(',',$itemcomponent);
+        		if (count($component_params)==3) {
+	        		list($itemcomponent_id, $component_name, $has_an_itemobject_id) = $component_params;
+	        		$this->{$component_name} = $has_an_itemobject_id; 		
+	        		if (in_array($component_name,$this->_typeversion_digest['components_in_defined_subfields'])) {
+	        			$this->_last_loaded_component_objects[$component_name] = $this->_dbschema->dbTableRowObjectFactory('itemversion',false,'');
+	        			$this->_last_loaded_component_objects[$component_name]->getCurrentRecordByObjectId($has_an_itemobject_id,$effective_date);
+	        		}
         		}
         	}
         	
@@ -1712,7 +1716,7 @@
 	        		}
 	        		if (!$TV->isObsolete()) {
 		        		$link_info[] = array('js' => "document.theform.btnSubEditParams.value='action=editview&controller=struct&table=itemversion&itemversion_id=new&initialize[typeversion_id]={$typeversion_id}{$initialize_params}&subedit_return_value={$return_param}';document.theform.submit(); return false;",
-	        		                     'desc' => $TV->type_description.$obsolete, 'pn' => $TV->type_part_number);
+	        		                     'desc' => $TV->type_description, 'pn' => $TV->type_part_number);
 	        		}
 	        	}
         	}
@@ -1729,8 +1733,6 @@
 	        	$buttons .= '</div>';
 	        }
         	
-        	$detailslinks[] = linkify($pdf_url,'PDF','Open a printable PDF view of this page','bd-button','','','pdfButton');
-        	 
         	$footer  = !is_valid_datetime($this->effective_date) ? '<span class="paren_red">Select Effective Date for more choices.</span>' : $buttons;
         	return format_select_tag($select_values,$fieldname,$this->getArray(),$fieldtype['onchange_js']).'<br />'.$footer;
         }      
@@ -1748,7 +1750,7 @@
 			$value = $this->$fieldname;
 			
 			
-			switch($fieldtype['type']) {
+			switch(isset($fieldtype['type']) ? $fieldtype['type'] : '') {
 				
 				case 'component' :
 					return $this->formatInputTagComponent($fieldname);
@@ -1884,7 +1886,7 @@
 		
 		public static function fetchComponentPrintFieldHtml($navigator, $ComponentItemVersion, $text_name, $value, $is_html) {
 			$text = !is_null($ComponentItemVersion) ? $ComponentItemVersion->shortName() : '';
-			if (is_a($navigator,'UrlCallRegistry')) {
+			if (($navigator instanceof UrlCallRegistry)) {
 				$query_params = array();
 				$query_params['itemobject_id'] = $value;
 				$query_params['return_url'] = $navigator->getCurrentViewUrl();
@@ -1960,7 +1962,8 @@
 		public function formatPrintField($fieldname, $is_html=true, $nowrap=true, $show_float_units=false) {
 	        $fieldtype = $this->getFieldType($fieldname);
 	        $value = $this->$fieldname;
-			switch($fieldtype['type']) {
+	        $type = !empty($fieldtype['type']) ? $fieldtype['type'] : '';
+			switch($type) {
 				
 				case 'component' :
 					$ComponentItemVersion = $this->getComponentAsIVObject($fieldname);
@@ -1970,8 +1973,8 @@
 					return self::fetchComponentPrintFieldHtml($this->_navigator, $ComponentItemVersion, $text_name, $value, $is_html).$type_addon;
 				default:
 					// if float type and there are units, then show them if $show_float_units
-					if (($fieldtype['type']=='float') && $show_float_units) {
-						$suffix = $fieldtype['units'] && $is_html ? ' '.$fieldtype['units'] : '';
+					if (($type=='float') && $show_float_units) {
+						$suffix = !empty($fieldtype['units']) && $is_html ? ' '.$fieldtype['units'] : '';
 						$valout = parent::formatPrintField($fieldname, $is_html, $nowrap);
 						return $valout!=='' ? parent::formatPrintField($fieldname, $is_html, $nowrap).$suffix : '';
 					}					
@@ -2003,7 +2006,7 @@
 								$obs = $TV->isObsolete() ? ' [Obsolete]' : '';
 								$out = $this->part_number.' ('.date('M j, Y G:i',strtotime($TV->effective_date)).')'.$obs;
 							}
-							if ($is_html && Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'struct','partlistview') && is_a($this->_navigator,'UrlCallRegistry')) {
+							if ($is_html && Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'struct','partlistview') && ($this->_navigator instanceof UrlCallRegistry)) {
 								$jump_url = UrlCallRegistry::formatViewUrl('itemdefinitionview','struct',array('typeversion_id' => $this->typeversion_id, 'resetview' => 1));
 								$def_button = linkify($jump_url, 'Definition', "Jump to Definition for this type",'minibutton2');
 								$list_url = UrlCallRegistry::formatViewUrl('lv','struct',array('to' => $this->tv__typeobject_id, 'resetview' => 1));

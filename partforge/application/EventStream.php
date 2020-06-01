@@ -607,7 +607,7 @@ class EventStream {
 		// see if there are any indented items
 		$has_indents = false;
 		foreach($lines as $line) {
-			if ($line['indented_component_name']) {
+			if (!empty($line['indented_component_name'])) {
 				$has_indents = true;
 				break;
 			}
@@ -638,7 +638,7 @@ class EventStream {
 					// there are not changes, but we should at least say something about the odd date
 					$editing_msg = 'Added: '.time_to_bulletdate(strtotime($line['record_created']),false);
 				}
-				if ($editing_msg && !$line['indented_component_name']) {
+				if ($editing_msg && empty($line['indented_component_name'])) {
 					$alt_edit_date_html = '<div class="bd-dateline-edited">('.$editing_msg.')</div>';
 				}
 			}
@@ -686,7 +686,7 @@ class EventStream {
 				if (isset($line['actual_effective_date'])) {
 					$editing_msg = 'Edit: '.time_to_bulletdate(strtotime($line['actual_effective_date']),false);
 				}
-				if ($editing_msg && !$line['indented_component_name']) {
+				if ($editing_msg && empty($line['indented_component_name'])) {
 					$alt_edit_date_html = '<div class="bd-dateline-edited">('.$editing_msg.')</div>';
 				}				
 			}
@@ -697,7 +697,7 @@ class EventStream {
 			
 			$indented_target_link = '';
 			$indent_class = '';
-			if ($line['indented_component_name']) {
+			if (!empty($line['indented_component_name'])) {
 				$indent_class = ' bd-event-indented';
 				$indented_target_link = '<div class="bd-indent-component-link">'.$dbtable->formatPrintField($line['indented_component_name']).'</div>';
 				$select_radio_html = '';
@@ -772,7 +772,7 @@ class EventStream {
 				if (isset($line['actual_effective_date'])) {
 					$editing_msg = 'Edit: '.time_to_bulletdate(strtotime($line['actual_effective_date']),false);
 				}
-				if ($editing_msg && !$line['indented_component_name']) {
+				if ($editing_msg && empty($line['indented_component_name'])) {
 					$alt_edit_date_html = '<div class="bd-dateline-edited">('.$editing_msg.')</div>';
 				}
 			}
@@ -822,13 +822,13 @@ class EventStream {
 		$is_future_version = false;
 		$lines = array();
 		foreach($records as $record) {
-			$is_selected_version = $record['this_itemversion_id']==$dbtable->itemversion_id;
+			$is_selected_version = isset($record['this_itemversion_id']) && ($record['this_itemversion_id']==$dbtable->itemversion_id);
 
-			if ($previously_found_active_version && ($record['event_type_id']=='ET_CHG') && !$is_selected_version && !$record['indented_component_name']) {
+			if ($previously_found_active_version && ($record['event_type_id']=='ET_CHG') && !$is_selected_version && empty($record['indented_component_name'])) {
 				$is_future_version = true;
 			}
 			$error = '';
-			if ($record['error_message']) {
+			if (isset($record['error_message'])) {
 				list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($record['error_message'], $navigator, $record['event_type_id']);
 				$error = '<div class="event_error">'.$event_description.'</div>';
 			}
@@ -844,22 +844,22 @@ class EventStream {
 
 			list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($record['event_description'], $navigator, $record['event_type_id'], $record['description_is_html']);
 			$line = array(
-					'event_type_id' => $record['event_type_id'],
-					'this_itemversion_id' => $record['this_itemversion_id'],
+					'event_type_id' => isset($record['event_type_id']) ? $record['event_type_id'] : null,
+					'this_itemversion_id' => isset($record['this_itemversion_id']) ? $record['this_itemversion_id'] : null,
 					'user_name_html' => TextToHtml(DBTableRowUser::concatNames($record)),
 					'version_url' => $version_url,
 					'is_selected_version' => $is_selected_version,
 					'event_html'=> $event_description.$error,
 					'event_description_array' => $event_description_array,
-					'effective_date' => $record['effective_date'],
-					'record_created' => $record['record_created'],
-					'archive_count' => $record['archive_count'],
-					'oldest_record_created' => $record['oldest_record_created'],
+					'effective_date' => isset($record['effective_date']) ? $record['effective_date'] : null,
+					'record_created' => isset($record['record_created']) ? $record['record_created'] : null,
+					'archive_count' => isset($record['archive_count']) ? $record['archive_count'] : null,
+					'oldest_record_created' => isset($record['oldest_record_created']) ? $record['oldest_record_created'] : null,
 					'is_future_version' => $is_future_version,
 					'documents_packed'=>'',
 					'comments_packed' =>'',
 					'recently_edited' => false);
-			if ($record['indented_component_name']) $line['indented_component_name'] = $record['indented_component_name'];
+			if (!empty($record['indented_component_name'])) $line['indented_component_name'] = $record['indented_component_name'];
 
 			if (($record['event_type_id']=='ET_CHG')) {
 				$is_a_procedure = DBTableRowTypeVersion::isTypeCategoryAProcedure($dbtable->tv__typecategory_id);
@@ -884,7 +884,7 @@ class EventStream {
 				$line['is_current_version'] = $record['is_current_version'];
 				$line['this_itemobject_id'] = $record['this_itemobject_id'];
 				
-				if (!$record['indented_component_name']) {
+				if (empty($record['indented_component_name'])) {
 					if(!isset($references_by_typeobject_id[$record['this_typeobject_id']])) $references_by_typeobject_id[$record['this_typeobject_id']] = array();
 					$references_by_typeobject_id[$record['this_typeobject_id']][] = $line;
 				}

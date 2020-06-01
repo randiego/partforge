@@ -48,7 +48,7 @@ class UserController extends DBCustomControllerAction
     				$plainpw = $this->params['password'];
 
     				if ($_SESSION['account']->login($this->params['loginid'],$plainpw)) {
-    					if ($this->params['remember']) {
+    					if (!empty($this->params['remember'])) {
     						LoginStatus::getInstance()->rememberThisUser($this->params['loginid']);
     					} else {
     						LoginStatus::getInstance()->unRememberThisUser();
@@ -739,7 +739,7 @@ class UserController extends DBCustomControllerAction
     		}
     	}
     	$ReportData = new ReportDataUser();
-		$this->view->records = $ReportData->get_records($this->params, $this->params['search_string'],'');
+		$this->view->records = $ReportData->get_records($this->params, isset($this->params['search_string']) ? $this->params['search_string'] : '','');
     }    
     
     public function editallowedobjectsAction() {

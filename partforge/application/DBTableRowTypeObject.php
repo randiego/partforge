@@ -89,7 +89,7 @@
         	foreach($records as $record) {
         		$serial_number_format = extract_prefixed_keys($record, 'serial_number_');
         		$SerialNumber = SerialNumberType::typeFactory($serial_number_format);
-        		$out = !$record['is_user_procedure'] && $SerialNumber->supportsGetNextNumber() ? $SerialNumber->getNextSerialNumber($record['typeversion_id']) : '';
+        		$out = empty($record['is_user_procedure']) && $SerialNumber->supportsGetNextNumber() ? $SerialNumber->getNextSerialNumber($record['typeversion_id']) : '';
         		DbSchema::getInstance()->mysqlQuery("UPDATE typeobject SET cached_next_serial_number='".addslashes($out)."' WHERE typeobject_id='".$record['typeobject_id']."'");
         	}        	
         }

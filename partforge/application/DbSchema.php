@@ -153,8 +153,7 @@ class DbSchema {   // singleton
          type = {incoming, outgoing}
          options = array(jo_link, jo_orphans_only, jo_add, jo_delete, jo_detach)
         */
-        $out = $this->_dictionary['tables'][$tablename]['joins'];
-        return !empty($out) ? $out : array();
+        return !empty($this->_dictionary['tables'][$tablename]['joins']) ? $this->_dictionary['tables'][$tablename]['joins'] : array();
     }
     
     public function getFieldType($tablename,$fieldname) {

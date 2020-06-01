@@ -84,7 +84,7 @@ var sessionTimeout = <?php echo Zend_Registry::get('config')->edit_form_keep_ali
     $html .= '<input type="hidden" name="form_action" value="">';  // this is used to signal things such as an emergency save
     // are there fields to be masked in the input form?
 	$sessname = 'editing_'.$this->edit_buffer_key.'_hidefields';
-    $hidefields = is_array($_SESSION[$sessname]) ? $_SESSION[$sessname] : array();
+    $hidefields = isset($_SESSION[$sessname]) && is_array($_SESSION[$sessname]) ? $_SESSION[$sessname] : array();
     $html .= $DBEditView->fetchHtml($hidefields);
     $html .= '<p>'.implode('&nbsp;',$buttons).'</p>';
     

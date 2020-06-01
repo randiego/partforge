@@ -46,7 +46,7 @@ class PaginatedReportPage {
 	public function sort_and_search_handler() {
 		$handle = false;
 		 
-		if (isset($this->queryvars['btnSearch']) || ($this->queryvars['search_string'] != '')) {
+		if (isset($this->queryvars['btnSearch']) || !empty($this->queryvars['search_string'])) {
 			$handle = true;
 		}
 		
@@ -76,19 +76,13 @@ class PaginatedReportPage {
 	
 	protected function title_html($numrows) {
 		$html = $this->_report_data_obj->title;
-		if ($this->queryvars['search_string'] || $this->queryvars['search_date_to'] || $this->queryvars['search_date_from']) {
+		if (!empty($this->queryvars['search_string'])) {
 			$hold_prop_params = $this->_navigator->getPropagatingParamNames();
-			$unsearchlink_html = linkify($this->_navigator->unsetPropagatingParam(array('search_string','search_date_to','search_date_from'))->getCurrentViewUrl(),'clear search','go back to viewing all '.$this->_report_data_obj->title.' entries');
+			$unsearchlink_html = linkify($this->_navigator->unsetPropagatingParam(array('search_string'))->getCurrentViewUrl(),'clear search','go back to viewing all '.$this->_report_data_obj->title.' entries');
 			$this->_navigator->setPropagatingParamNames($hold_prop_params); // put it back for the rest of the links on this page
 			$matching = $numrows.' records';
-			if ($this->queryvars['search_string']) {
+			if (!empty($this->queryvars['search_string'])) {
 				$matching .= ' matching "'.TextToHtml($this->queryvars['search_string']).'"';
-			}
-			if ($this->queryvars['search_date_from']) {
-				$matching .= ' from '.$this->queryvars['search_date_from'];
-			}
-			if ($this->queryvars['search_date_to']) {
-				$matching .= ' to '.$this->queryvars['search_date_to'];
 			}
 			$html .= ' - Search Results<br><span class="undertitleparen">'.$matching.' ('.$unsearchlink_html.')</span>';
 		} elseif ($this->_report_data_obj->use_override_subtitle) {
@@ -221,10 +215,10 @@ class PaginatedReportPage {
 		$baseurl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();
 		$dbtable = new TableRow();
 		$dbtable->setFieldType('search_string',array('Type'=>'char(32)'));
-		$dbtable->search_string = $this->queryvars['search_string'];
-		if ($this->queryvars['search_string'] || $this->queryvars['search_date_to'] || $this->queryvars['search_date_from']) {
+		$dbtable->search_string = isset($this->queryvars['search_string']) ? $this->queryvars['search_string'] : '';
+		if (!empty($this->queryvars['search_string'])) {
 			$hold_prop_params = $this->_navigator->getPropagatingParamNames();
-			$unsearchlink_html = linkify($this->_navigator->unsetPropagatingParam(array('search_string','search_date_to','search_date_from'))->getCurrentViewUrl(),'<IMG src="'.$baseurl.'/images/deleteicon.png" width="16" height="16" border="0" alt="clear search">','clear search and go back to viewing all '.$this->_report_data_obj->title.' entries');
+			$unsearchlink_html = linkify($this->_navigator->unsetPropagatingParam(array('search_string'))->getCurrentViewUrl(),'<IMG src="'.$baseurl.'/images/deleteicon.png" width="16" height="16" border="0" alt="clear search">','clear search and go back to viewing all '.$this->_report_data_obj->title.' entries');
 			$this->_navigator->setPropagatingParamNames($hold_prop_params); // put it back
 		} else {
 			$unsearchlink_html = '';
@@ -238,11 +232,11 @@ class PaginatedReportPage {
 		$html = '';
 		
 		$this->set_selection_defaults();
-		
-		$numrows = $this->_report_data_obj->get_records_count($this->queryvars, $this->queryvars['search_string']);
-		$this->build_limit_and_pagination_params($this->queryvars['pageno'],$_SESSION['account']->pref_rows_per_page, $numrows, $top_record_number, $limit, $paginationline_html, $right_pagination_url, $this->_navigator);
+		$search_string = !empty($this->queryvars['search_string']) ? $this->queryvars['search_string'] : '';
+		$numrows = $this->_report_data_obj->get_records_count($this->queryvars, $search_string);
+		$this->build_limit_and_pagination_params(isset($this->queryvars['pageno']) ? $this->queryvars['pageno'] : '',$_SESSION['account']->pref_rows_per_page, $numrows, $top_record_number, $limit, $paginationline_html, $right_pagination_url, $this->_navigator);
 	
-		$records = $this->_report_data_obj->get_records($this->queryvars, $this->queryvars['search_string'],$limit);
+		$records = $this->_report_data_obj->get_records($this->queryvars, $search_string,$limit);
 		
 		$html .= $this->title_html($numrows);
 		
@@ -293,7 +287,7 @@ class PaginatedReportPage {
 				$this->_report_data_obj->make_directory_detail($this->queryvars, $record, $buttons, $detail_out,$this->_navigator);
 
 				// add extra row before this record.
-				if ($detail_out['fmt_row_break']) {
+				if (!empty($detail_out['fmt_row_break'])) {
 					$table_html .= '<TR class="row_break"><TD COLSPAN="'.$column_count.'">&nbsp;</TD></TR>'; 
 				}
 				
@@ -322,8 +316,9 @@ class PaginatedReportPage {
 			$table_html = '<div class="noentriesfound">No Entries Found</div>';
 		}
 			
+		$sort_key = isset($this->queryvars['sort_key']) ? $this->queryvars['sort_key'] : '';
 		$html .= '
-		<input type="hidden" name="sort_key" value="'.$this->queryvars['sort_key'].'">
+		<input type="hidden" name="sort_key" value="'.$sort_key.'">
 		<input type="hidden" name="btnOnChange" value="">
 		<table border="0" cellspacing="5" cellpadding="0" style="margin-left: -4px;">
 		<tr> 

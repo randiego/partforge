@@ -139,11 +139,11 @@ class DefinitionEventStream {
 		foreach($records as $comment_id => $record) {
 			$itemevent = array();
 			$itemevent['event_type_id'] = 'ET_COM';
-			$itemevent['effective_date'] = $record['comment_added'];
-			$itemevent['record_created'] = $record['record_created'];
-			$itemevent['user_id'] = $record['user_id'];
-            $itemevent['proxy_user_id'] = $record['proxy_user_id'];
-			$itemevent['event_description'] = $record['comment_text'];
+			$itemevent['effective_date'] = isset($record['comment_added']) ? $record['comment_added'] : null;
+			$itemevent['record_created'] = isset($record['record_created']) ? $record['record_created'] : null;
+			$itemevent['user_id'] = isset($record['user_id']) ? $record['user_id'] : null;
+            $itemevent['proxy_user_id'] = isset($record['proxy_user_id']) ? $record['proxy_user_id'] : null;
+			$itemevent['event_description'] = isset($record['comment_text']) ? $record['comment_text'] : null;
 			$itemevent['comment_id'] = $comment_id;
 				
 			$out[] = $itemevent;
@@ -190,9 +190,9 @@ class DefinitionEventStream {
 			$background_class = '';
 			if ($line['event_type_id']=='ET_CHG') {
 				$background_class = 'bd-type-def-change';
-				$this_itemversion_id = $line['this_itemversion_id'];
-				$selected = $line['is_selected_version'] ? ' checked="checked"' : '';
-				$onclick_html = " onClick=\"window.location='".$line['version_url']."'\"";
+				$this_itemversion_id = isset($line['this_itemversion_id']) ? $line['this_itemversion_id'] : null;
+				$selected = !empty($line['is_selected_version']) ? ' checked="checked"' : '';
+				$onclick_html = " onClick=\"window.location='".(isset($line['version_url']) ? $line['version_url'] : '')."'\"";
 				$select_radio_html = '<div class="bd-event-select-button"><input class="radioclass" type="radio" name="itemversion_ck" value="'.$this_itemversion_id.'" id="itemversion_ck_'.$this_itemversion_id.'"'.$selected.$onclick_html.' /></div>';
 				$edit_buttons_html = '<div class="bd-edit">'.implode('',$line['edit_links']).'</div>';
 				$one_hour = 3600;
@@ -288,13 +288,13 @@ class DefinitionEventStream {
 		$is_future_version = false;
 		$lines = array();
 		foreach($records as $record) {
-			$is_selected_version = $record['this_typeversion_id']==$dbtable->typeversion_id;
+			$is_selected_version = isset($record['this_typeversion_id']) && ($record['this_typeversion_id']==$dbtable->typeversion_id);
 		
 			if ($previously_found_active_version && ($record['event_type_id']=='ET_CHG') && !$is_selected_version ) {
 				$is_future_version = true;
 			}
 			$error = '';
-			if ($record['error_message']) {
+			if (!empty($record['error_message'])) {
 				list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($record['error_message'], $navigator, $record['event_type_id']);
 				$error = '<div class="event_error">'.$event_description.'</div>';
 			}
@@ -310,17 +310,17 @@ class DefinitionEventStream {
 		
 			list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($record['event_description'], $navigator, $record['event_type_id']);
 			$line = array(
-					'event_type_id' => $record['event_type_id'],
-					'this_typeversion_id' => $record['this_typeversion_id'],
+					'event_type_id' => isset($record['event_type_id']) ? $record['event_type_id'] : null,
+					'this_typeversion_id' => isset($record['this_typeversion_id']) ? $record['this_typeversion_id'] : null,
 					'user_name_html' => TextToHtml(DBTableRowUser::concatNames($record)),
 					'version_url' => $version_url,
 					'is_selected_version' => $is_selected_version,
 					'event_html'=> $event_description.$error,
 					'event_description_array' => $event_description_array,
-					'effective_date' => $record['effective_date'],
-					'record_created' => $record['record_created'],
-					'record_modified' => $record['record_modified'],
-					'versionstatus' => $record['versionstatus'],
+					'effective_date' => isset($record['effective_date']) ? $record['effective_date'] : null,
+					'record_created' => isset($record['record_created']) ? $record['record_created'] : null,
+					'record_modified' => isset($record['record_modified']) ? $record['record_modified'] : null,
+					'versionstatus' => isset($record['versionstatus']) ? $record['versionstatus'] : null,
 					'is_future_version' => $is_future_version,
 					'recently_edited' => false);
 		

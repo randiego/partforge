@@ -114,7 +114,7 @@
         public function assignFromFormSubmission($in_params,&$merge_params) {
             foreach($this->getFieldTypes() as $fieldname => $fieldtype) {
                 if (isset($in_params[$fieldname])) {
-                    if (($fieldtype['type']=='multiple') && is_array($in_params[$fieldname])) {
+                    if (isset($fieldtype['type']) && ($fieldtype['type']=='multiple') && is_array($in_params[$fieldname])) {
                         $out = array();
                         foreach($in_params[$fieldname] as $select_value => $is_set) {
                             if ($is_set) $out[] = $select_value;
@@ -180,7 +180,7 @@
         }
         
         public function isRequired($field) {
-            return $this->_fieldtypes[$field]['required'];
+            return isset($this->_fieldtypes[$field]['required']) ? $this->_fieldtypes[$field]['required'] : false;
         }
         
         public function getFieldNames()
@@ -199,7 +199,7 @@
         }
         
         public function getFieldType($fieldname) {
-            return $this->_fieldtypes[$fieldname];
+            return isset($this->_fieldtypes[$fieldname]) ? $this->_fieldtypes[$fieldname] : null;
         }
         
         public function getFieldTypeSize($fieldname) {
@@ -229,38 +229,42 @@
         	$DATE_REGEX = '^[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$';
         	foreach ($fieldnames as $fieldname) {
         		if (str_contains($fieldname,'email')) {
-        			if ($this->isRequired($fieldname) || trim($this->_fields[$fieldname])!='') {
+        			if ($this->isRequired($fieldname) || (isset($this->_fields[$fieldname]) && (trim($this->_fields[$fieldname])!=''))) {
         				if (!preg_match('"'.$EMAIL_REGEX.'"i',trim($this->_fields[$fieldname]))) {
         					$errormsg[$fieldname] = 'Please make sure '.$this->formatFieldnameNoColon($fieldname).' is entered correctly.';
         				}
         			}
         		} elseif (preg_match('/_url$/i',$fieldname)) {
-        			if ($this->isRequired($fieldname) || trim($this->_fields[$fieldname])!='') {
+        			if ($this->isRequired($fieldname) || (isset($this->_fields[$fieldname]) && (trim($this->_fields[$fieldname])!=''))) {
         				if (!preg_match('"^(http://|https://)"i',trim($this->_fields[$fieldname]))) {
         					$errormsg[$fieldname] = 'Please make sure '.$this->formatFieldnameNoColon($fieldname).' starts with http:// or https://.';
         				}
         			}
-        		} elseif (($this->_fieldtypes[$fieldname]['type'] == 'datetime') || ($this->_fieldtypes[$fieldname]['type'] == 'date') && str_contains($fieldname,'date')) {
-        			if ($this->isRequired($fieldname) || trim($this->_fields[$fieldname])!='') {
+        		} elseif (isset($this->_fieldtypes[$fieldname]['type']) && (($this->_fieldtypes[$fieldname]['type'] == 'datetime') || ($this->_fieldtypes[$fieldname]['type'] == 'date') && str_contains($fieldname,'date'))) {
+        			if ($this->isRequired($fieldname) || (isset($this->_fields[$fieldname]) && (trim($this->_fields[$fieldname])!=''))) {
         				if (!is_valid_datetime($this->_fields[$fieldname])) {
         					$errormsg[$fieldname] = 'Please make sure '.$this->formatFieldnameNoColon($fieldname).' is a valid date.';
         				}
         			}
         		} else {
-        			$regularized_value = DBTableRowItemVersion::varToStandardForm($this->_fields[$fieldname], $this->_fieldtypes[$fieldname]);
+        			$regularized_value = DBTableRowItemVersion::varToStandardForm(isset($this->_fields[$fieldname]) ? $this->_fields[$fieldname] : null, $this->_fieldtypes[$fieldname]);
         			if ($this->isRequired($fieldname) &&  (is_null($regularized_value) || ($regularized_value===''))) {
         				$errormsg[$fieldname] = 'Please enter '.$this->formatFieldnameNoColon($fieldname).'.';
-        			} elseif (trim($this->_fields[$fieldname])!='' && str_contains($this->_fieldtypes[$fieldname]['type'],'float') && !is_numeric($this->_fields[$fieldname])) {
+        			} elseif (isset($this->_fields[$fieldname]) && (trim($this->_fields[$fieldname])!='') && str_contains($this->_fieldtypes[$fieldname]['type'],'float') && !is_numeric($this->_fields[$fieldname])) {
         				$errormsg[$fieldname] = $this->formatFieldnameNoColon($fieldname).' must be numeric.';
         			}
         		}
         	}
         }
 
-        public static function composeSubcaptionWithValidation($subcaption, $min, $max, $units, $type, $html=true) {
-        	$min = trim($min);
-        	$max = trim($max);
-        	$units = trim($units);
+        /**
+         */
+        public static function composeSubcaptionWithValidation($typeinfo, $html=true) {
+        	$subcaption = isset($typeinfo['subcaption']) ? trim($typeinfo['subcaption']) : '';
+        	$min = isset($typeinfo['minimum']) ? trim($typeinfo['minimum']) : '';
+        	$max = isset($typeinfo['maximum']) ? trim($typeinfo['maximum']) : '';
+        	$units = isset($typeinfo['units']) ? trim($typeinfo['units']) : '';
+        	$type = isset($typeinfo['type']) ? trim($typeinfo['type']) : '';
         	$out = array();
         	if (is_numeric($min) && is_numeric($max)) {
         		if ($type=='boolean') {
@@ -288,13 +292,15 @@
 
         public function formatFieldname($string,$marker='') {
             $out = $this->_fieldtypes[$string]['caption'].$marker.':';
+            
             $subcaption = '';
-            if (isset($this->_fieldtypes[$string]['subcaption']) && ($this->_fieldtypes[$string]['subcaption']!='')) {
+            
+            if (isset($this->_fieldtypes[$string]['type']) && in_array($this->_fieldtypes[$string]['type'], array('float','boolean'))) {
+	            $subcaption = self::composeSubcaptionWithValidation($this->_fieldtypes[$string], true);
+            } elseif (!empty($this->_fieldtypes[$string]['subcaption'])) {
             	$subcaption = $this->_fieldtypes[$string]['subcaption'];
             }
-            if (in_array($this->_fieldtypes[$string]['type'], array('float','boolean'))) {
-	            $subcaption = self::composeSubcaptionWithValidation($subcaption, $this->_fieldtypes[$string]['minimum'], $this->_fieldtypes[$string]['maximum'], $this->_fieldtypes[$string]['units'], $this->_fieldtypes[$string]['type'], true);
-            }
+            
             if ($subcaption) {
                 $out .= '<br><span class="paren">'.$subcaption.'</span>';
             }
@@ -348,22 +354,22 @@
         public function formatInputTag($fieldname, $display_options=array()) {
 			$fieldtype = $this->getFieldType($fieldname);
 			$value = $this->$fieldname;
+			$type = isset($fieldtype['type']) ? $fieldtype['type'] : '';
 			$attributes = isset($fieldtype['disabled']) && $fieldtype['disabled'] ? ' disabled' : '';
-			if (in_array($fieldtype['type'],array('enum','left_join','sort_order'))) { // a dropdown box
+			if (in_array($type,array('enum','left_join','sort_order'))) { // a dropdown box
 		
-				switch($fieldtype['type']) {
+				switch($type) {
 					case 'enum':        $select_values = parseSelectValues($fieldname, $this); break;
 					case 'left_join':   $select_values = parseJoinValues($fieldname, $this); break;
 					case 'sort_order':  $select_values = getSortOrderArray($fieldname, $this); break;
 				}
-		//            $select_values = 'enum'==$fieldtype['type'] ? parseSelectValues($fieldname, $this) : parseJoinValues($fieldname, $this);
 		
 				if (in_array('UseRadiosForMultiSelect',$display_options)) {
-					return format_radio_tags($select_values,$fieldname,$this->getArray(),$fieldtype['onclick_js'],$attributes);
+					return format_radio_tags($select_values,$fieldname,$this->getArray(),isset($fieldtype['onclick_js']) ? $fieldtype['onclick_js'] : '',$attributes);
 				} else {
-					return format_select_tag($select_values,$fieldname,$this->getArray(),$fieldtype['onchange_js']);
+					return format_select_tag($select_values,$fieldname,$this->getArray(),isset($fieldtype['onchange_js']) ? $fieldtype['onchange_js'] : '');
 				}
-		    } elseif (in_array($fieldtype['type'],array('multiple'))) { // a multiple check box thing
+		    } elseif (in_array($type,array('multiple'))) { // a multiple check box thing
 				$select_values = parseSelectValues($fieldname, $this);
 				$html = '';
 				$value_arr = explode('|',$value);
@@ -374,36 +380,36 @@
 								  ';
 				}
 				return $html;
-			} elseif ($fieldtype['type'] == 'boolean') { // a boolean, so lets use a checkbox
+			} elseif ($type == 'boolean') { // a boolean, so lets use a checkbox
 				
 			    if (in_array('UseCheckForBoolean',$display_options)) {
 			    	return checkbox_html($fieldname,$value,$attributes);
 			    } else {
 					$select_values = array("1" => 'Yes', "0" => 'No');
 					$select_value_arr = array($fieldname => (is_null($value) || ($value==='') ? $value : ($value ? "1" : "0")));
-					return '<INPUT TYPE="hidden" NAME="'.$fieldname.'" VALUE="">'.format_radio_tags($select_values,$fieldname,$select_value_arr,$fieldtype['onclick_js'],$attributes);
+					return '<INPUT TYPE="hidden" NAME="'.$fieldname.'" VALUE="">'.format_radio_tags($select_values,$fieldname,$select_value_arr,isset($fieldtype['onclick_js']) ? $fieldtype['onclick_js'] : '',$attributes);
 			    }
-			} else if (in_array($fieldtype['type'],array('text'))) { // a text field
+			} else if (in_array($type,array('text'))) { // a text field
 				$rows = isset($fieldtype['input_rows']) ? $fieldtype['input_rows'] : '3';
 				$cols = isset($fieldtype['input_cols']) ? $fieldtype['input_cols'] : '40';
 				return '<TEXTAREA class="inputboxclass" NAME="'.$fieldname.'" ROWS="'.$rows.'" COLS="'.$cols.'"'.$attributes.'>'.TextToHtml($value).'</TEXTAREA>';
-			} else if ($fieldtype['type'] == 'date') {
+			} else if ($type == 'date') {
 		            if ($value == '0000-00-00') {  // equivalent of null in mysql
 		                $value = '';
 		            }
 					return '<INPUT class="inputboxclass jq_datepicker" TYPE="text" NAME="'.$fieldname.'" VALUE="'.(($value && (strtotime($value) != -1)) ? date('m/d/Y',strtotime($value)) : $value).'" SIZE="12" MAXLENGTH="20"'.$attributes.'>';
 		
-			} else if ($fieldtype['type'] == 'datetime') {
+			} else if ($type == 'datetime') {
 		            if ($value == '0000-00-00 00:00:00') {  // equivalent of null in mysql
 		                $value = '';
 		            }
 					return '<INPUT class="inputboxclass jq_datetimepicker" TYPE="text" NAME="'.$fieldname.'" VALUE="'.(($value && (strtotime($value) != -1)) ? date('m/d/Y H:i',strtotime($value)) : $value).'" SIZE="20" MAXLENGTH="24"'.$attributes.'>';
 		
 			} else {
-				if ($fieldtype['type']=='float') {
+				if ($type=='float') {
 					$length = DEFAULT_FLOAT_WIDTH;
 				} else {
-					$length = $fieldtype['len'];
+					$length = isset($fieldtype['len']) ? $fieldtype['len'] : '';
 				}
 				$maxsize = MAX_INPUT_TAG_WIDTH;
 				$size = ($length > $maxsize) ? $maxsize : $length;
@@ -420,17 +426,19 @@
 		public function formatPrintField($fieldname, $is_html=true,$nowrap=true) {
 			$fieldtype = $this->getFieldType($fieldname);
 			$value = $this->$fieldname;
-			if ($fieldtype['type'] == 'print_function') {
+			$type = isset($fieldtype['type']) ? $fieldtype['type'] : '';
+			if ($type == 'print_function') {
 				$print_function_name = $fieldtype['print_function_name'];
 				return $print_function_name($value,$is_html);
-			} elseif (in_array($fieldtype['type'],array('enum','left_join','sort_order'))) { // this is a multiple choice thing
-				switch($fieldtype['type']) {
+			} elseif (in_array($type,array('enum','left_join','sort_order'))) { // this is a multiple choice thing
+				switch($type) {
 					case 'enum':        $value_array = parseSelectValues($fieldname, $this); break;
 					case 'left_join':   $value_array = parseJoinValues($fieldname, $this); break;
 					case 'sort_order':  $value_array = getSortOrderArray($fieldname, $this); break;
 				}
-				return $is_html ? TextToHtml($value_array[$value]) : $value_array[$value];
-			} elseif ($fieldtype['type']=='multiple') { // this is a multiple select (more than one at a time)
+				$outval = isset($value_array[$value]) ? $value_array[$value] : null;
+				return $is_html ? TextToHtml($outval) : $outval;
+			} elseif ($type=='multiple') { // this is a multiple select (more than one at a time)
 				$select_values = parseSelectValues($fieldname, $this);
 				$value_arr = explode('|',$value);
 				$out = array();
@@ -438,11 +446,11 @@
 					$out[] = $is_html ? TextToHtml($select_values[$key]) : $select_values[$key];
 				}
 				return $is_html ? implode('<br>',$out) : implode("\r\n",$out);
-			} else if ($fieldtype['type'] == 'boolean') { // a boolean
+			} else if ($type == 'boolean') { // a boolean
 				return is_null($value) ? '' : ($value ? 'Yes' : 'No');
-			} else if ($fieldtype['type'] == 'datetime') {
+			} else if ($type == 'datetime') {
 				return ($value && (strtotime($value) != -1)) ? date('m/d/Y G:i',strtotime($value)) : $value;
-			} else if ($fieldtype['type'] == 'date') {
+			} else if ($type == 'date') {
 				return ($value && (strtotime($value) != -1)) ? date('m/d/Y',strtotime($value)) : $value;
 			} else {
 				$width = isset($fieldtype['print_width']) ? $fieldtype['print_width'] : DEFAULT_FIELD_PRINT_WIDTH;

@@ -103,7 +103,7 @@ class ReportDataUser extends ReportDataWithCategory {
 		parent::make_directory_detail($queryvars, $record,$buttons_arr,$detail_out,$navigator);
 		
 		foreach(array_keys($this->display_fields($navigator,$queryvars)) as $fieldname) {
-			$detail_out[$fieldname] = TextToHtml($record[$fieldname]);
+			$detail_out[$fieldname] = isset($record[$fieldname]) ? TextToHtml($record[$fieldname]) : null;
 		}
 		$detail_out['full_name'] = linkify( UrlCallRegistry::formatViewUrl('id/'.$record['user_id'],'user'), TextToHtml(DBTableRowUser::concatNames($record,true)), 'View user details');
 		if (!$record['user_cryptpassword']) $detail_out['login_id'] .= '<br /><span class="errorred">Password Not Set</span>';

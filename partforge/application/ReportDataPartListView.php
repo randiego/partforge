@@ -122,7 +122,7 @@ class ReportDataPartListView extends ReportDataWithCategory {
         $buttons_arr[] = linkify( $edit_url, 'View', 'View','listrowlink');
         
 		foreach(array_keys($this->display_fields($navigator,$queryvars)) as $fieldname) {
-			$detail_out[$fieldname] = TextToHtml($record[$fieldname]);
+			$detail_out[$fieldname] = isset($record[$fieldname]) ? TextToHtml($record[$fieldname]) : null;
 		}
 		
 		$detail_out['tv__record_modified'] = empty($record['tv__record_modified']) ? '' : date('M j, Y G:i',strtotime($record['tv__record_modified']));

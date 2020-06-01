@@ -133,7 +133,7 @@ class ItemDefinitionViewPDF extends ItemViewPDF {
 		$this->config = Zend_Registry::get('config');
 		
 		
-		$header_html .= $this->TypeVersion->fetchFullDefinitionSheetHeader(true);
+		$header_html = $this->TypeVersion->fetchFullDefinitionSheetHeader(true);
 		
 		$this->SetFont($this->_myfont,'',10);
 		
@@ -169,7 +169,7 @@ class ItemDefinitionViewPDF extends ItemViewPDF {
 		$this->outputLinkedDefinitions(0, 'Linked Part Definitions');
 		
 		$DefinitionEventStream = new DefinitionEventStream($this->TypeVersion->typeobject_id);
-		$lines = DefinitionEventStream::eventStreamRecordsToLines($DefinitionEventStream->assembleStreamArray(), $this->TypeVersion, $this->navigator);
+		$lines = DefinitionEventStream::eventStreamRecordsToLines($DefinitionEventStream->assembleStreamArray(), $this->TypeVersion);
 		
 		$this->renderTypeCommentsChangesTable($lines);
 		

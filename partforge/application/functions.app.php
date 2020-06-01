@@ -26,7 +26,7 @@
 require_once('functions.common.php');
 
 
-define('AUTOPROPAGATING_QUERY_PARAMS','pageno,search_string,search_date_from,search_date_to,sort_key,table,edit_buffer_key,list_type,months');
+define('AUTOPROPAGATING_QUERY_PARAMS','pageno,search_string,sort_key,table,edit_buffer_key,list_type,months');
 
 require_once('functions.common.php');
 
@@ -130,7 +130,15 @@ class LoginStatus {
 	protected $_logincookie = null;
 
 	protected function __construct() {
-		$this->_logincookie = unserialize($_COOKIE[self::LOGINCOOKIE]);
+		$error_reporting = error_reporting(error_reporting() ^ E_NOTICE);  // we don't want to see the inevitable notice here
+		$this->_logincookie = array();
+		if (!empty($_COOKIE[self::LOGINCOOKIE])) {
+			$unser = unserialize($_COOKIE[self::LOGINCOOKIE]);
+			if ($unser !== false) {
+				$this->_logincookie = $unser;
+			} 
+		}
+		error_reporting($error_reporting);
 	}
 
 	public static function getInstance()
@@ -319,7 +327,7 @@ function joinItemVersionArraysOnField($header_recs, $data_recs, $join_columns) {
 	foreach($grouped_recs as $tableid => $grouped_tree) {
 		foreach($data_recs[$tableid] as $idx => $record) {
 			// create cluster stub
-			if ($record[$join_columns[$tableid]]) {
+			if (!empty($record[$join_columns[$tableid]])) {
 				if (!isset($grouped_recs[$tableid][$record[$join_columns[$tableid]]])) $grouped_recs[$tableid][$record[$join_columns[$tableid]]] = array();
 				$grouped_recs[$tableid][$record[$join_columns[$tableid]]][$idx] = $record;
 			}
@@ -564,7 +572,6 @@ class BreadCrumbsManager {
 			$bc_links[] = linkify($url, $url_name);
 		}
 		$_SESSION['breadcrumbs'] = $new;
-		$html_head .= '<div>'.implode(' > ',$bc_links).'</div>';
 	}
 
 	/**
@@ -622,6 +629,7 @@ class EditLinks {
 	}
 
 	function buttons_html() {
+		$html = '';
 		$entry = array();
 		if (count($this->items) > 0) {
 			foreach($this->items as $item) {

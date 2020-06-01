@@ -52,7 +52,7 @@ class StructController extends DBControllerActionAbstract
 	
 	public function partAndProcListViewHandler($is_user_procedure) {
 		$this->view->is_user_procedure = $is_user_procedure;
-		$ReportData = new ReportDataItemListView(false, false, $is_user_procedure, $this->params['search_string'],null,null,true);
+		$ReportData = new ReportDataItemListView(false, false, $is_user_procedure, !empty($this->params['search_string']),null,null,true);
 		$PaginatedReportPage = new PaginatedReportPage($this->params,$ReportData,$this->navigator);
 		
 		if (isset($this->params['form'])) {
@@ -94,7 +94,7 @@ class StructController extends DBControllerActionAbstract
 					spawnshowdialog('Save to a comma-separated values (CSV) file','<p>To save the records, click the link below, or right-click the link and choose "Save Target/Link As":</p>
 						<p>'.linkify($this->navigator->getCurrentViewUrl('outputcsv','',array_merge($params,array('filename' => 'ExportCurrentItemVersions.csv', 'output_all_versions' => false, 'is_user_procedure' => $this->view->is_user_procedure))),$filename1).'</p>
 						<p>'.linkify($this->navigator->getCurrentViewUrl('outputcsv','',array_merge($params,array('filename' => 'ExportAllItemVersions.csv', 'output_all_versions' => true, 'is_user_procedure' => $this->view->is_user_procedure))),$filename2).'</p>',array('<== Back' => $this->navigator->getCurrentViewUrl()));
-				case ($this->params['btnOnChange'] == 'catchange'):
+				case (isset($this->params['btnOnChange']) && ($this->params['btnOnChange'] == 'catchange')):
 					//if $this->params['view_category'] is prefixed with "fav" then strip it before storing.  Only numeric or * are allowed.
 					if (is_numeric($this->params['view_category']) || ($this->params['view_category']=='*')) {
 						$_SESSION['account']->setPreference($ReportData->pref_view_category_name, $this->params['view_category']);
@@ -223,7 +223,8 @@ class StructController extends DBControllerActionAbstract
     	if (!isset($this->params['filename']) || !isset($this->params['output_all_versions']) || !isset($this->params['is_user_procedure'])) {
     		throw new Exception('missing parameter in outputcsvAction().');
     	}
-    	$ReportData = new ReportDataItemListView(true,$this->params['output_all_versions'],$this->params['is_user_procedure'], $this->params['search_string']);
+    	$ReportData = new ReportDataItemListView(true,isset($this->params['output_all_versions']) ? $this->params['output_all_versions'] : false,
+    			isset($this->params['is_user_procedure']) ? $this->params['is_user_procedure'] : false, !empty($this->params['search_string']));
     	$CsvGen = new CsvGenerator($this->params,$ReportData);
     	$CsvGen->outputToBrowser();
     }
@@ -277,7 +278,7 @@ class StructController extends DBControllerActionAbstract
         	switch (true)
         	{
         		case isset($this->params['btnType']):
-        			$return_url = $this->navigator->getCurrentHandlerUrl('btnDoneTryingToCreateNew','partlistview',null,array('typeversion_id' => $this->params['typeversion_id']));
+        			$return_url = $this->navigator->getCurrentHandlerUrl('btnDoneTryingToCreateNew','partlistview',null,array('typeversion_id' => isset($this->params['typeversion_id']) ? $this->params['typeversion_id'] : ''));
         			$_SESSION['most_recent_new_typeversion_id'] = 'new';  // this should get changed by a successfull change
         			$this->navigator->setReturn($return_url)->CallView('editview',null,array('table' => 'typeversion','typeversion_id' => 'new', 'initialize' => array('effective_date' => time_to_mysqldatetime(script_time())), 'return_url' => $return_url, 'resetview' => 1));
         		case isset($this->params['btnDoneTryingToCreateNew']):
@@ -484,7 +485,7 @@ class StructController extends DBControllerActionAbstract
                     $jump_params[$dbtable->getIndexName()] = $dbtable->getIndexValue();
                     $this->navigator->jumpToHandler('btnSubEditParams',null,null,$jump_params);
                 }
-            case ($this->params['btnOnChange'] == 'componentselectchange'):
+            case (isset($this->params['btnOnChange']) && ($this->params['btnOnChange'] == 'componentselectchange')):
                 $sub_params = array();
                 parse_str($this->params['onChangeParams'], $sub_params);
                 if (!empty($sub_params['component_name'])) {
@@ -516,7 +517,8 @@ class StructController extends DBControllerActionAbstract
         if (!isset($_SESSION[$edit_buffer])) {
         	$this->jumpToUsersLandingPage('Edit buffer timed out or browser in wrong state.');
         }
-        $EditRow = DbSchema::getInstance()->dbTableRowObjectFactory($this->params['table'],false,$_SESSION[$edit_buffer]['parent_index']);
+        $parent_index = isset($_SESSION[$edit_buffer]['parent_index']) ? $parent_index : '';
+        $EditRow = DbSchema::getInstance()->dbTableRowObjectFactory($this->params['table'],false,$parent_index);
         if (!$EditRow->assignFromFormSubmission($this->params,$_SESSION[$edit_buffer])) {  
             $this->showBrowsingError();
         }        
@@ -524,7 +526,7 @@ class StructController extends DBControllerActionAbstract
         
 		if (isset($this->params['form'])) {
 			$this->edit_db_handler($EditRow,$EditRow->getSaveFieldNames());    
-			if (is_a($EditRow,'DBTableRowTypeVersion')) {  //     $this->params['table']=='typeversion'
+			if (($EditRow instanceof DBTableRowTypeVersion)) {  //     $this->params['table']=='typeversion'
 				switch (true)
 				{
 					case isset($this->params['btnOnChange']) && ($this->params['btnOnChange']=='deletealias'):
@@ -661,7 +663,7 @@ class StructController extends DBControllerActionAbstract
         if (isset($this->params['form'])) {
             switch (true)
             {
-            	case ($this->params['btnOnChange'] == 'monthschange'):
+            	case (isset($this->params['btnOnChange']) && ($this->params['btnOnChange'] == 'monthschange')):
             		$params = isset($this->params['itemversion_id']) ? array('itemversion_id' => $this->params['itemversion_id']) : array('itemobject_id' => $this->params['itemobject_id']);
             		$params['months'] = $this->params['months'];
             		$this->navigator->jumpToView(null,null,$params);
@@ -924,7 +926,7 @@ class StructController extends DBControllerActionAbstract
     		$TypeObject = new DBTableRowTypeObject();
     		$TypeObject->getRecordById($this->params['to']);
     		if (isset($this->params['link_action']) && ($this->params['link_action']=='new')) {
-    			$return_url = $this->navigator->getCurrentHandlerUrl('btnDoneTryingToCreateNew','itemlistview',null,array('typeversion_id' => $this->params['typeversion_id']));
+    			$return_url = $this->navigator->getCurrentHandlerUrl('btnDoneTryingToCreateNew','itemlistview',null,array('typeversion_id' => $TypeObject->cached_current_typeversion_id));
     			$_SESSION['most_recent_new_itemversion_id'] = 'new';  // this should get changed by a successfull change
     			$this->navigator->setReturn($return_url)->CallView('editview','',array('table' => 'itemversion', 'itemversion_id' => 'new', 'resetview' => 1, 'initialize' => array('typeversion_id' => $TypeObject->cached_current_typeversion_id)));
     		} else {
@@ -1100,7 +1102,7 @@ class StructController extends DBControllerActionAbstract
     	if (!isset($_SESSION['importobjectsconfirm']['records']) || !is_array($_SESSION['importobjectsconfirm']['records'])) {
     		throw new Exception("Records array not initialized in importobjectsconfirmAction().");
     	}
-    	if (!is_array($_SESSION['importobjectsconfirm']['column_defs'])) {
+    	if (!isset($_SESSION['importobjectsconfirm']['column_defs']) || !is_array($_SESSION['importobjectsconfirm']['column_defs'])) {
     		$_SESSION['importobjectsconfirm']['column_defs'] = array();
     	}
     	$ImportRecords = $_SESSION['importobjectsconfirm']['records'];

@@ -26,7 +26,7 @@
 class TableRowPasswordReset extends TableRow {
 
 	public function __construct() {
-		parent::__construct($fieldtypes);
+		parent::__construct();
 		$this->setFieldTypeParams('password','varchar','',false,'New Password');
 		$this->setFieldTypeParams('show_password','boolean','',false,'Show Password');
 		$this->setFieldTypeParams('password2','varchar','',false,'Confirm Password');

@@ -26,7 +26,7 @@
 class TableRowApproveAccount extends TableRow {
 
 	public function __construct() {
-		parent::__construct($fieldtypes);
+		parent::__construct();
 		$User = new DBTableRowUser();
 		$this->setFieldTypeParams('user_type','enum','',true,'User Type');
 		$this->setFieldAttribute('user_type', 'options', $User->getFieldAttribute('user_type', 'options'));

@@ -26,7 +26,7 @@
 class TableRowReorgMoveComponent extends TableRow {
 
 	public function __construct() {
-		parent::__construct($fieldtypes);
+		parent::__construct();
 		$this->setFieldTypeParams('component_typeobject_id','enum','',true,'Component Type','The type of the component that will be moved.');
 		$this->setFieldAttribute('component_typeobject_id', 'options', array());
 		$this->setFieldTypeParams('typeversion_id','int','',true,'TypeVersion','');

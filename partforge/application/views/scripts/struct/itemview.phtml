@@ -175,7 +175,6 @@ $fields_to_remove = array();
 $fieldlayout = $this->dbtable->getEditViewFieldLayout($this->dbtable->getEditFieldNames(array('')),$fields_to_remove,'itemview');
 
 if (!empty($fieldlayout)) {
-	$html .= ($join_name!='') ? $this->fetchJoinHeaderHtml($join_name, $target) : '';
 	$html .= '<div class="edittablewrapper"><table class="edittable">
 				 <col class="table_label_width">
 				 <col class="table_value_width">

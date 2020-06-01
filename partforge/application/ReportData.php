@@ -101,7 +101,7 @@ abstract class ReportData {
 		$legend_array = array();
 		foreach($this->fields as $fieldname => $fielddesc) {
 			
-			$help_html = $fielddesc['displaylink'] ? $fielddesc['displaylink'].' ' : '';
+			$help_html = !empty($fielddesc['displaylink']) ? $fielddesc['displaylink'].' ' : '';
 			if ($fielddesc['display']) {
 				$new_sort_array = $curr_sort_array;
 				if (isset($fielddesc['key_asc'])) {
@@ -166,7 +166,7 @@ abstract class ReportData {
 	public function get_sort_keys($first_key_only=false) {
 		$out = array();
 		foreach($this->fields as $fieldname => $fielddesc) {
-			if ($fielddesc['key_asc']) {
+			if (!empty($fielddesc['key_asc'])) {
 				if ($first_key_only) {
 					$arr = explode('|',$fielddesc['key_asc']);
 					$out[$fieldname] = $arr[0];
@@ -187,10 +187,10 @@ abstract class ReportData {
 	public function get_sort_key($queryvars,$strip_caption_for_sql=false) {
 		$sort_keys = array();
 		foreach($this->fields as $fieldname => $fielddesc) {
-			if ($fielddesc['key_asc']) {
+			if (!empty($fielddesc['key_asc'])) {
 				$sort_keys[] = $fielddesc['key_asc'];
 			}
-			if ($fielddesc['key_desc']) {
+			if (!empty($fielddesc['key_desc'])) {
 				$sort_keys[] = $fielddesc['key_desc'];
 			}
 		}
@@ -199,8 +199,9 @@ abstract class ReportData {
 		if (count($sort_keys)==0) {
 			return '';
 		} else {
-			if (in_array($queryvars['sort_key'],$sort_keys)) {
-				$out_sort_key = $queryvars['sort_key'];
+			$query_sort_key = isset($queryvars['sort_key']) ? $queryvars['sort_key'] : '';
+			if (in_array($query_sort_key,$sort_keys)) {
+				$out_sort_key = $query_sort_key;
 
 			} else {
 				// make sure the individual fields are represented somewhere in the other sort keys
@@ -208,7 +209,7 @@ abstract class ReportData {
 				foreach($sort_keys as $sort_key) {
 					$haystack = array_merge($haystack,explode(',',$sort_key));
 				}
-				foreach(explode(',',$queryvars['sort_key']) as $key) {
+				foreach(explode(',',$query_sort_key) as $key) {
 					if (!in_array($key,$haystack)) {
 						$default = $this->get_default_sort_key();
 						if (!empty($default)) {
@@ -218,7 +219,7 @@ abstract class ReportData {
 						}
 					}
 				}
-				$out_sort_key =  $queryvars['sort_key'];
+				$out_sort_key =  $query_sort_key;
 			}
 			// when this function is called to build the "order by" sql clause then we need to strip the stuff after the separator bar
 			if ($strip_caption_for_sql) {

@@ -44,22 +44,23 @@
 		public static function helpLinkIfPresent() {
         	$request = Zend_Controller_Front::getInstance()->getRequest();
         	$params = $request->getParams();
+        	$tablename = !empty($params['table']) ? $params['table'] : '';
 
         	$Help = DBSchema::getInstance()->DBTableRowObjectFactory('help');
 			
     		$links = array();
-			if ($Help->getRecordForActionController($request->getActionName(),$request->getControllerName(),$params['table'])) {
+			if ($Help->getRecordForActionController($request->getActionName(),$request->getControllerName(),$tablename)) {
 				$tip = TextToHtml($Help->help_tip);
 				if (empty($tip)) {
 					$tip = 'View help for this page';
 				}
 				$links[] = popup_linkify(UrlCallRegistry::formatViewUrl('page','help',array('help_action' => $Help->action_name, 'help_controller' => $Help->controller_name, 'help_table' => $Help->table_name)),"Help",$tip,'','','PopupWin',700,600);
 			}
-    		if ((AdminSettings::getInstance()->edit_help) && !(($request->getControllerName()=='db') && ($params['table']=='help'))) {
+    		if ((AdminSettings::getInstance()->edit_help) && !(($request->getControllerName()=='db') && ($tablename=='help'))) {
     			$initialize = array();
     			$initialize['action_name'] = $request->getActionName();
     			$initialize['controller_name'] = $request->getControllerName();
-    			$initialize['table_name'] = $params['table'];
+    			$initialize['table_name'] = $tablename;
     			$links[] = linkify(UrlCallRegistry::formatViewUrl('editview','help',array('help_id' => $Help->help_id, 'table' => 'help', 'initialize' => $initialize)),"Edit Help",'Edit the help entry for this page','minibutton2');
     			if (is_numeric($Help->help_id)) {
     				$links[] = linkify(UrlCallRegistry::formatViewUrl('delete','help',array('help_id' => $Help->help_id, 'table' => 'help', 'initialize' => $initialize)),"Delete",'Delete the help entry for this page','minibutton2','return confirm(\'Are you sure you want to delete this?\');');

@@ -294,7 +294,7 @@
         static public function filterFeaturedFieldTypes($fieldtypes, $force_include_components=false) {
         	$out = array();
 			foreach($fieldtypes as $fieldname => $fieldtype) {
-				if ((isset($fieldtype['featured']) && $fieldtype['featured'] == 1) || (($fieldtype['type']=='component') && $force_include_components)) { 
+				if ((isset($fieldtype['featured']) && $fieldtype['featured'] == 1) || (isset($fieldtype['type']) && ($fieldtype['type']=='component') && $force_include_components)) { 
 					$out[$fieldname] = $fieldtype;
 				}
 			}
@@ -487,9 +487,9 @@
         	$type_form_layout = $all_typeversion_fields['type_form_layout'];
         	 
         	$out = array();
-        	$out['typeversion_id'] = $all_typeversion_fields['typeversion_id'];
-        	$out['effective_date'] = $all_typeversion_fields['effective_date'];
-        	$out['partnumber_count'] = $all_typeversion_fields['partnumber_count'];
+        	$out['typeversion_id'] = isset($all_typeversion_fields['typeversion_id']) ? $all_typeversion_fields['typeversion_id'] : null;
+        	$out['effective_date'] = isset($all_typeversion_fields['effective_date']) ? $all_typeversion_fields['effective_date'] : null;
+        	$out['partnumber_count'] = isset($all_typeversion_fields['partnumber_count']) ? $all_typeversion_fields['partnumber_count'] : null;
         	$out['has_a_serial_number'] = $has_a_serial_number;
         	$out['has_a_disposition'] = $has_a_disposition;
         	$out['serial_number_format'] = extract_prefixed_keys($all_typeversion_fields, 'serial_number_');
@@ -1347,7 +1347,7 @@
         	$username = DBTableRowUser::getFullName($this->user_id);
         	$mod_username = DBTableRowUser::getFullName($this->modified_by_user_id);
         	list($statustext, $statusclass, $definitiondescription) = self::formatSubActiveDefinitionStatus($this->to__typedisposition, $this->versionstatus, $this->isCurrentVersion());
-        	$header_html .= '<table class="edittable defheader">
+        	$header_html = '<table class="edittable defheader">
     					 <col class="table_label_width">
     					 <col class="table_value_width">
     					 <col class="table_label_width">
@@ -1471,7 +1471,7 @@
         	foreach(array_merge($digest['addon_property_fields'],$digest['addon_component_subfields']) as $fieldname) {
         		$dict[$fieldname] = $digest['fieldtypes'][$fieldname];
         		// get rid of any attributes that are not explicitely in the self::typesListing()
-        		if (isset($allowed_attr[ $dict[$fieldname]['type'] ]['parameters'])) { // some weird cases were the type is not defined.  Roll with it.
+        		if (isset($dict[$fieldname]['type']) && isset($allowed_attr[ $dict[$fieldname]['type'] ]['parameters'])) { // some weird cases were the type is not defined.  Roll with it.
 	        		$dict[$fieldname] = array('type' => $dict[$fieldname]['type']) + array_intersect_key($dict[$fieldname], $allowed_attr[ $dict[$fieldname]['type'] ]['parameters']);
         		}
         	}

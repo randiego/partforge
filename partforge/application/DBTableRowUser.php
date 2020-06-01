@@ -28,11 +28,12 @@
         private $_lastErrorMessage;
 		private $_crypt_password='';
 		private $_role_override = null;
+		private $_salt = '$1$jshdyuio$';
         
         public function __construct($ignore_joins=false,$parent_index=null) {
             parent::__construct('user',$ignore_joins,$parent_index);
             $this->account_created = time_to_mysqldatetime(script_time());
-            $this->user_cryptpassword = crypt(Zend_Registry::get('config')->default_new_password);
+            $this->user_cryptpassword = crypt(Zend_Registry::get('config')->default_new_password, $this->_salt);
             $this->_lastErrorMessage = '';
         }
 		
@@ -77,24 +78,6 @@
 			
 			if ($this->getRecord($DBTableRowQuery->getQuery())) {
 				$this->setRoleOverride(null);
-				
-				// authenticate
-				/*
-				if (!$ignore_pw) {
-					$stored_pw = !empty($this->user_cryptpassword) ? $this->user_cryptpassword :  '';  
-					$compare_cryptpw = !empty($plainpw) ? crypt($plainpw,$stored_pw) : $cryptpw;
-					if (empty($stored_pw)) {
-						$this->_lastErrorMessage = 'Sorry: Invalid Login.';
-					} else {
-						if (trim($compare_cryptpw) == trim($stored_pw)) { // authenticated
-							// not really used, delete _crypt_password some day.
-							$this->_crypt_password = $compare_cryptpw;
-						} else {
-							$this->_lastErrorMessage = 'Sorry: Password was typed incorrectly.';
-						}
-					}
-				}
-				*/
 				
 				if (!$ignore_pw) {
 					if (!empty($this->user_cryptpassword)) {
@@ -217,7 +200,7 @@
         {
 			
 			if (in_array('password',$fieldnames)) {
-				$this->_fields['user_cryptpassword'] = crypt($this->_fields['password']);  // no salt for creating
+				$this->_fields['user_cryptpassword'] = crypt($this->_fields['password'], $this->_salt);
 				unset($fieldnames[array_search('password',$fieldnames)]);
 				if (!in_array('user_cryptpassword',$fieldnames)) $fieldnames[] = 'user_cryptpassword';
 			}	

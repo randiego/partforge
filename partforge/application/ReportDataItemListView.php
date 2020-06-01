@@ -438,7 +438,8 @@ class ReportDataItemListView extends ReportDataWithCategory {
         $buttons_arr[] = linkify( $edit_url, 'View', 'View','listrowlink');
         		
 		foreach(array_keys($this->display_fields($navigator,$queryvars)) as $fieldname) {
-			$detail_out[$fieldname] = TextToHtml($record[$fieldname]);
+			$detail_out[$fieldname] = isset($record[$fieldname]) ? TextToHtml($record[$fieldname]) : null;
+		//	$detail_out[$fieldname] = TextToHtml($record[$fieldname]);
 		}
 		
 		$detail_out['iv__item_serial_number'] = linkify( $edit_url, $record['iv__item_serial_number'], 'View');
@@ -488,15 +489,18 @@ class ReportDataItemListView extends ReportDataWithCategory {
 			$out = array();
 			$ref_recs = explode(';',$record['all_procedure_object_ids']);
 			foreach($ref_recs as $ref_rec) {
-				list($proc_to,$proc_io,$proc_disposition,$proc_effective_date) = explode(',',$ref_rec);
-				$key = 'ref_procedure_typeobject_id_'.$proc_to;
-				if (!isset($out[$key])) {
-					$out[$key] = array();
+				$proc_arr = explode(',',$ref_rec);
+				if (count($proc_arr)==4) {
+					list($proc_to,$proc_io,$proc_disposition,$proc_effective_date) = $proc_arr;
+					$key = 'ref_procedure_typeobject_id_'.$proc_to;
+					if (!isset($out[$key])) {
+						$out[$key] = array();
+					}
+					$matrix_query_params['itemobject_id'] = $proc_io;
+					$edit_url = $navigator->getCurrentViewUrl('itemview','',$matrix_query_params);
+					$title = date('M j, Y G:i',strtotime($proc_effective_date)).' - '.(isset($this->fields[$key]['display']) ? $this->fields[$key]['display'] : '');
+					$out[$key][] = linkify($edit_url,DBTableRowItemVersion::renderDisposition($this->dbtable->getFieldType('iv__disposition'),$proc_disposition,true,'<span class="disposition Black">No Disposition</span>'),$title);
 				}
-				$matrix_query_params['itemobject_id'] = $proc_io;
-				$edit_url = $navigator->getCurrentViewUrl('itemview','',$matrix_query_params);
-				$title = date('M j, Y G:i',strtotime($proc_effective_date)).' - '.$this->fields[$key]['display'];
-				$out[$key][] = linkify($edit_url,DBTableRowItemVersion::renderDisposition($this->dbtable->getFieldType('iv__disposition'),$proc_disposition,true,'<span class="disposition Black">No Disposition</span>'),$title);
 			}
 			// this outputs the procedures into each cell, but colors background dark if the wrong category (typeobject_id)
 			foreach($this->_proc_matrix_column_keys as $key) {
@@ -526,7 +530,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
 	
 	public function make_export_detail($queryvars, &$record,&$detail_out) {
 		foreach($this->csvfields as $field => $description) {
-			$detail_out[$field] = $record[$field];
+			$detail_out[$field] = isset($record[$field]) ? $record[$field] : null;
 		}
 		$ItemVersion = DbSchema::getInstance()->dbTableRowObjectFactory('itemversion',false,'');
 		$ItemVersion->getRecordById($record['iv__itemversion_id']);

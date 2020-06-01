@@ -296,7 +296,7 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
             throw new Exception('edit_buff not specified in DBControllerActionAbstract::editviewdbAction()');
         }
     	$edit_buffer = 'editing_'.$this->params['edit_buffer_key'];
-        $EditRow = DbSchema::getInstance()->dbTableRowObjectFactory($this->params['table'],false,$_SESSION[$edit_buffer]['parent_index']);
+        $EditRow = DbSchema::getInstance()->dbTableRowObjectFactory($this->params['table'],false,isset($_SESSION[$edit_buffer]['parent_index']) ? $_SESSION[$edit_buffer]['parent_index'] : '');
         if (!$EditRow->assignFromFormSubmission($this->params,$_SESSION[$edit_buffer])) {  // this updates $_SESSION['editapplication'] too
             $this->showBrowsingError();
         }        
@@ -464,7 +464,7 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
                     showdialog('Cannot Delete', $this->formatHtmlDeleteMessage($result['blocking_dependents']), array('<== Back' => $this->navigator->getCurrentViewUrl()));
                 }
                 $this->navigator->jumpToView();
-            case ($this->params['btnOnChange'] == 'sort_order'):
+            case (isset($this->params['btnOnChange']) && ($this->params['btnOnChange'] == 'sort_order')):
                 $sub_params = array();
                 parse_str($this->params['onChangeParams'], $sub_params);
                 if (!empty($sub_params['tablename'])) {
@@ -480,7 +480,7 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
                     }
                 }
                 $this->navigator->jumpToView();
-            case ($this->params['btnOnChange'] == 'joinselectchange'):
+            case (isset($this->params['btnOnChange']) && ($this->params['btnOnChange'] == 'joinselectchange')):
                 // if $dbtable->student_id != $dbtable->s__student_id then reload that part
                 /*
                  When a join selection box changes, we put the command word in the

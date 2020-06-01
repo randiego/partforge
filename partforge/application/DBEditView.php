@@ -67,10 +67,17 @@ class DBEditView {
 		
 		// detail lines
 		foreach($lines as $line) {
-			$html .= '<tr'.$line['tr_attribute'].'>';
-			unset($line['tr_attribute']);
-			$links = $line['links'];
-			unset($line['links']);
+			if (isset($line['tr_attribute'])) {
+				$html .= '<tr'.$line['tr_attribute'].'>';
+				unset($line['tr_attribute']);
+			} else {
+				$html .= '<tr>';
+			}
+			$links = array();
+			if (isset($line['links'])) {
+				$links = $line['links'];
+				unset($line['links']);
+			}
 			foreach($line as $key => $field) {
 				$html .= '<td>'.nbsp_ifblank($field).'</td>';
 			}
@@ -176,7 +183,7 @@ DELIM;
 	public function prepareFieldTypes() {
 		// attach change event handlers to the table object before rendering any left_join type edit fields
 		foreach($this->dbtable->getFieldTypes() as $fieldname => $fieldtype) {
-			if (('left_join'==$fieldtype['type']) && $this->can_edit_self) {
+			if (isset($fieldtype['type']) && ('left_join'==$fieldtype['type']) && $this->can_edit_self) {
 				$join_name = $fieldtype['join_name'];
 				$this->dbtable->setFieldAttribute($fieldname,'onchange_js',"document.theform.btnOnChange.value='joinselectchange';document.theform.submit();return false;");
 			}
@@ -382,9 +389,9 @@ DELIM;
 		foreach($this->dbtable->getDependentRecordsCollection() as $dependent) {
 			if ($this->acl->isAllowed($_SESSION['account']->getRole(),'table:'.$dependent['relationship']['dep_table'],'view')) {
 				
-				
-				$can_edit = $dependent['relationship']['type']=='parent';
-				$can_add = ($dependent['relationship']['type']=='parent') && $this->can_edit_self
+				$type = isset($dependent['relationship']['type']) ? $dependent['relationship']['type'] : '';
+				$can_edit = $type=='parent';
+				$can_add = ($type=='parent') && $this->can_edit_self
 							&& !$this->dbtable->isEditOperationBlocked('addDependent',$dependent['relationship']['dep_table'])
 							&& $this->acl->isAllowed($_SESSION['account']->getRole(),'table:'.$dependent['relationship']['dep_table'],'add');
 				$html .= $this->fetchDependentBlocksHtml($can_edit,$can_add,$dependent);

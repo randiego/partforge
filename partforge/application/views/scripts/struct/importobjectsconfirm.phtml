@@ -21,7 +21,7 @@
 			if ($typeversion_id) {
 				$jump_url = $this->navigator->getCurrentHandlerUrl('btnChooseTypeVersion','','',array('typeversion_id' => $typeversion_id));
 				$out[$jump_url] = DBTableRowTypeVersion::formatPartNumberDescription($typerecord['type_part_number'],$typerecord['type_description']);
-				if ($typeversion_id==$_SESSION['importobjectsconfirm']['typeversion_id']) {
+				if (isset($_SESSION['importobjectsconfirm']['typeversion_id']) && ($typeversion_id==$_SESSION['importobjectsconfirm']['typeversion_id'])) {
 					$selected = $jump_url;
 				}
 			}
@@ -51,7 +51,7 @@
 			$control_array[$fieldname] = format_select_tag($select_arr,$fieldname,array($fieldname=>$selected),"MM_jumpMenu('parent',this,0)",false,'');	
 		}
 		$rows = array();
-		$rows[] = array_merge(array('Import Messages' => $msg),$control_array);
+		$rows[] = array_merge(array('Import Messages' => null),$control_array);
 		
 		$datarows = $this->import_records;
 		foreach($datarows as $idx => $row) {

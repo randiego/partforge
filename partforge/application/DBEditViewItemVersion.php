@@ -65,7 +65,7 @@ class DBEditViewItemVersion extends DBEditView {
 	public function prepareFieldTypes() {
 		// attach change event handlers to the table object before rendering any left_join type edit fields
 		foreach($this->dbtable->getFieldTypes() as $fieldname => $fieldtype) {
-			if (('component'==$fieldtype['type']) && $this->can_edit_self) {
+			if (isset($fieldtype['type']) && ('component'==$fieldtype['type']) && $this->can_edit_self) {
 				$this->dbtable->setFieldAttribute($fieldname,'onchange_js',"document.theform.btnOnChange.value='componentselectchange';document.theform.onChangeParams.value='component_name={$fieldname}';document.theform.submit();return false;");
 			}
 		}

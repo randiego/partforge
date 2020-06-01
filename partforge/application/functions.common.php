@@ -109,7 +109,7 @@ class UrlCallRegistry {
 	protected $_propagating_param_names = array();
 
 	public function __construct(DBControllerActionAbstract $controller_action, $last_change_url) {
-		if (!is_array($_SESSION[$this->_sessionvar])) {
+		if (!isset($_SESSION[$this->_sessionvar]) || !is_array($_SESSION[$this->_sessionvar])) {
 			$_SESSION[$this->_sessionvar] = array();
 		}
 		$this->_controller_action = $controller_action;
@@ -596,7 +596,7 @@ function block_text_html($text) { // used for some showdialog messages
 function format_select_tag($cc_type_array,$field_name,$params,$onchange='',$disabled=false, $nothingselectedtext='-- select one --',$attributes='', $class='inputboxclass') {
 	$html = '';
 	$is_anything_selected = false;
-	$in_value = $params[$field_name];
+	$in_value = isset($params[$field_name]) ? $params[$field_name] : null;
 	// must make sure integer string is compared properly to integer index.  Also make a null on the input equivalent to '' on index
 	$in_value = (is_numeric($in_value) && (intval($in_value)==$in_value )) ? (int)$in_value : ((null==$in_value) ? '' : $in_value);
 	foreach($cc_type_array as $value => $text) {
@@ -665,14 +665,18 @@ function callMethodLiteral(TableRow $dbtable, $methodname, $default) {
 
 function parseSelectValues($fieldname, TableRow $dbtable) {
 	$fieldtype = $dbtable->getFieldType($fieldname);
-	$select_name = $fieldtype['options'];
-	if (is_array($select_name)) {
-		$select_values = $select_name;
+	if (isset($fieldtype['options'])) {
+		$select_name = $fieldtype['options'];
+		if (is_array($select_name)) {
+			$select_values = $select_name;
+		} else {
+			$default = array($dbtable->{$fieldname} => $dbtable->{$fieldname});
+			$select_values = callMethodLiteral($dbtable, $select_name, $default);
+		}
+		return $select_values;
 	} else {
-		$default = array($dbtable->{$fieldname} => $dbtable->{$fieldname});
-		$select_values = callMethodLiteral($dbtable, $select_name, $default);
+		return array();
 	}
-	return $select_values;
 }
 
 function parseJoinValues($fieldname, TableRow $dbtable) {

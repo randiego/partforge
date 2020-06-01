@@ -124,10 +124,10 @@ class ReportDataChangeSubscription extends ReportDataWithCategory {
 			$detail_out[$fieldname] = TextToHtml($record[$fieldname]);
 		}
 
-		if (in_array($record['change_code'], array('AIR','AIP')) ) {
+		if (isset($record['change_code']) && in_array($record['change_code'], array('AIR','AIP')) ) {
 			$detail_out['change_code_name'] .= ' '.$record['desc_text'];
 		}
-		$detail_out['change_code_name'] = '<div style="display: block; width:400px; max-width:400px;">'.$detail_out['change_code_name'].'</div>';
+		$detail_out['change_code_name'] = isset($detail_out['change_code_name']) ? '<div style="display: block; width:400px; max-width:400px;">'.$detail_out['change_code_name'].'</div>' : '';
 		
 		$detail_out['changed_on'] = empty($record['changed_on']) ? '' : date('M j, Y G:i',strtotime($record['changed_on']));
 		

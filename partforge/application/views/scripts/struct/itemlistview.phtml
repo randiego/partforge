@@ -77,7 +77,8 @@ var linkToPageUrl = "<?php echo DBTableRowTypeVersion::getListViewAbsoluteUrl($t
     $_SESSION['account']->setPreference($this->report_data->pref_view_category_name,$this->report_data->ensure_category($_SESSION['account']->getPreference($this->report_data->pref_view_category_name)));
     if (count($this->report_data->category_array)>0) {
     	$selcategory = '';
-    	if ($this->queryvars['search_string']) {
+    	$search_string = !empty($this->queryvars['search_string']) ? $this->queryvars['search_string'] : ''; 
+    	if ($search_string) {
     		$selcategory = $_SESSION['account']->broadestAllowedUserCategory();
     	} else {
     		$selcategory = $_SESSION['account']->getPreference($this->report_data->pref_view_category_name);
@@ -88,7 +89,7 @@ var linkToPageUrl = "<?php echo DBTableRowTypeVersion::getListViewAbsoluteUrl($t
     	}
     		
     	$selhtml = '<span class="ui-widget" ><label>Showing: </label>';
-    	$selhtml .= format_select_tag($this->report_data->category_array,'view_category',array('view_category' =>$selcategory),"document.theform.btnOnChange.value='catchange';document.theform.submit();return false;",$this->queryvars['search_string'],'','','changeselectbox');
+    	$selhtml .= format_select_tag($this->report_data->category_array,'view_category',array('view_category' =>$selcategory),"document.theform.btnOnChange.value='catchange';document.theform.submit();return false;",$search_string,'','','changeselectbox');
     	$selhtml .= '</span>';
     	
     	// Create the New button(s) if we are browsing a specific part/procedure type
