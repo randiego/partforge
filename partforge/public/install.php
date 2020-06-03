@@ -508,7 +508,7 @@ function step_5() {
 	</p>
 	<p>You should now be able to log into your PartForge installation at a location like <a href="<?php echo $login_url;?>"><?php echo $login_url;?></a> using Login ID <i>admin</i> and Password <i>admin</i>.</p>
 	<p>For a complete installation, you need to setup a cron job to service maintenance tasks.  You should have the cron load the page "<?php echo $cron_url;?>" once a minute.  The crontab entry will look something like:<br />
-	<pre>* * * * /usr/bin/wget -q "<?php echo $cron_url;?>"</pre>
+	<pre>* * * * * /usr/bin/wget -q "<?php echo $cron_url;?>"</pre>
 	The reason this is possibly optional is that if the cron is not running, accessing the site will service the tasks.  But this is not great for responsiveness and if you don't use the site
 	nothing happens.</p>
 	<p>Finally, you should delete this installation script (<?php echo __FILE__;?>) or move it to a location like <?php echo realpath(dirname(__FILE__) . '/..');?> that is not accessible from the webserver.  Keeping this script where it is is obviously a security hole.</p>
