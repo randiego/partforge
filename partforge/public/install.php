@@ -172,7 +172,13 @@ function step_2() {
 		php_ini_error('date.timezone','It must be set to something.');
 		$error = true;
 	} else {
-		php_ini_ok('date.timezone');
+		$timezone = ini_get('date.timezone');
+		if (in_array($timezone, timezone_identifiers_list())) {
+			php_ini_ok('date.timezone');
+		} else {
+			php_ini_error('date.timezone','See https://www.php.net/manual/en/timezones.php for a list of valid values.');
+			$error = true;
+		}
 	}
 	if ((intval(ini_get('memory_limit'))!=-1) && (intval(ini_get('memory_limit'))<256)) {
 		show_message('PHP Configuration setting memory_limit (currently '.ini_get('memory_limit').') is recommended to be at least 256M.  (Complex operations and views may fail mysteriously.)','W');
@@ -377,37 +383,49 @@ function step_3(){
 					$dbok = false;
 					error_message("Cannot select the specified database.");
 				} else {
-					$recs = get_records($connection, 'Tables_in_'.$_SESSION['globals']['dbname'],"SHOW TABLES");
-					$tablenames = array_keys($recs);
-					if (in_array('typeversion',$tablenames) && count($tablenames) > 5) {
+					// now we check to make sure the sql_mode is set correctly
+					$recs = get_records($connection, '@@sql_mode',"SELECT @@sql_mode");
+					$sql_mode = '';
+					if (count($recs)>0) {
+						$rec = reset($recs);
+						$sql_mode = $rec['@@sql_mode'];
+					}
+					if (strpos($sql_mode,'ONLY_FULL_GROUP_BY') !== false) {
 						$dbok = false;
-						$allow_skip = true;
-						error_message("There are already tables in the database.  You must start with an empty database before continuing.");						
+						error_message("MySql sql_mode has the setting ONLY_FULL_GROUP_BY which is not compatible with PartForge.  You must edit the MySql configuration to remove this setting.");
 					} else {
-						$sqlfile = realpath(dirname(__FILE__) . '/../database/'.$_SESSION['globals']['initial_db']);
-						$sql = file($sqlfile);
-						if (!$sql) {
+						$recs = get_records($connection, 'Tables_in_'.$_SESSION['globals']['dbname'],"SHOW TABLES");
+						$tablenames = array_keys($recs);
+						if (in_array('typeversion',$tablenames) && count($tablenames) > 5) {
 							$dbok = false;
-							error_message("Cannot locate the database source file '{$sqlfile}' or it is empty.");
+							$allow_skip = true;
+							error_message("There are already tables in the database.  You must start with an empty database before continuing.");						
 						} else {
-							// load the database source
-							$query = '';
-							foreach($sql as $line) {
-								$tsl = trim($line);
-								if (($sql != '') && (substr($tsl, 0, 2) != "--") && (substr($tsl, 0, 1) != '#')) {
-									$query .= $line;
-							
-									if (preg_match('/;\s*$/', $line)) {							
-										mysqli_query($connection, $query);
-										$err = mysqli_error($connection);
-										if (!empty($err))
-											break;
-										$query = '';
+							$sqlfile = realpath(dirname(__FILE__) . '/../database/'.$_SESSION['globals']['initial_db']);
+							$sql = file($sqlfile);
+							if (!$sql) {
+								$dbok = false;
+								error_message("Cannot locate the database source file '{$sqlfile}' or it is empty.");
+							} else {
+								// load the database source
+								$query = '';
+								foreach($sql as $line) {
+									$tsl = trim($line);
+									if (($sql != '') && (substr($tsl, 0, 2) != "--") && (substr($tsl, 0, 1) != '#')) {
+										$query .= $line;
+								
+										if (preg_match('/;\s*$/', $line)) {							
+											mysqli_query($connection, $query);
+											$err = mysqli_error($connection);
+											if (!empty($err))
+												break;
+											$query = '';
+										}
 									}
 								}
 							}
-						}
-					}				
+						}	
+					}			
 
 
 
