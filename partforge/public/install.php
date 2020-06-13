@@ -190,6 +190,11 @@ function step_2() {
 	} else {
 		php_ini_ok('post_max_size');
 	}
+	if (intval(ini_get('upload_max_filesize'))<40) {
+		show_message('PHP Configuration setting upload_max_filesize (currently '.ini_get('upload_max_filesize').') is recommended to be at least 40M.','W');
+	} else {
+		php_ini_ok('upload_max_filesize');
+	}
 	if (ini_get('session.auto_start')) {
 		php_ini_error('session.auto_start','This must be turned off.');
 		$error = true;

@@ -1,11 +1,14 @@
-RewriteEngine on
+
+# The following configuration is normally done in the Apache config file partforge.conf (in /etc/httpd/conf.d/).
+
+#RewriteEngine on
 
 # If you are using Aliases to specify the base address, use this.
 
-RewriteCond %{SCRIPT_FILENAME} !-f
-RewriteCond %{SCRIPT_FILENAME} !-d
-RewriteCond %{REQUEST_URI} ^/partforge
-RewriteRule ^.*$ /partforge/index.php
+#RewriteCond %{SCRIPT_FILENAME} !-f
+#RewriteCond %{SCRIPT_FILENAME} !-d
+#RewriteCond %{REQUEST_URI} ^/partforge
+#RewriteRule ^.*$ /partforge/index.php
 
 # If you have defined a domain or subdomain pointing 
 # directly to this (public) directory, use this...

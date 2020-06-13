@@ -80,7 +80,7 @@ error_reporting(E_ERROR | E_WARNING | E_PARSE);
 ini_set('display_errors',1);
 
 // get local configuration
-require_once("../config.php");
+require_once(dirname(__FILE__)."/../config.php");
 
 // the read-only passwords default to the rw ones 
 if (!$config['db_params']['ro_username']) {
