@@ -51,21 +51,21 @@ class Items_VersionsController extends RestControllerActionAbstract
 					LEFT JOIN typeversion ON typeversion.typeversion_id=itemversion.typeversion_id
 					LEFT JOIN itemcomponent ON itemcomponent.belongs_to_itemversion_id=itemversion.itemversion_id
 					WHERE itemversion.itemobject_id='{$itemobject_id}' {$and_where}
-					ORDER BY itemversion.effective_date");		
+					ORDER BY itemversion.effective_date,itemversion.itemversion_id");		
 		} elseif (!is_null($typeversion_id)) {
 			$and_where = !is_null($has_an_itemobject_id) ? " AND (itemcomponent.has_an_itemobject_id='{$has_an_itemobject_id}')" : '';
 			$records = DbSchema::getInstance()->getRecords('',"SELECT DISTINCT itemversion.itemversion_id FROM itemversion
 					LEFT JOIN typeversion ON typeversion.typeversion_id=itemversion.typeversion_id
 					LEFT JOIN itemcomponent ON itemcomponent.belongs_to_itemversion_id=itemversion.itemversion_id
 					WHERE typeversion.typeversion_id='{$typeversion_id}' {$and_where}
-					ORDER BY itemversion.effective_date");		
+					ORDER BY itemversion.effective_date,itemversion.itemversion_id");		
 		} elseif (!is_null($typeobject_id)) {
 			$and_where = !is_null($has_an_itemobject_id) ? " AND (itemcomponent.has_an_itemobject_id='{$has_an_itemobject_id}')" : '';
 			$records = DbSchema::getInstance()->getRecords('',"SELECT DISTINCT itemversion.itemversion_id FROM itemversion
 					LEFT JOIN typeversion ON typeversion.typeversion_id=itemversion.typeversion_id
 					LEFT JOIN itemcomponent ON itemcomponent.belongs_to_itemversion_id=itemversion.itemversion_id
 					WHERE typeversion.typeobject_id='{$typeobject_id}' {$and_where}
-					ORDER BY itemversion.effective_date");
+					ORDER BY itemversion.effective_date,itemversion.itemversion_id");
 		}
 		
 		if (!is_null($records)) {
