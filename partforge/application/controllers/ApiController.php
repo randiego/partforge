@@ -146,7 +146,7 @@ class ApiController extends Zend_Controller_Action
 		if (count($errormsg)>0) $this->returnOutput( array('data' => array(), 'errormessages' => implode(', ', $errormsg) ) );
 		
 		$DBTableRowQuery = DBTableRowChangeLog::getNewQueryForApiOutput();
-		$DBTableRowQuery->setOrderByClause("ORDER BY changelog.changed_on desc");
+		$DBTableRowQuery->setOrderByClause("ORDER BY changelog.changed_on desc, changelog.changelog_id");  // changelog.changelog_id is there only to make it deterministic output
 		
 		if (!is_null($itemobject_id_set)) $DBTableRowQuery->addAndWhere(" and (changelog.trigger_itemobject_id IN {$itemobject_id_set})");
 		if (!is_null($typeobject_id_set)) $DBTableRowQuery->addAndWhere(" and (changelog.trigger_typeobject_id IN {$typeobject_id_set})");

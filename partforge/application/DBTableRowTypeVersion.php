@@ -171,9 +171,23 @@
         public function getRecordById($id) {
             $DBTableRowQuery = new DBTableRowQuery($this);
             $DBTableRowQuery->setLimitClause('LIMIT 1')->addSelectors(array($this->_idField => $id));
-            $DBTableRowQuery->addSelectFields(array("CAST((SELECT GROUP_CONCAT(concat(typecomponent.typecomponent_id,',',typecomponent.component_name,',',(
-  SELECT GROUP_CONCAT(DISTINCT typecomponent_typeobject.can_have_typeobject_id ORDER BY typecomponent_typeobject.can_have_typeobject_id SEPARATOR '|') FROM typecomponent_typeobject WHERE typecomponent_typeobject.typecomponent_id=typecomponent.typecomponent_id
-),',',CONVERT(HEX(IFNULL(typecomponent.caption,'')),CHAR),',',CONVERT(HEX(IFNULL(typecomponent.subcaption,'')),CHAR),',',IFNULL(typecomponent.featured,0),',',IFNULL(typecomponent.required,0))  ORDER BY typecomponent.component_name SEPARATOR ';') FROM typecomponent WHERE typecomponent.belongs_to_typeversion_id=typeversion.typeversion_id) AS CHAR) as list_of_typecomponents"));
+            $DBTableRowQuery->addSelectFields(array("CAST(
+            	(SELECT GROUP_CONCAT(
+            		concat(typecomponent.typecomponent_id,',',
+            			typecomponent.component_name,',',
+            		    (
+	   	                   SELECT GROUP_CONCAT(DISTINCT typecomponent_typeobject.can_have_typeobject_id ORDER BY typecomponent_typeobject.can_have_typeobject_id SEPARATOR '|') 
+	            		   FROM typecomponent_typeobject 
+	            		   WHERE typecomponent_typeobject.typecomponent_id=typecomponent.typecomponent_id
+                    	 ),',',
+            		     CONVERT(HEX(IFNULL(typecomponent.caption,'')),CHAR),',',
+            			 CONVERT(HEX(IFNULL(typecomponent.subcaption,'')),CHAR),',',
+            			 IFNULL(typecomponent.featured,0),',',
+            			 IFNULL(typecomponent.required,0)
+            		)  
+            	    ORDER BY typecomponent.component_name SEPARATOR ';') 
+            	FROM typecomponent 
+            	WHERE typecomponent.belongs_to_typeversion_id=typeversion.typeversion_id) AS CHAR) as list_of_typecomponents"));
             $DBTableRowQuery->addSelectFields("(SELECT count(*) FROM partnumbercache WHERE typeversion.typeversion_id=partnumbercache.typeversion_id) as partnumber_count");
             $DBTableRowQuery->addJoinClause("LEFT JOIN user ON user.user_id=typeversion.user_id")
 				            ->addSelectFields('user.login_id');          
@@ -273,7 +287,8 @@
 				LEFT JOIN typecomponent as tc1 on tc1.belongs_to_typeversion_id = tv1.typeversion_id
 				LEFT JOIN typecomponent_typeobject on typecomponent_typeobject.typecomponent_id = tc1.typecomponent_id
         		LEFT JOIN typeversion as tv2 on tv2.typeobject_id = typecomponent_typeobject.can_have_typeobject_id
-				WHERE (tv1.typeobject_id = '{$typeobject_id}') and tc1.typecomponent_id IS NOT NULL");
+				WHERE (tv1.typeobject_id = '{$typeobject_id}') and tc1.typecomponent_id IS NOT NULL
+        		ORDER BY tc1.component_name");
         	$out = array();
         	foreach($records as $record) {
         		$TV = DbSchema::getInstance()->dbTableRowObjectFactory('typeversion',false,'');
