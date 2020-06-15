@@ -285,7 +285,7 @@ class ImportStrategyObjects {
     				if ($effective_date) $ItemVersion->effective_date = $effective_date;
     				foreach($curr_field_to_columns as $fieldname => $columnname) {
     					$type = $ItemVersion->getFieldType($fieldname);
-    					if ($type['type']=='component') {
+    					if (isset($type['type']) && ($type['type']=='component')) {
     						$allowedvalues = $ItemVersion->getComponentSelectOptions($fieldname, $ItemVersion->effective_date,'');
     						$allowedvalues[''] = '';
     						$keyval =  array_search($record[$columnname],$allowedvalues);

@@ -336,15 +336,16 @@ class UploadHandler
     function get_config_bytes($val) {
         $val = trim($val);
         $last = strtolower($val[strlen($val)-1]);
+        $numval = substr($val,0,strlen($val)-1);
         switch($last) {
             case 'g':
-                $val *= 1024;
+                $numval *= 1024;
             case 'm':
-                $val *= 1024;
+                $numval *= 1024;
             case 'k':
-                $val *= 1024;
+                $numval *= 1024;
         }
-        return $this->fix_integer_overflow($val);
+        return $this->fix_integer_overflow($numval);
     }
 
     protected function validate($uploaded_file, $file, $error, $index) {
@@ -426,7 +427,7 @@ class UploadHandler
             $name = $this->upcount_name($name);
         }
         // Keep an existing filename if this is part of a chunked upload:
-        $uploaded_bytes = $this->fix_integer_overflow(intval($content_range[1]));
+        $uploaded_bytes = isset($content_range[1]) && is_numeric($content_range[1]) ?  $this->fix_integer_overflow(intval($content_range[1])) : 0;
         while(is_file($this->get_upload_path($name))) {
             if ($uploaded_bytes === $this->get_file_size(
                     $this->get_upload_path($name))) {
