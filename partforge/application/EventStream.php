@@ -580,8 +580,9 @@ class EventStream {
 			$fname = $document_displayed_filename.' <span class="size">'.$size.'</span>';
 			if ($document_thumb_exists) {
 				$title = $document_displayed_filename;
+				$thumb_url = $baseUrl.'/items/documents/'.$document_id."?fmt=thumbnail";
 				$thumbs[] = '<span class="bd-event-document"><a data-dialog="'.$slideshow_unique_id.'" title="'.$title.'" href="'.$filename_url.'">
-						<img style="border:0;" src="'.$baseUrl.Zend_Registry::get('config')->document_directory.'/'.$document_stored_path.'/thumbnail/'.rawurlencode($document_stored_filename).'"></a></span>';
+						<img style="border:0;" src="'.$thumb_url.'"></a></span>';
 			} else {
 				$title = 'click to open '.$document_displayed_filename.' ('.$size.')';
 				$icon_img = '<IMG style="vertical-align:middle;" src="'.Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/images/'.DBTableRowDocument::findIconFileName($document_file_type, $document_displayed_filename).'" width="16" height="16" border="0" alt="delete">';
