@@ -439,7 +439,6 @@ class ReportDataItemListView extends ReportDataWithCategory {
         		
 		foreach(array_keys($this->display_fields($navigator,$queryvars)) as $fieldname) {
 			$detail_out[$fieldname] = isset($record[$fieldname]) ? TextToHtml($record[$fieldname]) : null;
-		//	$detail_out[$fieldname] = TextToHtml($record[$fieldname]);
 		}
 		
 		$detail_out['iv__item_serial_number'] = linkify( $edit_url, $record['iv__item_serial_number'], 'View');

@@ -1090,7 +1090,7 @@
             
             // unique value checking
             foreach ($fieldnames as $fieldname) {
-            	if (isset($this->_fieldtypes[$fieldname]['unique']) && $this->{$fieldname}) {
+            	if (isset($this->_fieldtypes[$fieldname]['unique']) && $this->_fieldtypes[$fieldname]['unique'] && $this->{$fieldname}) {
             		$serialnumbers = $this->getItemsWithPropertyMatching($fieldname,$this->{$fieldname});
             		if (count($serialnumbers)>0) {
             			$errormsg[$fieldname] = 'The value "'.$this->{$fieldname}.'" for '.$this->formatFieldnameNoColon($fieldname).' must be unique.  However this same value also appears in '.implode(' and ',$serialnumbers).'.';
