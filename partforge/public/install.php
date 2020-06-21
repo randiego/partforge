@@ -149,7 +149,7 @@ function check_extension($ext) {
  * Check PHP configuration
  */
 function prep_step_2() {
-	$configtext = file_get_contents($_SESSION['globals']['configfilename']);
+	$configtext = file_get_contents(realpath(dirname(__FILE__) . '/..').'/config.php');
 	$_SESSION['globals']['document_path_base'] = getInstallParamFromConfig($configtext,'DOCUMENT_PATH_BASE');
 	$_SESSION['globals']['reports_classes_path'] = getInstallParamFromConfig($configtext,'REPORTS_CLASSES_PATH');
 }
