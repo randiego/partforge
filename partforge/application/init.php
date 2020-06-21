@@ -34,11 +34,12 @@ $config['config_for_testing'] = false; // Makes a few minor changes to improve t
 $config['global_readonly'] = false;  // if false, then all users must log in to be able to view content.  If true, then it is only necessary to login to write.
 $config['force_login_domain'] = false; // set to false if we don't want to insist on any particular domain name.  Set to, say www.mydomain.com if you want to redirect the login page to this domain instead
 $config['db_query_dump_file'] = false; // set this to the absolute pathname of a file to force a save of every mysql query.  Normally used for testing.
+$config['document_path_base'] = realpath(dirname(__FILE__)."/..");   // set this to the absolute path of where the document_directory lives
 $config['reports_output_directory'] = '/reports';  // this is under the document_path_base.  This is were the graph files and report and report data files are automatically saved.
 $config['document_directory'] = '/documents'; // this is under the document_path_base.  This is where all documents and thumbs are stored
 $config['document_path_db_key'] = '1';  // this is a code that helps with migration of databases when the /documents folder is not also migrated.  This key must match the field in the documents table or else the document is considered missing.
+$config['public_base_path'] = realpath(dirname(__FILE__)."/../public");   // set this to the absolute path of where main index.php file resides.  This should be the only public folder.
 $config['local_testing'] = false;   // indicates that we are running in a debug environment and want to avoid timeouts as we step through or run long tests.
-
 $config['logo_file'] = '/images/logo.png'; // graphic at top of all webpages.  It is relative to /public
 
 $config['button_new_version_save'] = 'Save New Version';

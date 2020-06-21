@@ -111,6 +111,13 @@ class MyUploadHandler extends UploadHandler
     			$this->db_document_table->comment_id = $this->db_comment_table->comment_id;
     		}
     		$this->db_document_table->save();
+
+    		// in the call to handle_file_upload above it didn't yet have the document_id, so it set the json response incorrectly.  So now we populate the url fields with the actual document_ids
+    		$fileobj->url = $this->get_download_url(null);
+    		foreach($this->options['image_versions'] as $version => $options) {
+    			$fileobj->{$version.'_url'} = $this->get_download_url(null,$version);
+    		}
+    		
             $this->set_file_delete_properties($fileobj);
     		// add to the current list of documents being displayed.
     		$this->db_comment_table->document_ids = array_unique(array_merge($this->db_comment_table->document_ids,array($this->db_document_table->document_id)));
@@ -149,8 +156,9 @@ class MyUploadHandler extends UploadHandler
     		}
     		return $url.'&download=1';
     	}
-    	$version_path = empty($version) ? '' : rawurlencode($version).'/';
-    	return $this->options['upload_url'].$this->db_document_table->document_stored_path.'/'.$version_path.rawurlencode($file_name);
+    	
+    	$fmt = empty($version) ? '' :  '?fmt='.$version;  	
+    	return Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/items/documents/'.$this->db_document_table->document_id.$fmt;
     }    
 
 

@@ -81,7 +81,7 @@ class TypeDocumentUploadHandler extends UploadHandler
     	$this->db_document_table = new DBTableRowTypeDocument($user_id);
         
     	$fileobj = parent::handle_file_upload($uploaded_file, $name, $size, $type, $error,$index, $content_range);
-    	if (!$fileobj->error && ($fileobj->size>0)) {
+    	if (empty($fileobj->error) && ($fileobj->size>0)) {
     		$this->db_document_table->document_displayed_filename = $name;
     		$this->db_document_table->document_stored_filename = $fileobj->name;
     		$this->db_document_table->document_filesize = $fileobj->size;
@@ -104,6 +104,7 @@ class TypeDocumentUploadHandler extends UploadHandler
     		}
     		return $url.'&download=1';
     	}
+    	
     	$version_path = empty($version) ? '' : rawurlencode($version).'/';
     	return $this->options['upload_url'].$this->db_document_table->document_stored_path.'/'.$version_path.rawurlencode($file_name);
     }    

@@ -251,8 +251,7 @@ function step_2() {
 
 	// only initialize this if we sense a default value present
 	if (is_config_default($_SESSION['globals']['document_path_base'])) {
-		$document_path_base = dirname(__FILE__);
-		$document_directory = $document_path_base.'/documents';	
+		$document_path_base = realpath(dirname(__FILE__)."/..");   // use an initial value that is one up from the public folder.
 		$_SESSION['globals']['document_path_base'] = $document_path_base;
 	}
 	
