@@ -65,3 +65,13 @@ $config['db_params'] = array(
 		'ro_password' => '',    //INSTALL:PARAM:RO_PASSWORD:  database password readonly access
 		'dbname' => 'partforgedb',        //INSTALL:PARAM:DBNAME:
 );
+
+/*
+ * If using an external SMTP server
+ */
+//$config['phpmailer_host'] = '';      // if this is set, phpmailer_port must be set too.  If not set, then the native php mail function will be used
+//$config['phpmailer_port'] = 25;      // normally 25, 465 or 587
+//$config['phpmailer_username'] = '';  // If this is set, phpmailer_password and phpmailer_smtpsecure must be set too
+//$config['phpmailer_password'] = '';
+//$config['phpmailer_smtpsecure'] = '';  // Options: "", "ssl" or "tls"
+
