@@ -41,6 +41,7 @@ $config['document_path_db_key'] = '1';  // this is a code that helps with migrat
 $config['public_base_path'] = realpath(dirname(__FILE__)."/../public");   // set this to the absolute path of where main index.php file resides.  This should be the only public folder.
 $config['local_testing'] = false;   // indicates that we are running in a debug environment and want to avoid timeouts as we step through or run long tests.
 $config['logo_file'] = '/images/logo.png'; // graphic at top of all webpages.  It is relative to /public
+$config['favicon_file'] = '/images/favicon.ico'; // shortcut icon file
 
 $config['button_new_version_save'] = 'Save New Version';
 $config['button_edit_version_save'] = 'Save'; 
