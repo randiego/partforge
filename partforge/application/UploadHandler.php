@@ -649,9 +649,9 @@ class UploadHandler
         $this->header('Vary: Accept');
         if (isset($_SERVER['HTTP_ACCEPT']) &&
             (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
-            $this->header('Content-type: application/json');
+            $this->header('Content-Type: application/json');
         } else {
-            $this->header('Content-type: text/plain');
+            $this->header('Content-Type: text/plain');
         }
     }
 

@@ -860,7 +860,7 @@ function send_download_headers($file_type, $file_name, $attachment='attachment; 
 	// one problem is that filenames with spaces don't seem to work properly.  Must remove spaces.
 	header( "Pragma: ");
 	header( "Cache-Control: {$cachecontrol}");
-	header( "Content-type: $file_type" );
+	header( "Content-Type: $file_type" );
 	header( "Content-Disposition: {$attachment}filename=".str_replace(' ', '', $file_name) );
 }
 

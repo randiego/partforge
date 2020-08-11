@@ -205,7 +205,7 @@ class DBTableRowDocument extends DBTableRow {
 		
 	public function outputToBrowser($is_download=true, $cache_it=true) {
 		send_download_headers($this->document_file_type, $this->document_displayed_filename,$is_download ? 'attachment; ' : '', $cache_it ? 'max-age=2592000' : 'max-age=0');
-		header( 'Content-Length: '.$this->document_filesize );
+		header( 'Content-Length: '.filesize($this->fullStoredFileName()) );
 		header( 'Content-Description: Download Data' );
 		readfile($this->fullStoredFileName());
 		exit;
