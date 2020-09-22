@@ -888,22 +888,23 @@
         		
         		// remove items from the delete and save list if they are identical.  
         		foreach($records_to_delete as $partnumber_id => $pnrecord) {
-        			$to_save = $pns_to_save[$pnrecord['partnumber_alias']];
-        			if (isset($pns_to_save[$pnrecord['partnumber_alias']])
-        					 &&  ($to_save['part_number']==$pnrecord['part_number'])
-        					 &&  ($to_save['part_description']==$pnrecord['part_description'])) {
-        				unset($records_to_delete[$partnumber_id]);
-        				unset($pns_to_save[$pnrecord['partnumber_alias']]);
-        			} else if (isset($pns_to_save[$pnrecord['partnumber_alias']])) {
-        				// only the number and description are different.  So we can update
-        				$PartNumRec = new DBTableRow('partnumbercache');
-        				if ($PartNumRec->getRecordById($partnumber_id)) {
-        					$PartNumRec->part_number = $to_save['part_number'];
-        					$PartNumRec->part_description = $to_save['part_description'];
-        					$PartNumRec->save(array('part_number','part_description'));
+        			if (isset($pns_to_save[$pnrecord['partnumber_alias']])) {
+	        			$to_save = $pns_to_save[$pnrecord['partnumber_alias']];
+	        			if (($to_save['part_number']==$pnrecord['part_number'])
+	        					 &&  ($to_save['part_description']==$pnrecord['part_description'])) {
 	        				unset($records_to_delete[$partnumber_id]);
 	        				unset($pns_to_save[$pnrecord['partnumber_alias']]);
-        				}
+	        			} else {
+	        				// only the number and description are different.  So we can update
+	        				$PartNumRec = new DBTableRow('partnumbercache');
+	        				if ($PartNumRec->getRecordById($partnumber_id)) {
+	        					$PartNumRec->part_number = $to_save['part_number'];
+	        					$PartNumRec->part_description = $to_save['part_description'];
+	        					$PartNumRec->save(array('part_number','part_description'));
+		        				unset($records_to_delete[$partnumber_id]);
+		        				unset($pns_to_save[$pnrecord['partnumber_alias']]);
+	        				}
+	        			}
         			}
         		}
         		
