@@ -169,7 +169,8 @@ class ItemViewPDF extends TCPDF {
 			// a resolution of 1.5 x requested width turns out to be a good balance.
 			$width_params = count($width_out[1])==1 ? '?fmt=customwidth&width='.(1.5*$width_out[1][0]) : '';
 			
-    		$replace = '<img'.$out[1][$sub_index].'src="//'.Zend_Controller_Front::getInstance()->getRequest()->getHttpHost().Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/types/documents/'.$typedocument_id.$width_params.'"'.$size_attrib.'>';
+    		$replace = '<img'.$out[1][$sub_index].'src="'.Zend_Controller_Front::getInstance()->getRequest()->getScheme().'://'.Zend_Controller_Front::getInstance()->getRequest()->getHttpHost().Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/types/documents/'.$typedocument_id.$width_params.'"'.$size_attrib.'>';
+
     		$html = str_ireplace($out[0][$sub_index],$replace,$html);
     	}    	
     	return $html;    	
