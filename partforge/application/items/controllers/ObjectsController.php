@@ -211,7 +211,7 @@ class Items_ObjectsController extends RestControllerActionAbstract
 				
 				if (empty($errormsg)) {
 					$outitemversion_id = null;
-					ImportStrategyObjects::storeObjectPerImportRules('NewObject', $record, $curr_field_to_columns, $typeversion_id, $itemversion_id, $itemobject_id, $user_id, $effective_date, $simlulate_only, $errormsg, $outitemversion_id);
+					ImportStrategyObjects::storeObjectPerImportRules('NewObject', $record, $curr_field_to_columns, $typeversion_id, $itemversion_id, $itemobject_id, $user_id, $effective_date, false, $errormsg, $outitemversion_id);
 						
 					$this->view->itemversion_id = $outitemversion_id;
 					if (is_numeric($outitemversion_id)) {
