@@ -106,7 +106,7 @@ $(document).ready(function () {
 	<div id="whoisloggedin"><?php echo $fake_date_warning.$_SESSION['account']->whoAmIHtml() ?></div>
 	<div class="logographic"><a href="<?php echo UrlCallRegistry::formatViewUrl('itemlistview','struct',array('resetview' => '1'));?>"><img title="<?php echo $config->application_title;?>" class="logoheadimage" src="<?php echo $baseurl.$config->logo_file;?>"></a></div>
 	<div id="headmessages"></div>
-	<div id="helpLink"><?php echo DBTableRowHelp::helpLinkIfPresent() ?></div>
+	<div id="helpLink"><?php echo DBTableRowHelp::helpLinkIfPresent(isset($this->layout()->getView()->navigator) ? $this->layout()->getView()->navigator : null); ?></div>
 </div>
 
 <div>

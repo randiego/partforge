@@ -29,7 +29,6 @@ class HelpController extends DBCustomControllerAction
 	*/
 	public function pageAction()
 	{
-		//        	$params = $this->getRequest()->getParams();
 		$Help = DBSchema::getInstance()->DBTableRowObjectFactory('help');
 		$Help->getRecordForActionController($this->params['help_action'],$this->params['help_controller'],$this->params['help_table']);
 		$this->view->help_obj = $Help;

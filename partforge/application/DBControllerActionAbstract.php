@@ -33,6 +33,7 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
         $this->params = $this->getRequest()->getParams();
         $this->navigator = new UrlCallRegistry($this,$this->getRequest()->getBaseUrl().'/user/login');
         $this->navigator->setPropagatingParamNames(explode(',',AUTOPROPAGATING_QUERY_PARAMS));
+        $this->view->navigator = $this->navigator;
         trim_recursive($this->params);
         $config = Zend_Registry::get('config');
         if ($this->getRequest()->getScheme()!=$config->scheme) {

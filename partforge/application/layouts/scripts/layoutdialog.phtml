@@ -66,14 +66,14 @@ $(document).ready(function () {
 <body class="tundra" onLoad="<?php echo implode('',$onload);?>">
 <div class="main">
 <div id="logobar">
-<a href="<?php echo UrlCallRegistry::formatViewUrl('itemlistview','struct',array('resetview' => '1'));?>"><img title="<?php echo $config->application_title;?>" class="logoheadimage" src="<?php echo $baseurl.$config->logo_file;?>"></a>
+	<div id="whoisloggedin"><?php echo $_SESSION['account']->whoAmIHtml() ?></div>
+	<div class="logographic"><a href="<?php echo UrlCallRegistry::formatViewUrl('itemlistview','struct',array('resetview' => '1'));?>"><img title="<?php echo $config->application_title;?>" class="logoheadimage" src="<?php echo $baseurl.$config->logo_file;?>"></a></div>
+	<div id="helpLink"><?php echo DBTableRowHelp::helpLinkIfPresent(isset($this->layout()->getView()->navigator) ? $this->layout()->getView()->navigator : null); ?></div>
 </div>
 
-<div id="whoisloggedin"><?php echo $_SESSION['account']->whoAmIHtml() ?></div>
 <div>
 <a name="TopOfPageAnchor"></a>
 </div>
-<div id="helpLink"><?php echo DBTableRowHelp::helpLinkIfPresent() ?></div>
 <div class="textArea">
 <?php echo $this->layout()->content ?>
 </div> 

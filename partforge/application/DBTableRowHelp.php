@@ -38,10 +38,12 @@
         }
         
     
-        /*
-         This is used as a class function.
-        */
-		public static function helpLinkIfPresent() {
+        /** This is used as a class function.
+         * 
+         * @param UrlCallRegistry $Navigator
+         * @return string
+         */
+		public static function helpLinkIfPresent($Navigator) {
         	$request = Zend_Controller_Front::getInstance()->getRequest();
         	$params = $request->getParams();
         	$tablename = !empty($params['table']) ? $params['table'] : '';
