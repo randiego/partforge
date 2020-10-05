@@ -127,7 +127,6 @@ class StructController extends DBControllerActionAbstract
 		$this->view->queryvars = $this->params;
 		$this->view->report_data = $ReportData;
 		$this->view->paginated_report_page = $PaginatedReportPage;
-		$this->view->navigator = $this->navigator;
 		$this->render('itemlistview');
 	}
 	
@@ -261,7 +260,6 @@ class StructController extends DBControllerActionAbstract
     		}
     	}
     	$this->view->params = $_SESSION['joinedexport'];
-    	$this->view->navigator = $this->navigator;
     }
     
     public function commenteditviewAction() {
@@ -310,7 +308,6 @@ class StructController extends DBControllerActionAbstract
         
         $this->view->queryvars = $this->params;
         $this->view->paginated_report_page = $PaginatedReportPage;
-        $this->view->navigator = $this->navigator;
     }  
     
     public function commentlistviewAction()
@@ -336,7 +333,6 @@ class StructController extends DBControllerActionAbstract
     
     	$this->view->queryvars = $this->params;
     	$this->view->paginated_report_page = $PaginatedReportPage;
-    	$this->view->navigator = $this->navigator;
     }    
     
     public function changelistviewAction()
@@ -362,7 +358,6 @@ class StructController extends DBControllerActionAbstract
     	$this->view->list_type = $list_type;
     	$this->view->queryvars = $this->params;
     	$this->view->paginated_report_page = $PaginatedReportPage;
-    	$this->view->navigator = $this->navigator;
     }    
     
     public function watchlistviewAction()
@@ -398,7 +393,6 @@ class StructController extends DBControllerActionAbstract
     
     	$this->view->queryvars = $this->params;
     	$this->view->paginated_report_page = $PaginatedReportPage;
-    	$this->view->navigator = $this->navigator;
     }
     
     /*
@@ -551,9 +545,11 @@ class StructController extends DBControllerActionAbstract
         	list($previous_action,$edited_field,$edited_buffer) = explode(',',$this->params['subedit_return_param']);
         	$edited_buffer = 'editing_'.$edited_buffer;
         	if ('editsubcomponent'==$previous_action) {
-        		if (('btnOK'==$_SESSION[$edited_buffer]['form_result']) || ('btnChangePart'==$_SESSION[$edited_buffer]['form_result'])) {
-        			$EditRow->{$edited_field} = $_SESSION[$edited_buffer]['itemobject_id'];
-        			$EditRow->ensureEffectiveDateValid();
+        		if (isset($_SESSION[$edited_buffer]) && isset($_SESSION[$edited_buffer]['form_result'])) {
+	        		if (('btnOK'==$_SESSION[$edited_buffer]['form_result']) || ('btnChangePart'==$_SESSION[$edited_buffer]['form_result'])) {
+	        			$EditRow->{$edited_field} = $_SESSION[$edited_buffer]['itemobject_id'];
+	        			$EditRow->ensureEffectiveDateValid();
+	        		}
         		}
         	}
         }
@@ -563,7 +559,6 @@ class StructController extends DBControllerActionAbstract
 		if ('vem_new_version'==$this->view->version_edit_mode) $this->view->edit_action_button = 'btnChangePart';
         
         $this->view->dbtable = $EditRow;
-        $this->view->navigator = $this->navigator;
         $this->view->edit_buffer_key = $this->params['edit_buffer_key'];
         $this->view->params = $this->params;
                 
@@ -698,7 +693,6 @@ class StructController extends DBControllerActionAbstract
         $ItemVersion->startSelfTouchedTimer(); // the ideas is that we want to touch anything we view.
         $this->view->queryvars = $this->params;
         $this->view->dbtable = $ItemVersion;
-    	$this->view->navigator = $this->navigator;
     }
     
     public static function renderItemViewPdf(DBTableRowItemVersion $dbtable, $queryvars=array()) {
@@ -860,7 +854,6 @@ class StructController extends DBControllerActionAbstract
     	$TypeVersion->startSelfTouchedTimer(); // the ideas is that we want to touch anything we view.
     	$this->view->queryvars = $this->params;
     	$this->view->dbtable = $TypeVersion;
-    	$this->view->navigator = $this->navigator;
     	$this->view->itemcounts = $ItemCounts; 
     	$this->view->typerefs = $TypeRefs;
     }
@@ -880,7 +873,6 @@ class StructController extends DBControllerActionAbstract
     			$this->navigator->jumpToView('itemdefinitionview',null,array('typeversion_id' => $Form->typeversion_id));
     	}
     	 
-    	$this->view->navigator = $this->navigator;
     	$this->view->formtable = $Form;
     }
     
@@ -1128,7 +1120,6 @@ class StructController extends DBControllerActionAbstract
     	$this->view->import_messages = ImportStrategyObjects::storeObjectsFromArray($_SESSION['importobjectsconfirm'], true);
     	$this->view->import_records = $ImportRecords;
     	$this->view->column_defs = $ColumnDefs;
-    	$this->view->navigator = $this->navigator;
     }
     
     public function reportgenerateAction() {

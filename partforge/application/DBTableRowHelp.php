@@ -30,10 +30,9 @@
         }        
         
         public function getRecordForActionController($action,$controller,$table) {
-        	if ($table==null) $table='';
         	$DBQuery = new DBTableRowQuery($this);
-        	$DBQuery->addAndWhere(" and action_name='{$action}' and controller_name='{$controller}'");
-        	if ($controller=='db') $DBQuery->addAndWhere(" and table_name='{$table}'");
+        	// The parameters here are legacy.  Prior to DB version 6, help was context sensitive.  Now it is the same for every page.
+        	$DBQuery->addAndWhere(" and action_name='' and controller_name='' and table_name=''");
         	return $this->getRecord($DBQuery->getQuery());
         }
         
@@ -60,12 +59,16 @@
 			}
     		if ((AdminSettings::getInstance()->edit_help) && !(($request->getControllerName()=='db') && ($tablename=='help'))) {
     			$initialize = array();
-    			$initialize['action_name'] = $request->getActionName();
-    			$initialize['controller_name'] = $request->getControllerName();
-    			$initialize['table_name'] = $tablename;
-    			$links[] = linkify(UrlCallRegistry::formatViewUrl('editview','help',array('help_id' => $Help->help_id, 'table' => 'help', 'initialize' => $initialize)),"Edit Help",'Edit the help entry for this page','minibutton2');
+    			$initialize['action_name'] = '';
+    			$initialize['controller_name'] = '';
+    			$initialize['table_name'] = '';
+    			$linkparams = array('help_id' => $Help->help_id, 'table' => 'help', 'initialize' => $initialize);
+    			if (!is_null($Navigator)) {
+    				$linkparams['return_url'] = self_url().'?'.$_SERVER['QUERY_STRING'];
+    			}
+    			$links[] = linkify(UrlCallRegistry::formatViewUrl('editview','help',$linkparams),"Edit Help",'Edit the help page','minibutton2');
     			if (is_numeric($Help->help_id)) {
-    				$links[] = linkify(UrlCallRegistry::formatViewUrl('delete','help',array('help_id' => $Help->help_id, 'table' => 'help', 'initialize' => $initialize)),"Delete",'Delete the help entry for this page','minibutton2','return confirm(\'Are you sure you want to delete this?\');');
+    				$links[] = linkify(UrlCallRegistry::formatViewUrl('delete','help',$linkparams),"Delete",'Delete the help page','minibutton2','return confirm(\'Are you sure you want to delete the global help page?\');');
     			}
     		}
 			return implode(' ',$links);

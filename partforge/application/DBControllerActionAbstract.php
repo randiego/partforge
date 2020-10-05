@@ -119,7 +119,6 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
     {
         
         $this->view->queryvars = $this->params;
-        $this->view->navigator = $this->navigator;
 
     }
     
@@ -127,7 +126,6 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
     {
         
         $this->view->queryvars = $this->params;
-        $this->view->navigator = $this->navigator;
 
     }
     
@@ -307,7 +305,6 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
         }
         
         $this->view->dbtable = $EditRow;
-        $this->view->navigator = $this->navigator;
         $this->view->edit_buffer_key = $this->params['edit_buffer_key'];
         
         $this->render('editview');        

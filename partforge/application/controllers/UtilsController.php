@@ -33,6 +33,7 @@ class UtilsController extends DBControllerActionAbstract
 		trim_recursive($this->params);
 		$this->navigator = new UrlCallRegistry($this,$this->getRequest()->getBaseUrl().'/user/login');
 		$this->navigator->setPropagatingParamNames(explode(',',AUTOPROPAGATING_QUERY_PARAMS));
+		$this->view->navigator = $this->navigator;
 	}
 	
 	public function upgradeAction() {
@@ -165,7 +166,25 @@ class UtilsController extends DBControllerActionAbstract
 						$databaseversion = '5';
 						setGlobal('databaseversion', $databaseversion);
 					}
-						
+
+					if ($databaseversion=='5') {
+						$msgs[] = 'Upgrading to version 6: merge help topics into single one - Oct 2020';
+						$recs = DbSchema::getInstance()->getRecords('help_id',"SELECT * FROM help");
+						if (count($recs)>0) {
+							$group_records = DbSchema::getInstance()->getRecords('',"SELECT GROUP_CONCAT(DISTINCT `help_tip` SEPARATOR ' ') as group_tip,  GROUP_CONCAT(DISTINCT `help_markup` SEPARATOR ' ') as group_markup FROM `help` WHERE 1");
+							$group_record = reset($group_records);
+							$Help = DBSchema::getInstance()->DBTableRowObjectFactory('help');
+							$Help->action_name = '';
+							$Help->controller_name = '';
+							$Help->table_name = '';
+							$Help->help_tip = $group_record['group_tip'];
+							$Help->help_markup = $group_record['group_markup'];							
+							DbSchema::getInstance()->mysqlQuery("DELETE FROM help");
+							$Help->save();								
+						}
+						$databaseversion = '6';
+						setGlobal('databaseversion', $databaseversion);
+					}						
 					
 			}
 		}
@@ -174,7 +193,6 @@ class UtilsController extends DBControllerActionAbstract
 		$this->view->targetversion = Zend_Registry::get('config')->databaseversion;	
 		$this->view->msgs = $msgs;
 		$this->view->params = $this->params;
-		$this->view->navigator = $this->navigator;
 	}
 
 }

@@ -101,7 +101,6 @@ class UserController extends DBCustomControllerAction
     	}
     	$this->view->databasecompatible = getGlobal('databaseversion') == Zend_Registry::get('config')->databaseversion;
     	$this->view->params = $this->params;
-    	$this->view->navigator = $this->navigator;
     }
     
     public function searchloginidsAction() {  	
@@ -118,7 +117,6 @@ class UserController extends DBCustomControllerAction
     		 
     	
     	$this->view->params = $this->params;
-    	$this->view->navigator = $this->navigator;
     }
     
     public function jsonsearchloginidsAction() {
@@ -177,7 +175,6 @@ class UserController extends DBCustomControllerAction
     	}
     	
     	$this->view->params = $this->params;
-    	$this->view->navigator = $this->navigator;    	
     }
     
     /**
@@ -209,7 +206,6 @@ class UserController extends DBCustomControllerAction
     	}
     	 
     	$this->view->params = $this->params;
-    	$this->view->navigator = $this->navigator;
     }
     
     /**
@@ -262,7 +258,6 @@ class UserController extends DBCustomControllerAction
     
     	$this->view->dbtable = $User;
     	$this->view->params = $this->params;
-    	$this->view->navigator = $this->navigator;
     }    
     
     public function changetemppasswordAction()
@@ -308,7 +303,6 @@ class UserController extends DBCustomControllerAction
     	}
     
     	$this->view->fields = $_SESSION['changetemppassword'];
-    	$this->view->navigator = $this->navigator;
     }    
 
     public function logoutAction() {
@@ -387,7 +381,6 @@ class UserController extends DBCustomControllerAction
     	}
     	$this->view->dbtable = $TempUser;
         $this->view->params = $this->params;
-        $this->view->navigator = $this->navigator;
     }
     
     public function manageaccountAction()
@@ -404,7 +397,6 @@ class UserController extends DBCustomControllerAction
     		}
     	}
     	$this->view->dbtable = $_SESSION['account'];
-    	$this->view->navigator = $this->navigator; 
     }
     
     public function changeprofileAction()
@@ -437,7 +429,6 @@ class UserController extends DBCustomControllerAction
     
     	$this->view->dbtable = new DBTableRowUser();
     	$this->view->dbtable->assign($_SESSION['changeprofile']);
-    	$this->view->navigator = $this->navigator;
     }
     
     public function changepasswordAction()
@@ -466,7 +457,6 @@ class UserController extends DBCustomControllerAction
     	}
     
     	$this->view->fields = $_SESSION['changepassword'];
-    	$this->view->navigator = $this->navigator;
     }
 
     
@@ -525,7 +515,6 @@ class UserController extends DBCustomControllerAction
         
         $this->view->queryvars = $this->params;
         $this->view->paginated_report_page = $PaginatedReportPage;
-        $this->view->navigator = $this->navigator;
     }
     
 
@@ -587,7 +576,6 @@ class UserController extends DBCustomControllerAction
     	$this->view->can_edit = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'table:user','edit');
     	$this->view->can_delete = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'table:user','delete');
     	 
-    	$this->view->navigator = $this->navigator;
     	$this->view->dbtable = $User;
 
     }
@@ -781,7 +769,6 @@ class UserController extends DBCustomControllerAction
     	 
     	$this->view->editallowedobjects_user_id = $_SESSION['editallowedobjects_user_id'];
     	$this->view->editallowedobjects = $_SESSION['editallowedobjects'];
-    	$this->view->navigator = $this->navigator;
     }
     
     /**

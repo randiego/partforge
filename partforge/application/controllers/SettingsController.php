@@ -55,7 +55,6 @@ class SettingsController extends DBControllerActionAbstract
                 break;
         }
         
-        $this->view->navigator = $this->navigator;
         $this->view->action_taken = implode('  ',$action_taken);
     }
     
