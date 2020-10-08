@@ -1316,7 +1316,7 @@
         				if ($last_entry && (count($pns)>1) && !$can_delete_this_alias) $btns[] = '<span class="paren">Delete is not an option because this alias is being used.</span>';
         				
         				$caption = ($is_a_part ? 'Part Number' : 'Procedure Number').($idx>0 ? ' Alias '.$idx : '');
-        				$subcaption = $idx==0 ? ($is_a_part ? '' : '<br><span class="paren">e.g., TP-ABC-BURN-IN</span>') : ''; 
+        				$subcaption = $idx==0 ? ($is_a_part ? make_subcaption_if_defined('typeversion|edit|type_part_number|part') : make_subcaption_if_defined('typeversion|edit|type_part_number|procedure')) : ''; 
         				$html .= '<tr class="proc_num_row"><th>'.$caption.'<span class="req_field"> *</span>:'.$subcaption.'</th><td colspan="3">
                                   <input class="inputboxclass" type="text" maxlength="64" size="50" value="'.$pn.'" name="type_part_numbers['.$idx.']">
                                   </td></tr>';

@@ -169,7 +169,7 @@
         }
         
         public function getFieldAttribute($fieldname,$attribute) {
-            return $this->_fieldtypes[$fieldname][$attribute];
+            return isset($this->_fieldtypes[$fieldname][$attribute]) ? $this->_fieldtypes[$fieldname][$attribute] : null;
         }
         
         public function setIsRequired($fields,$is_required) {

@@ -916,3 +916,8 @@ function fetch_like_query($str,$opening='%', $closing='%') {
 	$escaped = mysqli_real_escape_string(DbSchema::getInstance()->getConnectionLink(), $str);
 	return "LIKE '{$opening}{$escaped}{$closing}' ESCAPE '='";
 }
+
+function make_subcaption_if_defined($fieldkey) {
+	$subcaptions = Zend_Registry::get('config')->subcaptions;
+	return isset($subcaptions->{$fieldkey}) ? '<br><span class="paren">'.$subcaptions->{$fieldkey}.'</span>' : '';
+}

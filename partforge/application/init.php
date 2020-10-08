@@ -25,6 +25,15 @@
 
 /* INIT.PHP - this should be called after all class definitions, function definitions, and after session_start */
 $config = array();
+
+// some text constants for override of subcaptions in standard input forms.  Override these in your config.php file, not here.
+$config['subcaptions']['typeversion|edit|typecategory_id'] = '';
+$config['subcaptions']['typeversion|edit|type_part_number|part'] = '';
+$config['subcaptions']['typeversion|edit|type_part_number|procedure'] = 'e.g., TP-ABC-BURN-IN';
+$config['subcaptions']['user|edit|user_enabled'] = '';
+$config['subcaptions']['user|edit|user_type'] = '';
+
+
 $config['banner_array'] = array();   // an array of html banners to show at the top of the application.
 $config['application_title'] = 'PartForge'; // appears in title tag and other places
 $config['cached_code_version'] = '61';  // for css and js files, this appended as ?v=N to the end to force reload to browse.  Increment when css or js files changes.

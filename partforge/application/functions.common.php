@@ -804,6 +804,9 @@ function fetchEditTableTR($fieldlayout, TableRow $dbtable, $optionss='',$editabl
 					$rhs_html = $callBackFunction($fieldname, $dbtable);
 				} else if ($can_edit) {
 					$rhs_html = $dbtable->formatInputTag($fieldname, $options);
+					if ($dbtable instanceof DBTableRow) {
+						$dbtable->overrideWithUserSubcaption($fieldname,true);
+					}								
 				} else {
 					$rhs_html = $dbtable->formatPrintField($fieldname);
 				}

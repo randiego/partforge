@@ -171,6 +171,17 @@
             }            
         }
         
+        public function overrideWithUserSubcaption($fieldname, $canedit) {
+        	$config = Zend_Registry::get('config');
+        	$compkey = $this->getTableName().'|'.($canedit ? 'edit' : 'view').'|'.$fieldname;
+        	foreach($config->subcaptions as $key => $override) {
+        		$curr_subcaption = $this->getFieldAttribute($fieldname, 'subcaption');
+        		if (($key==$compkey) && is_null($curr_subcaption)) {
+        			$this->setFieldAttribute($fieldname,'subcaption',$override);
+        		}
+        	} 
+        }
+        
         /*
          Returns parameters to link to this record.  If this is joined to a parent record in the heirarchy.
         */
