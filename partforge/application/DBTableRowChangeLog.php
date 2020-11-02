@@ -166,7 +166,7 @@ class DBTableRowChangeLog extends DBTableRow {
 		$IV = new DBTableRowItemVersion();
 		if ($IV->getRecordById($belongs_to_itemversion_id)) {
 			$serial_identifier = empty($IV->item_serial_number) ? '' : ' ('.$IV->item_serial_number.')';
-			$text = $IV->tv__type_description.$serial_identifier;
+			$text = $IV->part_description.$serial_identifier;
 			$code = $IV->is_user_procedure ? 'AIP' : 'AIR';
 			$user_id = $IV->user_id;
 		}	

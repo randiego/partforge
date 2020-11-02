@@ -259,7 +259,7 @@ class EventStream {
 					$ComponentItemVersion->getCurrentRecordByObjectId($comp_value_itemobject_id,$ItemVersion->effective_date);
 					$comps[] = "Associated with <itemversion>{$ComponentItemVersion->itemversion_id}</itemversion>.";
 				}
-				$created_title = $indented_component_name ? 'Created '.$ItemVersion->tv__type_description.'.' : 'Created.';
+				$created_title = $indented_component_name ? 'Created '.$ItemVersion->part_description.'.' : 'Created.';
 				$itemevent['event_description'] = $created_title."\r\n".implode("\r\n",$comps);
 				
 				$itemevent['referenced_itemversion_id'] = null;
@@ -506,7 +506,7 @@ class EventStream {
 			$ItemVersion = DbSchema::getInstance()->getItemVersionCachedRecordById($itemversion_id);
 			$event_description_array[$itemversion_id] = array();
 			$serial_identifier = empty($ItemVersion->item_serial_number) ? '' : ' ('.TextToHtml($ItemVersion->item_serial_number).')';
-			$part_name = TextToHtml($ItemVersion->tv__type_description).$serial_identifier;
+			$part_name = TextToHtml($ItemVersion->part_description).$serial_identifier;
 			$features = array();
 			$features_structured = array();
 			// additional description:
@@ -996,7 +996,7 @@ class EventStream {
 					// the order is such that the last assignment will be the most recent (and relevant?)
 					foreach($line['event_description_array'] as $arr) {
 						$sn = $arr['fields']['item_serial_number'];
-						$desc = $arr['fields']['tv__type_description'];
+						$desc = $arr['fields']['part_description'];
 						if ($line['is_current_version']) {
 							$usedon[$line['this_itemobject_id']] = array('url' => $arr['url'], 'name' => 'Used On '.$sn, 'title' => 'Used on '.$desc.': '.$sn);
 						} else {

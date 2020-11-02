@@ -434,6 +434,11 @@ function make_filename_safe($filename) {
 			$result = $result . $temp[$i];
 		}
 	}
+	
+	$maxbasename = 64;
+	if (strlen($result) > $maxbasename) {
+		$result = substr($result,0,$maxbasename);
+	}
 
 	if (!$result) {
 		$result = 'file.';

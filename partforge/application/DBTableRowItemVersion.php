@@ -1549,11 +1549,13 @@
 	            		typecategory.is_user_procedure, itemversion.effective_date, itemversion.disposition,
                         (select count(*) from itemcomponent WHERE (itemcomponent.belongs_to_itemversion_id=itemversion.itemversion_id) and (itemcomponent.has_an_itemobject_id='{$this->itemobject_id}')) as self_count,
 	            		IF(itemobject.cached_first_ver_date<='$effective_date',0,1) as is_future_component,
-	            		itemversion.effective_date, itemversion.itemobject_id
+	            		itemversion.effective_date, itemversion.itemobject_id,
+	            		partnumbercache.part_description, partnumbercache.part_number
 	            	FROM itemversion 
 	               	LEFT JOIN itemobject on itemversion.itemobject_id=itemobject.itemobject_id
 	               	LEFT JOIN typeversion on typeversion.typeversion_id=itemversion.typeversion_id
 	               	LEFT JOIN typecategory ON typecategory.typecategory_id=typeversion.typecategory_id
+	               	LEFT JOIN partnumbercache ON partnumbercache.typeversion_id=itemversion.typeversion_id AND partnumbercache.partnumber_alias=itemversion.partnumber_alias
 	               	WHERE (typeversion.typeobject_id IN ('".implode("','",$fieldtype['can_have_typeobject_id'])."'))
 	               	ORDER BY itemversion.effective_date
 	        	";
@@ -1579,7 +1581,7 @@
         	}
         	
         	foreach($by_itemobject as $record) {
-        		$type_desc = $show_types && (count($fieldtype['can_have_typeobject_id']) > 1) ? ' ['.$record['type_description'].']' : '';
+        		$type_desc = $show_types && (count($fieldtype['can_have_typeobject_id']) > 1) ? ' ['.$record['part_description'].']' : '';
         		if ($record['is_user_procedure']) {
         			if (($record['self_count'] > 0) || !$only_self_ref_proc) {
         				$out[$record['itemobject_id']] = date("m/d/Y H:i",strtotime($record['effective_date'])).$type_desc.($record['disposition'] ? ' ('.$record['disposition'].')' : '');
@@ -1969,7 +1971,7 @@
 					$ComponentItemVersion = $this->getComponentAsIVObject($fieldname);
 					$text_name = $this->formatFieldnameNoColon($fieldname);
 					// if this component can be more than one type, we should say what that type is.
-					$type_addon = (count($fieldtype['can_have_typeobject_id']) > 1) && !is_null($ComponentItemVersion) ? ' ['.$ComponentItemVersion->tv__type_description.']' : '';
+					$type_addon = (count($fieldtype['can_have_typeobject_id']) > 1) && !is_null($ComponentItemVersion) ? ' ['.$ComponentItemVersion->part_description.']' : '';
 					return self::fetchComponentPrintFieldHtml($this->_navigator, $ComponentItemVersion, $text_name, $value, $is_html).$type_addon;
 				default:
 					// if float type and there are units, then show them if $show_float_units
