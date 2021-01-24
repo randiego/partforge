@@ -1,28 +1,5 @@
 function set_default_focus() {
-	if (typeof(setfocusOnFieldName) != 'undefined') {
-		if (document.getElementsByName(setfocusOnFieldName).length > 0) {
-			var el = document.getElementsByName(setfocusOnFieldName)[0];
-			el.focus();
-		}
-		return;
-	} else {
-		for (var i=0; i<document.forms.length; i++) {
-			for (var j=0; j<document.forms[i].elements.length; j++) {
-				if ((document.forms[i].elements[j].type == 'text') || (document.forms[i].elements[j].type == 'textarea')
-						 || (document.forms[i].elements[j].type == 'file') || (document.forms[i].elements[j].type == 'password') ) {
-					if (typeof(setfocusFieldNumber) != 'undefined') {
-						if (setfocusFieldNumber == j) {
-							document.forms[i].elements[j].focus();
-							return;
-						}
-					} else {
-						document.forms[i].elements[j].focus();
-						return;
-					}
-				}
-			}
-		}
-	}
+	$("#theform :input:visible:enabled:first").focus();
 }
 
 /*
