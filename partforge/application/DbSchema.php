@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -40,19 +40,19 @@ class DbSchema {   // singleton
     protected $_rel_table_is_dep_on_array = array();
     protected $_itemversion_object_cache = array();
     protected static $_db_link = null;
-    
+
     protected function __construct() {
 		global $DICTIONARY;
 		include(dirname(__FILE__).'/fielddictionary.php');
 		$this->_dictionary = $DICTIONARY;
 		$this->connectFullAccess();
     }
-    
+
     public function connectReadOnly() {
 		$config = Zend_Registry::get('config');
 		$this->connectMySql($config->db_params->host,$config->db_params->ro_username,$config->db_params->ro_password,$config->db_params->dbname);
     }
-    
+
     public function connectFullAccess() {
 		$config = Zend_Registry::get('config');
 		$this->connectMySql($config->db_params->host,$config->db_params->username,$config->db_params->password,$config->db_params->dbname);
@@ -62,7 +62,7 @@ class DbSchema {   // singleton
 		// the default is really low for this.  Could set globally once, but not sure how to remember
 		$result = mysqli_query(self::$_db_link, "SET SESSION group_concat_max_len = 100000;");
     }
-        
+
     protected function connectMySql($host,$username,$password,$dbname) {
 		self::$_db_link = mysqli_connect($host,$username,$password,$dbname);
 		if (!self::$_db_link) {
@@ -76,11 +76,11 @@ class DbSchema {   // singleton
 			die();
 		}
     }
-    
+
     public function getConnectionLink() {
     	return self::$_db_link;
     }
-    
+
     public static function getInstance()
     {
     	if (null === self::$_instance) {
@@ -89,7 +89,7 @@ class DbSchema {   // singleton
 
     	return self::$_instance;
     }
-    
+
     /**
      * This is a common interface for loading/caching an DBTableRowItemVersion record fetched by itemversion_id.
      * It's just for efficiency when displaying itemview pages and mainly used in EventStream
@@ -100,10 +100,10 @@ class DbSchema {   // singleton
     	if (!isset($this->_itemversion_object_cache[$itemversion_id])) {
     		$this->_itemversion_object_cache[$itemversion_id] = $this->dbTableRowObjectFactory('itemversion',false,'');
     		$this->_itemversion_object_cache[$itemversion_id]->getRecordById($itemversion_id);
-    	}    	
+    	}
     	return $this->_itemversion_object_cache[$itemversion_id];
     }
-    
+
     private function dbFieldTypeToSchemaType($dbfieldtypes) {
         $out = array();
         foreach($dbfieldtypes as $name => $dbfieldtype) {
@@ -124,7 +124,7 @@ class DbSchema {   // singleton
         }
         return $out;
     }
-    
+
     public function getFieldTypes($tablename) {
     	if (!isset($this->_fieldtypes[$tablename])) {
     		// get from mysql definitions first
@@ -140,14 +140,14 @@ class DbSchema {   // singleton
     	}
     	return $this->_fieldtypes[$tablename];
     }
-    
+
     public function getSortOrder($tablename) {
 	if (!isset($this->_sort_order[$tablename])) {
             $this->_sort_order[$tablename] = isset($this->_dictionary['tables'][$tablename]['sort_order']) ? $this->_dictionary['tables'][$tablename]['sort_order'] : $this->getDefaultDescriptionField($tablename);
         }
         return $this->_sort_order[$tablename];
     }
-    
+
     public function getJoins($tablename) {
         /*
          type = {incoming, outgoing}
@@ -155,12 +155,12 @@ class DbSchema {   // singleton
         */
         return !empty($this->_dictionary['tables'][$tablename]['joins']) ? $this->_dictionary['tables'][$tablename]['joins'] : array();
     }
-    
+
     public function getFieldType($tablename,$fieldname) {
     	$types = $this->getFieldTypes($tablename);
     	return $types[$fieldname];
     }
-    
+
     public function getTableNames() {
 	if (empty($this->_tablenames)) {
 	    $config = Zend_Registry::get('config');
@@ -169,7 +169,7 @@ class DbSchema {   // singleton
 	}
 	return $this->_tablenames;
     }
-    
+
     public function getPrimaryIndexName($tablename) {
 	if (!isset($this->_primaryindexname[$tablename])) {
 	    foreach($this->getFieldTypes($tablename) as $fieldname => $record) {
@@ -182,7 +182,7 @@ class DbSchema {   // singleton
 	}
 	return $this->_primaryindexname[$tablename];
     }
-    
+
     public function getRelationshipTree($subheading=null) {
         if (empty($subheading)) return $this->_dictionary['tree'];
 
@@ -193,7 +193,7 @@ class DbSchema {   // singleton
         }
         throw new Exception("subheading {$subheading} not found in DbSchema::getRelationshipTree()");
     }
-    
+
     /*
       $parent_index is set if we want to associate the row object with a specific branch
       of the tree when it appears in multiple nodes.  $parent_index is the name of the
@@ -208,7 +208,7 @@ class DbSchema {   // singleton
             return new DBTableRow($tablename,$ignore_joins,$parent_index);
         }
    }
-    
+
     public function getJoinFieldsAndTables($tablename) {
         if (!isset($this->_join_fields_and_tables[$tablename])) {
             $this->_join_fields_and_tables[$tablename] = array();
@@ -246,7 +246,7 @@ class DbSchema {   // singleton
         $out2 = array();
         foreach($out as $d) {
             $out2[md5(serialize($d))] = $d;
-        }             
+        }
         return $out2;
     }
 
@@ -266,7 +266,7 @@ class DbSchema {   // singleton
         }
         return $this->_rel_dep_on_table_array[$tablename];
     }
-    
+
     public function getRelationshipsTableIsDependentOn($tablename) {
         if (!isset($this->_rel_table_is_dep_on_array[$tablename])) {
             $out2 = array();
@@ -279,7 +279,7 @@ class DbSchema {   // singleton
         }
         return $this->_rel_table_is_dep_on_array[$tablename];
     }
-    
+
     public function getTreeData() {
         if (empty($this->_tree_data)) {
             $this->_tree_data['relationships'] = array();
@@ -288,7 +288,7 @@ class DbSchema {   // singleton
         }
         return $this->_tree_data;
     }
-    
+
     /*
      returns the tree node parameters identified by $tablename and $parent_index.
      If $parent_index is not given or not found, then return the first node for the $tablename.
@@ -320,7 +320,7 @@ class DbSchema {   // singleton
 				if (!isset($child['parent_calls_me']))          $child['parent_calls_me'] = array();
 				if (!isset($child['parent_calls_me']['singular']))  $child['parent_calls_me']['singular'] = ucwords($this->getNiceTableName($child['table']));
 				if (!isset($child['parent_calls_me']['plural']))    $child['parent_calls_me']['plural'] = ucwords($this->getNiceTableName($child['table']).'s');
-				
+
 				if ($child['parent_table']!='') {
 					$results_array[] = array('table' => $child['parent_table'],
 											 'index' => $child['parent_index_in_parent'],
@@ -348,15 +348,15 @@ class DbSchema {   // singleton
 			}
 		}
     }
- 
+
     function getFirstTextFieldName($tablename) {
     	$records = $this->getFieldTypes($tablename);
     	foreach($records as $fieldname => $record) {
     		if (str_contains($record['type'],'text') || str_contains($record['type'],'varchar')) return $fieldname;
     	}
     	return '';
-    }    
-    
+    }
+
     public function getDefaultDescriptionField($tablename) {
 		$fieldname = $this->getFirstTextFieldName($tablename);
 		if ($fieldname) {
@@ -365,18 +365,18 @@ class DbSchema {   // singleton
 			return $this->getPrimaryIndexName($tablename);
 		}
     }
-    
+
     public function getNiceTableName($tablename) {
-		// will appear as Edit {tablename}, or New {tablename} 
+		// will appear as Edit {tablename}, or New {tablename}
 		return isset($this->_dictionary['tables'][$tablename]['caption']) ? $this->_dictionary['tables'][$tablename]['caption'] : ucwords($tablename);
     }
-    
+
     private function handle_mysql_error($source_text) {
 		$err = mysqli_errno(self::$_db_link);
 		$msg = mysqli_error(self::$_db_link);
 		throw new Exception("Mysql Error #{$err}, {$msg} in $source_text");
     }
-    
+
     private function logQuery($query) {
     	if (Zend_Registry::get('config')->db_query_dump_file) {
     		file_put_contents(Zend_Registry::get('config')->db_query_dump_file, $query."\r\n\r\n\r\n", FILE_APPEND);
@@ -403,7 +403,7 @@ class DbSchema {   // singleton
 		}
 		return $out;
     }
-    
+
     public function mysqlQuery($query) {
 		$this->logQuery($query);
     	$result = @mysqli_query(self::$_db_link, $query);
@@ -412,19 +412,19 @@ class DbSchema {   // singleton
 		}
 		return mysqli_affected_rows(self::$_db_link);
     }
-    
+
     public function nonPrimaryFieldNames($tablename) {
     	if (!isset($this->_nonprimaryfieldnames[$tablename])) {
     		$this->_nonprimaryfieldnames[$tablename] = array_diff(array_keys($this->getFieldTypes($tablename)),array( $this->getPrimaryIndexName($tablename)));
     	}
     	return $this->_nonprimaryfieldnames[$tablename];
     }
-    
+
     public function isNotNullType($tablename,$fieldname) {
 		$type = $this->getFieldType($tablename,$fieldname);
 		return (!$type['dbtype']['Null'] || $type['dbtype']['Null'] == 'NO');
     }
-    
+
     public function varToEscapedMysqlLiteral($tablename,$field,$value,$fieldtype=null) {
     	$slashes_var = is_string($value) ? addslashes($value) : $value;
 		if ($fieldtype==null) {
@@ -439,7 +439,7 @@ class DbSchema {   // singleton
 			$quoted_lit = !$is_null_str ? "'".time_to_mysqldate(strtotime($slashes_var))."'" : "DEFAULT";
 		} else if (($type_parse[0]=='int')) { // some numeric format, make sure it is set to zero
 			$quoted_lit = !$is_null_str ? "'".round($slashes_var)."'" : ($this->isNotNullType($tablename,$field) ? "'0'" : "NULL");
-		} else if (($type_parse[0]=='float')) { // some numeric format, make sure it is set to zero
+		} else if (in_array($type_parse[0],array('float','calculated'))) { // some numeric format, make sure it is set to zero
 			$quoted_lit = !$is_null_str ? "'".$slashes_var."'" : ($this->isNotNullType($tablename,$field) ? "'0'" : "NULL");
 		} else if ($field=='passwd') {
 			$quoted_lit = "password('".$slashes_var."')";
@@ -452,7 +452,7 @@ class DbSchema {   // singleton
 		}
 		return $quoted_lit;
     }
-    
+
     public function saveRecord($tablename,&$fields,$fieldnames=array(),$idfieldname='',$handle_err_dups_too=true) { // function will raise an exception if an error occurs
 		if (!is_array($fieldnames)) {
 			throw new Exception('no fields to save in DbSchema::saveRecord()');
@@ -463,19 +463,19 @@ class DbSchema {   // singleton
 		if (''==$idfieldname) {
 			$idfieldname = $this->getPrimaryIndexName($tablename);
 		}
-	
+
 		if ($fields[$idfieldname] == 'new') {
 			// write new
 			$valarray = array();
 			foreach ($fieldnames as $field) {
 				$valarray[] = $this->varToEscapedMysqlLiteral($tablename,$field,$fields[$field]);
 			}
-	
+
 			$query = "insert into {$tablename} (".implode(',',$fieldnames).") values (".implode(',',$valarray).")";
 			$this->logQuery($query);
 			$result = mysqli_query(self::$_db_link, $query);
 			// if an insert fails, that probably means this email is already present, so just update instead
-	
+
 			if (!$result) {
 				if (mysqli_errno(self::$_db_link)!=1062) {
 					$this->handle_mysql_error("DbSchema::saveRecord()-1");
@@ -486,7 +486,7 @@ class DbSchema {   // singleton
 				$fields[$idfieldname] = mysqli_insert_id(self::$_db_link);
 			}
 		} else {
-	
+
 			$queryarray = array();
 			foreach ($fieldnames as $field) {
 				$queryarray[] = $field."=".$this->varToEscapedMysqlLiteral($tablename,$field,$fields[$field]);
@@ -501,20 +501,20 @@ class DbSchema {   // singleton
 					$this->handle_mysql_error("DbSchema::saveRecord()-4");
 				}
 			}
-		
+
 		}
     }
-    
+
     public function deleteRecord($tablename,$idfieldvalue,$idfieldname, $limit_clause='LIMIT 1') {
     	$query = "delete from {$tablename} where {$idfieldname}='{$idfieldvalue}' {$limit_clause}";
     	$this->logQuery($query);
 		$result = mysqli_query(self::$_db_link,$query);
 		if (!$result) {
 			$this->handle_mysql_error("DbSchema::deleteRecord($tablename,$idfieldvalue,$idfieldname)");
-		}            
+		}
     }
-    
-    
+
+
     public function getTableNamesWithNonPrimaryField($fieldname) {
 		$out = array();
 		foreach($this->getTableNames() as $tablename) {
@@ -526,8 +526,8 @@ class DbSchema {   // singleton
 				}
 		}
 		return $out;
-    }    
-       
+    }
+
 
 }
 

@@ -51,21 +51,21 @@ $(document).ready(function() {
 	    		function(data) {
 	    			$('input[name="effective_date"]').val(data["datetimenow"]);
 	    			$('input[name="btnOnChange"]').val('effectivedatechange');
-	    			$('form').submit();  
+	    			$('form').submit();
 	    })
 	});
-	
+
 	// Set the focus to the first field that is not one of the known reloaders.  This gives us a fighting chance to do mouse free submission.
 	$("#theform :input:visible:enabled").not("input[name='effective_date']").not("select[name='typeversion_id']").first().focus();
-	
-	// for most input fields, this makes the Enter key move to the next field. 
+
+	// for most input fields, this makes the Enter key move to the next field.
 	$('body').on('keydown', 'input, select', function(e) {
 	    if (e.which == 13) {
 	    	// if this is a submit button, then do the normal behavior (submit the form)
 	    	if ($(this).filter('input[type="submit"').length) {
 	    		return true;
 	    	}
-	    	
+
 	        var form = $('form[name=theform]');
 	        var focusable = form.find('input,select,button,textarea').filter(':visible');
 	        var next = focusable.eq(focusable.index(this)+1);
@@ -75,9 +75,10 @@ $(document).ready(function() {
 	        return false;
 	    }
 	});
-	
+
 	// autosave
 	setTimeout('sessionTimeoutAction()', sessionTimeout);
 	set_bool_clearer();  // starts looping
-    		
+
+
 });

@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -36,7 +36,7 @@ $config['subcaptions']['user|edit|user_type'] = '';
 
 $config['banner_array'] = array();   // an array of html banners to show at the top of the application.
 $config['application_title'] = 'PartForge'; // appears in title tag and other places
-$config['cached_code_version'] = '62';  // for css and js files, this appended as ?v=N to the end to force reload to browse.  Increment when css or js files changes.
+$config['cached_code_version'] = '63';  // for css and js files, this appended as ?v=N to the end to force reload to browse.  Increment when css or js files changes.
 $config['databaseversion'] = '6';
 $config['config_for_testing'] = false; // Makes a few minor changes to improve testability when we are running as a test instance during automated testing.
 
@@ -53,8 +53,8 @@ $config['logo_file'] = '/images/logo.png'; // graphic at top of all webpages.  I
 $config['favicon_file'] = '/images/favicon.ico'; // shortcut icon file
 
 $config['button_new_version_save'] = 'Save New Version';
-$config['button_edit_version_save'] = 'Save'; 
-$config['button_new_object_save'] = 'Save New'; 
+$config['button_edit_version_save'] = 'Save';
+$config['button_new_object_save'] = 'Save New';
 
 $config['login_html_message'] = '';
 
@@ -65,7 +65,7 @@ $config['fake_cron_service'] = true; // If true, then if the cron task servicer 
 $config['max_file_upload_size'] = 40*1024*1024;  // this is a browser defined maximum bytes one can upload. This should be smaller than the php limit.
 $config['default_new_password'] = 'partforgepw'; // this is the password that is automatically assigneed to accounts which have had their password reset.
 $config['allowed_to_keep_temp_pw'] = true;     // when user's password is reset and emailed to them, they are allowed to keep it (instead of being forced to do a new one.)
-$config['lockout_all_users'] = false; 
+$config['lockout_all_users'] = false;
 $config['activity_timeout'] = 4*60*60; // if you haven't clicked around in this long, you will be logged out
 $config['activity_timeout_terminal_user'] = 30*24*60*60; // This is for terminal type users.
 $config['edit_form_keep_alive_interval'] = 20*60; // If an edit form is not saved in this amount of time, a refresh or ping to the server will be done by the browser
@@ -93,7 +93,7 @@ ini_set('display_errors',1);
 // get local configuration
 require_once(dirname(__FILE__)."/../config.php");
 
-// the read-only passwords default to the rw ones 
+// the read-only passwords default to the rw ones
 if (!$config['db_params']['ro_username']) {
 	$config['db_params']['ro_username'] = $config['db_params']['username'];
 	$config['db_params']['ro_password'] = $config['db_params']['password'];

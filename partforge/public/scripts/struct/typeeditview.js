@@ -202,9 +202,11 @@ function renderListOfDictItems() {
 		var f = typeDictionaryArray[i];
 		var subcaption = blankIfUndefined(f["subcaption"]);
 		var subcaption = renderSubcaptionHtml(subcaption, blankIfUndefined(f["minimum"]), blankIfUndefined(f["maximum"]), blankIfUndefined(f["units"]), blankIfUndefined(f["type"]));
+		var type = f["type"];
+		if ((type=='calculated') && (blankIfUndefined(f["expression"]) != "")) { type = type + '<br /><span class="paren">' + f["expression"] + '</span>'; }
 		var delete_btn = !isWriteProtected(f["name"]) ? '<a data-key="'+i+'" class="bd-linkbtn dictlinedeletelink" href="#">delete</a>' : '';
 	    html += '<tr>';
-	    html += '<td>'+f["name"]+'</td><td>'+f["type"]+'</td><td>'+renderCaption(f["name"],f["caption"])+'<br /><span class="paren">'+subcaption+'</span></td><td>'+blankIfUndefined(f["featured"])+'</td><td>'+blankIfUndefined(f["required"])+'</td><td>'+blankIfUndefined(f["minimum"])+'</td><td>'+blankIfUndefined(f["maximum"])+'</td><td>'+blankIfUndefined(f["units"])+'</td>';
+	    html += '<td>'+f["name"]+'</td><td>'+type+'</td><td>'+renderCaption(f["name"],f["caption"])+'<br /><span class="paren">'+subcaption+'</span></td><td>'+blankIfUndefined(f["featured"])+'</td><td>'+blankIfUndefined(f["required"])+'</td><td>'+blankIfUndefined(f["minimum"])+'</td><td>'+blankIfUndefined(f["maximum"])+'</td><td>'+blankIfUndefined(f["units"])+'</td>';
 		html += '<td><a data-key="'+i+'" class="bd-linkbtn dictlineeditlink" href="#">edit</a> <a data-key="'+i+'" class="bd-linkbtn dictlinecopylink" href="#">copy</a> '+delete_btn+'</td>';
 		html += '</tr>';
 	}
@@ -459,7 +461,7 @@ function renderDictItemEditor(containerSet, isNew, key) {
 	containerSet.html(fetchDictItemEditorHtml());
 	containerSet.dialog({
 		title: "Edit Dictionary Entry",
-		width: 600,
+		width: 700,
 		modal: true,
 		closeOnEscape: false,
 		close: function( event, ui ) {containerSet.dialog('destroy'); renderAll();}
@@ -1584,14 +1586,50 @@ function checkValidComponents() {
 }
 
 /**
+ * This makes sure the variables specified in the calculated types are valid field names.
+ */
+function checkValidCalculatedTypes() {
+	var ok = true;
+
+	var allowed_var_names = [];
+	var calculated_field_idx = [];
+	
+	// scan the dictionary for fields of type calculated. 
+	// get list that includes all the fieldnames that can evaluate to a number, even with some effot (varchar,float,boolean,date, datetime,enum, component_subfield)
+	for(var i=0; i<typeDictionaryArray.length; i++) {
+		if (['float','varchar','boolean','date','datetime','enum'].includes(typeDictionaryArray[i]['type'])) {
+			allowed_var_names.push(typeDictionaryArray[i]['name']);	
+		} else if (typeDictionaryArray[i]['type']=='calculated') {
+			calculated_field_idx.push(i);
+		}
+	}
+
+	// now look the fields in the expressions to make sure they are actual fields.
+	var reg = /\[([a-z_0-9]+)]/g;
+	for(var ifield = 0; ifield < calculated_field_idx.length; ifield++) {
+		var idx = calculated_field_idx[ifield];
+		var fieldsinexp = [...typeDictionaryArray[idx]['expression'].matchAll(reg)];
+		for (var i = 0; i < fieldsinexp.length; i++) {
+			var fieldinexp = fieldsinexp[i][1];
+			if (!allowed_var_names.includes(fieldinexp)) {
+				alert('"['+fieldinexp+']" is not an allowed variable name in the expression "'+typeDictionaryArray[idx]['expression']+'" entered for "'+typeDictionaryArray[idx]['name']+'".');
+				ok = false;
+			}
+		}
+	}
+	
+	return ok;
+}
+
+/**
  * Perform various checks on the conisistency of the definition
  * @returns true if we are OK to submit
  */
 function validate() {
 	$(".doneSortLink").last().click();
 	var layoutOk = checkLayoutFilled();
-	var everthingElseOk = checkUndefinedLayoutFields() && checkValidComponents() && checkValidComponentSubFields();
-	if (everthingElseOk) {
+	var everthingElseOk = checkUndefinedLayoutFields() && checkValidComponents() && checkValidComponentSubFields() && checkValidCalculatedTypes();
+	if (everthingElseOk) {checkValidComponentSubFields
 		if (!layoutOk) {
 			return confirm("save anyway?");
 		} else {

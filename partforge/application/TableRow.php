@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -41,19 +41,19 @@
             onchange_js          // js to be put in OnChange handler
             onclick_js          // js to be put in OnClick handler
             join_name           // same as key in dictionary join array
-            exclude_on_layout     // don't show on the default layout.  
+            exclude_on_layout     // don't show on the default layout.
             mode      R means that it is not saved or editable.  RW (default) means it is editable and saveable
          }
          * = required
-         
+
          for example:
          $tr = new TableRow();
-         $tr->setFieldType('item_color', array('type' => 'enum', 'options' => array('Red' => 'Red','Green' => 'Green','Blue' => 'Blue') )); 
+         $tr->setFieldType('item_color', array('type' => 'enum', 'options' => array('Red' => 'Red','Green' => 'Green','Blue' => 'Blue') ));
         */
         protected $_fieldtypes = array();
         protected $_fields = array();
-        
-        
+
+
         public function __construct($fieldtypes=null)
         {
             $this->_fieldtypes = array();
@@ -62,7 +62,7 @@
                 $this->setFieldTypes($fieldtypes);
             }
         }
-        
+
         public function verifyFieldsExist($list_of_fields) {
             if (!is_array($list_of_fields)) $list_of_fields = array($list_of_fields);
             foreach($list_of_fields as $field) {
@@ -71,27 +71,27 @@
                 }
             }
         }
-        
-        public function __set($key, $value) 
+
+        public function __set($key, $value)
         {
             $this->_fields[$key] = $value;
         }
-     
-        public function __get($key) 
+
+        public function __get($key)
         {
             if (isset($this->_fields[$key])) {
                 return $this->_fields[$key];
             }
-    
+
             return null;
         }
-        
+
         public function getArray()
         {
             return $this->_fields;
         }
-        
-        public function assign($spec, $value = null) 
+
+        public function assign($spec, $value = null)
         {
             if (is_array($spec)) {
 //                $this->_fields = array_merge($this->_fields,$spec);
@@ -99,12 +99,12 @@
                 	$this->{$fld} = $val;
                 }
             }
-    
+
             if (is_string($spec)) {
                 $this->{$spec} = $value;
             }
         }
-        
+
         /*
           like assign() but $in_params is supposed to be the array from a form submission and
           $merge_params supposed to be a persistant session array.  Odd form types will be
@@ -125,10 +125,17 @@
                     }
                 }
             }
+
             $this->assign($merge_params);
+
+            // now that all the variables have been assigned, we evaluate and assign the calculated ones.
+            foreach($this->processCalculatedFields() as $fieldname => $assigned_value) {
+                $merge_params[$fieldname] = $assigned_value;
+            }
+
             return true;
         }
-        
+
         /*
          	Like assignFromFormSubmission() except it doesn't merge parameters into anything, it
          	just assigns only those variables that are defined by the existing types.
@@ -138,74 +145,74 @@
         	return self::assignFromFormSubmission($in_params,$merge_params);
         }
 
-        public function __isset($key) 
+        public function __isset($key)
         {
             return (isset($this->_fields[$key]));
-        } 
-     
-        public function __unset($key) 
+        }
+
+        public function __unset($key)
         {
             if (isset($this->_fields[$key])) {
                 unset($this->_fields[$key]);
             }
-        } 
-        
+        }
+
         public function getFieldTypes()
         {
             return $this->_fieldtypes;
         }
-        
+
         public function setFieldTypes($fieldtypes) {
             $this->_fieldtypes = array_merge($this->_fieldtypes,$fieldtypes);
         }
-        
+
         public function setFieldType($fieldname,$fieldtype) {
             $this->_fieldtypes[$fieldname] = $fieldtype;
         }
-        
+
         // e.g., setFieldAttribute('comments','input_rows',18)
         public function setFieldAttribute($fieldname,$attribute,$value) {
             $this->_fieldtypes[$fieldname][$attribute] = $value;
         }
-        
+
         public function getFieldAttribute($fieldname,$attribute) {
             return isset($this->_fieldtypes[$fieldname][$attribute]) ? $this->_fieldtypes[$fieldname][$attribute] : null;
         }
-        
+
         public function setIsRequired($fields,$is_required) {
             if (!is_array($fields)) $fields = array($fields);
             foreach($fields as $field) {
                 $this->_fieldtypes[$field]['required'] = $is_required;
             }
         }
-        
+
         public function isRequired($field) {
             return isset($this->_fieldtypes[$field]['required']) ? $this->_fieldtypes[$field]['required'] : false;
         }
-        
+
         public function getFieldNames()
         {
             return array_keys($this->_fieldtypes);
         }
-        
+
         // default fields for saving the whole record
         public function getSaveFieldNames() {
             return array_keys($this->_fieldtypes);
         }
-        
+
         // default fields for editing (usually excludes the primary index)
         public function getEditFieldNames() {
             return array_keys($this->_fieldtypes);
         }
-        
+
         public function getFieldType($fieldname) {
             return isset($this->_fieldtypes[$fieldname]) ? $this->_fieldtypes[$fieldname] : null;
         }
-        
+
         public function getFieldTypeSize($fieldname) {
             return $this->_fieldtypes[$fieldname]['len'];
         }
-        
+
         public function setFieldTypeParams($fieldname,$datatype,$length='',$is_required,$caption='',$subcaption='') {
             // $datatype = varchar, or whatever
             $this->_fieldtypes[$fieldname] = array('type' => $datatype);
@@ -217,7 +224,7 @@
                 $this->setFieldCaption($fieldname,$caption,$subcaption);
             }
         }
-        
+
         public function getFieldNamesWithoutStrictValidation() {
         	return array();
         }
@@ -246,7 +253,7 @@
         					$errormsg[$fieldname] = 'Please make sure '.$this->formatFieldnameNoColon($fieldname).' is a valid date.';
         				}
         			}
-        		} else {
+                } else {
         			$regularized_value = DBTableRowItemVersion::varToStandardForm(isset($this->_fields[$fieldname]) ? $this->_fields[$fieldname] : null, $this->_fieldtypes[$fieldname]);
         			if ($this->isRequired($fieldname) &&  (is_null($regularized_value) || ($regularized_value===''))) {
         				$errormsg[$fieldname] = 'Please enter '.$this->formatFieldnameNoColon($fieldname).'.';
@@ -254,7 +261,14 @@
         				$errormsg[$fieldname] = $this->formatFieldnameNoColon($fieldname).' must be numeric.';
         			}
         		}
-        	}
+            }
+
+            // we do this after all the others to make sure error handling has been first done on the possible parameters that are used in the following expressions.
+            foreach ($fieldnames as $fieldname) {
+                if (isset($this->_fieldtypes[$fieldname]['type']) && ($this->_fieldtypes[$fieldname]['type'] == 'calculated')) {
+                    $this->evaluateCalulatedField($fieldname,$errormsg);
+                }
+            }
         }
 
         /**
@@ -292,31 +306,31 @@
 
         public function formatFieldname($string,$marker='') {
             $out = $this->_fieldtypes[$string]['caption'].$marker.':';
-            
+
             $subcaption = '';
-            
-            if (isset($this->_fieldtypes[$string]['type']) && in_array($this->_fieldtypes[$string]['type'], array('float','boolean'))) {
+
+            if (isset($this->_fieldtypes[$string]['type']) && in_array($this->_fieldtypes[$string]['type'], array('float','boolean','calculated'))) {
 	            $subcaption = self::composeSubcaptionWithValidation($this->_fieldtypes[$string], true);
             } elseif (!empty($this->_fieldtypes[$string]['subcaption'])) {
             	$subcaption = $this->_fieldtypes[$string]['subcaption'];
             }
-            
+
             if ($subcaption) {
                 $out .= '<br><span class="paren">'.$subcaption.'</span>';
             }
             return $out;
         }
-        
+
         public function formatFieldSimple($fieldname) {
                 $fieldname = str_replace('_', ' ', $fieldname);
                 $fieldname = ucwords(trim($fieldname));
                 return $fieldname;
         }
-        
+
         public function formatFieldnameNoColon($string) {
             return $this->_fieldtypes[$string]['caption'];
         }
-        
+
 
         public function setFieldCaption($fieldname,$caption,$subcaption='') {
             $this->_fieldtypes[$fieldname]['caption'] = $caption;
@@ -324,7 +338,7 @@
                 $this->_fieldtypes[$fieldname]['subcaption'] = $subcaption;
             }
         }
-        
+
         public function setFieldTagDisabled($fields) {
             if (!is_array($fields)) {
                 $fields = array($fields);
@@ -334,7 +348,7 @@
                 $this->setFieldAttribute($field,'disabled',true);
             }
         }
-        
+
         public function delimitedFieldDump($fields=array()) {
             $delimiter = ',';
             $replace_delim = '[COMMA]';
@@ -347,7 +361,7 @@
             }
             return implode($delimiter,$line);
         }
-        
+
 		/*
 		 * TODO: some of these types should be moved into DBTableRow (left_join ?)
 		 */
@@ -357,13 +371,13 @@
 			$type = isset($fieldtype['type']) ? $fieldtype['type'] : '';
 			$attributes = isset($fieldtype['disabled']) && $fieldtype['disabled'] ? ' disabled' : '';
 			if (in_array($type,array('enum','left_join','sort_order'))) { // a dropdown box
-		
+
 				switch($type) {
 					case 'enum':        $select_values = parseSelectValues($fieldname, $this); break;
 					case 'left_join':   $select_values = parseJoinValues($fieldname, $this); break;
 					case 'sort_order':  $select_values = getSortOrderArray($fieldname, $this); break;
 				}
-		
+
 				if (in_array('UseRadiosForMultiSelect',$display_options)) {
 					return format_radio_tags($select_values,$fieldname,$this->getArray(),isset($fieldtype['onclick_js']) ? $fieldtype['onclick_js'] : '',$attributes);
 				} else {
@@ -381,7 +395,7 @@
 				}
 				return $html;
 			} elseif ($type == 'boolean') { // a boolean, so lets use a checkbox
-				
+
 			    if (in_array('UseCheckForBoolean',$display_options)) {
 			    	return checkbox_html($fieldname,$value,$attributes);
 			    } else {
@@ -398,28 +412,31 @@
 		                $value = '';
 		            }
 					return '<INPUT class="inputboxclass jq_datepicker" TYPE="text" NAME="'.$fieldname.'" VALUE="'.(($value && (strtotime($value) != -1)) ? date('m/d/Y',strtotime($value)) : $value).'" SIZE="12" MAXLENGTH="20"'.$attributes.'>';
-		
+
 			} else if ($type == 'datetime') {
 		            if ($value == '0000-00-00 00:00:00') {  // equivalent of null in mysql
 		                $value = '';
 		            }
 					return '<INPUT class="inputboxclass jq_datetimepicker" TYPE="text" NAME="'.$fieldname.'" VALUE="'.(($value && (strtotime($value) != -1)) ? date('m/d/Y H:i',strtotime($value)) : $value).'" SIZE="20" MAXLENGTH="24"'.$attributes.'>';
-		
+
 			} else {
-				if ($type=='float') {
+				if (in_array($type,array('float','calculated'))) {
 					$length = DEFAULT_FLOAT_WIDTH;
 				} else {
 					$length = isset($fieldtype['len']) ? $fieldtype['len'] : '';
 				}
+                $classes = array('inputboxclass');
+                if ($type=='calculated') $classes[] = 'calculated';
+                $readonly = ($type=='calculated') ? ' readonly' : '';
 				$maxsize = MAX_INPUT_TAG_WIDTH;
 				$size = ($length > $maxsize) ? $maxsize : $length;
 				$override_size = isset($fieldtype['input_cols']) ? $fieldtype['input_cols'] : $size;
 				$on_change = isset($fieldtype['onchange_js']) ? ' OnChange="'.$fieldtype['onchange_js'].'"' : '';
 				$on_click = isset($fieldtype['onclick_js']) ? ' OnClick="'.$fieldtype['onclick_js'].'"' : '';
-				return '<INPUT ID="'.$fieldname.'" class="inputboxclass" TYPE="text" NAME="'.$fieldname.'" VALUE="'.TextToHtml($value).'" SIZE="'.$override_size.'" MAXLENGTH="'.$length.'"'.$on_change.$on_click.$attributes.'>';
+				return '<INPUT ID="'.$fieldname.'" class="'.implode(' ',$classes).'" TYPE="text" NAME="'.$fieldname.'" VALUE="'.TextToHtml($value).'" SIZE="'.$override_size.'" MAXLENGTH="'.$length.'"'.$on_change.$on_click.$attributes.$readonly.'>';
 			}
 		}
-        
+
 		/*
 		 * TODO: some of these types should be moved into DBTableRow (left_join ?)
 		 */
@@ -461,6 +478,117 @@
 				}
 			}
 		}
+
+        /**
+         * Get all the fieldnames used as parameters in calculated fields without dups.
+         *
+         * @return array of fieldnames
+         */
+        public function getCalculatedParamFieldNames() {
+            $merge_params = array();
+            foreach($this->getCalculatedFieldTypes() as $fieldname => $fieldtype) {
+                $merge_params = array_merge($merge_params, $this->extractParamsFromExpression($fieldtype['expression']));
+            }
+            return array_keys($merge_params);
+        }
+
+        public function getCalculatedFieldTypes() {
+            $out = array();
+            foreach($this->getFieldTypes() as $fieldname => $fieldtype) {
+                if (isset($fieldtype['type']) && ($fieldtype['type'] == 'calculated')) {
+                    $out[$fieldname] = $fieldtype;
+                }
+            }
+            return $out;
+        }
+
+        /**
+         * Calculate the values of all the calculated fields.  Store them in $this but also return an array
+         *
+         * @return array of calculated field values by fieldname.
+         */
+        public function processCalculatedFields() {
+            $assigned_values = array();  // in case the caller wants to know what values were assigned to what
+            $ignored_errors = array();
+            foreach($this->getCalculatedFieldTypes() as $fieldname => $fieldtype) {
+                $assigned_values[$fieldname] = $this->evaluateCalulatedField($fieldname,$ignored_errors);
+                $this->{$fieldname} = $assigned_values[$fieldname];
+            }
+            return $assigned_values;
+        }
+
+        /**
+         * Try to return the value of this fieldname as a number.  Works for boolean and enums too.
+         *
+         * @param string $fieldname
+         *
+         * @return mixed numerical value of the field or null if it doesn't make sense as a number
+         */
+        public function getFieldValueAsNumber($fieldname) {
+            $value = $this->{$fieldname};
+            if (($value!=='') && !is_null($value) && in_array($this->_fieldtypes[$fieldname]['type'], array('date','datetime'))) {
+                $value = strtotime($value);
+            }
+            return is_numeric($value) ? $value : null;
+        }
+
+        /**
+         * search the given math expression for instances of "[fieldname]" and return
+         * a list of array('fieldname' => '[fieldname]')
+         *
+         * @param string $expression
+         *
+         * @return array of bracketed names as a function of fieldnames.
+         */
+        static function extractParamsFromExpression($expression) {
+            $return = array();
+            $match = preg_match_all('/\[([a-z_0-9]+)]/i',$expression,$out);
+            for($i=0; $i < count($out[0]); $i++) {
+                $return[$out[1][$i]] = $out[0][$i];
+            }
+            return $return;
+        }
+
+        /**
+         * evaluates and returns the calculated expression.  It also adds to the errormsg list if there is a problem.
+         * Use this to both validate and to get the value for assignment.
+         */
+        public function evaluateCalulatedField($fieldname,&$errormsg) {
+            require_once(dirname(__FILE__).'/../library/EvalMath/EvalMath.php');
+            require_once(dirname(__FILE__).'/../library/EvalMath/Stack.php');
+            $param_fields = array(); // these are field that appear in the expression.
+            $result = null;
+            $m = new EvalMath();
+			$m->suppress_errors = true;
+            $fieldtype = $this->_fieldtypes[$fieldname];
+            $expression = $this->_fieldtypes[$fieldname]['expression'];
+            $match = preg_match_all('/\[([a-z_0-9]+)]/i',$expression,$out);
+            $good = true;
+            foreach(self::extractParamsFromExpression($expression) as $param_fieldname => $param_inc_bracket) {
+                $param_varname = 'x'.$param_fieldname;
+                $param_value = $this->getFieldValueAsNumber($param_fieldname);
+                if (!is_null($param_value)) {
+                    $m->evaluate("{$param_varname} = {$param_value}");
+                } else {
+                    $good = false;
+                    if ($this->isRequired($fieldname)) {
+                        $errormsg[$fieldname] = 'The expression for '.$this->formatFieldnameNoColon($fieldname).' cannot be evaluated because the parameter "'.$param_fieldname.'" is not numeric.';
+                    }
+                }
+                $expression = str_ireplace($param_inc_bracket, $param_varname, $expression);
+            }
+            if ($good) {
+                $eval = $m->evaluate($expression);
+                if ($eval===FALSE) {
+                    $errormsg[$fieldname] = 'There is something wrong with the expression ('.$this->_fieldtypes[$fieldname]['expression'].') for '.$this->formatFieldnameNoColon($fieldname).': '.$m->last_error;
+                } elseif (is_nan($eval) || !is_numeric($eval)) {
+                    $errormsg[$fieldname] = 'The expression ('.$this->_fieldtypes[$fieldname]['expression'].') for '.$this->formatFieldnameNoColon($fieldname).' does not evaluate to a number.';
+                } else {
+                    $result = $eval;
+                }
+            }
+           return $result;
+        }
 
 
     }

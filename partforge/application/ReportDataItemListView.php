@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -463,7 +463,6 @@ class ReportDataItemListView extends ReportDataWithCategory {
 			$ItemVersion->_navigator = $navigator;
 			$ItemVersion->getRecordById($record['iv__itemversion_id']);
 			$ItemVersion->validateFields($ItemVersion->getSaveFieldNames(),$errormsg);
-			$ItemVersion->applyDictionaryOverridesToFieldTypes();
 		}
 		
 		if ($need_to_load_ItemVersion && (count($this->addon_fields_list)>0)) {

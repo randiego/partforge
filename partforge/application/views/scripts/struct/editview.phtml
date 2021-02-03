@@ -1,4 +1,4 @@
-<script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/struct/editview.js?v=5" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/struct/editview.js?v=6" type="TEXT/JAVASCRIPT"></script>
 <script type="text/javascript">
 var thisTypeVersion = <?php echo $this->dbtable->typeversion_id;?>;
 var sessionTimeout = <?php echo Zend_Registry::get('config')->edit_form_keep_alive_interval*1000;?>;
@@ -11,35 +11,35 @@ var sessionTimeout = <?php echo Zend_Registry::get('config')->edit_form_keep_ali
     $DBEditView->version_edit_mode = $this->version_edit_mode;
     $TV = new DBTableRowTypeVersion();
     $TV->getRecordById($this->dbtable->typeversion_id);
-    
+
     // let's be nice to the user at first
     if (isset($this->params['resetview'])) {
-	    $_SESSION['user_tried_to_save_bad_data'] = false; 
+	    $_SESSION['user_tried_to_save_bad_data'] = false;
     }
 
     // no more mr. nice guy...
-    if ($_SESSION['user_tried_to_save_bad_data']) { 
+    if ($_SESSION['user_tried_to_save_bad_data']) {
     	$errormsg = array();
     	$this->dbtable->validateFields($this->dbtable->getSaveFieldNames(),$errormsg);
     	$DBEditView->error_msg_array = $errormsg;
     }
-    
+
     $edit_action_verb = 'Edit';
 	if ('vem_edit_version'==$this->version_edit_mode) $edit_action_verb = Zend_Registry::get('config')->button_edit_version_save;
 	if ('vem_finish_save_record'==$this->version_edit_mode) $edit_action_verb = 'Save';
 	if ('vem_new_version'==$this->version_edit_mode) $edit_action_verb = Zend_Registry::get('config')->button_new_version_save;
 	if ('vem_remoteedit'==$this->version_edit_mode) $edit_action_verb = 'OK';
-	
+
     list($title,$linkified_title) = $DBEditView->getTitleHtmlArray($edit_action_verb);
     $this->layout()->title = $title;
     $this->layout()->setLayout('layoutdialog');
     $this->layout()->scrollhold = true;
     $this->layout()->scrollholdkey = $this->dbtable->getTableName();
-    
+
     $this->layout()->navlist_array = $DBEditView->getNavLinks();
-    
+
     $is_saveable_version = ($TV->versionstatus=='A');
-        
+
     $buttons = array();
 
     if ($this->dbtable->previewDefinition()) {
@@ -61,25 +61,25 @@ var sessionTimeout = <?php echo Zend_Registry::get('config')->edit_form_keep_ali
 	    }
 	    $buttons[] = '<input class="bd-button" type="submit" value="Cancel" name="btnCancel">';
     } else {
-    
+
 	    if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'table:itemversion','add') && $is_saveable_version) {
 
 	    	$buttons[] = '<input class="bd-button" type="submit" value="'.$edit_action_verb.'" name="'.$this->edit_action_button.'">';
 	    }
-	
+
 	    $buttons[] = '<input class="bd-button" type="submit" value="Cancel" name="btnCancel">';
     }
-    
+
     $html = '';
     $html .= '<h1 class="dialogtitle">'.$linkified_title.'</h1>';
-    
+
     list($statustext, $statusclass, $definitiondescription) = DBTableRowTypeVersion::formatSubActiveDefinitionStatus('A', $TV->versionstatus, $TV->isCurrentVersion()); // note: can be here is typedisposition is not A
     if ($statustext) {
     	$html .= '<div class="itemview_notice">Form Status: <span class="disposition '.$statusclass.'">'.$statustext.'</span>.  This version cannot be saved.</div>';
     }
-    
-    
-    
+
+
+
     $html .= '<input type="hidden" name="version_edit_mode" value="'.$this->version_edit_mode.'">';
     $html .= '<input type="hidden" name="form_action" value="">';  // this is used to signal things such as an emergency save
     // are there fields to be masked in the input form?
@@ -87,10 +87,10 @@ var sessionTimeout = <?php echo Zend_Registry::get('config')->edit_form_keep_ali
     $hidefields = isset($_SESSION[$sessname]) && is_array($_SESSION[$sessname]) ? $_SESSION[$sessname] : array();
     $html .= $DBEditView->fetchHtml($hidefields);
     $html .= '<p>'.implode('&nbsp;',$buttons).'</p>';
-    
+
     echo '  <div class="dialogbody">
             '.fetch_form_tag('
                              <div class="dialogcontent"><div class="edittablewrapper">'.$html.'
                              </div></div>
 			').'
-	    </div>';			    
+	    </div>';

@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -56,6 +56,8 @@ class ItemViewPDF extends TCPDF {
 
 	public function Error($msg)
 	{
+		$e = new Exception;
+		$msg = $e->getTraceAsString().$msg;
 		throw new Exception($msg);
 	}
 
@@ -179,7 +181,6 @@ class ItemViewPDF extends TCPDF {
 	protected function itemViewFieldOutput($fieldlayout, $optionss='', $definitionCallBackFunction=null) {
 		$errormsg = array();
 		$this->dbtable->validateFields($this->dbtable->getSaveFieldNames(),$errormsg);
-		$this->dbtable->applyDictionaryOverridesToFieldTypes();
 		$this->dbtable->applyCategoryDependentHeaderCaptions(false);
 		$html = '';
 		$html .= '<table border="0.0" cellpadding="4" cellspacing="0">';
@@ -262,7 +263,11 @@ class ItemViewPDF extends TCPDF {
 		}
 		$html .= '</table>';
 		$this->setHtmlVSpace(array('p' => array(0 => array('h'=>0,'n' => 1), 1 => array('h'=>0,'n' => 1)))); // makes paragraph spacing more sane
-		$this->WriteHTML($html, true, false, false, false, '');
+		try {
+			$this->WriteHTML($html, true, false, false, false, '');
+		} catch (Exception $e) {
+			$this->WriteHTML('<p>Error processing layout definition:<br />'.TextToHtml($e->getMessage()).'</p>', true, false, false, false, '');
+		}
 	}
 
 	public function renderDashboardView($procedure_records_by_typeobject_id, $references_by_typeobject_id) {

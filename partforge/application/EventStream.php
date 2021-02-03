@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -441,7 +441,7 @@ class EventStream {
 
 		// io
 		$match = preg_match_all('/\[io\/(\d+)\]/i',$event_description,$out);
-		// $out[0] has the whole opening and closing tag.  $out[1] has only the enclosed itemversion_id
+		// each $out[0] has the whole opening and closing tag.  each $out[1] has only the enclosed itemversion_id
 		foreach($out[1] as $sub_index => $itemobject_id) {
 			$itemversion_id = DBTableRowItemVersion::getItemVersionIdFromByObjectId($itemobject_id);
 			if (is_numeric($itemversion_id)) {
@@ -451,7 +451,7 @@ class EventStream {
 		
 		// full io locator url
 		$match = preg_match_all('/'.preg_quote(formatAbsoluteLocatorUrl('io',''),'/').'(\d+)/i',$event_description,$out);
-		// $out[0] has the whole opening and closing tag.  $out[1] has only the enclosed itemversion_id
+		// each $out[0] has the whole opening and closing tag.  each $out[1] has only the enclosed itemversion_id
 		foreach($out[1] as $sub_index => $itemobject_id) {
 			$itemversion_id = DBTableRowItemVersion::getItemVersionIdFromByObjectId($itemobject_id);
 			if (is_numeric($itemversion_id)) {

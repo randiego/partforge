@@ -284,13 +284,19 @@ $is_a_part = $this->dbtable->typecategory_id==2;
     
     $html .= '<h2 class="bd-edit-page-headers">Field Layout</h2>';
     
+    $fieldwarnings = array();
     if (Zend_Registry::get('config')->warn_of_hidden_fields) {
 	    $hidden = $this->dbtable->getHiddenFieldnames();
 	    if (count($hidden)>0) {
 	    	$enum = count($hidden)==1 ? 'is one defined field' : 'are '.count($hidden).' defined fields';
-	    	$html .= '<div class="layout_width"><div class="itemview_notice red">! There '.$enum.' not in the layout (<i>'.implode(', ',$hidden).'</i>).  Such fields should be removed from the definition or added to the layout.</div></div>';
+	    	$fieldwarnings[] = '! There '.$enum.' not in the layout (<i>'.implode(', ',$hidden).'</i>).  Such fields should be removed from the definition or added to the layout.';
 	    }
     }
+    if (count($fieldwarnings)>0) {
+    	$html .= '<div class="layout_width"><div class="itemview_notice red">'.implode('<br /><br />',$fieldwarnings).'</div></div>';
+    }
+    
+    
         
     $EmptyItemVersion = new DBTableRowItemVersion();
     $EmptyItemVersion->typeversion_id = $this->dbtable->typeversion_id;

@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -23,7 +23,7 @@
  * @license GPL-3.0+ <http://spdx.org/licenses/GPL-3.0+>
  */
     class DBTableRow extends TableRow {
-        
+
         protected $_table = null;
         protected $_idField = null;
         protected $_dbschema = null;
@@ -41,23 +41,23 @@
             $this->_fieldtypes_from_joined_table = array();
             $this->_join_options = array();
             $this->_fieldlayout = array();
-            
+
             $this->_dbschema = DbSchema::getInstance();
             $this->_table = $table;
             $this->_ignore_joins = $ignore_joins;
             $this->setFieldTypes($this->getFieldTypesFromDb());
             $this->setFieldTypes($this->getFieldTypesFromJoinedTables());
             $this->mapJoinsToFieldTypes();
-            
+
             $this->_tree_table_params = $this->_dbschema->getTreeTableParams($table, $parent_index);
-            
+
             $this->mapTreeParamsToFieldTypes();
             $this->_idField = $this->_dbschema->getPrimaryIndexName($this->_table);
             $this->initDataFromJoinedTables();
             // assign default values
             $this->assignDefaults();
         }
-        
+
         /*
          * The input is assumed to be query variables from an initialize[] array.
          * This would be a typical step when initializing the tablerow object
@@ -70,17 +70,17 @@
         		if (($field!=$this->getIndexName()) || ($this->getIndexValue()=='new')) {
         			$this->{$field} = $value;
         		}
-        	}        	
+        	}
         }
-        
+
         public function getSortOrder() {
             return $this->_dbschema->getSortOrder($this->getTableName());
         }
-        
+
         public function hasDedicatedSortOrderField() {
             return ($this->getFieldAttribute($this->getSortOrder(),'type')=='sort_order');
         }
-        
+
         public function mapJoinsToFieldTypes() {
             if (!$this->_ignore_joins) {
                 foreach($this->getJoinFieldsAndTables() as $join_name => $target) {
@@ -92,22 +92,22 @@
                 }
             }
         }
-        
+
         public function mapTreeParamsToFieldTypes() {
             if (isset($this->_tree_table_params['linkto_table'])) {
                 $this->setFieldAttribute($this->_tree_table_params['linkto_index'],'type','enum');
                 $this->setFieldAttribute($this->_tree_table_params['linkto_index'],'options','getParentLinkItems');
             }
         }
-        
+
         public function getParentPointerIndexName() {
             return isset($this->_tree_table_params['parent_index']) ? $this->_tree_table_params['parent_index'] : '';
         }
-        
+
         public function getTreeParams() {
             return $this->_tree_table_params;
         }
-        
+
         public function getParentRecord() {
             if (!empty($this->_tree_table_params['parent_index'])) {
                 $ParentRow = $this->_dbschema->dbTableRowObjectFactory($this->_tree_table_params['parent_table'],false,$this->_tree_table_params['parent_index']);
@@ -117,11 +117,11 @@
                 return null;
             }
         }
-        
+
         /*
           If there is a parent record, get its description
         */
-        
+
         public function getParentCoreDescription() {
             $ParentRow = $this->getParentRecord();
             if ($ParentRow!=null) {
@@ -130,7 +130,7 @@
                 return '';
             }
         }
-        
+
         /*
           this returns a generic list of linked items for display in a list box when this table
           has a linkto_table entry in the dbtree
@@ -154,12 +154,12 @@
             }
             return $this->_tree_table_params['linkto_items_array'];
         }
-        
+
         /*
          This description includes only core data in this table, not data from related tables.  Override to
-         change the core description of the data. 
+         change the core description of the data.
         */
-        
+
         public function getCoreDescription() {
             if (isset($this->_tree_table_params['linkto_index'])) { // simple link with no core fields
                 return ''; // a link usually has no core information
@@ -168,9 +168,9 @@
                 return $this->$desc_func();
             } else {
                 return $this->{$this->getDescriptionFieldName()};
-            }            
+            }
         }
-        
+
         public function overrideWithUserSubcaption($fieldname, $canedit) {
         	$config = Zend_Registry::get('config');
         	$compkey = $this->getTableName().'|'.($canedit ? 'edit' : 'view').'|'.$fieldname;
@@ -179,16 +179,16 @@
         		if (($key==$compkey) && is_null($curr_subcaption)) {
         			$this->setFieldAttribute($fieldname,'subcaption',$override);
         		}
-        	} 
+        	}
         }
-        
+
         /*
          Returns parameters to link to this record.  If this is joined to a parent record in the heirarchy.
         */
         public function getLinkParamsToSelf() {
             return array('table' => $this->getTableName(), 'index' => $this->getIndexName(), 'index_value' => $this->getIndexValue());
         }
-        
+
         /*
           This sets a session variable that uniquely associates this record with a timestamp.
           Use with getTouchedRecently() to judge if this record was recently touched.
@@ -196,11 +196,11 @@
         public function startSelfTouchedTimer() {
             self::startATouchedTimer($this->getTableName(), $this->getIndexValue());
         }
-        
+
         static function startATouchedTimer($scope_key, $index_value) {
         	$_SESSION['dbtablerow_timer'][$scope_key] = array('index_value' => $index_value, 'time' => script_time());
         }
-        
+
         static function wasItemTouchedRecently($scope_key, $index_value, $max_time=null) {
         	if (empty($max_time)) $max_time = 60;
         	if (isset($_SESSION['dbtablerow_timer'][$scope_key])) {
@@ -211,13 +211,13 @@
         	}
         	return false;
         }
-        
+
         public function getTouchedRecently($max_time=null, $index_value=null, $tablename=null) {
             if (empty($tablename)) $tablename = $this->getTableName();
             if (empty($index_value)) $index_value = $this->getIndexValue();
             return self::wasItemTouchedRecently($tablename, $index_value, $max_time);
         }
-        
+
         /*
           get list of possible actions
         */
@@ -229,7 +229,7 @@
             } else {
             	$actions['editview'] = array('buttonname' => 'View', 'privilege' => 'view');
             }
-            	
+
             if (!isset($this->_fieldtypes['record_created']) || empty($this->record_created)
                  || (strtotime($this->record_created) + $config->delete_grace_in_sec > script_time()) || AdminSettings::getInstance()->delete_override) {
                 $actions['delete'] = array('buttonname' => 'Delete', 'privilege' => 'delete', 'confirm' => 'Are you sure you want to delete this?');
@@ -238,14 +238,14 @@
             }
             return $actions;
         }
-        
+
         /*
          returns descriptions of components of the item description broken into description, table, index, index_value
          The indexes for the return array are of the form parenttable__pointerfield.
         */
         public function getShortDescriptionAsArray($context_parent_table=null,$context_parent_index=null) {
             $relationships = $this->_dbschema->getRelationshipsTableIsDependentOn($this->getTableName());
-            
+
             $out = array();
             $out[''] = array('desc_html' => TextToHtml($this->getCoreDescription()), 'link_params' => $this->getLinkParamsToSelf());
             foreach($relationships as $relationship) {
@@ -260,10 +260,10 @@
             if (!empty($context_parent_table) && !empty($context_parent_index)) {
                 unset($out[$context_parent_table.'__'.$context_parent_index]);
             }
-            
+
             return $out;
         }
-        
+
         /*
           This formats a description line from the array version of description
           $desc_arr is like return array from getShortDescriptionAsArray().
@@ -289,30 +289,30 @@
          The $context_table_and_dep_index is the name of the table record from which the description is being requested
          concatinated with the dep_index name in the current table that points to the parent.
          The description returned need not include information from that table since it is redundant for
-         the viewer.  
+         the viewer.
         */
         public function getShortDescriptionHtml($context_parent_table=null,$context_parent_index=null) {
             $desc_arr = $this->getShortDescriptionAsArray($context_parent_table,$context_parent_index);
             return $this->descriptionArrayToHtml($desc_arr);
         }
-        
+
         public function getDescriptionFieldName() {
             return isset($this->_tree_table_params['desc_field']) ? $this->_tree_table_params['desc_field'] : $this->_dbschema->getDefaultDescriptionField($this->_table);
         }
-        
+
         /*
          unlike the getRelationshipsDependentOnTable(), this also looks at dependent records of incoming joins
          but it does not look at joins.
         */
         public function getActiveParentAndLinkRelationships() {
-            
+
             $relationships = $this->_dbschema->getRelationshipsDependentOnTable($this->getTableName());
             foreach($this->getJoinFieldsAndTables() as $join_name => $target) {
                 if ($this->joinFieldsAreActive($join_name)) {
                     $relationships += $this->_dbschema->getRelationshipsDependentOnTable($target['rhs_table']);
                 }
             }
-            
+
             // do not include relationships that are active joins since they are one-to-one.
             $active_joins = $this->getActiveJoins();
             foreach($relationships as $index => $relationship) {
@@ -324,7 +324,7 @@
             }
             return $relationships;
         }
-        
+
         /*
             crude reordering method.  Use as utility when overriding getDependentRecordsCollection()
             to change the order.  if reorderDependentRecordsCollection($dependents,array('rubricdimension','completedrubric'))
@@ -345,7 +345,7 @@
             // now if there are any remaining source, copy remaining ones over at the end
             return $pad_remainder_at_top ? array_merge($dependents,$new_array) : array_merge($new_array,$dependents);
         }
-        
+
         public function getDependentRecordsCollection() {
             $dependents = array();
             foreach($this->getActiveParentAndLinkRelationships() as $relationship) {
@@ -358,10 +358,10 @@
                 }
                 $dependents[] = array('relationship' => $relationship, 'DBRecords' => $Records, 'parent_index_value' => $parent_index_value);
             }
-            
+
             return $this->removeDuplicateDependents($dependents);
         }
-        
+
         /*
           Only want to return one of each relationship and a parent type should take precidence over other types.
           remove duplicates of array in table,index,dep_index,dep_table  and give priority to type=parent
@@ -378,7 +378,7 @@
             }
             return $out;
         }
-        
+
         public function getDependentRecordsBeforeDelete(DbTableRow $DbTableRowContext) { // the $DbTableRowContext is the record from witch this deletion is being requested
             $dependents = array();
             foreach($this->_dbschema->getRelationshipsDependentOnTable($this->getTableName()) as $relationship) {
@@ -398,7 +398,7 @@
             }
             return $this->removeDuplicateDependents($dependents);
         }
-        
+
         public function initDataFromJoinedTables() {
             $joins = $this->getJoinFieldsAndTables();
             foreach($joins as $join_name => $target) {
@@ -408,7 +408,7 @@
  //               $this->_fields[$target['lhs_index']] = $target['rhs_dbtableobj']->getIndexValue(); // wrong.  Not sure why I put this here
             }
         }
-        
+
         public function getJoinFieldsAndTables() {
             if ($this->_ignore_joins) {
                 return array();
@@ -417,7 +417,7 @@
             }
             return $this->_join_fields_and_tables;
         }
-        
+
         public function assignDefaults() {
             foreach($this->getFieldTypes() as $fieldname => $fieldtype) {
                     switch(true) {
@@ -438,25 +438,25 @@
                     }
             }
         }
-        
+
         public function assignFromFormSubmission($in_params,&$merge_params) {
             if (isset($in_params['form']) && isset($in_params[$this->getIndexName()]) && ($merge_params[$this->getIndexName()]!=$in_params[$this->getIndexName()])) {
                 return false;
             }
             return parent::assignFromFormSubmission($in_params,$merge_params);
         }
-        
-        
+
+
         public function fetchHiddenTableAndIndexFormTags() {
             return '<INPUT TYPE="hidden" NAME="'.$this->getIndexName().'" VALUE="'.$this->getIndexValue().'">
                     <INPUT TYPE="hidden" NAME="table" VALUE="'.$this->getTableName().'">
                     ';
         }
-        
+
         protected function getFieldTypesFromDb() {
             return $this->_dbschema->getFieldTypes($this->_table);
         }
-        
+
         public function getFieldTypesFromJoinedTables($join_mode=null) {
             $out = array();
             foreach($this->getJoinFieldsAndTables() as $join_name => $target) {
@@ -466,7 +466,7 @@
             }
             return $out;
         }
-        
+
         public function getFieldTypesFromJoinedTable($join_name) {
             if ($this->_ignore_joins) {
                 return array();
@@ -483,28 +483,28 @@
                 }
                 $this->_fieldtypes_from_joined_table[$join_name] = prefix_array_keys($this->_fieldtypes_from_joined_table[$join_name],"{$target['field_prefix']}__");
             }
-            return $this->_fieldtypes_from_joined_table[$join_name];            
+            return $this->_fieldtypes_from_joined_table[$join_name];
         }
-        
+
         public function getFieldNamesFromJoinedTables($join_mode=null) {
             return array_keys($this->getFieldTypesFromJoinedTables($join_mode));
         }
 
         public function getFieldNamesFromJoinedTable($join_name) {
-            return array_keys($this->getFieldTypesFromJoinedTable($join_name)); 
+            return array_keys($this->getFieldTypesFromJoinedTable($join_name));
         }
-        
-        
-        
+
+
+
         // do any preprocessing after reading table row.  For example, unserialize objects
         protected function onAfterGetRecord(&$record_vars) {
             return true;
         }
-        
+
         protected function onAfterSaveRecord() {
             return true;
         }
-        
+
         public function getRecord($query) {
             $records = $this->_dbschema->getRecords($this->_idField,$query);
             if (count($records)>0) {
@@ -519,13 +519,13 @@
                 return false;
             }
         }
-        
+
         public function getRecordById($id) {
             $DBTableRowQuery = new DBTableRowQuery($this);
             $DBTableRowQuery->setLimitClause('LIMIT 1')->addSelectors(array($this->_idField => $id));
             return $this->getRecord($DBTableRowQuery->getQuery());
         }
-        
+
         public function reload() {
             $this->getRecordById($this->_fields[$this->_idField]);
         }
@@ -533,7 +533,7 @@
         public function getRecordWhere($where) {
             return $this->getRecord("select * from {$this->_table} where ({$where}) LIMIT 1");
         }
-        
+
         public function saveJoinedTableFields($fieldnames,$join_type) {
             $joins = $this->getJoinFieldsAndTables();
             foreach($joins as $join_name => $target) {
@@ -546,7 +546,7 @@
                       if we are really saving something in this joined table otherwise it makes it look like the joined
                       table should be editable.
                     */
-                    
+
                     if (('incoming'==$target['type']) && ($target['rhs_index']!=$target['rhs_dbtableobj']->getIndexName())) {
                         $will_save = false;
                         foreach($target['rhs_dbtableobj']->getFieldNames() as $fieldname) {
@@ -555,19 +555,19 @@
                                 break;
                             }
                         }
-                        
+
                         if ($will_save) {
                             $this->_fields["{$target['field_prefix']}__{$target['rhs_index']}"] = $this->{$target['lhs_index']};
                         }
                     }
-                    
+
                     foreach($target['rhs_dbtableobj']->getFieldNames() as $fieldname) {
                         if (in_array("{$target['field_prefix']}__{$fieldname}",$fieldnames)) {
                             $join_save_fieldnames[] = $fieldname;
                             $target['rhs_dbtableobj']->{$fieldname} = $this->_fields["{$target['field_prefix']}__{$fieldname}"];
                         }
                     }
-                    
+
                     if (!empty($join_save_fieldnames)) {
                         $target['rhs_dbtableobj']->save($join_save_fieldnames);
                         // map back the recently added index value into prefixed fields
@@ -580,7 +580,7 @@
                 }
             }
         }
-        
+
         /*
           Read in all records with the same parent point index, then renumber the sort order field and save out.
         */
@@ -598,7 +598,7 @@
                 }
             }
         }
-        
+
         public function save($fieldnames=array(),$handle_err_dups_too=true) { // function will raise an exception if an error occurs
             if (!is_array($fieldnames)) {
                 throw new Exception('no fields to save in DBTableRow->save()');
@@ -607,19 +607,19 @@
                 $fieldnames = $this->nonPrimaryFieldNames();
             }
             $this->verifyFieldsExist($fieldnames);
-            
+
             $this->saveJoinedTableFields($fieldnames,'outgoing'); // save records with outging navigation first so we get the right ID number
-            
+
             // save only those fields in the current list that are not from joins
             $this->_dbschema->saveRecord($this->_table,$this->_fields,array_diff($fieldnames,$this->getFieldNamesFromJoinedTables()),$this->_idField,$handle_err_dups_too);
-            
+
             $this->saveJoinedTableFields($fieldnames,'incoming'); // save records with incoming navigation after so we can give them our primary index value
-            
+
             if (!$this->onAfterSaveRecord()) {
                 throw new Exception('::onAfterSaveRecord() returned false in DBTableRow::save()');
             }
         }
-        
+
         /*
             Used in the UI to decide if save needs to be called.
         */
@@ -642,12 +642,12 @@
             }
             return $has_changed;
         }
-        
+
         public function delete() {
             $this->_dbschema->deleteRecord($this->_table,$this->_fields[$this->_idField],$this->_idField);
             $this->_fields = array($this->_idField => 'new');
         }
-        
+
         /*
           This is called to attempt to delete an incoming join on this record.  Return
           parameters are used for syncronizing with controller.
@@ -678,12 +678,12 @@
             }
             return $out;
         }
-        
+
         public function nonPrimaryFieldNames() {
         // return non-primary without any join fields included
             return $this->_dbschema->nonPrimaryFieldNames($this->_table);
         }
-        
+
         /*
           get default fields that are to be edited in the editview.
           This includes basically nonPrimaryFieldNames from both the base and joined records
@@ -704,19 +704,19 @@
                     }
                 } elseif (!$this->_ignore_joins) {
                     $target = $joins[$join_name];
-                    
+
                     if (('RW'==$target['mode'])) {
                         $backpointer_field = $target['type']=='incoming' ? $target['field_prefix'].'__'.$target['rhs_index'] : '';
                         foreach($target['rhs_dbtableobj']->getEditFieldNames(array('')) as $fieldname) {
                             $out[] = $target['field_prefix'].'__'.$fieldname;
                         }
                         $out = array_diff($out,array($backpointer_field));
-                    }                    
+                    }
                 }
             }
             return $out;
         }
-        
+
         /*
           get default fields that are to be saved during a save operation.
           This includes both fields in this table and joined ones if appropriate.
@@ -734,19 +734,19 @@
                     foreach(array_merge($this->nonPrimaryFieldNames(),array($this->getIndexName())) as $fieldname) {
                         if (!isset($fieldtypes[$fieldname]['mode']) || ($fieldtypes[$fieldname]['mode']=='RW')) $out[] = $fieldname;
                     }
-                    
+
                 } else {
                     if ($this->joinFieldsAreActive($join_name)) {
                         $target = $joins[$join_name];
                         foreach($target['rhs_dbtableobj']->getSaveFieldNames(array('')) as $fieldname) {
                             $out[] = $target['field_prefix'].'__'.$fieldname;
-                        }                        
-                    }                    
+                        }
+                    }
                 }
             }
             return $out;
         }
-        
+
         /*
           not sure where else to put this.  call with editConstraint('addDependent','admin')
           Return false if, it is OK to do operation.  We normally use this to prevent editing
@@ -756,17 +756,17 @@
         public function isEditOperationBlocked($operation,$dep_table) {
             return false;
         }
-        
+
         /*
           Get field layout for this table.  Use default list of fields if necessary.
           Also, remove any parent pointing field from the list.
         */
         function getEditViewFieldLayout($default_fieldnames,$parent_fields_to_remove, $layout_key=null) {
-        	
+
         	if (!is_array($parent_fields_to_remove)) {
         		$parent_fields_to_remove = ($parent_fields_to_remove=='') ? array() : array($parent_fields_to_remove);
         	}
-        	
+
             $layout_key = empty($layout_key) ? $this->getTableName() : $layout_key;
             if (empty($this->_fieldlayout)) {
                 global $FIELDLAYOUT;
@@ -794,15 +794,15 @@
                 }
             }
             return $fieldlayout_tbl;
-        }        
+        }
 
         public function joinFieldsAreActive($join_name) {
             $joins = $this->getJoinFieldsAndTables();
             $target = $joins[$join_name];
             return (('outgoing' == $target['type']) && !empty($this->{$target['lhs_index']}) && ('RW' == $target['mode']))
                     || (('incoming' == $target['type']) && !empty($this->{$target['field_prefix'].'__'.$target['rhs_index']}) && ('RW' == $target['mode']));
-        }        
-        
+        }
+
         public function getActiveJoins() {
             $out = array();
             foreach($this->getJoinFieldsAndTables() as $join_name => $target) {
@@ -812,11 +812,11 @@
             }
             return $out;
         }
-        
+
         public function getAddableIncomingJoins() {
             $out = array();
             foreach($this->getJoinFieldsAndTables() as $join_name => $target) {
-                if (!$this->joinFieldsAreActive($join_name) && ('incoming' == $target['type']) && ('RW' == $target['mode'])) { 
+                if (!$this->joinFieldsAreActive($join_name) && ('incoming' == $target['type']) && ('RW' == $target['mode'])) {
                     $out[$join_name] = $target;
                 }
             }
@@ -844,7 +844,7 @@
             }
             return $this->_join_options[$join_name];
         }
-        
+
         public function getJoinSelectOptions($fieldname) {
             $fieldtype = $this->getFieldType($fieldname);
             $fieldvalue = $this->{$fieldname};
@@ -870,18 +870,18 @@
         public function getIndexName() {
             return $this->_idField;
         }
-        
+
         public function getIndexValue() {
             return $this->{$this->_idField};
         }
-        
+
         public function getTableName() {
             return $this->_table;
         }
-        
+
         public function isSaved() {
             return ($this->_fields[$this->_idField] != 'new');
         }
-        
+
     }
 

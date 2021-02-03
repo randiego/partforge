@@ -41,7 +41,7 @@ h2.editviewsubhead {
 	border-bottom:2px solid #000;
 	padding-bottom:4px;
 	padding-top:3px;
-	background-color:#FFF; 
+	background-color:#FFF;
 /*	background-image:url(images/headerBg.jpg); */
 	width:735px;
 }
@@ -385,23 +385,23 @@ table.listtable td {
 }
 
 table.listtable tr.rowlight, table.listtable tr.rowlight.recently_changed_row {
-	background-color: #FFA; 
+	background-color: #FFA;
 }
 
 table.listtable tr.recently_changed_row {
-	background-color: #F4F9FE; 
+	background-color: #F4F9FE;
 }
 
 table.listtable tr.recently_changed_row td.em {
-	font-weight: bold; 
+	font-weight: bold;
 }
 
 table.listtable tr.error_row, table.listtable tr.rowlight.error_row {
-	background-color: #fcc; 
+	background-color: #fcc;
 }
 
 table.listtable tr.definition_subactive {
-	opacity:0.4; 
+	opacity:0.4;
 }
 
 table.listtable td.na {
@@ -444,7 +444,7 @@ table.listtable th, table.listtablegrouped th {
 
 table.listtable td.enumeration, table.listtablegrouped td.enumeration {
 	vertical-align:top;
-	font-weight:bold;	
+	font-weight:bold;
 }
 
 /* subtable for document listing */
@@ -497,6 +497,10 @@ table.edittable {
 }
 table.edittable input.fixed {
 	width: 300px;
+}
+
+table.edittable input.calculated {
+	background-color: #EEE;
 }
 
 table.edittable textarea.fixed {
@@ -559,7 +563,7 @@ table.edittable tr.editview_caption td h2 {
 	padding-left: 0px;
 	padding-top: 10px;
 	background-color:#fff;
-	
+
 	font-size:18px;
 	font-weight:bold;
 	border-bottom:2px solid #000;
@@ -567,7 +571,7 @@ table.edittable tr.editview_caption td h2 {
 	padding-top:15px;
 	padding-left:0px;
 	margin-bottom:5px;
-	background-color:#FFF; 
+	background-color:#FFF;
 }
 
 table.edittable tr.editview_text td .editview_text_div td, table.edittable tr.editview_text td .editview_text_div th {
@@ -604,7 +608,7 @@ table.edittable tr.editview_text > td {
 
 /* for controlling out of control image widths */
 table.edittable tr.editview_text .editview_text_div img.typedocument_image {
-	max-width: 730px; 
+	max-width: 730px;
 	height: auto;
 }
 
@@ -638,7 +642,7 @@ table.edittable tr.editview_text .editview_text_div img.typedocument_image {
 
 table.edittable tr.editview_head > td {
 	border-width:0px;
-	
+
 	font-size:18px;
 	font-weight:bold;
 	border-bottom:2px solid #000;
@@ -646,9 +650,9 @@ table.edittable tr.editview_head > td {
 	padding-top:10px;
 	padding-left:0px;
 	margin-bottom:15px;
-	background-color:#FFF; 
+	background-color:#FFF;
 	width:735px;
-	
+
 }
 
 /* column tag styling to mainly manage widths */
@@ -710,7 +714,7 @@ table.edittable td.typeversion_id_cell .tm {
 	color:#777;
 	font-weight:bold;
 	font-size:11px;
-	font-style:italic;	
+	font-style:italic;
 }
 
 table.edittable td.effective_date_cell .date_label {
@@ -736,7 +740,7 @@ table.edittable td.disposition_cell .ds .disposition {
 }
 
 table.documentlist {
-	border-collapse:collapse;	
+	border-collapse:collapse;
 }
 
 table.documentlist td {
@@ -773,8 +777,8 @@ td.editlink_td_left {
 	padding-bottom:5px;
 }
 
-.errorred {  
-	color: #FF0000; 
+.errorred {
+	color: #FF0000;
 }
 
 .fakedatestyle {
@@ -800,39 +804,39 @@ a.bd-linkbtn {
 	margin-top:3px;
 	margin-bottom:3px;
 }
-a.bd-linkbtn:link { 
+a.bd-linkbtn:link {
 	text-decoration: none;
 	}
 a.bd-linkbtn:visited {
 	text-decoration: none;
 	}
-a.bd-linkbtn:hover { 
+a.bd-linkbtn:hover {
 	text-decoration: none;
 	}
-a.bd-linkbtn:active { 
+a.bd-linkbtn:active {
 	text-decoration: none;
 }
 
 
 
-.ui-menu { 
-	position: absolute; 
-	z-index:1;  
+.ui-menu {
+	position: absolute;
+	z-index:1;
 }
 
-li.ui-menu-item { 
+li.ui-menu-item {
   /* This fixes the IE10 issue */
   list-style-image: url(data:0);
 }
 
 a.minibutton2 span.ui-button-text {
 	font-size: 11px;
-	padding:2px;	
+	padding:2px;
 }
 
 input.minibutton2 {
 	font-size: 11px;
-	padding: 1px 2px 1px 2px  !important; 
+	padding: 1px 2px 1px 2px  !important;
 	width: 50px;
 }
 
@@ -977,7 +981,7 @@ table.uploadprompt td {
 	font-family: Courier New, Courier, mono;
 	background-color: #CCCCCC;
 	border: 1px solid #999999;
-	padding:5px;	
+	padding:5px;
 }
 
 
@@ -1009,7 +1013,7 @@ ul.ul_treeview > ul > li > ul > li > span {
 ul.ul_treeview > ul > li > ul > li > ul {
     margin-top:3px;
     margin-bottom:3px;
-    
+
 }
 
 
@@ -1025,17 +1029,17 @@ div#importlog h1 {
 	margin-top: 0px;
 	color:#0073ea;
 	font-family:Arial, Helvetica, sans-serif;
-	font-size:14px;	
+	font-size:14px;
 }
 
-.req_field {  
-	color: #FF0000; 
+.req_field {
+	color: #FF0000;
 }
 
 .field_locked_sym {
 	width: 16px;
 	height: 16px;
-	background-image: url("images/icon_padlock.gif");	
+	background-image: url("images/icon_padlock.gif");
 	display:inline-block;
 	vertical-align:top;
 }
@@ -1100,7 +1104,7 @@ table.sublisttable col.col1 {
 	width:130px;
 }
 table.sublisttable col.col2 {
-	
+
 }
 table.sublisttable col.col3 {
 	width:60px;
@@ -1162,7 +1166,7 @@ table.sublisttable .bd-dateline-edited {
 	padding-top:3px;
 	font-style:italic;
 	font-weight:bold;
-	line-height:1.5em;	
+	line-height:1.5em;
 }
 
 img.mai_inline_img {
@@ -1200,7 +1204,7 @@ ul.bd-stream-list {
 }
 
 li.bd-event-row {
-	margin: 0px;	
+	margin: 0px;
 	padding: 0px 0px 8px 40px;
 	position: relative;
 }
@@ -1227,7 +1231,7 @@ li.bd-event-row.bd-event-indented .bd-event-content {
 li.bd-event-row.bd-event-outdented .bd-event-content {
   -moz-box-shadow:    3px 3px 5px #ccc;
   -webkit-box-shadow: 3px 3px 5px #ccc;
-  box-shadow:         3px 3px 5px #ccc;	
+  box-shadow:         3px 3px 5px #ccc;
 }
 
 li.bd-event-row.bd-event-indented .bd-indent-component-link {
@@ -1264,7 +1268,7 @@ li.bd-event-row.bd-event-indented {
 
 .bd-comment-input .bd-event-content {
 	padding: 0px;
-	
+
 }
 
 .bd-event-row textarea.inputboxclass {
@@ -1440,7 +1444,7 @@ div.bd-event-document a .size {
 .bd-event-message ul.changelist {
 	list-style-type: disc;
 	margin: 0 0 0 0;
-	padding: 0 0 0 12px;	
+	padding: 0 0 0 12px;
 }
 
 ul.bd-bullet_features {
@@ -1507,8 +1511,8 @@ ul.bd-event-subcomments li {
 
 .bd-event-message .chglistfooter {
     color: #888;
-    font-weight: bold;	
-    font-style:italic;    
+    font-weight: bold;
+    font-style:italic;
 }
 
 #htmleditorID {
@@ -1536,7 +1540,7 @@ ul.bd-event-subcomments li {
 	border: 1px solid #DDDDDD;
     clear: right;
     overflow: auto;
-    position: relative;	
+    position: relative;
     padding: 5px;
     margin-top: 5px;
     margin-bottom: 5px;
@@ -1546,13 +1550,13 @@ ul.bd-event-subcomments li {
 .bd-layout-list {
     list-style-type: none;
     margin: 0;
-    padding: 0;	
+    padding: 0;
 }
 
 .bd-layout-list .bd-layout-item-single, .bd-layout-list .bd-layout-item-double {
     float: left;
     margin: 3px 3px 3px 3px;
-    padding: 3px;	
+    padding: 3px;
     border: 1px solid #DDD;
     background-color: #E8F2FC;
     position: relative;
@@ -1581,7 +1585,7 @@ ul.bd-event-subcomments li {
 	width: 600px;
 	color: #01317E;
     font-weight: bold;
-	font-style:italic;    
+	font-style:italic;
 }
 
 .db-html-item {
@@ -1612,7 +1616,7 @@ ul.bd-event-subcomments li {
 
 .bd-layout-frame .bd-sorting li {
 	border-color: #000;
-	background-color: #FEE; 
+	background-color: #FEE;
 }
 
 .bd-layout-frame li div.db-sizer-control {
@@ -1673,16 +1677,16 @@ td.delete {
 }
 
 #logobar .logographic {
-	left:10px; 
-	top: 10px; 
-	width: 290px; 
+	left:10px;
+	top: 10px;
+	width: 290px;
 	position: absolute;
 }
 
 #headmessages {
-	height: 60px; 
-	margin-left: 300px; 
-	margin-right: 250px; 
+	height: 60px;
+	margin-left: 300px;
+	margin-right: 250px;
 	overflow-y: auto;
 }
 
@@ -1734,7 +1738,7 @@ td.delete {
 .breadcrumbdiv.fixed {
 	position: absolute;
 	left: 10px;
-	top: 115px;	
+	top: 115px;
 	margin-bottom: 0px;
 }
 
@@ -1742,12 +1746,12 @@ td.delete {
 	padding-top: 5px;
 	padding-right: 0px;
 	font-weight: bold;
-	font-size:16px;	
+	font-size:16px;
 	margin-bottom: 10px;
 }
 
 h1 .breadcrumbdiv {
-	font-size:18px;	
+	font-size:18px;
 }
 
 .breadcrumbdiv a:link, .breadcrumbdiv a:visited, .breadcrumbdiv a:hover, .breadcrumbdiv a:active {
@@ -1897,7 +1901,7 @@ a.bd-button, a.used-on-button, button.jumpmenu {
 }
 
 span.monthsmenu select {
-	width:180px;	
+	width:180px;
 }
 
 span.monthsmenu {
@@ -1936,16 +1940,16 @@ span.monthsmenu {
     float: right;
     height: auto;
     margin: 0px 0px 4px 6px;
-    width: auto;	
+    width: auto;
     background-color: #FFA;
 }
 
 .whats_new .close_link a {
     color: #0073ea;
-    text-decoration: none;    	
+    text-decoration: none;
 }
 
-table.edittable th.hidden_properties_array_cell, table.edittable td.hidden_properties_array_cell, 
+table.edittable th.hidden_properties_array_cell, table.edittable td.hidden_properties_array_cell,
 table.edittable th.hidden_components_array_cell, table.edittable td.hidden_components_array_cell {
 	background-color: #fcc;
 }
@@ -1988,7 +1992,7 @@ div#eventlog li > span {
 }
 
 dl.comment_tips dt {
-	font-family:"Courier New", Courier, monospace;	
+	font-family:"Courier New", Courier, monospace;
 	font-weight:bold;
 	margin-top: 10px;
 }
@@ -2006,7 +2010,7 @@ dl.comment_tips dt {
 
 .comp_add_button_group div a {
     color: #0073ea;
-    text-decoration: none;   	
+    text-decoration: none;
 }
 
 .checkbox_pending {
@@ -2021,7 +2025,7 @@ dl.comment_tips dt {
     font-size: 12px;
     width: 50px;
     font-weight: bold;
-    padding: 5px;	
+    padding: 5px;
     top: 150px;
     left: 300px;
 }

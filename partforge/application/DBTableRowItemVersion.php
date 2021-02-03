@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -23,26 +23,26 @@
  * @license GPL-3.0+ <http://spdx.org/licenses/GPL-3.0+>
  */
     class DBTableRowItemVersion extends DBTableRow {
-    	
-    	
-    	/* 
+
+
+    	/*
     	 * types added by this class in the fieldtypes array: "component"
-    	 * 
+    	 *
     	 * this holds the most recently loaded list of field names and layout that came from the datadictionary
-    	 * keys are 'typeversion_id', 'addon_property_fields', 'addon_component_fields', 'addon_component_subfields', 'dictionary_field_layout' 
+    	 * keys are 'typeversion_id', 'addon_property_fields', 'addon_component_fields', 'addon_component_subfields', 'dictionary_field_layout'
     	 */
     	public $_navigator;
     	private $_typeversion_digest = array();
     	private $_last_loaded_component_objects = array(); // this is a list of recently loaded components, mostly loaded in OnAfterGetRecord() meth.
-        
+
         public function __construct($ignore_joins=false,$parent_index=null) {
-            parent::__construct('itemversion',$ignore_joins,$parent_index);   
+            parent::__construct('itemversion',$ignore_joins,$parent_index);
             $this->user_id = $_SESSION['account']->user_id;
             $this->proxy_user_id = ($_SESSION['account']->getRole()=='DataTerminal') ? $_SESSION['account']->user_id : LOGGED_IN_USER_IS_CREATOR;
             if ($_SESSION['account']->getRole()=='DataTerminal') $this->effective_date = time_to_mysqldatetime(script_time());
             $this->itemobject_id = 'new';
-        }        
-        
+        }
+
         public function assignFromFormSubmission($in_params,&$merge_params) {
 
         	// since only fields that have defined types in getFieldTypes() are merged in, we need to make sure they are there first
@@ -54,21 +54,21 @@
 
         	return parent::assignFromFormSubmission($in_params,$merge_params);
         }
-                
+
         /**
 	     * attempt to perform initialization of any component values that are based on any already initialized components
 	     * the idea is to locate any initialized components and then query those objects for initialized components
          * Then based on the names and typeobject_ids of these, fill in any components in the current object which happen to match.
          */
         private function tryInitializingComponentsByDrilling() {
-        	 
+
         	/*
         	 * First, find all the components of the already initialized components and keep an exhaustive list as well as
         	* a list by typeobject_id which we will use as a last resort.  Note that this is not very efficient if we have
         	* to call this function multiple times since we are calling getCurrentRecordByObjectId() on the same objects
         	* over and over.
         	*/
-        	 
+
         	$component_values_of_components_by_itemobject_id = array();
         	$component_values_of_components = array(); // contains full list of set component values within components with multiples too
         	foreach($this->getCurrentlySetComponentValues() as $component_field_name => $itemobject_id) {
@@ -129,28 +129,28 @@
         		}
         	}
         }
-        
+
 
         /**
         * The input is assumed to be query variables from an initialize[] array.
         * This would be a typical step when initializing the tablerow object
-        * for a new (unsaved) record.  It is overridden here so that we can 
+        * for a new (unsaved) record.  It is overridden here so that we can
         * decide if there are component_subfields that need to be initialized.
         * This would be the case if we are creating a new item (probably procedure)
         * and initializing a component value and there also happens to be component_subfields
         * corresponding to that component.  In that case, the subfield value needs to be
         * initialized with the corresponding value in the component by calling reloadComponent().
-        */        
+        */
         public function processPostedInitializeVars($initialize_array) {
         	parent::processPostedInitializeVars($initialize_array);
-        	
-        	// only want to do this if 
+
+        	// only want to do this if
         	if (!$this->isSaved()) {
         		if (isset($initialize_array['typeversion_id']) && is_numeric($initialize_array['typeversion_id'])) {
-        			
+
         			// just to be sure the type info is initialized...
         			$this->refreshLoadedTypeVersionFields($initialize_array['typeversion_id']);
-        			
+
 
         			// iteratively attempt to get all the possible components initialized
         			$starting_count = count($this->getCurrentlyUnsetComponentNames());
@@ -159,15 +159,15 @@
 	        			if ($starting_count>0) {
 	        				$this->tryInitializingComponentsByDrilling();
 	        				$ending_count = count($this->getCurrentlyUnsetComponentNames());
-	        				$changed = $ending_count != $starting_count; 
+	        				$changed = $ending_count != $starting_count;
 	        				if ($changed) {
 	        					$starting_count = $ending_count;
 	        					$try_again = true;
-	        				}       				
+	        				}
 	        			}
         			} while ($try_again);
-        			
-        			
+
+
         			// If any of the initialize vars are components with subfields present, then initialized the subfield values with the component db values.
         			foreach($this->_typeversion_digest['components_in_defined_subfields'] as $component_field_name) {
         				// if we are actually initializing a component, then...
@@ -179,17 +179,17 @@
         			}
         		}
         	}
-        }        
+        }
 
         public function getCoreDescription() {
             return $this->item_serial_number;
-        }        
-        
-        
-        
+        }
+
+
+
         /**
          * This will take an input variable and normalize (convert to standard form) it
-         * so that we can, for example, we can compare datetime "01/06/2012 10:33" and "01/06/2012 10:33:00" 
+         * so that we can, for example, we can compare datetime "01/06/2012 10:33" and "01/06/2012 10:33:00"
          * and know that they are the same. This function is very similar to DbSchema::varToEscapedMysqlLiteral().
          */
 	    static public function varToStandardForm($var,$fieldtype) {
@@ -201,7 +201,7 @@
 				$lit = !$is_null_str ? time_to_mysqldate(strtotime($var)) : null;
 			} else if ($type == 'int') {
 				$lit = !$is_null_str ? round($var) : null;
-			} else if ($type == 'float') {
+			} else if (in_array($type,array('float','calculated'))) {
 				$lit = !$is_null_str ? (float) $var : null;
 			} else if ($type == 'boolean') {
 				$lit = !$is_null_str ? (boolean) $var : null;
@@ -212,14 +212,18 @@
 			}
 			return $lit;
 	    }
-   
+
 		/**
-		 * packs the fields that are properties into a single field., 
+		 * packs the fields that are properties into a single field.,
 		 * Returns an array of two values, a json_encoded item_data field that contains packed properties
 		 * and also an array of fieldnames that were used in this
 		 * transformation.
 		 */
 		public function propertyFieldsToItemData() {
+
+			// this is the last chance to make sure the calculated fields get processed before saving.
+			$this->processCalculatedFields();
+
         	// special handling for the field defined in the typeversion record.
         	$item_data = array();
         	$fieldnames_converted = array();
@@ -228,11 +232,11 @@
 				$item_data[$dictionary_field_name] = self::varToStandardForm(isset($this->_fields[$dictionary_field_name]) ? $this->_fields[$dictionary_field_name] : null,$this->getFieldType($dictionary_field_name));
 				if (!in_array($dictionary_field_name,$fieldnames_converted)) $fieldnames_converted[] = $dictionary_field_name;
         	}
-        	
+
         	$item_data = !empty($item_data) ?  json_encode($item_data) : '';
-			return array($item_data,$fieldnames_converted);        	
+			return array($item_data,$fieldnames_converted);
 		}
-		
+
 		public function getExportFieldTypes() {
 			$out = array();
 			$header_fields = array('typeversion_id','effective_date','record_created','itemobject_id','itemversion_id','user_id','login_id');
@@ -245,6 +249,11 @@
 			foreach($header_fields as $header_field) {
 				$out[$header_field] = $this->getFieldType($header_field);
 			}
+
+			if ($this->hasDictionaryOverrides()) {
+				$out['dictionary_overrides'] = $this->getFieldType('dictionary_overrides');
+			}
+
 			foreach($this->getComponentFieldNames() as $fieldname) {
 				$out[$fieldname] = $this->getFieldType($fieldname);
 			}
@@ -253,36 +262,36 @@
 			}
 			foreach($this->_typeversion_digest['addon_property_fields'] as $dictionary_field_name) {
 				$out[$dictionary_field_name] = $this->getFieldType($dictionary_field_name);
-			}	
+			}
 			return $out;
 		}
-		
+
 		/**
 		 * Returns field type arrays for those fields with the featured property set to 1
 		 */
 		public function getFeaturedFieldTypes() {
 			return DBTableRowTypeVersion::filterFeaturedFieldTypes($this->getFieldTypes());
 		}
-		
+
 
 		public function getFieldNamesWithoutStrictValidation() {
 			$out = $this->_typeversion_digest['addon_property_fields'];
 			$out = array_merge($out,$this->_typeversion_digest['addon_component_fields']);
 			$out = array_merge($out,$this->_typeversion_digest['addon_component_subfields']);
 			$out[] = 'disposition';
-			return $out;			 
-		}		
-		
+			return $out;
+		}
+
 		public function getComponentFieldNames() {
 			$this->refreshLoadedTypeVersionFields($this->typeversion_id);
 			return $this->_typeversion_digest['addon_component_fields'];
 		}
-		
+
 		public function getComponentSubFieldNames() {
 			$this->refreshLoadedTypeVersionFields($this->typeversion_id);
 			return $this->_typeversion_digest['addon_component_subfields'];
 		}
-		
+
 		/**
 		 * Returns component values with name as key and itemobject_id as value.
 		 */
@@ -292,10 +301,10 @@
 				if (isset($this->{$fieldname}) && $this->{$fieldname}) {
 					$out[$fieldname] = $this->{$fieldname};
 				}
-			}		
+			}
 			return $out;
 		}
-		
+
 		/**
 		 * Return a list of component names that are not currently set to any value
 		 * @return array of component fieldnames
@@ -307,9 +316,9 @@
 					$out[] = $fieldname;
 				}
 			}
-			return $out;			
+			return $out;
 		}
-		
+
 		/**
 		 * For each component, find it's created-on date.  Then find the latest of all these.  The returned
 		 * date is used to find the latest effective date that is allowed for the current itemversion.
@@ -330,7 +339,7 @@
 			}
 			return $latest_time;
 		}
-		
+
 		/**
 		 * make sure the effective_date is recent enough to be consistent with the components.
 		 * If it is not, then change it.
@@ -341,18 +350,18 @@
 				$this->effective_date = date("m/d/Y H:i",$latest_component_date);
 			}
 		}
-				
+
     	/**
 		 * give this method another object of the same type, and it returns true if there are any differences
 		 * including effective_date and components.
 		 */
 		public function checkDifferencesFrom(self $CompareItem) {
 			$something_has_changed = false;
-			
+
             list($this_item_data,$fieldnames_converted) 	= $this->propertyFieldsToItemData();
             list($compare_item_data,$fieldnames_converted) 	= $CompareItem->propertyFieldsToItemData();
-			
-			if ( (strtotime($this->effective_date)!=strtotime($CompareItem->effective_date)) || ($this->partnumber_alias!=$CompareItem->partnumber_alias) || ($this->item_serial_number!=$CompareItem->item_serial_number) || ($this->disposition!=$CompareItem->disposition) || ($this_item_data!=$compare_item_data)  
+
+			if ( (strtotime($this->effective_date)!=strtotime($CompareItem->effective_date)) || ($this->partnumber_alias!=$CompareItem->partnumber_alias) || ($this->item_serial_number!=$CompareItem->item_serial_number) || ($this->disposition!=$CompareItem->disposition) || ($this_item_data!=$compare_item_data)
 				|| ($this->typeversion_id!=$CompareItem->typeversion_id)
 				|| (count($this->getCurrentlySetComponentValues())!=count($CompareItem->getCurrentlySetComponentValues())) ) {
 				$something_has_changed = true;
@@ -366,11 +375,11 @@
 				}
 			}
 			return $something_has_changed;
-		}	
-		
+		}
+
 		public function getArchiveEditChangesArray() {
 			return self::ArchiveEditChanges($this->itemversion_id,$this->_navigator);
-		}			
+		}
 
 		/**
 		 * This returns an array contains a description of the changes in the itemversionarchive table.
@@ -380,7 +389,7 @@
 		public static function ArchiveEditChanges($itemversion_id, $Navigator=null) {
 			$ItemVersionCurr = new DBTableRowItemVersion();
 			$ItemVersionCurr->getRecordById($itemversion_id);
-			
+
 			// this is need to create navigable links in the descriptions of what changed
 			$ItemVersionCurr->_navigator = $Navigator;
 			$arc_records = DbSchema::getInstance()->getRecords('itemversionarchive_id',"SELECT * FROM itemversionarchive WHERE itemversion_id='{$itemversion_id}' ORDER BY record_created desc");
@@ -388,7 +397,7 @@
 			$first_entry = null;
 			foreach($arc_records as $arc_record) {
 				$arc_fields = json_decode($arc_record['item_data'],true);
-				
+
 				// assign the fields from the archive to the $ItemVersionArc object
 				$ItemVersionArc = new DBTableRowItemVersion();
 				$ItemVersionArc->_navigator = $Navigator;
@@ -401,8 +410,8 @@
 						$ItemVersionArc->{$fieldname} = $arc_fields[$fieldname];
 					}
 				}
-				
-				// figure out the difference using the standard EventStream method.				
+
+				// figure out the difference using the standard EventStream method.
 				list($description_html,$dummy) = EventStream::textToHtmlWithEmbeddedCodes($ItemVersionCurr->itemDifferencesFrom($ItemVersionArc,true), $Navigator, 'ET_CHG', true);
 				$desc_arr = array();
 				if (trim($description_html)!='') $desc_arr[] = $description_html;
@@ -414,37 +423,37 @@
 							'date' => time_to_bulletdate(strtotime($ItemVersionArc->effective_date),false),
 							'name' => TextToHtml(strtoupper(DBTableRowUser::getFullName($ItemVersionArc->user_id))),
 							'differences' => 'New Version',
-					);	
+					);
 				}
 				$out[] = array(
-						'date' => time_to_bulletdate(strtotime($ItemVersionCurr->record_created),false), 
-						'name' => TextToHtml(strtoupper(DBTableRowUser::getFullName($ItemVersionCurr->user_id))), 
+						'date' => time_to_bulletdate(strtotime($ItemVersionCurr->record_created),false),
+						'name' => TextToHtml(strtoupper(DBTableRowUser::getFullName($ItemVersionCurr->user_id))),
 						'differences' => implode(', ',$desc_arr),
 						);
-		
+
 				$ItemVersionCurr = $ItemVersionArc;
 			}
 			if (!is_null($first_entry)) {
 				$out[] = $first_entry;
 			}
 			return $out;
-		}		
-		
+		}
+
 		/**
 		 * give this method another object of the same type, and it finds any differences
 		 * and output them as a textual description of the change.  This is used in generating
 		 * the difference messages in the EventStream.
-		 * As an alternate output format (for decorating the table view), the output is generated 
+		 * As an alternate output format (for decorating the table view), the output is generated
 		 * as an array indexed by field name if $output_by_fieldname is true.
 		 */
 		public function itemDifferencesFrom(self $CompareItem, $say_more_about_starting_state=false, $output_by_fieldname=false) {
 			$list = array();
-			
+
             list($this_item_data,$this_fieldnames_converted) 	= $this->propertyFieldsToItemData();
             list($compare_item_data,$compare_fieldnames_converted) 	= $CompareItem->propertyFieldsToItemData();
-			
+
             // check the header items
-            
+
             if ($this->part_number!=$CompareItem->part_number) {
             	if ($output_by_fieldname) {
             		$list['part_number'] = "set to '".$this->formatPrintField('part_number',false)."'";
@@ -473,9 +482,9 @@
 	            	$list[] = "<b>Type Version</b> changed from '".$CompareItem->formatPrintField('typeversion_id',false)."' to '".$this->formatPrintField('typeversion_id',false)."'";
             	}
             }
-            
+
             // check the properties
-            
+
 			// need to look at detailed differences:
 			$properties_deleted = array_diff($compare_fieldnames_converted,$this_fieldnames_converted);
 			foreach($properties_deleted as $fieldname) {
@@ -493,7 +502,7 @@
 					$list[] = '<b>'.$this->formatFieldnameNoColon($fieldname)."</b> added with value '".$this->formatPrintField($fieldname,false)."'";
 				}
 			}
-			
+
 			// Now see if any of the properties that are in both the old and new have a changed value
 			foreach(array_intersect($this_fieldnames_converted,$compare_fieldnames_converted) as $fieldname) {
 				$this_type = $this->getFieldType($fieldname);
@@ -508,18 +517,18 @@
 					checkWasChangedItemField($list ,$CompareItem->formatFieldnameNoColon($fieldname), $CompareItem->formatPrintField($fieldname,false), $this->formatPrintField($fieldname,false));
 				}
 			}
-			
-			/* 
+
+			/*
 			 * check the components to see if anything changed.
-			 */			
+			 */
 			$thisVals = $this->getCurrentlySetComponentValues();
 			$thatVals = $CompareItem->getCurrentlySetComponentValues();
-			
+
 			$added_components = array_diff_key($thisVals,$thatVals);
 			$removed_components = array_diff_key($thatVals,$thisVals);
-			$possibly_changed_components = array_intersect_key($thisVals, $thatVals);			
+			$possibly_changed_components = array_intersect_key($thisVals, $thatVals);
 			$changed_components = array_diff_assoc($possibly_changed_components, $thatVals);
-			
+
 			foreach(array_keys($removed_components) as $fieldname) {
 				if ($say_more_about_starting_state) {
 					$itemversion_id = DBTableRowItemVersion::getItemVersionIdFromByObjectId($CompareItem->{$fieldname},$CompareItem->effective_date);
@@ -533,11 +542,11 @@
 					checkWasChangedItemField($list ,$CompareItem->formatFieldnameNoColon($fieldname), $compare_value, null);
 				}
 			}
-			
+
 			foreach(array_keys($changed_components) as $fieldname) {
 				if ($say_more_about_starting_state) {
 					$itemversion_id = DBTableRowItemVersion::getItemVersionIdFromByObjectId($CompareItem->{$fieldname},$CompareItem->effective_date);
-					$compare_value = $CompareItem->formatPrintField($fieldname,false).": <itemversion>{$itemversion_id}</itemversion>"; 
+					$compare_value = $CompareItem->formatPrintField($fieldname,false).": <itemversion>{$itemversion_id}</itemversion>";
 					$this_value = $this->formatPrintField($fieldname,false);
 				} else {
 					$itemversion_id = DBTableRowItemVersion::getItemVersionIdFromByObjectId($this->{$fieldname},$this->effective_date);
@@ -550,9 +559,9 @@
 					checkWasChangedItemField($list ,$CompareItem->formatFieldnameNoColon($fieldname), $compare_value, $this_value);
 				}
 			}
-			
+
 			foreach(array_keys($added_components) as $fieldname) {
-				if ($say_more_about_starting_state) {	
+				if ($say_more_about_starting_state) {
 					$this_value = $this->formatPrintField($fieldname,false);
 				} else {
 					$itemversion_id = DBTableRowItemVersion::getItemVersionIdFromByObjectId($this->{$fieldname},$this->effective_date);
@@ -567,31 +576,31 @@
 
 			return $output_by_fieldname ? $list : (count($list)>1 ? '<ul class="changelist"><li>'.implode('</li><li>',$list).'</li></ul>' : implode(',',$list));
 		}
-		
+
 		/**
 		 * if anything has changed, this saves a new version of the record rather than overwriting
 		 * function will raise an exception if an error occurs
 		 */
         public function saveVersioned($user_id=null,$handle_err_dups_too=true) {
-        	
+
 			if ($user_id==null) $user_id = $_SESSION['account']->user_id;
 
 			// start list of affected reference io
-			$affected_itemobjects = $this->isSaved() ? self::getHasItemObjectsAsArray($this->itemversion_id) : array();			
-        	
+			$affected_itemobjects = $this->isSaved() ? self::getHasItemObjectsAsArray($this->itemversion_id) : array();
+
 			$fieldnames = $this->getSaveFieldNames();
-            
+
             $something_has_changed = false;
-            
+
             /*
              * This tries to save the component subfields and returns true if any were saved.
              * It also sets the component select field values like $this->{$component_name}
              */
 			$components_were_saved = $this->saveComponentSubFieldsVersioned($this->effective_date);
-			$something_has_changed = $something_has_changed || $components_were_saved;           
-            
-            /* 
-             * if this is a new item instance, then first create the item instance 
+			$something_has_changed = $something_has_changed || $components_were_saved;
+
+            /*
+             * if this is a new item instance, then first create the item instance
              * record then save the record as a new record.
              */
 			$Temp = null;
@@ -602,19 +611,19 @@
 				$this->itemobject_id = $ItemObject->itemobject_id;
 				$something_has_changed = true;
 			} else {
-				$Temp = $this->_dbschema->dbTableRowObjectFactory('itemversion',false,''); 
-				$Temp->getRecordById($this->itemversion_id); 
+				$Temp = $this->_dbschema->dbTableRowObjectFactory('itemversion',false,'');
+				$Temp->getRecordById($this->itemversion_id);
 				$has_differences = $this->checkDifferencesFrom($Temp);
 				$something_has_changed = $something_has_changed || $has_differences;
 			}
-			
-			
+
+
 			/*
 			 * If the above checks indicate there's a change, then go ahead and save this as a new
 			 * record and create a new copy of the component pointers.
 			 */
 			if ($something_has_changed) {
-				
+
 				/*
 				 * pack property fields for saving
 				 */
@@ -622,22 +631,22 @@
 				$fieldnames = array_diff($fieldnames,$fieldnames_converted);
 				if (!in_array('item_data',$fieldnames)) $fieldnames[] = 'item_data';
 				$this->_fields['item_data'] = $item_data;
-				
+
 	            // create the cached serial number for saving
 	            if (in_array('item_serial_number',$fieldnames)) {
 	            	if (!in_array('cached_serial_number_value',$fieldnames)) $fieldnames[] = 'cached_serial_number_value';
 	            	$this->_fields['cached_serial_number_value'] = $this->convertSerialNumberToOrdinal($this->item_serial_number);
 	            }
-				
-				
+
+
 				$this->itemversion_id = 'new';
-				$this->user_id = $user_id;				
+				$this->user_id = $user_id;
 				$this->record_created = time_to_mysqldatetime(script_time());
-				
+
 				// don't try to save component fieldnames
-				$fieldnames = array_diff($fieldnames,$this->getComponentFieldNames(), $this->getComponentSubFieldNames()); 
+				$fieldnames = array_diff($fieldnames,$this->getComponentFieldNames(), $this->getComponentSubFieldNames());
 				parent::save($fieldnames,$handle_err_dups_too);
-				
+
 				$previous_rev_components = !is_null($Temp) ? $Temp->getCurrentlySetComponentValues() : array();
 				// save all the itemcomponent records
 				foreach($this->getCurrentlySetComponentValues() as $fieldname => $itemobject_id) {
@@ -646,7 +655,7 @@
 					$Comp->belongs_to_itemversion_id = $this->itemversion_id;
 					$Comp->has_an_itemobject_id = $itemobject_id;
 					$Comp->save();
-					
+
 					// only report this if it is different than the previous rev
 					if (!isset($previous_rev_components[$fieldname]) || ($previous_rev_components[$fieldname]!=$itemobject_id)) {
 						DBTableRowChangeLog::addedItemReference($itemobject_id, $this->itemversion_id);
@@ -656,13 +665,13 @@
 				$this->getRecordById($this->itemversion_id);
 				self::updateCurrentItemVersionIds($this->itemobject_id);
 				$_SESSION['most_recent_new_itemversion_id'] = $this->itemversion_id;
-				
+
 				// add any additional itemobjects that might need their last reference info updated
 				$affected_itemobjects = array_merge($affected_itemobjects,self::getHasItemObjectsAsArray($this->itemversion_id));
 				$affected_itemobjects[] = $this->itemobject_id;
-				DBTableRowItemObject::updateCachedLastReferenceFields($affected_itemobjects);				
+				DBTableRowItemObject::updateCachedLastReferenceFields($affected_itemobjects);
 	        	DBTableRowItemObject::updateCachedCreatedOnFields($this->itemobject_id);
-                
+
                 if ($new_object) {
                     DBTableRowChangeLog::addedItemObject($this->itemobject_id, $this->itemversion_id);
                 } else {
@@ -670,12 +679,12 @@
                 }
 			}
         }
-        
+
         /**
          * turns a formatted serial number into a simple ordinal integer.
          */
         public function convertSerialNumberToOrdinal($item_serial_number) {
-        	 
+
         	// we make sure this is a formatted serial number and that we have the fields to do our job
         	$SNFormat = SerialNumberType::typeFactory($this->_typeversion_digest['serial_number_format']);
         	$errormsg = array();
@@ -685,7 +694,7 @@
         	}
         	return null;
         }
-        
+
         /**
          * Use this instead of isSaved() in certain instances where you want to know if the next
          * call to save this object will result in a new item instance of an existing object, or
@@ -694,64 +703,64 @@
          */
         public function isExistingObject() {
         	return is_numeric($this->itemobject_id);
-        }   
-        
-        
+        }
+
+
 		/**
 		 * this is a traditional save.  It does not do any versioning.
 		 * It is called when the "correct this record" is pressed.
 		 * It deletes then resaves the itemcomponent records when called.  It also will save component itemversion records as
 		 * part of this.
-		 * 
+		 *
 		 * function will raise an exception if an error occurs
 		 */
 		protected function saveUnversioned($fieldnames=array(),$handle_err_dups_too=true) {
-			
+
 			// start list of affected reference io
 			$affected_itemobjects = $this->isSaved() ? self::getHasItemObjectsAsArray($this->itemversion_id) : array();
-			
+
         	// by default we will include all the fields here.
         	if (count($fieldnames)==0) {
         		$fieldnames = $this->getSaveFieldNames();
         	}
-        	
+
         	// pack property fields for saving
         	list($item_data,$fieldnames_converted) = $this->propertyFieldsToItemData();
         	$fieldnames = array_diff($fieldnames,$fieldnames_converted);
         	if (!in_array('item_data',$fieldnames)) $fieldnames[] = 'item_data';
         	$this->_fields['item_data'] = $item_data;
-        	 
+
         	// create the cached serial number for saving
         	if (in_array('item_serial_number',$fieldnames)) {
         		if (!in_array('cached_serial_number_value',$fieldnames)) $fieldnames[] = 'cached_serial_number_value';
         		$this->_fields['cached_serial_number_value'] = $this->convertSerialNumberToOrdinal($this->item_serial_number);
         	}
-        	
-        	
+
+
         	// if this is a new item instance, then first create the itemobject record then save the record as a new record
         	if (!$this->isSaved()) {
         		$ItemObject = new DBTableRow('itemobject');
         		$ItemObject->save();
         		$this->itemobject_id = $ItemObject->itemobject_id;
         	}
-        		
+
         	// don't try to save component fieldnames
         	$fieldnames = array_diff($fieldnames,$this->getComponentFieldNames(), $this->getComponentSubFieldNames());
         	parent::save($fieldnames,$handle_err_dups_too);
-        		
+
         	/*
         	 * save component subfields.
         	*/
         	$this->saveComponentSubFieldsUnversioned();
-        		
+
         	/*
         	 *  Save component itemcomponent records as needed.  Don't mindlessly delete and re-add, but
         	*  check first to make sure there are actually changes.
         	*/
-        		
+
         	$comp_records_to_delete = DbSchema::getInstance()->getRecords('itemcomponent_id',"SELECT * FROM itemcomponent WHERE belongs_to_itemversion_id='{$this->itemversion_id}'");
         	$components_to_save = $this->getCurrentlySetComponentValues();   // $fieldname => $itemobject_id
-        		
+
         	foreach($comp_records_to_delete as $itemcomponent_id => $itemcomponent) {
         		$component_name_on_disk = $itemcomponent['component_name'];
         		// if this component is one we are going to turn around and recreated anyway, then remove it from both $comp_records_to_delete and $components_to_save
@@ -760,14 +769,14 @@
         			unset($components_to_save[$component_name_on_disk]);
         		}
         	}
-        		
+
         	// delete any from the delete list that are still there
         	foreach($comp_records_to_delete as $itemcomponent_id => $itemcomponent) {
         		$Comp = new DBTableRow('itemcomponent');
         		$Comp->getRecordById($itemcomponent_id);
         		$Comp->delete();
         	}
-        		
+
         	// save any that are left in the $component_to_save list
         	foreach($components_to_save as $fieldname => $itemobject_id) {
         		$Comp = new DBTableRow('itemcomponent');
@@ -777,20 +786,20 @@
         		$Comp->save();
         		DBTableRowChangeLog::addedItemReference($itemobject_id, $this->itemversion_id);
         	}
-        		
+
         	$this->getRecordById($this->itemversion_id);
         	self::updateCurrentItemVersionIds($this->itemobject_id);
         	$_SESSION['most_recent_new_itemversion_id'] = $this->itemversion_id;
-        	
+
         	// add any additional itemobjects that might need their last reference info updated
         	$affected_itemobjects = array_merge($affected_itemobjects,self::getHasItemObjectsAsArray($this->itemversion_id));
         	$affected_itemobjects[] = $this->itemobject_id;
         	DBTableRowItemObject::updateCachedLastReferenceFields($affected_itemobjects);
         	DBTableRowItemObject::updateCachedCreatedOnFields($this->itemobject_id);
 		}
-		
+
 		/**
-		 * This loads the currently saved version of myself and compares to this class instance.  
+		 * This loads the currently saved version of myself and compares to this class instance.
 		 * If it's different, say so, and also save an archive copy of the one on disk to the itemversionarchive table.
 		 * @return boolean
 		 */
@@ -819,20 +828,20 @@
         public function save($fieldnames=array(),$handle_err_dups_too=true, $user_id=null) {
         	if ($user_id==null) $user_id = $_SESSION['account']->user_id;
         	$new_object = !$this->isSaved();
-        	if ($this->isSaved()) {        		
+        	if ($this->isSaved()) {
         		$something_has_changed = $this->checkAndArchiveIfThisVersionHasChanges();
 	        	if ($something_has_changed) { // user and record_created should reflect the current user and time
 	        		$this->user_id = $user_id;
 	        		$this->record_created = time_to_mysqldatetime(script_time());
 	        		DBTableRowChangeLog::changedItemVersion($this->itemobject_id, $this->itemversion_id);
 	        	}
-        	} 
+        	}
 	        $this->saveUnversioned($fieldnames,$handle_err_dups_too);
 	        if ($new_object) {
 	        	DBTableRowChangeLog::addedItemObject($this->itemobject_id, $this->itemversion_id);
 	        }
         }
-        
+
         /**
          * Overridden to handle cleanup after deleting itemversion records, including deleting
          * the last one for an itemobject
@@ -845,7 +854,7 @@
         	$partnumber_alias = $this->partnumber_alias;
         	parent::delete();
         	// gather all the itemobjects that will be affected by removing this itemversion.  These will be needed to refresh those itemobject fields
-        	$affected_itemobjects = self::getHasItemObjectsAsArray($itemversion_id);       	
+        	$affected_itemobjects = self::getHasItemObjectsAsArray($itemversion_id);
         	DbSchema::getInstance()->mysqlQuery("delete from itemcomponent where belongs_to_itemversion_id='{$itemversion_id}'");
         	DbSchema::getInstance()->mysqlQuery("delete from itemversionarchive where itemversion_id='{$itemversion_id}'");
         	// if we have just deleted the last itemversion, then we should cleanup the whole itemobject
@@ -853,7 +862,7 @@
         	if (count($iv_records)==0) {
         		DbSchema::getInstance()->mysqlQuery("delete from itemobject where itemobject_id='{$itemobject_id}'");
         		/*
-        		 * note that these next deletes should only do something under unusual circumstance, 
+        		 * note that these next deletes should only do something under unusual circumstance,
         		 * since normally we would not be allowed to delete when comments or references remained
         		 */
         		DbSchema::getInstance()->mysqlQuery("delete from itemcomponent where has_an_itemobject_id='{$itemobject_id}'");
@@ -863,7 +872,7 @@
         		// these only make sense to update if $itemobject_id still exists
         		DBTableRowItemObject::updateCachedCreatedOnFields($itemobject_id);
         		self::updateCurrentItemVersionIds($itemobject_id);
-        		
+
         		// now update reference fields for the new current itemversion_id
 				$new_itemversion_id = self::getItemVersionIdFromByObjectId($itemobject_id);
         		$affected_itemobjects = array_merge($affected_itemobjects,self::getHasItemObjectsAsArray($new_itemversion_id));
@@ -872,11 +881,11 @@
         	}
 	        DBTableRowItemObject::updateCachedLastReferenceFields($affected_itemobjects);
         }
-        
+
         public static function getHasItemObjectsAsArray($itemversion_id) {
         	return array_keys(DbSchema::getInstance()->getRecords('has_an_itemobject_id',"SELECT DISTINCT has_an_itemobject_id FROM itemcomponent WHERE belongs_to_itemversion_id='{$itemversion_id}'"));
-        } 
-        
+        }
+
         /**
          * This updates cached_current_itemversion_id in itemobject table.  If $itemobject_id is specified, it will only
          * do this for the specified io.
@@ -884,13 +893,13 @@
 		static public function updateCurrentItemVersionIds($itemobject_id=null) {
 			$where1 = is_null($itemobject_id) ? '' : " WHERE aa_io.itemobject_id='{$itemobject_id}'";
         	DbSchema::getInstance()->mysqlQuery("
-			UPDATE itemobject as cc_io,		
+			UPDATE itemobject as cc_io,
         		# Table of all the current version itemversion_ids for each itemobject_id
 				(SELECT bb_io.itemobject_id as bb_itemobject_id, bb_io.cached_current_itemversion_id as currently_cached_current_itemversion_id, bb_iv.itemversion_id as should_be_itemversion_id
 				FROM itemobject bb_io
 				LEFT JOIN itemversion bb_iv ON bb_io.itemobject_id = bb_iv.itemobject_id
 				LEFT JOIN itemversion bb_iv_current ON bb_iv_current.itemversion_id = IFNULL(bb_io.cached_current_itemversion_id,0)
-				LEFT JOIN 
+				LEFT JOIN
 					(SELECT aa_io.itemobject_id as aa_itemobject_id, MAX(aa_iv.effective_date) as aa_max_effective_date
 					FROM itemobject aa_io
 					LEFT JOIN itemversion aa_iv ON aa_io.itemobject_id = aa_iv.itemobject_id
@@ -901,14 +910,14 @@
 				and bb_iv.effective_date!=IFNULL(bb_iv_current.effective_date,'0000-00-00')) as cc_corrected_itemobject
 			SET cc_io.cached_current_itemversion_id=cc_corrected_itemobject.should_be_itemversion_id
 			WHERE cc_io.itemobject_id=cc_corrected_itemobject.bb_itemobject_id
-        			");       	 
-        	
+        			");
+
         }
-        
-        
+
+
         /**
          * This will return zero, one or more itemversion records matching the serial number that
-         * correspond to the most current itemversion of an object on the given date.  
+         * correspond to the most current itemversion of an object on the given date.
          * @param unknown_type $serial_number
          * @param unknown_type $effective_date
          */
@@ -919,7 +928,7 @@
 		FROM itemversion cc_iv
 		LEFT JOIN
 			(SELECT aa_date_comp.aa_itemobject_id as bb_itemobject_id, MAX(aa_date_comp.aa_effective_date) as bb_max_effective_date
-			FROM	
+			FROM
 				(SELECT aa_iv.itemobject_id as aa_itemobject_id, aa_iv.itemversion_id as aa_itemversion_id, aa_iv.effective_date as aa_effective_date
 				FROM itemversion aa_iv
 				WHERE {$date_where}) as aa_date_comp
@@ -928,9 +937,9 @@
 		 and (cc_iv.item_serial_number='".addslashes($serial_number)."')");
         	return $records;
         }
-        
+
         /**
-         * this will make sure the field cached_current_itemversion_id in the table is up to date.  
+         * this will make sure the field cached_current_itemversion_id in the table is up to date.
          * It returns this value as well.
          */
         static public function updateCachedCurrentItemVersionId($itemobject_id) {
@@ -946,8 +955,8 @@
 			}
 			return null;
         }
-        
-        
+
+
         /**
          * Answers: in editviewdbAction(), what are the fields that should be passed into the validateFields() and save() methods?
          * This should include properties, components, and natives.  All will need to be saved.
@@ -959,11 +968,11 @@
         	$out = array_merge($out,$this->_typeversion_digest['addon_component_subfields']);
         	return $out;
         }
-        
+
         /**
-         * returns true if we are an existing object that is not the current object, and when we are saved 
+         * returns true if we are an existing object that is not the current object, and when we are saved
          * we will NOT become the current version of this object.  This is normally used to decide if we
-         * will enforce the "no duplicate serial number" rule. 
+         * will enforce the "no duplicate serial number" rule.
          */
         public function weWillBeSavedAsAnOlderVersion() {
         	/*
@@ -985,7 +994,7 @@
         	}
         	return $saving_an_older_version;
         }
-        
+
         /**
          * look through other, current parts of the same type (but not self) and identify any items that
          * have the specified serial number.  It does not include older versions of other items in the search.
@@ -994,7 +1003,7 @@
          * This assumes that $this->typeversion_id and $this->itemobject_id is set already.
          */
         public function serialNumberAlreadyUsed($serial_number) {
-        	 
+
         	$serial_number_slashes = addslashes($serial_number);
         	$records = $this->_dbschema->getRecords('',"
         			SELECT other_iv.itemversion_id
@@ -1009,13 +1018,13 @@
         	return count($records) > 0;
         }
 
-        
+
         /**
          * Look through all item versions for this itemobject_id and see if there are any other
          * itemversions with exactly the same effective date.
          */
         public function existsDuplicateEffectiveDate($effective_date) {
-        	
+
     		$effective_date = time_to_mysqldatetime(strtotime($effective_date));
         	$records = $this->_dbschema->getRecords('',"
         			SELECT other_iv.itemversion_id
@@ -1024,10 +1033,10 @@
         			AND (other_iv.itemversion_id!='{$this->itemversion_id}')
         			AND (other_iv.effective_date='{$effective_date}')
         			");
-        			     			 
-        	return count($records) > 0;		 
+
+        	return count($records) > 0;
         }
-        
+
 		/**
 		 * This does a search of all the items of the current type (other than the current object) and returns
 		 * serial numbers (with itemversion_ids for keys) of any other objects that have this $value for $fieldname.
@@ -1055,7 +1064,7 @@
 
         	return $out;
         }
-        
+
         /**
          * overrides standard field input validation to catch duplicate serial numbers, and bad effective dates.
          * The messages are indexed by fieldname so the errors can later be placed in the right edit boxes.
@@ -1063,6 +1072,7 @@
          */
         public function validateFields($fieldnames,&$errormsg)
         {
+        	$this->applyDictionaryOverridesToFieldTypes();
 
             if (in_array('item_serial_number',$fieldnames)) {
             	if (!$this->hasASerialNumber()) {
@@ -1085,9 +1095,9 @@
             		$errormsg['effective_date'] = 'The effective date ('.$this->effective_date.') is exactly the same as another exsting version.  You must use a different date (even if only 1 minute different).';
             		unset($fieldnames[array_search('effective_date',$fieldnames)]);
             	}
-            	 
-            }    
-            
+
+            }
+
             // unique value checking
             foreach ($fieldnames as $fieldname) {
             	if (isset($this->_fieldtypes[$fieldname]['unique']) && $this->_fieldtypes[$fieldname]['unique'] && $this->{$fieldname}) {
@@ -1096,28 +1106,28 @@
             			$errormsg[$fieldname] = 'The value "'.$this->{$fieldname}.'" for '.$this->formatFieldnameNoColon($fieldname).' must be unique.  However this same value also appears in '.implode(' and ',$serialnumbers).'.';
             		}
             	}
-            }     
+            }
 
             // apply min, max checking to appropriate fields
             foreach($fieldnames as $fieldname) {
             	$ft = $this->_fieldtypes[$fieldname];
             	$val = $this->{$fieldname};
             	$caption = $this->formatFieldnameNoColon($fieldname);
-            	if (isset($ft['type']) && ($ft['type']=='float') && is_numeric($val)) {  // the non-numeric and empty case is handled by the parent method
+            	if (isset($ft['type']) && in_array($ft['type'],array('float','calculated')) && is_numeric($val)) {  // the non-numeric and empty case is handled by the parent method
             		$min = isset($ft['minimum']) ? trim($ft['minimum']) : '';
             		$max = isset($ft['maximum']) ? trim($ft['maximum']) : '';
             		if (is_numeric($min) && is_numeric($max)) {
-            			$min_ok = ($val >=$min); 
+            			$min_ok = ($val >=$min);
             			$max_ok = ($val <=$max);
             			$range_msg = $min==$max ? 'exactly '.$min : 'in the range '.$min.' to '.$max;
             			if (!$min_ok || !$max_ok) $errormsg[$fieldname] = 'The value "'.$val.'" for '.$caption.' must be '.$range_msg;
             		} else if (is_numeric($min)) {
-            			$min_ok = ($val >=$min); 
+            			$min_ok = ($val >=$min);
             			if (!$min_ok) $errormsg[$fieldname] = 'The value "'.$val.'" for '.$caption.' should not be less than '.$min;
             		} else if (is_numeric($max)) {
             			$max_ok = ($val <=$max);
             			if (!$max_ok) $errormsg[$fieldname] = 'The value "'.$val.'" for '.$caption.' should not be greater than '.$max;
-            		}            		
+            		}
 	            } elseif (isset($ft['type']) && ($ft['type']=='boolean') && !is_null($val) && ($val!=='')) {  // the non-numeric and empty case is handled by the parent method
             		$min = isset($ft['minimum']) ? trim($ft['minimum']) : '';
             		$max = isset($ft['maximum']) ? trim($ft['maximum']) : '';
@@ -1126,23 +1136,23 @@
             			if (($max=="0") && $val) $errormsg[$fieldname] = $caption.' should be No';
             		}
             	}
-            	
+
             }
-        	
+
             parent::validateFields($fieldnames,$errormsg);
             if ($this->is_user_procedure && ((count($errormsg)>0) || $this->hasDictionaryOverrideErrors())) {
             	if ($this->disposition=='Pass') $errormsg['disposition'] = 'There cannot be errors and a disposition of Pass.  Use Signed Off instead.';
             }
         }
-        
+
         public function validateForFatalFields($fieldnames,&$errormsg) {
         	$this->validateFields($fieldnames,$errormsg);
         	foreach($this->getFieldNamesWithoutStrictValidation() as $fieldname) {
         		if (isset($errormsg[$fieldname])) unset($errormsg[$fieldname]);
         	}
         }
-        
-        
+
+
         /**
          * this will only reload the typeversion information if $this->_typeversion_digest is inconsistent
          * This should also load the component type definitions.
@@ -1152,21 +1162,21 @@
         	// does it look like the typeversion data is out of date?
         	if (is_numeric($typeversion_id) && (!isset($this->_typeversion_digest['typeversion_id'])  || ($typeversion_id!=$this->_typeversion_digest['typeversion_id']))) {
         		$TypeVersion = $this->_dbschema->dbTableRowObjectFactory('typeversion');
-        		$this->_typeversion_digest = array();  
-        		if ($TypeVersion->getRecordById($typeversion_id)) { 
+        		$this->_typeversion_digest = array();
+        		if ($TypeVersion->getRecordById($typeversion_id)) {
         			$this->_typeversion_digest = $TypeVersion->getLoadedTypeVersionDigest(false);
         			$this->setFieldTypes($this->_typeversion_digest['fieldtypes']);
         			$SNFormat = SerialNumberType::typeFactory($this->_typeversion_digest['serial_number_format']);
                     $this->setFieldAttribute('item_serial_number','subcaption', $SNFormat->getHelperCaption());
         		}
-        		
+
         	}
         }
-        
+
         public function setFieldTypeForRecordLocator() {
         	$this->setFieldType('record_locator', array('caption' => 'Record Locator','subcaption' => 'use in search box', 'mode' => 'R', 'type' => 'ft_other' ));
         }
-         
+
         /**
          * This is the magic field set override.  Special things must happen when we assign a new typeversion_id.
          * @see TableRow::__set()
@@ -1174,11 +1184,11 @@
         public function __set($key, $value)
         {
         	parent::__set($key, $value);
-        	if ($key=='typeversion_id') {  
+        	if ($key=='typeversion_id') {
         		$this->refreshLoadedTypeVersionFields($value);
         	}
-        }        
-        
+        }
+
         /**
          * Reload just this $component_name component along with any associated component_subfields.
          * The relevant version loaded is based on the effecive date.
@@ -1187,7 +1197,7 @@
         	$out = array();
         	$this->_last_loaded_component_objects[$component_name] = $this->_dbschema->dbTableRowObjectFactory('itemversion',false,'');
         	$this->_last_loaded_component_objects[$component_name]->getCurrentRecordByObjectId($this->{$component_name},$this->effective_date);
-        	
+
         	// load the component subfield values for this component if any exist
         	foreach($this->_typeversion_digest['addon_component_subfields'] as $fieldname) {
         		$fieldtype = $this->getFieldType($fieldname);
@@ -1198,11 +1208,11 @@
         	}
         	return $out;
         }
-        
+
         public function getComponentsThatHaveChanged() {
-        	
+
         }
-        
+
         /**
          * checks to see if any of the component subfields have changed.  If so, it saves new
          * versions of these components and sets the appropriate $this->{$component_name} fields
@@ -1226,14 +1236,14 @@
 					$OldComponent->getCurrentRecordByObjectId($this->{$component_name},$this->effective_date);
 					$NewComponent = $this->_dbschema->dbTableRowObjectFactory('itemversion',false,'');
 					$NewComponent->getCurrentRecordByObjectId($this->{$component_name},$this->effective_date);
-						
+
 					foreach($this->_typeversion_digest['addon_component_subfields'] as $fieldname) {
 						$fieldtype = $this->getFieldType($fieldname);
 						if ($component_name==$fieldtype['component_name']) {
 							$NewComponent->{$fieldtype['component_subfield']} = $this->{$fieldname};
 						}
 					}
-					
+
 					/*
 					 * If there are differences that we've created, then we need to save a new version
 					 */
@@ -1244,15 +1254,15 @@
 						$NewComponent->saveVersioned();
 						$differences_found = true;
 					}
-					
+
 					$this->_last_loaded_component_objects[$component_name] = $NewComponent;
 				}
-        		
+
         	}
         	return $differences_found;
         }
-        
-        
+
+
         /**
          * Need to loop through $this->_typeversion_digest['components_in_defined_subfields'] and then
          * for each component, load the itemversion object, map in the appropriate type fields, and save
@@ -1262,8 +1272,8 @@
 
 				if (is_numeric($this->{$component_name})) {
 					$this->_last_loaded_component_objects[$component_name] = $this->_dbschema->dbTableRowObjectFactory('itemversion',false,'');
-					$this->_last_loaded_component_objects[$component_name]->getCurrentRecordByObjectId($this->{$component_name},$this->effective_date);					
-					
+					$this->_last_loaded_component_objects[$component_name]->getCurrentRecordByObjectId($this->{$component_name},$this->effective_date);
+
 					$fieldstosave = array();
 					foreach($this->_typeversion_digest['addon_component_subfields'] as $fieldname) {
 						$fieldtype = $this->getFieldType($fieldname);
@@ -1276,33 +1286,33 @@
 				}
         	}
         }
-        
-        
+
+
         /**
          * called from onAfterGetRecord() to set the local field values from the components.
          * If the dictionary has component subfields in it, then we have to go and db read these.
          * The $effective_date is just the current effective_date of the loading record.  It is needed
          * to get appropriate versions of the components.
-         * 
+         *
          * TODO: might be a problem here because what if effective_date is too early?  Might be
          * bad not to have anything loaded.
          */
         public function loadComponentValuesFromItemComponentsList($list_of_itemcomponents,$effective_date=null) {
-        	       	
+
         	// extract the component values (just the value of itemcomponent_id) from the just processed record
-        	$this->_last_loaded_component_objects = array(); 
+        	$this->_last_loaded_component_objects = array();
         	foreach(explode(';',$list_of_itemcomponents) as $itemcomponent) {
         		$component_params = explode(',',$itemcomponent);
         		if (count($component_params)==3) {
 	        		list($itemcomponent_id, $component_name, $has_an_itemobject_id) = $component_params;
-	        		$this->{$component_name} = $has_an_itemobject_id; 		
+	        		$this->{$component_name} = $has_an_itemobject_id;
 	        		if (in_array($component_name,$this->_typeversion_digest['components_in_defined_subfields'])) {
 	        			$this->_last_loaded_component_objects[$component_name] = $this->_dbschema->dbTableRowObjectFactory('itemversion',false,'');
 	        			$this->_last_loaded_component_objects[$component_name]->getCurrentRecordByObjectId($has_an_itemobject_id,$effective_date);
 	        		}
         		}
         	}
-        	
+
         	/*
         	 * initialize any subfield component objects that were not present in $list_of_itemcomponents.  We need these
         	 * to be valid empty itemversion objects so we pick up any defaults for the subfields.
@@ -1312,12 +1322,12 @@
         			$this->_last_loaded_component_objects[$component_name] = $this->_dbschema->dbTableRowObjectFactory('itemversion',false,'');
         		}
         	}
-        	
+
         	// load the component subfield values for any defined component subfields
         	foreach($this->_typeversion_digest['addon_component_subfields'] as $fieldname) {
         		$fieldtype = $this->getFieldType($fieldname);
         		$component_name = $fieldtype['component_name'];
-        		/* 
+        		/*
         		 * it is important to check that this exists, because not all defined compoent types may
         		 * exists as saved itemcomponent records.
         		 */
@@ -1325,11 +1335,11 @@
         			$this->{$fieldname} = $this->_last_loaded_component_objects[$component_name]->{$fieldtype['component_subfield']};
         		}
         	}
-        	
+
         }
-                
+
         protected function onAfterGetRecord(&$record_vars) {
-        		
+
         	if (is_numeric($record_vars['tv__typeversion_id'])) {
         		$varsWithoutPrefix = extract_prefixed_keys($record_vars, 'tv__', true);
         		$varsWithoutPrefix['partnumber_count'] = $record_vars['partnumber_count'];
@@ -1343,15 +1353,15 @@
         		if (isset($item_data[$dictionary_field_name])) {
         			$record_vars[$dictionary_field_name] = $item_data[$dictionary_field_name];
         		}
-        	}       	
-        	 
+        	}
+
         	$this->loadComponentValuesFromItemComponentsList($record_vars['list_of_itemcomponents'],$record_vars['effective_date']);
 
-        	
-        	
+
+
         	return true;
         }
-        
+
         /**
          * Get the record with all the usual addons.  In particular, we get packed lists of components and typecomponents.
          * @see DBTableRow::getRecordById()
@@ -1371,23 +1381,23 @@
             $DBTableRowQuery->addJoinClause("LEFT JOIN user ON user.user_id=itemversion.user_id")
             				->addSelectFields('user.login_id');
             return $this->getRecord($DBTableRowQuery->getQuery());
-        }       
+        }
 
        	public function hasASerialNumber() {
 			$this->refreshLoadedTypeVersionFields($this->typeversion_id);
-			return $this->_typeversion_digest['has_a_serial_number'];       		
+			return $this->_typeversion_digest['has_a_serial_number'];
        	}
-        
+
        	public function hasADisposition() {
        		$this->refreshLoadedTypeVersionFields($this->typeversion_id);
        		return $this->_typeversion_digest['has_a_disposition'];
        	}
-       	
+
        	public function hasAliases() {
        		$this->refreshLoadedTypeVersionFields($this->typeversion_id);
        		return $this->_typeversion_digest['partnumber_count']>1;
-       	}       	
-       	
+       	}
+
        	public static function getItemVersionIdFromByObjectId($itemobject_id,$effective_date=null) {
        		$the_itemversion_id = null;
        		if (!is_null($effective_date)) {
@@ -1401,7 +1411,7 @@
        				$the_itemversion_id = $record['itemversion_id'];
        			}
        		}
-       		
+
        		/*
        		 * We try again if the above failed, or for the first time if no effective_date
        		*/
@@ -1414,16 +1424,16 @@
        				$the_itemversion_id = null;
        			}
        		}
-       			       		
+
        		return $the_itemversion_id;
        	}
-       	
+
        	/**
        	 * This will attempt to fetch an itemversion record give the itemobject_id.  Without the effective_date, the most current itemversion_id record is obtained.
        	 * If the effective_date is specified, then it attempt to get the itemversion record that was current as of the date specified.
-       	 * 
+       	 *
        	 * TODO: Should refactor so these are single mysql calls.
-       	 * 
+       	 *
        	 * @param integer $itemobject_id = the itemobject_id of the itemversion record being requested
        	 * @param time $effective_date =  effective date/time of the record being requested.
        	 * @return boolean
@@ -1436,8 +1446,8 @@
         		return false;
         	}
         }
-       	
-            
+
+
         /*
          * Answers: what are the fields that should be shown in the editform for editing?
          * This should include properties AND components.
@@ -1446,19 +1456,19 @@
             $fieldnames = DBTableRowTypeVersion::buildListOfItemFieldNames($this->_typeversion_digest);
             if ($_SESSION['account']->getRole()=='DataTerminal') $fieldnames[] = 'user_id';
 			return $fieldnames;
-        }        
-        
+        }
+
         /*
          * Alter the following to change the items that appear in the typeversion selection box.
          */
         public function getJoinOptions($join_name,$include_only_orphans) {
 
         	if ('type_version'!=$join_name) return parent::getJoinOptions($join_name,$include_only_orphans);
-        	
+
         	/*
         	 * in the following, we want to present a dropdown list of different version of the same
         	 * typeobject_id.  We don't want to allow changing of the type itself from here unless it has been explicitely allowed
-        	 * Example: select * from typeversion where typeobject_id=(select tv.typeobject_id from typeversion as tv where tv.typeversion_id='{$this->typeversion_id}' LIMIT 1) 
+        	 * Example: select * from typeversion where typeobject_id=(select tv.typeobject_id from typeversion as tv where tv.typeversion_id='{$this->typeversion_id}' LIMIT 1)
         	 */
         	if (!AdminSettings::getInstance()->use_any_typeversion_id) {
 	        	if (!isset($this->_join_options[$join_name])) {
@@ -1482,7 +1492,7 @@
         	}
         	return parent::getJoinOptions($join_name, $include_only_orphans);
         }
-        
+
         public function getComponentAsIVObject($fieldname) {
         	if (is_numeric($this->{$fieldname})) {
         		$ComponentItemVersion = DbSchema::getInstance()->dbTableRowObjectFactory('itemversion',false,'');
@@ -1490,13 +1500,13 @@
         		return $ComponentItemVersion;
         	} else {
         		return null;
-        	}       	 
+        	}
         }
 
         public function shortName() {
         	return $this->hasASerialNumber() ?  $this->item_serial_number : date('m/d/Y H:i',strtotime($this->effective_date));
         }
-        
+
 		/**
 		 * Returns a single entry array with the named component's value (e.g.: itemobject_id) as the key
 		 * and the serial number of the component as the value.  This is used for displaying the human-readable
@@ -1513,11 +1523,11 @@
         		return array();
         	}
         }
-        
+
         /**
          * Need to get the most recent versions of the given typeversion (typeobject actually) that is before
          * or at the same time as $effective_date.  This also works with components that are procedures.
-         * In this case we return only procedures that 
+         * In this case we return only procedures that
          * @param unknown_type $fieldname
          * @param unknown_type $effective_date
          * @return multitype:string unknown
@@ -1525,18 +1535,18 @@
         public function getComponentSelectOptions($fieldname, $effective_date, $future_suffix_label=' (future effective date)', $only_self_ref_proc = true, $show_types=false) {
             /*
              * This list should be ordered by effective_date
-             * 
+             *
              * Then we should fill an array in chronological order that is keyed by itemobject_id.
              * This will give us a list that contains only entries that are no younger than our date
              * but not multiple versions of the same object.
-             * 
+             *
              *  We then want to index this list by itemobject_id.
-             *  
+             *
              *  Finally we want to add in the currently set itemversion_id to make sure we have that covered.
              */
 			$fieldtype = $this->getFieldType($fieldname);
         	$effective_date = is_valid_datetime($effective_date) ?  time_to_mysqldatetime(strtotime($effective_date)) : null;
-        	
+
         	/*
         	 * Gets all itemversion records with effective dates before $effective_date and matching the
         	 * input field's typeobject_id.  This is pretty broad, but we will widdle it down soon enough.
@@ -1551,7 +1561,7 @@
 	            		IF(itemobject.cached_first_ver_date<='$effective_date',0,1) as is_future_component,
 	            		itemversion.effective_date, itemversion.itemobject_id,
 	            		partnumbercache.part_description, partnumbercache.part_number
-	            	FROM itemversion 
+	            	FROM itemversion
 	               	LEFT JOIN itemobject on itemversion.itemobject_id=itemobject.itemobject_id
 	               	LEFT JOIN typeversion on typeversion.typeversion_id=itemversion.typeversion_id
 	               	LEFT JOIN typecategory ON typecategory.typecategory_id=typeversion.typecategory_id
@@ -1559,18 +1569,18 @@
 	               	WHERE (typeversion.typeobject_id IN ('".implode("','",$fieldtype['can_have_typeobject_id'])."'))
 	               	ORDER BY itemversion.effective_date
 	        	";
-	            
+
 	        	$records = DbSchema::getInstance()->getRecords('',$query);
         	} else {
         		$records = array();
         	}
-        	
-        	// This compacts to so that only the latest effective date is represented in this list,  Oh, and it of course indexes by itemobject_id too. 
+
+        	// This compacts to so that only the latest effective date is represented in this list,  Oh, and it of course indexes by itemobject_id too.
         	$by_itemobject = array();
         	foreach($records as $record) {
         		$by_itemobject[$record['itemobject_id']] = $record;
         	}
-        	
+
         	/*
         	 * If the currently set value for the component is not in the list, we still need to have it show up in the list...
         	 */
@@ -1579,7 +1589,7 @@
         	if (is_numeric($this->{$fieldname}) && $LLC->getCurrentRecordByObjectId($this->{$fieldname})) {
         		$out[$this->{$fieldname}] = TextToHtml($LLC->item_serial_number).' (wrong type for this component)';
         	}
-        	
+
         	foreach($by_itemobject as $record) {
         		$type_desc = $show_types && (count($fieldtype['can_have_typeobject_id']) > 1) ? ' ['.$record['part_description'].']' : '';
         		if ($record['is_user_procedure']) {
@@ -1591,9 +1601,9 @@
         		}
         	}
         	natcasesort($out);
-            return $out;       	
+            return $out;
 		}
-		
+
 		/**
 		 * Determines if there are properties or components for this item that don't have a definition in the typeversion record.
 		 * Any such are put doublet return array to assign to list($this->hidden_properties_array,$this->hidden_components_array)
@@ -1601,7 +1611,7 @@
 		private function loadOrphanFieldsIntoHiddenArrays() {
 			$hidden_properties_array = array();
 			$hidden_components_array = array();
-			
+
 			// we assume that inside >_typeversion_digest is a reliable source for property and components
 			$SavedRecord = new self();
 			if ($SavedRecord->getRecordById($this->itemversion_id)) {
@@ -1622,22 +1632,22 @@
 			}
 			return array($hidden_properties_array,$hidden_components_array);
 		}
-		
+
 		public function previewDefinition() {
 			return isset($this->preview_definition_flag) && $this->preview_definition_flag;
 		}
-		
+
 		/**
 		 * Gets the field layout for the itemview.  This involves getting the dictionary-based layout
 		 * and merging it with the standard header layout. $layout_key can be "editview" and "itemview".  If
 		 * editview, then you will not have the option of changing the typeversion_id if this is a new
-		 * item.  
+		 * item.
 		 * @see DBTableRow::getEditViewFieldLayout()
 		 */
         function getEditViewFieldLayout($default_fieldnames,$parent_fields_to_remove,$layout_key=null) {
         	$holyheaderfields = array('typeversion_id','partnumber_alias','record_locator','effective_date','item_serial_number','disposition');
         	if ($_SESSION['account']->getRole()=='DataTerminal') $holyheaderfields[] = 'user_id';
-        	
+
         	/*
         	 * construct the header layout.  We start with the fields that should appear and then chunk
         	* into rows.
@@ -1656,9 +1666,9 @@
         		}
         		$header_layout[] = $rowout;
         	}
-        	
+
         	$parent_fields_to_remove = array_merge($parent_fields_to_remove,$holyheaderfields);
-        	
+
         	if (empty($this->_fieldlayout)) {
         		$this->_fieldlayout = $this->_typeversion_digest['dictionary_field_layout'];
         	}
@@ -1666,7 +1676,7 @@
         			$header_layout,
         			DBTableRowTypeVersion::addDefaultsToAndPruneFieldLayout($this->_fieldlayout,$default_fieldnames,$parent_fields_to_remove, $layout_key)
         	);
-        	
+
         	// prepare the orphan field descriptions if needed.
         	$orphan_layout = array();
         	list($this->hidden_properties_array,$this->hidden_components_array) = $this->loadOrphanFieldsIntoHiddenArrays();
@@ -1681,22 +1691,22 @@
         		$orphan_layout[] = array('name' => 'hidden_components_array');
         	}
         	if (count($orphan_layout)>0) $fieldlayout[] = array('type' => 'columns', 'columns' => $orphan_layout);
-        	        	
-        	return $fieldlayout;      	 
+
+        	return $fieldlayout;
         }
-        
+
         protected function formatInputTagComponent($fieldname) {
         	$fieldtype = $this->getFieldType($fieldname);
         	$select_values = $this->getComponentSelectOptions($fieldname,$this->effective_date,' (future effective date)',true,true);
         	$select_values[''] = ''; // the way you unset a component
-        	
+
         	/*
-        	 * Prepare the Add button for new items 
+        	 * Prepare the Add button for new items
         	 */
-        	
+
         	$add_btn = array();
         	$link_info = array();
-        	
+
         	if (!$this->previewDefinition()) {
 	        	foreach($fieldtype['can_have_typeobject_id'] as $typeobject_id) {
 	        		// need to determine typeversion_id in case we want to create a new item here:
@@ -1706,7 +1716,7 @@
 	        		//this line not needed, but I feel better checking
 	        		if (!$typeversion_id) throw new Exception("formatInputTag(): typeversion_id not found");
 	        		$return_param = 'editsubcomponent,'.$fieldname.',itemversion'.$typeversion_id;
-	
+
 	        		// This is for the special case of creating a new item (procedure) from the New button where where we will be referencing ourself.
 	        		$initialize_params = '';
 	        		foreach(DBTableRowTypeVersion::groupConcatComponentsToFieldTypes($TV->list_of_typecomponents) as $targfieldname => $component_type) {
@@ -1722,10 +1732,10 @@
 	        		}
 	        	}
         	}
-        	
+
         	$buttons = '';
 	        if (count($link_info)==1) {
-	        	$buttons = linkify('#','New','Add a component that does not already exist in the list','minibutton2', $link_info[0]['js']); 
+	        	$buttons = linkify('#','New','Add a component that does not already exist in the list','minibutton2', $link_info[0]['js']);
 	        } else if (count($link_info)>1) {
 	        	$buttons = linkify('#','New...','Add a component that does not already exist in the list','minibutton2', "$(this).next('.comp_add_button_group').toggle();");
 	        	$buttons .= '<div style="display:none;" class="comp_add_button_group">';
@@ -1734,10 +1744,10 @@
 	        	}
 	        	$buttons .= '</div>';
 	        }
-        	
+
         	$footer  = !is_valid_datetime($this->effective_date) ? '<span class="paren_red">Select Effective Date for more choices.</span>' : $buttons;
         	return format_select_tag($select_values,$fieldname,$this->getArray(),$fieldtype['onchange_js']).'<br />'.$footer;
-        }      
+        }
 
         public function getAliases() {
         	return DbSchema::getInstance()->getRecords('partnumber_alias',"select partnumber_alias, part_number, part_description, concat(part_number,' (',part_description,')') as description FROM partnumbercache WHERE typeversion_id='{$this->typeversion_id}' ORDER BY part_number");
@@ -1750,13 +1760,12 @@
 			$fieldtype = $this->getFieldType($fieldname);
 			$attributes = isset($fieldtype['disabled']) && $fieldtype['disabled'] ? ' disabled' : '';
 			$value = $this->$fieldname;
-			
-			
+
 			switch(isset($fieldtype['type']) ? $fieldtype['type'] : '') {
-				
+
 				case 'component' :
 					return $this->formatInputTagComponent($fieldname);
-									
+
 				/*
 				 * We don't want to use the normal jq_datetimepicker class for this, since we want to use our own handler
 				 */
@@ -1775,15 +1784,21 @@
 					} else {
 						return parent::formatInputTag($fieldname, $display_options);
 					}
-					
+
 				case 'boolean' :
-					// put in an "X" so we can unselect (effectively unanswering) this.
+					// put in an a revert symbol so we can unselect (effectively unanswering) this.
 					$jsclear = "clear_field('".$fieldname."'); return false;";
 					return '<a class="boolean_clearer" href="#" onclick="'.$jsclear.'" style="float:right;" title="unset this field" data-fname="'.$fieldname.'"><IMG style="vertical-align:middle;" src="'.Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/images/undoicon.gif" width="16" height="16" border="0" alt="delete"></a>'
 							.parent::formatInputTag($fieldname, $display_options);
-										
+
+				case 'calculated' :
+					// put in a reload symbol for refreshing the calculated field.
+					$jssub = "$('form').submit(); return false;";
+					return '<a class="calc_reload_link" href="#" onclick="'.$jssub.'" style="float:right;" title="recalculate this field from the expression '.TextToHtml($fieldtype['expression']).'"><IMG style="vertical-align:middle;" src="'.Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/images/refresh-green-icon.png" width="16" height="16" border="0" alt="recalculate"></a>'
+							.parent::formatInputTag($fieldname, $display_options);
+
 				default:
-					
+
 					switch($fieldname) {
 						case 'item_serial_number' :
 							$SNFormat = SerialNumberType::typeFactory($this->_typeversion_digest['serial_number_format']);
@@ -1800,7 +1815,7 @@
 							break;
 						case 'typeversion_id' :
 							$TV = new DBTableRowTypeVersion();
-							$TV->getRecordById($this->typeversion_id);								
+							$TV->getRecordById($this->typeversion_id);
 							$warning = '';
 							if (AdminSettings::getInstance()->use_any_typeversion_id) {
 								$warning =  '<div style="margin-top:4px;"><span class="paren_red">Type Version editing restrictions overridden.  Be careful!</span></div>';
@@ -1821,11 +1836,11 @@
 							}
 							break;
 					}
-					
+
 			}
 			return parent::formatInputTag($fieldname, $display_options);
 		}
-		
+
 		/**
 		 * creates a fully qualified URL that will take a browser to the itemview page for a specific itemobject.
 		 * If the current itemversion is NOT the most current one, then specify the itemversion number instead.
@@ -1838,21 +1853,21 @@
 			$use_itemobject_id = (isset($this->io__cached_current_itemversion_id) && is_numeric($this->io__cached_current_itemversion_id) && ($this->io__cached_current_itemversion_id==$this->itemversion_id));
 			return !$force_iv && $use_itemobject_id ? formatAbsoluteLocatorUrl('io',$this->itemobject_id) : formatAbsoluteLocatorUrl('iv',$this->itemversion_id);
 		}
-		
+
 		public function locatorTerm($is_html) {
 			$arr = explode('/',$this->absoluteUrl());
 			$n = count($arr);
 			$normal_locator = $arr[$n-2].'/'.$arr[$n-1];
-			
+
 			$arr = explode('/',$this->absoluteUrl(true));
 			$n = count($arr);
 			$iv_locator = $arr[$n-2].'/'.$arr[$n-1];
-			
+
 			$add_on_locator = $normal_locator!=$iv_locator ? ($is_html ? '<br /><span style="color:#888;">'.$iv_locator.'</span>' : ' or '.$iv_locator) : '';
-				
+
 			return $normal_locator.$add_on_locator;
 		}
-		
+
 		public static function fetchOrphanedFieldsHtml($value_array) {
 			$out = array();
 			if (is_array($value_array)) {
@@ -1860,7 +1875,7 @@
 					$out[] = ucwords(str_replace('_', ' ', $f)).':&nbsp;<b>'.TextToHtml($v).'</b>';
 				}
 			}
-			return count($out)==0 ? '' : '<ul class="bd-bullet_features"><li style="margin-left:0px;">'.implode('</li><li style="padding-left:0px;">',$out).'</li></ul>';			
+			return count($out)==0 ? '' : '<ul class="bd-bullet_features"><li style="margin-left:0px;">'.implode('</li><li style="padding-left:0px;">',$out).'</li></ul>';
 		}
 
 		/**
@@ -1878,14 +1893,14 @@
 					if (is_numeric($v)) {
 						$ComponentItemVersion = DbSchema::getInstance()->dbTableRowObjectFactory('itemversion',false,'');
 						$ComponentItemVersion->getCurrentRecordByObjectId($v);
-					}					
+					}
 					$text_name = ucwords(str_replace('_', ' ', $f));
 					$out[] = ucwords(str_replace('_', ' ', $f)).':&nbsp;'.self::fetchComponentPrintFieldHtml($navigator, $ComponentItemVersion, $text_name, $v, $is_html);
 				}
 			}
 			return count($out)==0 ? '' : '<ul class="bd-bullet_features"><li>'.implode('</li><li>',$out).'</li></ul>';
 		}
-		
+
 		public static function fetchComponentPrintFieldHtml($navigator, $ComponentItemVersion, $text_name, $value, $is_html) {
 			$text = !is_null($ComponentItemVersion) ? $ComponentItemVersion->shortName() : '';
 			if (($navigator instanceof UrlCallRegistry)) {
@@ -1898,7 +1913,7 @@
 			} else {
 				$html_text = TextToHtml($text);
 			}
-				
+
 			if (!is_null($ComponentItemVersion) && !$ComponentItemVersion->hasASerialNumber()) {
 				$features = array();
 				foreach($ComponentItemVersion->getFeaturedFieldTypes() as $fname => $fieldtype) {
@@ -1909,10 +1924,10 @@
 				$featuresstr = implode('',$features);
 				if ($featuresstr!='') $featuresstr = '<div class="bd-event-message proc-component"><ul>'.$featuresstr.'</ul></div>';
 				$html_text .= '<span class="in-field-disposition">'.DBTableRowItemVersion::renderDisposition($ComponentItemVersion->getFieldType('disposition'),$ComponentItemVersion->disposition).'</span>'.$featuresstr;
-			}				
+			}
 			return $is_html ? $html_text : $text;
 		}
-		
+
 		public function formatEffectiveDatePrintField($is_html) {
 			$value = $this->effective_date;
 			$fmt_date = ($value && (strtotime($value) != -1)) ? date('M j, Y G:i',strtotime($value)) : $value;
@@ -1936,11 +1951,11 @@
 			}
 			return $fmt_date;
 		}
-		
+
 		public function getDispositionDetails() {
 			$out = array();
 			if ($this->isCurrentVersion() && $this->disposition) {
-				$records = DBSchema::getInstance()->getRecords('',"SELECT iv.itemversion_id,iv.effective_date,iv.user_id,iv.disposition,user.first_name,user.last_name 
+				$records = DBSchema::getInstance()->getRecords('',"SELECT iv.itemversion_id,iv.effective_date,iv.user_id,iv.disposition,user.first_name,user.last_name
 					FROM itemversion iv
 					LEFT JOIN user ON user.user_id=iv.user_id
 					WHERE iv.itemobject_id='{$this->itemobject_id}'
@@ -1960,13 +1975,13 @@
 			}
 			return $out;
 		}
-		
+
 		public function formatPrintField($fieldname, $is_html=true, $nowrap=true, $show_float_units=false) {
 	        $fieldtype = $this->getFieldType($fieldname);
 	        $value = $this->$fieldname;
 	        $type = !empty($fieldtype['type']) ? $fieldtype['type'] : '';
 			switch($type) {
-				
+
 				case 'component' :
 					$ComponentItemVersion = $this->getComponentAsIVObject($fieldname);
 					$text_name = $this->formatFieldnameNoColon($fieldname);
@@ -1975,11 +1990,11 @@
 					return self::fetchComponentPrintFieldHtml($this->_navigator, $ComponentItemVersion, $text_name, $value, $is_html).$type_addon;
 				default:
 					// if float type and there are units, then show them if $show_float_units
-					if (($type=='float') && $show_float_units) {
+					if (in_array($type,array('float','calculated')) && $show_float_units) {
 						$suffix = !empty($fieldtype['units']) && $is_html ? ' '.$fieldtype['units'] : '';
 						$valout = parent::formatPrintField($fieldname, $is_html, $nowrap);
 						return $valout!=='' ? parent::formatPrintField($fieldname, $is_html, $nowrap).$suffix : '';
-					}					
+					}
 					switch($fieldname) {
 						case 'disposition':
 							if ($is_html && $value) {
@@ -2026,10 +2041,10 @@
 						default:
 							return parent::formatPrintField($fieldname, $is_html, $nowrap);
 					}
-					
+
 			}
 		}
-		
+
 		public function getPageTypeTitleHtml($description_only = false) {
 			$type_name = 'Unknown Item Type';
 			if (is_numeric($this->typeversion_id) && is_numeric($this->partnumber_alias)) {
@@ -2041,23 +2056,23 @@
 			}
 			return $type_name;
 		}
-		
+
 		public function isCurrentVersion() {
 			return $this->io__cached_current_itemversion_id==$this->itemversion_id;
 		}
-		
+
 		public static function renderDisposition($fieldtype,$disposition,$is_html=true, $empty_val='') {
 			if (isset($fieldtype['options'][$disposition]) && $disposition) {
 				$full_disposition = $fieldtype['options'][$disposition];
 				return $is_html ? '<span class="disposition '.$disposition.'">'.$full_disposition.'</span>' : $full_disposition;
-				
+
 			} else {
 				return $empty_val;
 			}
 		}
-	
-			
-		
+
+
+
 		/** return the editing links for a dependent row
 		 *
 		 * @param object $navigator
@@ -2071,17 +2086,17 @@
 		static public function itemversionEditLinks($navigator, $return_url, $delete_failed_return_url, $delete_done_return_url, $itemobject_id, $itemversion_id, $record_created,$user_id,$proxy_user_id, $is_a_procedure, $is_current_version) {
 			$can_edit_self = true;
 			$links = array();
-			
-			
+
+
 			$config = Zend_Registry::get('config');
 			$actions = array();
-			
+
 			$can_deleteblocked = false;
 			$can_delete = false;
 			$time = strtotime($record_created);
 			$inside_grace_period = strtotime($record_created) + $config->delete_grace_in_sec > script_time();
 			if (($_SESSION['account']->getRole() == 'Admin')) {
-					
+
 				if ($inside_grace_period) {
 					$can_delete = true;
 					$can_deleteblocked = false;
@@ -2094,13 +2109,13 @@
 						$can_deleteblocked = true;
 					}
 				}
-					
+
 			} else { // not an admin
 				if ($_SESSION['account']->canIEditMyOwnVersion($user_id,$proxy_user_id,$record_created)) {
 					$can_delete = true;
 				}
 			}
-			
+
 			$allow_new_version = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'ui:itemedit',$is_a_procedure ? 'new_proc_version' : 'new_part_version');
 			$allow_edit_version = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'ui:itemedit',$is_a_procedure ? 'edit_proc_version' : 'edit_part_version');
 			$allowed_to_alter_old_versions = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'ui:itemedit','can_edit_old_versions');
@@ -2109,16 +2124,16 @@
 			if ($_SESSION['account']->canIEditMyOwnVersion($user_id,$proxy_user_id,$record_created)) {
 				$show_edit_version_button = true;
 			}
-			
+
 			if ($show_edit_version_button) {
 				$links[] = linkify($navigator->getCurrentViewUrl('editview',null,array('table' => 'itemversion','itemversion_id' => $itemversion_id, 'initialize' => array('version_edit_mode' => 'vem_edit_version'), 'return_url' => $return_url, 'resetview' => 1)),'Edit','Edit This Version','minibutton2','','','btn-edit-version-id-'.$itemversion_id);
 			}
-			
+
 			if ($can_delete) $actions['delete'] = array('buttonname' => 'Delete', 'privilege' => 'delete', 'confirm' => 'Are you sure you want to delete this?');
 			if ($can_deleteblocked) $actions['delete'] = array('buttonname' => 'Delete (Blocked)', 'privilege' => 'delete', 'alert' => 'This record is older than '.(integer)($config->delete_grace_in_sec/3600).' hours.  If you want to delete it, you must go to the Settings menu and enable Delete Override.');
-			
-			
-			
+
+
+
 			foreach($actions as $action_name => $detail_action) {
 				if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'table:itemversion',$detail_action['privilege'])) {
 					$icon_html = detailActionToHtml($action_name,$detail_action);
@@ -2134,7 +2149,7 @@
 			}
 
 			return $links;
-		}	
+		}
 
 		/**
 		 * This assumes that the itemobject tables fields are in the current field list with the prefix io__.
@@ -2155,35 +2170,39 @@
 				}
 			}
 		}
-		
+
 
 		public function createdOnDate() {
 			return $this->io__cached_first_ver_date;
-		}		
-		
+		}
+
+		public function hasDictionaryOverrides() {
+			return isset($this->dictionary_overrides) && is_array(json_decode($this->dictionary_overrides,true));
+		}
+
 		public function hasDictionaryOverrideErrors() {
-			$dictionary_overrides = isset($this->dictionary_overrides) && is_array(json_decode($this->dictionary_overrides,true)) ? json_decode($this->dictionary_overrides,true) : array();
+			$dictionary_overrides = $this->hasDictionaryOverrides() ? json_decode($this->dictionary_overrides,true) : array();
 			foreach($dictionary_overrides as $fieldname => $attributes) {
 				if (is_array($attributes) && isset($attributes['error'])) {
 					return true;
 				}
 			}
 			return false;
-		}		
-		
+		}
+
 		public function applyDictionaryOverridesToFieldTypes() {
 			$dictionary_overrides = isset($this->dictionary_overrides) && is_array(json_decode($this->dictionary_overrides,true)) ? json_decode($this->dictionary_overrides,true) : array();
 			foreach($dictionary_overrides as $fieldname => $attributes) {
 				if (is_array($attributes)) {
 					foreach($attributes as $attr_key => $attr_value) {
-						if (in_array($attr_key,array('subcaption','error','locked'))) {
+						if (in_array($attr_key,array('subcaption','error','locked','maximum','minimum','units'))) {
 							$this->setFieldAttribute($fieldname, $attr_key, $attr_value);
 						}
 					}
 				}
-			}			
+			}
 		}
-		
+
 		/**
 		 * This will set field attributes for some of the header fields dependeing on if this is a part or procedure.
 		 * This is just to make it sound a little more seld-aware when editing or viewing.
@@ -2192,14 +2211,14 @@
 			if (isset($this->is_user_procedure) && !$is_editing) {
 				$this->setFieldAttribute('typeversion_id', 'caption', $this->is_user_procedure ? 'Procedure Number' : 'Part Number');
 				$this->setFieldAttribute('typeversion_id', 'subcaption', 'and version date');
-			}		
+			}
 			if (isset($this->is_user_procedure)) {
 				$this->setFieldAttribute('effective_date', 'subcaption', $this->is_user_procedure ? 'when procedure performed' : 'when part created or changed');
 				//$this->setFieldAttribute('effective_date', 'subcaption', '');
 			}
 		}
-		
-		
+
+
 		/**
 		 * This is the form layout processor that takes the $fieldlayout (from the db field typeversion.type_form_layout) and outputs html
 		 * table rows.
@@ -2211,24 +2230,24 @@
 		 * @throws Exception
 		 * @return string
 		 */
-		static function fetchItemVersionEditTableTR($fieldlayout, TableRow $dbtable, $errormsg=array(), $optionss='',$editable=true, $callBackFunction=null, $fieldhistory=array()) {
+		static function fetchItemVersionEditTableTR($fieldlayout, DBTableRowItemVersion $dbtable, $errormsg=array(), $optionss='',$editable=true, $callBackFunction=null, $fieldhistory=array()) {
 			$html = '';
 			$editfields = $dbtable->getEditFieldNames();
 			$dbtable->applyDictionaryOverridesToFieldTypes();
 			$dbtable->applyCategoryDependentHeaderCaptions($editable);
-		
-			
+			$calcparamfieldnames = $dbtable->getCalculatedParamFieldNames();
+
 			foreach($fieldlayout as $row) {
 				if (!is_array($row)) {
 					throw new Exception('DBTableRowItemVersion::fetchItemVersionEditTableTR(): layout row is not an array.');
 				}
-		
+
 				if (!isset($row['type'])) {
 					throw new Exception('DBTableRowItemVersion::fetchItemVersionEditTableTR(): row type is not defined.');
 				}
-		
+
 				$row_class = ($row['type']=='html') ? 'editview_text' : '';
-		
+
 				if ($row['type']=='columns') {
 					$html .= '<TR'.($row_class ? ' class="'.$row_class.'"' : '').'>';
 					$is_single_column = (count($row['columns'])==1);
@@ -2245,26 +2264,30 @@
 						if (isset($field['display_options'])) {
 							$options = array_unique(array_merge($options,$field['display_options']));
 						}
-		
+
 						$can_edit = in_array($fieldname,$editfields) && $editable;
 						$marker = $can_edit && (($dbtable->isRequired($fieldname) && !in_array('NotRequired', $options)) || in_array('Required', $options)) ? REQUIRED_SYM.' ' : '';
 						if ($can_edit && (isset($fieldtype['error']) || isset($fieldtype['locked']))) {
 							$can_edit = false;  // not allowed to edit something with a message
-							$marker = LOCKED_FIELD_SYM;							
+							$marker = LOCKED_FIELD_SYM;
 						}
-						
-						$cell_class = array($fieldname.'_cell');	
+
+						$cell_class = array($fieldname.'_cell');
 						$validate_msg = '';
 						if (isset($errormsg[$fieldname])) {
 							$validate_msg .= '<div class="errorred">'.$errormsg[$fieldname].'</div>';
 							$cell_class[] = 'cell_error';
 						}
-						
+
 						if (isset($fieldtype['error'])) {
 							$validate_msg .= '<div class="errorred">'.$fieldtype['error'].'</div>';
 							$cell_class[] = 'cell_error';
 						}
-						
+
+						if (in_array($fieldname,$calcparamfieldnames)) {
+							$cell_class[] = 'calc_param';
+						}
+
 						if ($callBackFunction!==null) {
 							$rhs_html = $callBackFunction($fieldname, $dbtable);
 						} else if ($can_edit) {
@@ -2275,7 +2298,7 @@
 								$rhs_html .= EventStream::changeHistoryToHtmlPrintFieldDecoration($fieldhistory[$fieldname]);
 							}
 						}
-						
+
 						$html .= '<TH class="'.implode(' ',$cell_class).'">'.$dbtable->formatFieldname($fieldname,$marker).'</TH>
 						<TD class="'.implode(' ',$cell_class).'"'.($is_single_column ? ' colspan="3"' : '').'>'.$rhs_html.$validate_msg.'</TD>
 								';
@@ -2286,25 +2309,25 @@
 					$html .= '<td colspan="4"><div class="editview_text_div">'.$row['html'].'<div></td>';
 					$html .= '</tr>';
 				}
-		
+
 			}
 			return $html;
 		}
-		
+
 		/** Override of standard touchtimers
 		 * (non-PHPdoc)
 		 * @see DBTableRow::startSelfTouchedTimer()
 		 */
 		public function startSelfTouchedTimer() {
 			self::startATouchedTimer('itemversion'.$this->tv__typeobject_id, $this->itemversion_id);
-		}		
-		
+		}
+
 		public function getTouchedRecently($max_time=null, $index_value=null, $scope_key=null) {
 			if (empty($scope_key)) $scope_key = 'itemversion'.$this->tv__typeobject_id;
 			if (empty($index_value)) $index_value = $this->itemversion_id;
 			return DBTableRow::wasItemTouchedRecently($scope_key, $index_value, $max_time);
-		}	
-		
+		}
+
 		/**
 		 * Returns the number of months history based on most recent and oldest version or reference.
 		 */
@@ -2312,7 +2335,7 @@
 			$effective_date_exists = ($this->effective_date && (strtotime($this->effective_date) != -1));
 			$most_recent_time = $effective_date_exists ? strtotime($this->effective_date) : script_time();
 			$create_time = strtotime($this->createdOnDate());
-			return ($most_recent_time - $create_time)/(30*24*3600);				
+			return ($most_recent_time - $create_time)/(30*24*3600);
 		}
-		
+
     }
