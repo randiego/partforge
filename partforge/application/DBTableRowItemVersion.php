@@ -2292,6 +2292,9 @@
 							$rhs_html = $callBackFunction($fieldname, $dbtable);
 						} else if ($can_edit) {
 							$rhs_html = $dbtable->formatInputTag($fieldname, $options);
+							if (isset($fieldtype['editinstructions']) && $fieldtype['editinstructions']) {
+								$rhs_html .= '<br /><div class="editinstructions">'.$fieldtype['editinstructions'].'</div>';
+							}
 						} else {
 							$rhs_html = $dbtable->formatPrintField($fieldname);
 							if (isset($fieldhistory[$fieldname])) {

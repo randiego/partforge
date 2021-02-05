@@ -89,6 +89,7 @@
         static public function typesListing() {
         	$default_prop = array('caption' => array('type' => 'string', 'help' => 'Normally the name of your field is presented by removing the underscores from the name field and capitalizing words.  If you want a different name presented to the user, enter it here.  HTML markup is allowed, including <a href="http://en.wikipedia.org/wiki/List_of_XML_and_HTML_character_entity_references" target="_blank">special character entities</a> like &amp;Omega; (&Omega;).  Not all HTML is correctly processed, so be sure to test your markup by inspecting the definition page and the PDF view after saving!'),
 			        			'subcaption' => array('type' => 'string', 'help' => 'This text goes under the caption field.  HTML is allowed here too.  See above.'),
+								'editinstructions' => array('type' => 'string', 'help' => 'This text goes under the field itself, but ONLY appears when the user is adding or editing data.  Use this for input-only instructions.  HTML is allowed here.'),
 			        			'featured' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = show this value in headline descriptions of this part or procedure.  By making a handful (say, 1 to 3) of your fields featured, you provide a nice at-a-glance summary of this part or procedure while sparing viewers the gory details.'));
 
         	$out = array(
@@ -1489,7 +1490,7 @@
         		$out['serial_number_format'] = $digest['serial_number_format'];
         	}
 
-        	// we only want to write out not standard fields.  The standard ones like item_serial_number are redundent.
+        	// we only want to write out non standard fields.  The standard ones like item_serial_number are redundent.
         	$dict = array();
         	$allowed_attr = self::typesListing();
         	foreach(array_merge($digest['addon_property_fields'],$digest['addon_component_subfields']) as $fieldname) {
