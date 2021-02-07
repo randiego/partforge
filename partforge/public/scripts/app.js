@@ -23,7 +23,7 @@ function timeSelectHtmlForWatches(selectTagId, classId, timevalueHHMM) {
 	             ['10:00','10:00'],['11:00','11:00'],['12:00','12:00'],['13:00','13:00'],['14:00','14:00'],['15:00','15:00'],
 	             ['16:00','16:00'],['17:00','17:00'],['18:00','18:00'],['19:00','19:00'],['20:00','20:00'],['21:00','21:00'],['22:00','22:00'],['23:00','23:00']];
 	var component_value = timevalueHHMM;
-	
+
 	// generic select HTML processing
 	var html = "";
 	var selected;
@@ -39,7 +39,7 @@ function timeSelectHtmlForWatches(selectTagId, classId, timevalueHHMM) {
 }
 
 /**
- * Used whereever a followButton id is located to construct dialog and add click handler to.  
+ * Used whereever a followButton id is located to construct dialog and add click handler to.
  * @param followUrl string url with constants _FOLLOWNOTIFYTIMEHHMM_, _NOTIFYINSTANTLY_, _NOTIFYDAILY_ to be substituted with the form results
  */
 function activatefollowButton(followUrl,footnote_text,ask_all_items) {
@@ -76,7 +76,7 @@ function activatefollowButton(followUrl,footnote_text,ask_all_items) {
 					Cancel: function() {
 						$( this ).dialog( "close" );
 					}
-				},			
+				},
 				close: function(event,ui) {$(this).dialog('destroy');}
 			});
 			return false; // prevents the default link
@@ -99,7 +99,7 @@ function activateLinkToPageButton(element,linkToPageUrl) {
 		$('#qrcode').qrcode(linkToPageUrl);
 		// now connect the on click handler that will override the normal link
 		$(element).click(function(link) {
-			var contentdiv = $('#linkToPageDialogContainer');			
+			var contentdiv = $('#linkToPageDialogContainer');
 			dialogdiv = contentdiv.dialog({
 				position: { my: "left top", at: "right bottom", of: link },
 				width: 300,
@@ -108,7 +108,7 @@ function activateLinkToPageButton(element,linkToPageUrl) {
 					"Close": function() {
 						$( this ).dialog( "close" );
 					}
-				},			
+				},
 				close: function(event,ui) {$(this).dialog('destroy');}
 			});
 			$('input[name="urlbox"]').select();  // preselects the text for easy copy
@@ -117,6 +117,72 @@ function activateLinkToPageButton(element,linkToPageUrl) {
 	}
 }
 
+var jsonfetchdata = {};
+
+/** Open dialog and contact the indicated server to fetch key-value data in JSON format to populate form fields
+ *
+ * @param string url to call
+ * @returns false
+ */
+function fetchJsonIntoInputs(url) {
+	// setup the dialog or bail if we are trying this from something other than an input form.
+	var contentdiv = $('#jsonFetchDialog');
+	if (contentdiv.length==0) {
+		alert('You are trying to import data, but this only works when you have an edit form open.');
+		return false;
+	}
+	contentdiv.html('<p>Contacting Server at '+url+'...');
+	dialogdiv = contentdiv.dialog({
+		title: "Import data into form?",
+		width: 600,
+		height: 'auto',
+		buttons: {
+			"OK": function() {
+				for(key in jsonfetchdata) {
+					var target = $('#theform :input[name="'+key+'"]');
+					if (target.length) {
+						if (target.is(':radio')) {
+							target.val([jsonfetchdata[key]]);
+						} else {
+							target.val(jsonfetchdata[key]);
+						}
+					}
+				}
+				contentdiv.html('');
+				$( this ).dialog( "close" );
+			},
+			Cancel: function() {
+				contentdiv.html('');
+				$( this ).dialog( "close" );
+			}
+		},
+		close: function(event,ui) {
+			contentdiv.html('');
+			$(this).dialog('destroy');
+		}
+	});
+
+	$.getJSON(url, {},function(data) {
+		var html = '<table class="json_import_tbl listtable"><tr><th>Import Property</th><th>Import Value</th><th>Field Match</th></tr>';
+		jsonfetchdata = {};
+		for(key in data) {
+			var target = $('#theform :input[name="'+key+'"]');
+			var matched = target.length ? '<span class="disposition Pass">Yes</span>' : '';
+			if (target.length) {
+				jsonfetchdata[key] = data[key];
+			}
+			html += "<tr><td>"+key+"</td><td>"+data[key]+"</td><td>"+matched+"</td></tr>";
+		}
+		html += "</table>";
+		$('#jsonFetchDialog').html(html);
+		return false; // prevents the default link
+	}).fail(function(jqXHR, textStatus, errorThrown){
+		contentdiv.append('<p>Failed to get a valid JSON string back from server.</p>');
+		contentdiv.append('<p>Status: '+textStatus+'</p>');
+		contentdiv.append('<p>Server Response: '+jqXHR.responseText+'</p>');
+	});
+	return false;
+}
 
 /* include any js files here */
 
@@ -126,19 +192,19 @@ $(document).ready(function() {
     }, 5000, function() {
       // Animation complete.
     });
-    
+
     $('.bd-event-row.event_afterglow_r .bd-event-content').animate({
         backgroundColor: "#EEEEFF"
       }, 5000, function() {
         // Animation complete.
-    });    
-    
+    });
+
     $("input.jq_datepicker").datepicker({
     });
-    
+
     $("input.jq_datetimepicker").datetimepicker({
-    });    
-    
+    });
+
     // autocomplete is really distracting with the date time picker
     $("input.jq_datetimepicker, input.jq_datepicker").attr('autocomplete','off');
 
@@ -150,7 +216,7 @@ $(document).ready(function() {
 	if ( $('table.edittable th span.locked_field').length > 0) {
 		$("p.locked_field_para").show();
 	}
-	
+
 	// ajax call to dismis a particular what's new dialog
     $(".ok_i_got_it").click( function (event) {
     	element = $(this).closest('div.whats_new');
@@ -163,8 +229,8 @@ $(document).ready(function() {
 			}
 		})
 		return false;
-	});	
-    
+	});
+
     // do this automatically for everything.
 	$('.a_pop_link').click(function(link){
 		var contentdiv = $(this).next();
@@ -175,9 +241,9 @@ $(document).ready(function() {
 			height: 'auto',
 			close: function(event,ui) {$(this).dialog('destroy'); a_pop_dialogdiv_mutex = null;}
 		});
-	}); 
-    
-    
+	});
+
+
 });
 
 
