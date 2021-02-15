@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
@@ -25,10 +25,10 @@
 
 class Types_VersionsController extends RestControllerActionAbstract
 {
-	
+
 	/*
 	 * GET /types/versions
-	 * 
+	 *
 	 * Return a list of all versions of all types, subject to query variables
 	 */
 	public function indexAction() {
@@ -40,13 +40,13 @@ class Types_VersionsController extends RestControllerActionAbstract
 				ORDER BY typeversion.effective_date");
 		$this->view->typeversion_ids = extract_column($records, 'typeversion_id');
 	}
-	
-	
+
+
    /*
 	* GET /types/versions/12
 	*
-	* Return the specified version of the typeversion.  This can return both PDF and json dictionary versions.  
-	* 
+	* Return the specified version of the typeversion.  This can return both PDF and json dictionary versions.
+	*
 	* Unlike /types/objects/ api call, this returns the
 	* version of the component objects that were active at the time of the effective date of this version.
 	* main parameter is typeobject_id
@@ -59,7 +59,7 @@ class Types_VersionsController extends RestControllerActionAbstract
 	*    we get an array 'linked_procedures' that contains one level of each linked procedure.
 	*   max_depth=n is the maximum recursion level into component definitions for building return dictionary.  default is 0 which stops after first level.
 	*
-	*/	
+	*/
 	public function getAction()
 
 	{
@@ -76,30 +76,30 @@ class Types_VersionsController extends RestControllerActionAbstract
 					exit;
 				case 'nested':
 					$errors = array();
-					foreach(DBTableRowTypeObject::getTypeObjectFullNestedArray($TypeVersion->typeobject_id,$errors,$TypeVersion->effective_date,$max_depth,0) as $fieldname => $value) {
+					foreach(DBTableRowTypeObject::getTypeVersionFullNestedArray($TypeVersion->typeversion_id,$errors,$max_depth,0) as $fieldname => $value) {
 						$this->view->{$fieldname} = $value;
 					}
 					if (count($errors)>0) $this->view->errormessages = $errors;
 					if ($show_linked_procedures) {
-						$this->view->linked_procedures = DBTableRowTypeObject::getTypeObjectArrayOfLinkedProcedures($TypeVersion->typeobject_id,$TypeVersion->effective_date);
+						$this->view->linked_procedures = DBTableRowTypeObject::getTypeVersionArrayOfLinkedProcedures($TypeVersion->typeversion_id);
 					}
 					break;
 			}
 		}
 	}
-	
+
 	public function postAction()
 	{
 		$this->noOp();
 	}
-	
+
 	public function putAction()
 	{
 		$this->noOp();
 	}
-	
+
 	public function deleteAction()
 	{
 		$this->noOp();
-	}	
+	}
 }

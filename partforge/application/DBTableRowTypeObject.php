@@ -24,19 +24,19 @@
  */
 
     class DBTableRowTypeObject extends DBTableRow {
-        
+
         public function __construct($ignore_joins=false,$parent_index=null) {
-            parent::__construct('typeobject',$ignore_joins,$parent_index);            
-            
+            parent::__construct('typeobject',$ignore_joins,$parent_index);
+
       //      $this->user_id = $_SESSION['account']->user_id;
         }
-        
-       
+
+
        	/*
        		  The data dictionary encodes data just like the fielddictionary.php file.
        	*/
-        
-        
+
+
        /*
          fieldtype values := {
             caption*
@@ -52,30 +52,30 @@
             onchange_js          // js to be put in OnChange handler
             onclick_js          // js to be put in OnClick handler
             join_name           // same as key in dictionary join array
-            exclude_on_layout     // don't show on the default layout.  
+            exclude_on_layout     // don't show on the default layout.
             mode      R means that it is not saved or editable.  RW (default) means it is editable and saveable
          }
          * = required
-         
+
          for example:
          $tr = new TableRow();
-         $tr->setFieldType('item_color', array('type' => 'enum', 'options' => array('Red' => 'Red','Green' => 'Green','Blue' => 'Blue') )); 
+         $tr->setFieldType('item_color', array('type' => 'enum', 'options' => array('Red' => 'Red','Green' => 'Green','Blue' => 'Blue') ));
         */
-        
+
 
         /**
          * This returns an array of fieldnames that are NOT allowed to be used for user-defined components or data dictionary fields
          */
-        static function getReservedFieldNames() {        
+        static function getReservedFieldNames() {
         	return array('action','controller','itemobject_id','itemversion_id','typeobject_id','typeversion_id',
         			'item_serial_number','cached_serial_number_value','record_locator','effective_date','disposition','user_id','record_created',
         			'dictionary_overrides','item_data','itemcomponent_id','belongs_to_itemversion_id','can_have_itemobject_id',
         			'component_name','hidden_components_array','hidden_properties_array','component_subfield','embedded_in_typeobject_id','partnumber_alias',
         			'preview_definition_flag','table');
         }
-        
+
         /**
-         * create cached version of the next serial number fields. 
+         * create cached version of the next serial number fields.
          * @param int $typeobject_id specifty this if you only want to update the cached value for single typeobject.
          */
         static function updateCachedNextSerialNumberFields($typeobject_id=null) {
@@ -85,15 +85,15 @@
 				FROM typeobject
 				LEFT JOIN typeversion on typeversion.typeversion_id = typeobject.cached_current_typeversion_id
 				LEFT JOIN typecategory on typecategory.typecategory_id = typeversion.typecategory_id {$where}");
-        	
+
         	foreach($records as $record) {
         		$serial_number_format = extract_prefixed_keys($record, 'serial_number_');
         		$SerialNumber = SerialNumberType::typeFactory($serial_number_format);
         		$out = empty($record['is_user_procedure']) && $SerialNumber->supportsGetNextNumber() ? $SerialNumber->getNextSerialNumber($record['typeversion_id']) : '';
         		DbSchema::getInstance()->mysqlQuery("UPDATE typeobject SET cached_next_serial_number='".addslashes($out)."' WHERE typeobject_id='".$record['typeobject_id']."'");
-        	}        	
+        	}
         }
-        
+
         /**
          * create a cached version of the count of hidden fields.
          * @param int or null $typeobject_id which typeobject record should we update the field for
@@ -113,9 +113,9 @@
         		}
         	}
         }
-        
+
         /**
-         * Returns a (possibly)nested array of fields that define the 
+         * Returns a (possibly)nested array of fields that define the
          * @param int $typeobject_id
          * @param date string $effective_date set to null if you want the latest version
          * @param int $max_depth 0 means use only first level.  null means do them all.
@@ -131,7 +131,7 @@
 	        		foreach($out['components'] as $fieldname => $def) {
 	        			$expanded_components = array();
 	        			foreach($out['components'][$fieldname]['can_have_typeobject_id'] as $can_have_typeobject_id) {
-	        			
+
 		        			if (in_array($can_have_typeobject_id,$parents)) {
 		        				$errors[] = 'Self reference detected at typeobject IDs ['.implode(',',$parents).','.$typeobject_id.'].  '.$out['type_part_number'].' has itself as a component or subcomponent.';
 		        			} else if (is_null($max_depth) || ($max_depth >$level)) {
@@ -140,16 +140,16 @@
 		        			} else {
 		        				$expanded_components[] = $can_have_typeobject_id;
 		        			}
-		        			
+
 	        			}
-	        			
+
 	        			$out['components'][$fieldname]['can_have_typeobject_id'] = $expanded_components;
 	        		}
         		}
         	}
         	return $out;
         }
-        
+
         static function getTypeObjectArrayOfLinkedProcedures($typeobject_id, $effective_date=null) {
         	$errors = array();
         	$out = array();
@@ -162,5 +162,60 @@
         	}
         	return $out;
         }
-        
+
+		/**
+		 * Similar to getTypeObjectFullNestedArray() except the top level that is returned exactly the itemversion requested.
+		 * In practice this means that it also works with draft definitions.  Instead of recursing, it calls getTypeObjectFullNestedArray
+		 * for the components, which in turn recurses.
+		 *
+		 * @param int $typeversion_id
+		 * @param string array $errors
+		 * @param int $max_depth
+		 * @param integer $level
+		 * @param array $parents
+		 *
+		 * @return nested assoc array
+		 */
+        static function getTypeVersionFullNestedArray($typeversion_id, &$errors,$max_depth=null,$level=0,$parents = array()) {
+        	$out = array();
+        	$TypeVersion = new DBTableRowTypeVersion();
+        	if ($TypeVersion->getRecordById($typeversion_id)) {
+				$typeobject_id = $TypeVersion->itemobject_id;
+				$effective_date = $TypeVersion->effective_date;
+        		$out = $TypeVersion->getExportDefinitionFields();
+        		if (isset($out['components'])) {
+	        		foreach($out['components'] as $fieldname => $def) {
+	        			$expanded_components = array();
+	        			foreach($out['components'][$fieldname]['can_have_typeobject_id'] as $can_have_typeobject_id) {
+		        			if (in_array($can_have_typeobject_id,$parents)) {
+		        				$errors[] = 'Self reference detected at typeobject IDs ['.implode(',',$parents).','.$typeobject_id.'].  '.$out['type_part_number'].' has itself as a component or subcomponent.';
+		        			} else if (is_null($max_depth) || ($max_depth >$level)) {
+					        	$new_parents = array_merge($parents, array($typeobject_id));
+		        				$expanded_components[] = self::getTypeObjectFullNestedArray($can_have_typeobject_id,$errors,$effective_date,$max_depth,$level+1,$new_parents);
+		        			} else {
+		        				$expanded_components[] = $can_have_typeobject_id;
+		        			}
+	        			}
+	        			$out['components'][$fieldname]['can_have_typeobject_id'] = $expanded_components;
+	        		}
+        		}
+        	}
+        	return $out;
+        }
+
+        static function getTypeVersionArrayOfLinkedProcedures($typeversion_id) {
+        	$errors = array();
+        	$out = array();
+        	$TypeVersion = new DBTableRowTypeVersion();
+        	if ($TypeVersion->getRecordById($typeversion_id)) {
+        		$procedure_records = getTypesThatReferenceThisType($TypeVersion->typeversion_id,1);  // procedures only
+        		foreach($procedure_records as $record) {
+        			$out[] = self::getTypeObjectFullNestedArray($record['typeobject_id'], $errors, $TypeVersion->effective_date, 0);
+        		}
+        	}
+        	return $out;
+        }
+
+
+
     }
