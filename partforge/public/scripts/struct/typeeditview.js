@@ -286,7 +286,7 @@ function fetchDictItemEditorHtml() {
 	if ((typeof typesListing[dictEditBuff['type']] != 'undefined')) {
 		html += '<p>'+typesListing[dictEditBuff['type']]['help']+'</p>';
 	}
-	html += '<div><table class="edittable">';
+	html += '<div><table class="edittable editdictionary">';
 
 	html += '<tr><th>Type:</th><td>'+typeSelectHtml('dictionaryTypeSelect', dictEditBuff['type'])+'</td></tr>';
 
@@ -824,7 +824,7 @@ function fetchCompEditorHtml() {
 	var html = "";
 
 	html += '<div class="bd-propeditor">';
-	html += '<div><table class="edittable">';
+	html += '<div><table class="edittable editdictionary">';
 
 	var name_edit_disabled = '';
 	var disabled_msg = '';

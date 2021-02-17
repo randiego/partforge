@@ -992,20 +992,21 @@
         	// remove items from the delete and save list if they are identical.
         	foreach($comp_records_to_delete as $typecomponent_id => $typecomponent) {
         		$component_name_on_disk = $typecomponent['component_name'];
-        		$to_save = $components_to_save[$component_name_on_disk];
-        		// flatten the list of typeobject_ids
-        		$a = $to_save['can_have_typeobject_id'];
-        		if (!is_array($a)) $a = array($a);
-        		sort($a);
-        		$to_save['can_have_typeobject_id'] = implode('|',$a);
-        		// if this component is one we are going to turn around and recreated anyway, then remove it from both $comp_records_to_delete and $components_to_save
-        		if (isset($components_to_save[$component_name_on_disk])
-        				&& ($typecomponent['can_have_typeobject_id']==$to_save['can_have_typeobject_id'])
-		        		&& ($typecomponent['caption']==$to_save['caption']) && ($typecomponent['subcaption']==$to_save['subcaption'])
-        				&& ($typecomponent['featured']==$to_save['featured']) && ($typecomponent['required']==$to_save['required'])) {
-        			unset($comp_records_to_delete[$typecomponent_id]);
-        			unset($components_to_save[$component_name_on_disk]);
-        		}
+				if (isset($components_to_save[$component_name_on_disk])) {
+					$to_save = $components_to_save[$component_name_on_disk];
+					// flatten the list of typeobject_ids
+					$a = $to_save['can_have_typeobject_id'];
+					if (!is_array($a)) $a = array($a);
+					sort($a);
+					$to_save['can_have_typeobject_id'] = implode('|',$a);
+					// if this component is one we are going to turn around and recreated anyway, then remove it from both $comp_records_to_delete and $components_to_save
+					if (($typecomponent['can_have_typeobject_id']==$to_save['can_have_typeobject_id'])
+							&& ($typecomponent['caption']==$to_save['caption']) && ($typecomponent['subcaption']==$to_save['subcaption'])
+							&& ($typecomponent['featured']==$to_save['featured']) && ($typecomponent['required']==$to_save['required'])) {
+						unset($comp_records_to_delete[$typecomponent_id]);
+						unset($components_to_save[$component_name_on_disk]);
+					}
+				}
         	}
 
         	// delete any from the delete list that are still there
