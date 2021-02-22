@@ -233,7 +233,6 @@
         {
         	$this->verifyFieldsExist($fieldnames);
         	$EMAIL_REGEX = '^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9.-]+$';
-        	$DATE_REGEX = '^[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$';
         	foreach ($fieldnames as $fieldname) {
         		if (str_contains($fieldname,'email')) {
         			if ($this->isRequired($fieldname) || (isset($this->_fields[$fieldname]) && (trim($this->_fields[$fieldname])!=''))) {
