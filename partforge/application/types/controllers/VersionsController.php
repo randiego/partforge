@@ -26,80 +26,82 @@
 class Types_VersionsController extends RestControllerActionAbstract
 {
 
-	/*
-	 * GET /types/versions
-	 *
-	 * Return a list of all versions of all types, subject to query variables
-	 */
-	public function indexAction() {
-		$typeobject_id = isset($this->params['typeobject_id']) ? (is_numeric($this->params['typeobject_id']) ? addslashes($this->params['typeobject_id']) : null) : null;
-		$and_where = !is_null($typeobject_id) ? " AND (itemcomponent.has_an_itemobject_id='{$has_an_itemobject_id}')" : '';
-		$records = DbSchema::getInstance()->getRecords('',"SELECT DISTINCT typeversion.typeversion_id FROM typeversion
+    /*
+     * GET /types/versions
+     *
+     * Return a list of all versions of all types, subject to query variables
+     */
+    public function indexAction()
+    {
+        $typeobject_id = isset($this->params['typeobject_id']) ? (is_numeric($this->params['typeobject_id']) ? addslashes($this->params['typeobject_id']) : null) : null;
+        $and_where = !is_null($typeobject_id) ? " AND (itemcomponent.has_an_itemobject_id='{$has_an_itemobject_id}')" : '';
+        $records = DbSchema::getInstance()->getRecords('', "SELECT DISTINCT typeversion.typeversion_id FROM typeversion
 				LEFT JOIN typeobject ON typeobject.typeobject_id=typeversion.typeobject_id
 				WHERE 1=1 {$and_where}
 				ORDER BY typeversion.effective_date");
-		$this->view->typeversion_ids = extract_column($records, 'typeversion_id');
-	}
+        $this->view->typeversion_ids = extract_column($records, 'typeversion_id');
+    }
 
 
    /*
-	* GET /types/versions/12
-	*
-	* Return the specified version of the typeversion.  This can return both PDF and json dictionary versions.
-	*
-	* Unlike /types/objects/ api call, this returns the
-	* version of the component objects that were active at the time of the effective date of this version.
-	* main parameter is typeobject_id
-	*
-	* Input:
-	*   id = the typeversion_id of the definition being retrieved. (required)
-	*   fmt=nested (default) shows a JSON array in fully nested dictionary format
-	*   fmt=pdf generates and outputs a pdf file
-	*   show_linked_procedures=1 (true): for pdfs this will append the definition pages from associated procedures too.  For nested (json) output,
-	*    we get an array 'linked_procedures' that contains one level of each linked procedure.
-	*   max_depth=n is the maximum recursion level into component definitions for building return dictionary.  default is 0 which stops after first level.
-	*
-	*/
-	public function getAction()
+    * GET /types/versions/12
+    *
+    * Return the specified version of the typeversion.  This can return both PDF and json dictionary versions.
+    *
+    * Unlike /types/objects/ api call, this returns the
+    * version of the component objects that were active at the time of the effective date of this version.
+    * main parameter is typeobject_id
+    *
+    * Input:
+    *   id = the typeversion_id of the definition being retrieved. (required)
+    *   fmt=nested (default) shows a JSON array in fully nested dictionary format
+    *   fmt=pdf generates and outputs a pdf file
+    *   show_linked_procedures=1 (true): for pdfs this will append the definition pages from associated procedures too.  For nested (json) output,
+    *    we get an array 'linked_procedures' that contains one level of each linked procedure.
+    *   max_depth=n is the maximum recursion level into component definitions for building return dictionary.  default is 0 which stops after first level.
+    *
+    */
+    public function getAction()
+    {
+        $fmt = isset($this->params['fmt']) ? $this->params['fmt'] : 'nested';
+        $max_depth = isset($this->params['max_depth']) ? (is_numeric($this->params['max_depth']) ? $this->params['max_depth'] : 0) : 0;
+        $show_linked_procedures = isset($this->params['show_linked_procedures']) ? $this->params['show_linked_procedures'] : 0;
+        $TypeVersion = new DBTableRowTypeVersion(false, null);
+        if ($TypeVersion->getRecordById($this->params['id'])) {
+            switch ($fmt) {
+                case 'pdf':
+                    $Pdf = new ItemDefinitionViewPDF();
+                    $Pdf->buildTypeDocument($this->params['id'], $this->params);
+                    $Pdf->Output(make_filename_safe('Definition_'.DBTableRowTypeVersion::formatPartNumberDescription($TypeVersion->type_part_number, $TypeVersion->type_description).'.pdf'), 'D');
+                    exit;
+                case 'nested':
+                    $errors = array();
+                    foreach (DBTableRowTypeObject::getTypeVersionFullNestedArray($TypeVersion->typeversion_id, $errors, $max_depth, 0) as $fieldname => $value) {
+                        $this->view->{$fieldname} = $value;
+                    }
+                    if (count($errors)>0) {
+                        $this->view->errormessages = $errors;
+                    }
+                    if ($show_linked_procedures) {
+                        $this->view->linked_procedures = DBTableRowTypeObject::getTypeVersionArrayOfLinkedProcedures($TypeVersion->typeversion_id);
+                    }
+                    break;
+            }
+        }
+    }
 
-	{
-		$fmt = isset($this->params['fmt']) ? $this->params['fmt'] : 'nested';
-		$max_depth = isset($this->params['max_depth']) ? (is_numeric($this->params['max_depth']) ? $this->params['max_depth'] : 0) : 0;
-		$show_linked_procedures = isset($this->params['show_linked_procedures']) ? $this->params['show_linked_procedures'] : 0;
-		$TypeVersion = DbSchema::getInstance()->dbTableRowObjectFactory('typeversion');
-		if ($TypeVersion->getRecordById($this->params['id'])) {
-			switch ($fmt) {
-				case 'pdf':
-					$Pdf = new ItemDefinitionViewPDF();
-					$Pdf->buildTypeDocument($this->params['id'], $this->params);
-					$Pdf->Output(make_filename_safe('Definition_'.DBTableRowTypeVersion::formatPartNumberDescription($TypeVersion->type_part_number,$TypeVersion->type_description).'.pdf'),'D');
-					exit;
-				case 'nested':
-					$errors = array();
-					foreach(DBTableRowTypeObject::getTypeVersionFullNestedArray($TypeVersion->typeversion_id,$errors,$max_depth,0) as $fieldname => $value) {
-						$this->view->{$fieldname} = $value;
-					}
-					if (count($errors)>0) $this->view->errormessages = $errors;
-					if ($show_linked_procedures) {
-						$this->view->linked_procedures = DBTableRowTypeObject::getTypeVersionArrayOfLinkedProcedures($TypeVersion->typeversion_id);
-					}
-					break;
-			}
-		}
-	}
+    public function postAction()
+    {
+        $this->noOp();
+    }
 
-	public function postAction()
-	{
-		$this->noOp();
-	}
+    public function putAction()
+    {
+        $this->noOp();
+    }
 
-	public function putAction()
-	{
-		$this->noOp();
-	}
-
-	public function deleteAction()
-	{
-		$this->noOp();
-	}
+    public function deleteAction()
+    {
+        $this->noOp();
+    }
 }

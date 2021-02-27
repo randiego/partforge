@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -25,31 +25,33 @@
 
 class UtilsController extends DBControllerActionAbstract
 {
-	public $params;
+    public $params;
 
-	public function init()
-	{
-		$this->params = $this->getRequest()->getParams();
-		trim_recursive($this->params);
-		$this->navigator = new UrlCallRegistry($this,$this->getRequest()->getBaseUrl().'/user/login');
-		$this->navigator->setPropagatingParamNames(explode(',',AUTOPROPAGATING_QUERY_PARAMS));
-		$this->view->navigator = $this->navigator;
-	}
-	
-	public function upgradeAction() {
-		$msgs = array();
-		if (isset($this->params['form'])) {
-			switch (true)
-			{
-				case isset($this->params['btnUpgrade']):
-					$databaseversion = getGlobal('databaseversion');
-					if (!$databaseversion) $databaseversion = '1 or older';
+    public function init()
+    {
+        $this->params = $this->getRequest()->getParams();
+        trim_recursive($this->params);
+        $this->navigator = new UrlCallRegistry($this, $this->getRequest()->getBaseUrl().'/user/login');
+        $this->navigator->setPropagatingParamNames(explode(',', AUTOPROPAGATING_QUERY_PARAMS));
+        $this->view->navigator = $this->navigator;
+    }
 
-					
-					if ($databaseversion=='1 or older') {
-						$msgs[] = 'Upgrading to version 2: background changelog table';
-						DbSchema::getInstance()->mysqlQuery("DROP TABLE IF EXISTS changelog");
-						DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS `changelog` (
+    public function upgradeAction()
+    {
+        $msgs = array();
+        if (isset($this->params['form'])) {
+            switch (true) {
+                case isset($this->params['btnUpgrade']):
+                    $databaseversion = getGlobal('databaseversion');
+                    if (!$databaseversion) {
+                        $databaseversion = '1 or older';
+                    }
+
+
+                    if ($databaseversion=='1 or older') {
+                        $msgs[] = 'Upgrading to version 2: background changelog table';
+                        DbSchema::getInstance()->mysqlQuery("DROP TABLE IF EXISTS changelog");
+                        DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS `changelog` (
 							  `changelog_id` int(11) NOT NULL AUTO_INCREMENT,
 							  `user_id` int(11) NOT NULL,
 							  `changed_on` datetime NOT NULL,
@@ -67,14 +69,14 @@ class UtilsController extends DBControllerActionAbstract
 							  KEY `typeversion_id` (`typeversion_id`),
 							  KEY `change_code` (`change_code`)
 							) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
-						$databaseversion = '2';
-						setGlobal('databaseversion', $databaseversion);
-					}
-					
-					if ($databaseversion=='2') {
-						$msgs[] = 'Upgrading to version 3: new format for changelog table.';
-						DbSchema::getInstance()->mysqlQuery("DROP TABLE IF EXISTS changelog");
-						DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS `changelog` (
+                        $databaseversion = '2';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
+
+                    if ($databaseversion=='2') {
+                        $msgs[] = 'Upgrading to version 3: new format for changelog table.';
+                        DbSchema::getInstance()->mysqlQuery("DROP TABLE IF EXISTS changelog");
+                        DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS `changelog` (
 							  `changelog_id` int(11) NOT NULL AUTO_INCREMENT,
 							  `user_id` int(11) NOT NULL,
 							  `changed_on` datetime NOT NULL,
@@ -94,17 +96,17 @@ class UtilsController extends DBControllerActionAbstract
 							  KEY `trigger_typeobject_id` (`trigger_typeobject_id`),
 							  KEY `change_code` (`change_code`)
 							) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
-						
-						DbSchema::getInstance()->mysqlQuery("DROP TABLE IF EXISTS changecode");
-						DbSchema::getInstance()->mysqlQuery("CREATE TABLE `changecode` (
+
+                        DbSchema::getInstance()->mysqlQuery("DROP TABLE IF EXISTS changecode");
+                        DbSchema::getInstance()->mysqlQuery("CREATE TABLE `changecode` (
 						`change_code_id` int(11) NOT NULL AUTO_INCREMENT,
 						`change_code` VARCHAR(4) NOT NULL,
 						`change_code_name` varchar(128) DEFAULT NULL,
 						PRIMARY KEY (`change_code_id`),
 						KEY `change_code` (`change_code`)
 						) ENGINE=InnoDB  DEFAULT CHARSET=utf8;");
-						
-						DbSchema::getInstance()->mysqlQuery("INSERT INTO `changecode` (`change_code_id`, `change_code`, `change_code_name`) VALUES
+
+                        DbSchema::getInstance()->mysqlQuery("INSERT INTO `changecode` (`change_code_id`, `change_code`, `change_code_name`) VALUES
 						(1, 'DIO', 'Deleted an Item'),
 						(2, 'DIV', 'Deleted Item Version'),
 						(3, 'AIO', 'Added New Item'),
@@ -126,14 +128,14 @@ class UtilsController extends DBControllerActionAbstract
 						(19, 'CTC', 'Changed Definition Comment'),
 						(20, 'DTC', 'Deleted Definition Comment');");
 
-						$databaseversion = '3';
-						setGlobal('databaseversion', $databaseversion);
-					}
-					
-					if ($databaseversion=='3') {
-						$msgs[] = 'Upgrading to version 4: changesubscription table';
-						DbSchema::getInstance()->mysqlQuery("DROP TABLE IF EXISTS changesubscription");
-						DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS `changesubscription` (
+                        $databaseversion = '3';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
+
+                    if ($databaseversion=='3') {
+                        $msgs[] = 'Upgrading to version 4: changesubscription table';
+                        DbSchema::getInstance()->mysqlQuery("DROP TABLE IF EXISTS changesubscription");
+                        DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS `changesubscription` (
 							  `changesubscription_id` int(11) NOT NULL AUTO_INCREMENT,
 							  `user_id` int(11) NOT NULL,
 							  `added_on` datetime NOT NULL,
@@ -146,8 +148,8 @@ class UtilsController extends DBControllerActionAbstract
 							  KEY `itemobject_id` (`itemobject_id`),
 							  KEY `typeobject_id` (`typeobject_id`)
 							) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
-						DbSchema::getInstance()->mysqlQuery("DROP TABLE IF EXISTS changenotifyqueue");
-						DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS `changenotifyqueue` (
+                        DbSchema::getInstance()->mysqlQuery("DROP TABLE IF EXISTS changenotifyqueue");
+                        DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS `changenotifyqueue` (
 							  `changenotifyqueue_id` int(11) NOT NULL AUTO_INCREMENT,
 							  `user_id` int(11) NOT NULL,
 							  `changelog_id` int(11) NOT NULL,
@@ -156,43 +158,44 @@ class UtilsController extends DBControllerActionAbstract
 							  KEY `user_id` (`user_id`),
 							  KEY `changelog_id` (`changelog_id`)
 							) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
-						$databaseversion = '4';
-						setGlobal('databaseversion', $databaseversion);
-					}					
-						
-					if ($databaseversion=='4') {
-						$msgs[] = 'Upgrading to version 5: changesubscription table additions - Jan 2019';
-						DbSchema::getInstance()->mysqlQuery("ALTER TABLE `changesubscription` ADD COLUMN `follow_items_too` INT(1) DEFAULT 1 AFTER `typeobject_id`");
-						$databaseversion = '5';
-						setGlobal('databaseversion', $databaseversion);
-					}
+                        $databaseversion = '4';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
 
-					if ($databaseversion=='5') {
-						$msgs[] = 'Upgrading to version 6: merge help topics into single one - Oct 2020';
-						$recs = DbSchema::getInstance()->getRecords('help_id',"SELECT * FROM help");
-						if (count($recs)>0) {
-							$group_records = DbSchema::getInstance()->getRecords('',"SELECT GROUP_CONCAT(DISTINCT `help_tip` SEPARATOR ' ') as group_tip,  GROUP_CONCAT(DISTINCT `help_markup` SEPARATOR ' ') as group_markup FROM `help` WHERE 1");
-							$group_record = reset($group_records);
-							$Help = DBSchema::getInstance()->DBTableRowObjectFactory('help');
-							$Help->action_name = '';
-							$Help->controller_name = '';
-							$Help->table_name = '';
-							$Help->help_tip = $group_record['group_tip'];
-							$Help->help_markup = $group_record['group_markup'];							
-							DbSchema::getInstance()->mysqlQuery("DELETE FROM help");
-							$Help->save();								
-						}
-						$databaseversion = '6';
-						setGlobal('databaseversion', $databaseversion);
-					}						
-					
-			}
-		}
-		$this->view->currentversion = getGlobal('databaseversion');
-		if (!$this->view->currentversion) $this->view->currentversion = 'old version';	
-		$this->view->targetversion = Zend_Registry::get('config')->databaseversion;	
-		$this->view->msgs = $msgs;
-		$this->view->params = $this->params;
-	}
+                    if ($databaseversion=='4') {
+                        $msgs[] = 'Upgrading to version 5: changesubscription table additions - Jan 2019';
+                        DbSchema::getInstance()->mysqlQuery("ALTER TABLE `changesubscription` ADD COLUMN `follow_items_too` INT(1) DEFAULT 1 AFTER `typeobject_id`");
+                        $databaseversion = '5';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
+
+                    if ($databaseversion=='5') {
+                        $msgs[] = 'Upgrading to version 6: merge help topics into single one - Oct 2020';
+                        $recs = DbSchema::getInstance()->getRecords('help_id', "SELECT * FROM help");
+                        if (count($recs)>0) {
+                            $group_records = DbSchema::getInstance()->getRecords('', "SELECT GROUP_CONCAT(DISTINCT `help_tip` SEPARATOR ' ') as group_tip,  GROUP_CONCAT(DISTINCT `help_markup` SEPARATOR ' ') as group_markup FROM `help` WHERE 1");
+                            $group_record = reset($group_records);
+                            $Help = new DBTableRowHelp();
+                            $Help->action_name = '';
+                            $Help->controller_name = '';
+                            $Help->table_name = '';
+                            $Help->help_tip = $group_record['group_tip'];
+                            $Help->help_markup = $group_record['group_markup'];
+                            DbSchema::getInstance()->mysqlQuery("DELETE FROM help");
+                            $Help->save();
+                        }
+                        $databaseversion = '6';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
+            }
+        }
+        $this->view->currentversion = getGlobal('databaseversion');
+        if (!$this->view->currentversion) {
+            $this->view->currentversion = 'old version';
+        }
+        $this->view->targetversion = Zend_Registry::get('config')->databaseversion;
+        $this->view->msgs = $msgs;
+        $this->view->params = $this->params;
+    }
 
 }

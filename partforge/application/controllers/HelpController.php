@@ -24,14 +24,14 @@
  */
 class HelpController extends DBCustomControllerAction
 {
-	/*
-	 * show help popup for a specific page within the system
-	*/
-	public function pageAction()
-	{
-		$Help = DBSchema::getInstance()->DBTableRowObjectFactory('help');
-		$Help->getRecordForActionController($this->params['help_action'],$this->params['help_controller'],$this->params['help_table']);
-		$this->view->help_obj = $Help;
-	}
+    /*
+     * show help popup for a specific page within the system
+    */
+    public function pageAction()
+    {
+        $Help = new DBTableRowHelp();
+        $Help->getRecordForActionController($this->params['help_action'], $this->params['help_controller'], $this->params['help_table']);
+        $this->view->help_obj = $Help;
+    }
 
 }
