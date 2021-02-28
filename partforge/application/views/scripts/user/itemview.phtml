@@ -4,8 +4,8 @@ $this->layout()->title = $this->dbtable->fullName(true);
 $this->layout()->setLayout('layout');
 
 $BreadCrumbs = new BreadCrumbsManager();
-$BreadCrumbs->addCurrentUrl($this->return_url,$this->layout()->title);
-$title_html = $BreadCrumbs->render($this->return_url,$this->layout()->title,3);
+$BreadCrumbs->addCurrentUrl($this->return_url, $this->layout()->title);
+$title_html = $BreadCrumbs->render($this->return_url, $this->layout()->title, 3);
 
 
 $buttons = array();
@@ -19,20 +19,20 @@ $query_params['resetview'] = 1;
 $show_delete_button = $this->can_delete && ($this->dbtable->cached_items_created_count==0);
 // the following links have superfluis table params--oh well.
 if ($this->can_edit) {
-	$buttons[] = linkify( $this->navigator->getCurrentViewUrl('editview','user',$query_params), 'Edit', 'Edit','bd-button');
-	$buttons[] = linkify( $this->navigator->getCurrentHandlerUrl('btnLoginAs','','',$query_params), 'Login As', 'Login in as this user','bd-button');
-	$buttons[] = linkify( $this->navigator->getCurrentHandlerUrl('btnResetPassword','','',$query_params),'Reset Password','Reset the password for this account.','bd-button');
-	if ($this->dbtable->usesObjectsList()) {
-		$buttons[] = linkify( $this->navigator->getCurrentHandlerUrl('btnEditAllowedObjects','','',$query_params), 'Objects', 'If user type has restrictions, then edit the objects the user is allowed access to.','bd-button');
-	}
-	// cached_items_created_count is just an approximation for deciding to show the delete button.  The delete funciton itself has other protections
-	if ($show_delete_button) {
-		$query_params['return_url'] = $this->navigator->getCurrentViewUrl('listview','user');
-		$buttons[] = linkify( $this->navigator->getCurrentViewUrl('delete','user',$query_params),'Delete','Delete this record','bd-button','return confirm(\'Are you sure you want to delete this?\');');
-	}
-	if ($this->dbtable->waiting_approval) {
-	    $buttons[] = linkify( $this->navigator->getCurrentHandlerUrl('btnApproveAccount','','',$query_params),'Approve Account','Approve Account','bd-button');
-	}
+    $buttons[] = linkify( $this->navigator->getCurrentViewUrl('editview', 'user', $query_params), 'Edit', 'Edit', 'bd-button');
+    $buttons[] = linkify( $this->navigator->getCurrentHandlerUrl('btnLoginAs', '', '', $query_params), 'Login As', 'Login in as this user', 'bd-button');
+    $buttons[] = linkify( $this->navigator->getCurrentHandlerUrl('btnResetPassword', '', '', $query_params), 'Reset Password', 'Reset the password for this account.', 'bd-button');
+    if ($this->dbtable->usesObjectsList()) {
+        $buttons[] = linkify( $this->navigator->getCurrentHandlerUrl('btnEditAllowedObjects', '', '', $query_params), 'Objects', 'If user type has restrictions, then edit the objects the user is allowed access to.', 'bd-button');
+    }
+    // cached_items_created_count is just an approximation for deciding to show the delete button.  The delete funciton itself has other protections
+    if ($show_delete_button) {
+        $query_params['return_url'] = $this->navigator->getCurrentViewUrl('listview', 'user');
+        $buttons[] = linkify( $this->navigator->getCurrentViewUrl('delete', 'user', $query_params), 'Delete', 'Delete this record', 'bd-button', 'return confirm(\'Are you sure you want to delete this?\');');
+    }
+    if ($this->dbtable->waiting_approval) {
+        $buttons[] = linkify( $this->navigator->getCurrentHandlerUrl('btnApproveAccount', '', '', $query_params), 'Approve Account', 'Approve Account', 'bd-button');
+    }
 }
 
 
@@ -40,36 +40,36 @@ $html = '';
 $html .= '<h1 class="dialogtitle">'.$title_html.'</h1>';
 
 if ($show_delete_button) {
-	$similar = $this->dbtable->getOtherUsersLikeThisOne();
-	if (count($similar)>0) {
-		$links = array();
-		foreach($similar as $user_id => $user_record) {
-			$links[] = linkify( UrlCallRegistry::formatViewUrl('id/'.$user_record['user_id'],'user'), TextToHtml(DBTableRowUser::concatNames($user_record,true)), 'View user details');
-		}
-		$html .= '<div class="yellow notice_box">This account might be a duplicate.  Please check similar account(s):<ul><li>'.implode('</li><li>',$links).'</li></ul>If this is a duplicate account, you may want to delete it.</div>';
-	}
+    $similar = $this->dbtable->getOtherUsersLikeThisOne();
+    if (count($similar)>0) {
+        $links = array();
+        foreach ($similar as $user_id => $user_record) {
+            $links[] = linkify( UrlCallRegistry::formatViewUrl('id/'.$user_record['user_id'], 'user'), TextToHtml(DBTableRowUser::concatNames($user_record, true)), 'View user details');
+        }
+        $html .= '<div class="yellow notice_box">This account might be a duplicate.  Please check similar account(s):<ul><li>'.implode('</li><li>', $links).'</li></ul>If this is a duplicate account, you may want to delete it.</div>';
+    }
 }
 
 if ($this->dbtable->waiting_approval) {
-	$html .= '<div class="yellow notice_box">This account is waiting for approval.  Click the Approve Account button to proceed.</div>';
+    $html .= '<div class="yellow notice_box">This account is waiting for approval.  Click the Approve Account button to proceed.</div>';
 }
 
 if (!$this->dbtable->user_cryptpassword) {
-	$html .= '<div class="red notice_box">No password has been set for this user.  Click Reset Password to set one.</div>';
+    $html .= '<div class="red notice_box">No password has been set for this user.  Click Reset Password to set one.</div>';
 }
 
-$html .= '<p>'.implode('&nbsp;',$buttons).'</p>';
+$html .= '<p>'.implode('&nbsp;', $buttons).'</p>';
 
 
-$fieldlayout = $this->dbtable->getEditViewFieldLayout($this->dbtable->getEditFieldNames(array()),array(),'user');
+$fieldlayout = $this->dbtable->getEditViewFieldLayout($this->dbtable->getEditFieldNames(array()), array(), 'user');
 if (!empty($fieldlayout)) {
-	$html .= '<table class="edittable">
+    $html .= '<table class="edittable"><colgroup>
 					 <col class="table_label_width">
 					 <col class="table_value_width">
 					 <col class="table_label_width">
-					 <col class="table_value_width">';
-	$html .= fetchEditTableTR($fieldlayout, $this->dbtable, '', false);
-	$html .= '</table>
+					 <col class="table_value_width"></colgroup>';
+    $html .= fetchEditTableTR($fieldlayout, $this->dbtable, '', false);
+    $html .= '</table>
 			';
 }
 

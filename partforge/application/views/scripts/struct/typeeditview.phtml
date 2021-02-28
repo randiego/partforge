@@ -79,11 +79,11 @@ var UserType = '<?php echo $_SESSION['account']->getRole();?>';
     $editable = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'table:'.$this->dbtable->getTableName(),'edit')
     && !$this->dbtable->isEditOperationBlocked('save',$this->dbtable->getTableName());
 
-    $html .= '<table class="edittable defheader">
+    $html .= '<table class="edittable defheader"><colgroup>
     					 <col class="table_label_width">
     					 <col class="table_value_width">
     					 <col class="table_label_width">
-    					 <col class="table_value_width">';
+    					 <col class="table_value_width"></colgroup>';
     $html .= $this->dbtable->fetchHeaderEditTableRowsHtml($editable,false);
     $html .= '</table>';
 

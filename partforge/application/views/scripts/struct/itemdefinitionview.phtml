@@ -1,14 +1,14 @@
 <script type="text/javascript">
 var typeObjectId = <?php echo $this->dbtable->typeobject_id;?>;
-var pdfViewUrl = "<?php echo $this->navigator->getCurrentViewUrl('itemdefinitionviewpdf',null,array('typeversion_id' => $this->dbtable->typeversion_id, 'show_linked_procedures' => '_LINKEDPROCS_'));?>";
+var pdfViewUrl = "<?php echo $this->navigator->getCurrentViewUrl('itemdefinitionviewpdf', null, array('typeversion_id' => $this->dbtable->typeversion_id, 'show_linked_procedures' => '_LINKEDPROCS_'));?>";
 var isAPart = <?php echo $this->dbtable->typecategory_id==2 ? 1 : 0;?>;
-var thisDefinitionViewUrl = "<?php echo $this->navigator->getCurrentViewUrl('itemdefinitionview','struct',array('typeobject_id' => $this->dbtable->typeobject_id));?>";
-var followUrl = "<?php echo $this->navigator->getCurrentHandlerUrl('btnFollow',null,null,array('typeobject_id' => $this->dbtable->typeobject_id, 'followNotifyTimeHHMM' => '_FOLLOWNOTIFYTIMEHHMM_', 'notify_instantly' => '_NOTIFYINSTANTLY_', 'notify_daily' => '_NOTIFYDAILY_', 'follow_items_too' => '_ALLITEMS_'));?>";
+var thisDefinitionViewUrl = "<?php echo $this->navigator->getCurrentViewUrl('itemdefinitionview', 'struct', array('typeobject_id' => $this->dbtable->typeobject_id));?>";
+var followUrl = "<?php echo $this->navigator->getCurrentHandlerUrl('btnFollow', null, null, array('typeobject_id' => $this->dbtable->typeobject_id, 'followNotifyTimeHHMM' => '_FOLLOWNOTIFYTIMEHHMM_', 'notify_instantly' => '_NOTIFYINSTANTLY_', 'notify_daily' => '_NOTIFYDAILY_', 'follow_items_too' => '_ALLITEMS_'));?>";
 var followInstantly =  "<?php echo $_SESSION['account']->getPreference('followInstantly');?>";
 var followDaily =  "<?php echo $_SESSION['account']->getPreference('followDaily');?>";
 var followItemsToo =  "<?php echo $_SESSION['account']->getPreference('followItemsToo');?>";
 var followNotifyTimeHHMM =  "<?php echo $_SESSION['account']->getPreference('followNotifyTimeHHMM');?>";
-var followNotifyEmailMsg =  "<?php echo implode('  ',$_SESSION['account']->reasonsWhyCantRecieveWatchNotices());?>";
+var followNotifyEmailMsg =  "<?php echo implode('  ', $_SESSION['account']->reasonsWhyCantRecieveWatchNotices());?>";
 var linkToPageUrl = "<?php echo $this->dbtable->absoluteUrl();?>";
 </script>
 <script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/struct/itemdefinitionview.js?v=5" type="TEXT/JAVASCRIPT"></script>
@@ -24,331 +24,339 @@ $is_a_part = $this->dbtable->typecategory_id==2;
  * @param TableRow $dbtable an emtpy ItemVersion object that only has the typeversion set.
  * @return string HTML list of field def params
  */
-	function formatMockField($fieldname, TableRow $dbtable) {
-		global $itemcounts, $typerefs;
-		$msg = array();
-		if (AdminSettings::getInstance()->reoganize_data) {
-			if (isset($itemcounts[$fieldname])) $msg[] = $itemcounts[$fieldname].' items';
-			if (isset($typerefs[$fieldname])) $msg[] = count($typerefs[$fieldname]).' types';
-		}
-		$floatdiv = count($msg) > 0 ? '<div class="little_float_right">'.implode('<br />',$msg).'</div>' : '';
-		$TypeVersion = new DBTableRowTypeVersion();
-		$TypeVersion->getRecordById($dbtable->typeversion_id);   // this is terribly inefficient since it is done every time, but in the grand scheme, it's OK.
-		// we need a div here since the td can't manage the width right.
-		return '<div class="table_value_width">'.$floatdiv.$TypeVersion->fetchLayoutFieldParamsHtml($fieldname, true).'</div>';
-	}
-	
-	/**
-	 * outputs the list of linked procedure defintions
-	 * @param DBTableRowTypeVersion $dbtable
-	 * @param UrlCallRegistry $dbtable
-	 * @param int $is_procedure_flag is 1 show only procedures, or 0 show only Parts
-	 * @param string $section_heading
-	 */	
-	function getLinkedDefinitionsHtml(DBTableRowTypeVersion $dbtable, UrlCallRegistry $navigator, $is_procedure_flag=1, $section_heading='Linked Procedure') {
-		$procedure_records = getTypesThatReferenceThisType($dbtable->typeversion_id,$is_procedure_flag);
-		
-		$html = '';
-		
-		$procedure_records_by_typeobject_id = array();
-		foreach($procedure_records as $record) {
-			$procedure_records_by_typeobject_id[$record['typeobject_id']] = $record;
-		}
-		
-		$allowed_to_add = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'ui:caneditdefinitions');
-		$non_zero_count = count($procedure_records_by_typeobject_id)>0;
-		
-		if ($non_zero_count || $allowed_to_add) {
-			$html .= '<h2 class="bd-edit-page-headers">'.$section_heading.' Definitions</h2>';
-		}
-		
-		if ($allowed_to_add) {
-			$component_name = make_good_var_name($dbtable->type_description,30);
-			$init = array();
-			$init['type_form_layout'] = '[{"type":"columns","columns":[{"name":"'.$component_name.'"}]}]';
-			$init['list_of_typecomponents'] = "new,{$component_name},{$dbtable->typeobject_id}";
-			$init['typecategory_id'] = $is_procedure_flag ? 1 : 2;
-			$init['effective_date'] = time_to_mysqldatetime(script_time());
-			$html .= linkify($navigator->getCurrentHandlerUrl('btnNewLinked',null,null,array('typeversion_id' => $dbtable->typeversion_id, 'initialize' => $init)),'Add '.$section_heading.' Definition','Start a new '.$section_heading.' Definition and add the current definition as a component','minibutton2');			
-		}		
-		
-		if ($non_zero_count) {
-			$items_html = '';
-			foreach($procedure_records_by_typeobject_id as $record) {
-				$SubTypeVersion = new DBTableRowTypeVersion();
-				$SubTypeVersion->getRecordById($record['typeversion_id']);
-				$statusbadge = '';
-				list($statustext, $statusclass, $definitiondescription) = DBTableRowTypeVersion::formatSubActiveDefinitionStatus($SubTypeVersion->to__typedisposition, $SubTypeVersion->versionstatus, $SubTypeVersion->isCurrentVersion());
-				if ($statustext) $statusbadge = ' <span class="disposition '.$statusclass.'">'.$statustext.'</span>';
-				$comp_name = TextToHtml(DBTableRowTypeVersion::formatPartNumberDescription($record['type_part_number'],$record['type_description']));
-				$items_html .= '<li>'.linkify($SubTypeVersion->absoluteUrl(),$comp_name,'view definition for '.$comp_name).', Type Object ID: '.$record['typeobject_id'].$statusbadge.'</li>';
-			}
-						
-			$html .= '<ul id="'.($is_procedure_flag ? 'linkedProcedureUL' : 'linkedPartUL').'">'.$items_html.'</ul>';
-		}	
-		return $html;	
-	} 
+function formatMockField($fieldname, TableRow $dbtable)
+{
+    global $itemcounts, $typerefs;
+    $msg = array();
+    if (AdminSettings::getInstance()->reoganize_data) {
+        if (isset($itemcounts[$fieldname])) {
+            $msg[] = $itemcounts[$fieldname].' items';
+        }
+        if (isset($typerefs[$fieldname])) {
+            $msg[] = count($typerefs[$fieldname]).' types';
+        }
+    }
+    $floatdiv = count($msg) > 0 ? '<div class="little_float_right">'.implode('<br />', $msg).'</div>' : '';
+    $TypeVersion = new DBTableRowTypeVersion();
+    $TypeVersion->getRecordById($dbtable->typeversion_id);   // this is terribly inefficient since it is done every time, but in the grand scheme, it's OK.
+    // we need a div here since the td can't manage the width right.
+    return '<div class="table_value_width">'.$floatdiv.$TypeVersion->fetchLayoutFieldParamsHtml($fieldname, true).'</div>';
+}
 
-	$title_short = 'Definition: '.DBTableRowTypeVersion::formatPartNumberDescription($this->dbtable->type_part_number,$this->dbtable->type_description);
+    /**
+     * outputs the list of linked procedure defintions
+     * @param DBTableRowTypeVersion $dbtable
+     * @param UrlCallRegistry $dbtable
+     * @param int $is_procedure_flag is 1 show only procedures, or 0 show only Parts
+     * @param string $section_heading
+     */
+function getLinkedDefinitionsHtml(DBTableRowTypeVersion $dbtable, UrlCallRegistry $navigator, $is_procedure_flag = 1, $section_heading = 'Linked Procedure')
+{
+    $procedure_records = getTypesThatReferenceThisType($dbtable->typeversion_id, $is_procedure_flag);
+
+    $html = '';
+
+    $procedure_records_by_typeobject_id = array();
+    foreach ($procedure_records as $record) {
+        $procedure_records_by_typeobject_id[$record['typeobject_id']] = $record;
+    }
+
+    $allowed_to_add = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'ui:caneditdefinitions');
+    $non_zero_count = count($procedure_records_by_typeobject_id)>0;
+
+    if ($non_zero_count || $allowed_to_add) {
+        $html .= '<h2 class="bd-edit-page-headers">'.$section_heading.' Definitions</h2>';
+    }
+
+    if ($allowed_to_add) {
+        $component_name = make_good_var_name($dbtable->type_description, 30);
+        $init = array();
+        $init['type_form_layout'] = '[{"type":"columns","columns":[{"name":"'.$component_name.'"}]}]';
+        $init['list_of_typecomponents'] = "new,{$component_name},{$dbtable->typeobject_id}";
+        $init['typecategory_id'] = $is_procedure_flag ? 1 : 2;
+        $init['effective_date'] = time_to_mysqldatetime(script_time());
+        $html .= linkify($navigator->getCurrentHandlerUrl('btnNewLinked', null, null, array('typeversion_id' => $dbtable->typeversion_id, 'initialize' => $init)), 'Add '.$section_heading.' Definition', 'Start a new '.$section_heading.' Definition and add the current definition as a component', 'minibutton2');
+    }
+
+    if ($non_zero_count) {
+        $items_html = '';
+        foreach ($procedure_records_by_typeobject_id as $record) {
+            $SubTypeVersion = new DBTableRowTypeVersion();
+            $SubTypeVersion->getRecordById($record['typeversion_id']);
+            $statusbadge = '';
+            list($statustext, $statusclass, $definitiondescription) = DBTableRowTypeVersion::formatSubActiveDefinitionStatus($SubTypeVersion->to__typedisposition, $SubTypeVersion->versionstatus, $SubTypeVersion->isCurrentVersion());
+            if ($statustext) {
+                $statusbadge = ' <span class="disposition '.$statusclass.'">'.$statustext.'</span>';
+            }
+            $comp_name = TextToHtml(DBTableRowTypeVersion::formatPartNumberDescription($record['type_part_number'], $record['type_description']));
+            $items_html .= '<li>'.linkify($SubTypeVersion->absoluteUrl(), $comp_name, 'view definition for '.$comp_name).', Type Object ID: '.$record['typeobject_id'].$statusbadge.'</li>';
+        }
+
+        $html .= '<ul id="'.($is_procedure_flag ? 'linkedProcedureUL' : 'linkedPartUL').'">'.$items_html.'</ul>';
+    }
+    return $html;
+}
+
+    $title_short = 'Definition: '.DBTableRowTypeVersion::formatPartNumberDescription($this->dbtable->type_part_number, $this->dbtable->type_description);
     $this->layout()->title = $title_short;
     $this->layout()->setLayout('layout');
     $this->layout()->scrollhold = true;
-        
-    
+
+
     $html = '';
     $html_right = '';
-    $html_head = '';    
-    
-  	$detailslinks = new EditLinks();
-  	
-  	$return_url = $this->navigator->getCurrentViewUrl(null,null,array('typeversion_id' => $this->dbtable->typeversion_id));
-  	if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'ui:caneditdefinitions')) {
-  		
-  		if ($this->dbtable->isCurrentVersion() && $this->dbtable->versionstatus=='A') {
-  			$detailslinks->add_item( $this->navigator->getCurrentHandlerUrl('btnNewVersion',null,null,array('typeversion_id' => $this->dbtable->typeversion_id)) ,'Edit', 'Create a new draft version of this definition.');
-  		}
-  		
-  		if ($this->dbtable->versionstatus=='A') {
-  			if (AdminSettings::getInstance()->reoganize_data) {
-  				$detailslinks->add_item( $this->navigator->getCurrentViewUrl('editview',null,array('table' => 'typeversion','typeversion_id' => $this->dbtable->typeversion_id, 'initialize' => array('version_edit_mode' => 'vem_edit_version'), 'return_url' => $return_url, 'resetview' => 1)) ,'Edit This Version', 'Directly edit this current version of the definition without first creating a draft.');
-  			}
-  			if ($this->dbtable->allowedToRevertToDraft()) {
-  				$detailslinks->add_item( $this->navigator->getCurrentHandlerUrl('btnRevertToDraft',null,null,array('typeversion_id' => $this->dbtable->typeversion_id)) ,'Revert to Draft', 'Set this version back to Draft to prevent users from adding items of this version and to allow editing again.');
-  			}
-  		}
-  		
-  		if ($this->dbtable->versionstatus=='D') {
-			$detailslinks->add_item( $this->navigator->getCurrentHandlerUrl('btnNewVersion',null,null,array('typeversion_id' => $this->dbtable->typeversion_id)) ,'New Draft', 'Create a new draft version of this definition.');
-  			$detailslinks->add_item( $this->navigator->getCurrentViewUrl('editview',null,array('table' => 'typeversion','typeversion_id' => $this->dbtable->typeversion_id, 'initialize' => array('version_edit_mode' => 'vem_edit_version'), 'return_url' => $return_url, 'resetview' => 1)) ,'Edit This Draft', 'Edit this version of the definition.');
-  			$detailslinks->add_item( $this->navigator->getCurrentHandlerUrl('btnReleaseVersion',null,null,array('typeversion_id' => $this->dbtable->typeversion_id)) ,'Release This Draft', 'Release this version of the definition so that users can add items with it.');
-  		}
-  		
-	    $listing_return_url = $this->navigator->getCurrentViewUrl('partlistview');
-	    
-	    $copyparts = array();
-	    foreach(explode('|',$this->dbtable->type_part_number) as $pn) {
-	    	$copyparts[] = $pn.'-COPY';
-	    }
-	    $copypart = implode('|',$copyparts);
-	    
-		$detailslinks->add_item( $this->navigator->getCurrentViewUrl('editview',null,array('table' => 'typeversion','typeversion_id' => $this->dbtable->typeversion_id, 'initialize' => array('type_part_number' => $copypart,'typeobject_id' => 'new', 'versionstatus' => 'D', 'effective_date' => time_to_mysqldatetime(script_time())), 'return_url' => $listing_return_url, 'resetview' => 1, 'save_as_new' => 1)) ,'Copy', 'Create a new definition by copying this version of this definition.','return confirm(\'This creates a completely new type definition by copying this version of this definition.  Continue?\');');
-		if ($this->dbtable->allowedToDelete()) {
-			$auth = $this->dbtable->getDeleteAuthorization();
-			if ($auth['can_delete']) {
-				$detailslinks->add_item( $this->navigator->getCurrentHandlerUrl('btnDeleteVersion',null,null,array('table' => 'typeversion','typeversion_id' => $this->dbtable->typeversion_id, 'return_url' => $listing_return_url, 'resetview' => 1, 'save_as_new' => 1)) ,'Delete', 'Delete this type version.  (You are allowed to do this because there are no items that use this definition.)','return confirm(\'This deletes this version of this definition.  If this is the only version, the entire definition will be permanently deleted.  You are allowed to do this because there are no items that use this definition.  Continue?\');');
-			} else if ($auth['can_deleteblocked']) {
-				$msg = 'This record is older than '.(integer)(Zend_Registry::get('config')->delete_grace_in_sec/3600).' hours.  If you want to delete it, you must go to the Settings menu and enable Delete Override.';
-				$detailslinks->add_item( '#' ,'Delete (blocked)', $msg,'return alert(\''.$msg.'\'); return false;');
-			}
-		}
-		
-		$noun = $is_a_part ? 'Part' : 'Procedure'; 
-		if (!$this->dbtable->isObsolete()) {
-			$detailslinks->add_link(linkify($this->navigator->getCurrentHandlerUrl('btnObsolete',null,null,array('typeobject_id' => $this->dbtable->typeobject_id)),'Obsolete',"Make this {$noun} obsolete so that users can no longer create new {$noun}s of this type.  Existing {$noun}s will still be visible.",'bd-button','return confirm(\'This will make this '.$noun.' obsolete.  Once obsolete, users can no longer create new '.$noun.'s of this type, however all existing '.$noun.'s of this type will continue to be visible in the system.  Continue?\');','','makeObsoleteButton'));
-		} else {
-			$detailslinks->add_link(linkify($this->navigator->getCurrentHandlerUrl('btnMakeActive',null,null,array('typeobject_id' => $this->dbtable->typeobject_id)),'Make Active',"This {$noun} is currently Obsolete.  This will make it active again so that users can create new {$noun}s of this type.",'bd-button','','','makeActiveButton'));
-		}
-		
-		
-		if (AdminSettings::getInstance()->reoganize_data) {
-			$detailslinks->add_link(linkify($this->navigator->getCurrentHandlerUrl('btnReorgMoveComponent',null,null,array('table' => 'typeversion','typeversion_id' => $this->dbtable->typeversion_id, 'return_url' => $listing_return_url, 'resetview' => 1, 'save_as_new' => 1)),'Move Components...','Move or rename components with a definition.','bd-button','','','moveComponentsButton'));
-		}
-		
-		$preview_url = $this->navigator->getCurrentHandlerUrl('btnPreview','','',array('typeversion_id' => $this->dbtable->typeversion_id));
-		$detailslinks->add_link(linkify($preview_url,'Preview','Preview this form','bd-button','','','previewButton'));
-		
-		if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'user','managewatchlist')) {
-			$Subscription = new DBTableRowChangeSubscription();
-			$is_following = $Subscription->getRecordByIds($_SESSION['account']->user_id, null, $this->dbtable->typeobject_id);
-			if ($is_following) {
-				$unfollow_url = $this->navigator->getCurrentHandlerUrl('btnUnFollow',null,null,array('typeobject_id' => $this->dbtable->typeobject_id));
-				$detailslinks->add_link(linkify($unfollow_url,'Stop Watching', $Subscription->getDescription()."  Click here to remove this definition from your Watchlist.",'bd-button','','','unfollowButton'));
-			} else {
-				$follow_url = $this->navigator->getCurrentHandlerUrl('btnFollow',null,null,array('typeobject_id' => $this->dbtable->typeobject_id));
-				$detailslinks->add_link(linkify($follow_url,'Watch', "Add this definition to your Watchlist to follow any changes that occur to this Definition",'bd-button','','','followButton'));
-			}
-		}
-		
-		
-  	}
-  	
-  	
-  	$BreadCrumbs = new BreadCrumbsManager();
-  	$BreadCrumbs->addCurrentUrl($return_url,$title_short);
-  	
-  	$html_head .= $BreadCrumbs->render($return_url,$title_short,3,'breadcrumbdiv fixed');
-  	
-  	$html_head .= '<div id="itemviewSearchBlock">
+    $html_head = '';
+
+    $detailslinks = new EditLinks();
+
+    $return_url = $this->navigator->getCurrentViewUrl(null, null, array('typeversion_id' => $this->dbtable->typeversion_id));
+if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'ui:caneditdefinitions')) {
+    if ($this->dbtable->isCurrentVersion() && $this->dbtable->versionstatus=='A') {
+        $detailslinks->add_item( $this->navigator->getCurrentHandlerUrl('btnNewVersion', null, null, array('typeversion_id' => $this->dbtable->typeversion_id)), 'Edit', 'Create a new draft version of this definition.');
+    }
+
+    if ($this->dbtable->versionstatus=='A') {
+        if (AdminSettings::getInstance()->reoganize_data) {
+            $detailslinks->add_item( $this->navigator->getCurrentViewUrl('editview', null, array('table' => 'typeversion','typeversion_id' => $this->dbtable->typeversion_id, 'initialize' => array('version_edit_mode' => 'vem_edit_version'), 'return_url' => $return_url, 'resetview' => 1)), 'Edit This Version', 'Directly edit this current version of the definition without first creating a draft.');
+        }
+        if ($this->dbtable->allowedToRevertToDraft()) {
+            $detailslinks->add_item( $this->navigator->getCurrentHandlerUrl('btnRevertToDraft', null, null, array('typeversion_id' => $this->dbtable->typeversion_id)), 'Revert to Draft', 'Set this version back to Draft to prevent users from adding items of this version and to allow editing again.');
+        }
+    }
+
+    if ($this->dbtable->versionstatus=='D') {
+        $detailslinks->add_item( $this->navigator->getCurrentHandlerUrl('btnNewVersion', null, null, array('typeversion_id' => $this->dbtable->typeversion_id)), 'New Draft', 'Create a new draft version of this definition.');
+        $detailslinks->add_item( $this->navigator->getCurrentViewUrl('editview', null, array('table' => 'typeversion','typeversion_id' => $this->dbtable->typeversion_id, 'initialize' => array('version_edit_mode' => 'vem_edit_version'), 'return_url' => $return_url, 'resetview' => 1)), 'Edit This Draft', 'Edit this version of the definition.');
+        $detailslinks->add_item( $this->navigator->getCurrentHandlerUrl('btnReleaseVersion', null, null, array('typeversion_id' => $this->dbtable->typeversion_id)), 'Release This Draft', 'Release this version of the definition so that users can add items with it.');
+    }
+
+    $listing_return_url = $this->navigator->getCurrentViewUrl('partlistview');
+
+    $copyparts = array();
+    foreach (explode('|', $this->dbtable->type_part_number) as $pn) {
+        $copyparts[] = $pn.'-COPY';
+    }
+    $copypart = implode('|', $copyparts);
+
+    $detailslinks->add_item( $this->navigator->getCurrentViewUrl('editview', null, array('table' => 'typeversion','typeversion_id' => $this->dbtable->typeversion_id, 'initialize' => array('type_part_number' => $copypart,'typeobject_id' => 'new', 'versionstatus' => 'D', 'effective_date' => time_to_mysqldatetime(script_time())), 'return_url' => $listing_return_url, 'resetview' => 1, 'save_as_new' => 1)), 'Copy', 'Create a new definition by copying this version of this definition.', 'return confirm(\'This creates a completely new type definition by copying this version of this definition.  Continue?\');');
+    if ($this->dbtable->allowedToDelete()) {
+        $auth = $this->dbtable->getDeleteAuthorization();
+        if ($auth['can_delete']) {
+            $detailslinks->add_item( $this->navigator->getCurrentHandlerUrl('btnDeleteVersion', null, null, array('table' => 'typeversion','typeversion_id' => $this->dbtable->typeversion_id, 'return_url' => $listing_return_url, 'resetview' => 1, 'save_as_new' => 1)), 'Delete', 'Delete this type version.  (You are allowed to do this because there are no items that use this definition.)', 'return confirm(\'This deletes this version of this definition.  If this is the only version, the entire definition will be permanently deleted.  You are allowed to do this because there are no items that use this definition.  Continue?\');');
+        } else if ($auth['can_deleteblocked']) {
+            $msg = 'This record is older than '.(integer)(Zend_Registry::get('config')->delete_grace_in_sec/3600).' hours.  If you want to delete it, you must go to the Settings menu and enable Delete Override.';
+            $detailslinks->add_item( '#', 'Delete (blocked)', $msg, 'return alert(\''.$msg.'\'); return false;');
+        }
+    }
+
+    $noun = $is_a_part ? 'Part' : 'Procedure';
+    if (!$this->dbtable->isObsolete()) {
+        $detailslinks->add_link(linkify($this->navigator->getCurrentHandlerUrl('btnObsolete', null, null, array('typeobject_id' => $this->dbtable->typeobject_id)), 'Obsolete', "Make this {$noun} obsolete so that users can no longer create new {$noun}s of this type.  Existing {$noun}s will still be visible.", 'bd-button', 'return confirm(\'This will make this '.$noun.' obsolete.  Once obsolete, users can no longer create new '.$noun.'s of this type, however all existing '.$noun.'s of this type will continue to be visible in the system.  Continue?\');', '', 'makeObsoleteButton'));
+    } else {
+        $detailslinks->add_link(linkify($this->navigator->getCurrentHandlerUrl('btnMakeActive', null, null, array('typeobject_id' => $this->dbtable->typeobject_id)), 'Make Active', "This {$noun} is currently Obsolete.  This will make it active again so that users can create new {$noun}s of this type.", 'bd-button', '', '', 'makeActiveButton'));
+    }
+
+
+    if (AdminSettings::getInstance()->reoganize_data) {
+        $detailslinks->add_link(linkify($this->navigator->getCurrentHandlerUrl('btnReorgMoveComponent', null, null, array('table' => 'typeversion','typeversion_id' => $this->dbtable->typeversion_id, 'return_url' => $listing_return_url, 'resetview' => 1, 'save_as_new' => 1)), 'Move Components...', 'Move or rename components with a definition.', 'bd-button', '', '', 'moveComponentsButton'));
+    }
+
+    $preview_url = $this->navigator->getCurrentHandlerUrl('btnPreview', '', '', array('typeversion_id' => $this->dbtable->typeversion_id));
+    $detailslinks->add_link(linkify($preview_url, 'Preview', 'Preview this form', 'bd-button', '', '', 'previewButton'));
+
+    if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'managewatchlist')) {
+        $Subscription = new DBTableRowChangeSubscription();
+        $is_following = $Subscription->getRecordByIds($_SESSION['account']->user_id, null, $this->dbtable->typeobject_id);
+        if ($is_following) {
+            $unfollow_url = $this->navigator->getCurrentHandlerUrl('btnUnFollow', null, null, array('typeobject_id' => $this->dbtable->typeobject_id));
+            $detailslinks->add_link(linkify($unfollow_url, 'Stop Watching', $Subscription->getDescription()."  Click here to remove this definition from your Watchlist.", 'bd-button', '', '', 'unfollowButton'));
+        } else {
+            $follow_url = $this->navigator->getCurrentHandlerUrl('btnFollow', null, null, array('typeobject_id' => $this->dbtable->typeobject_id));
+            $detailslinks->add_link(linkify($follow_url, 'Watch', "Add this definition to your Watchlist to follow any changes that occur to this Definition", 'bd-button', '', '', 'followButton'));
+        }
+    }
+}
+
+
+    $BreadCrumbs = new BreadCrumbsManager();
+    $BreadCrumbs->addCurrentUrl($return_url, $title_short);
+
+    $html_head .= $BreadCrumbs->render($return_url, $title_short, 3, 'breadcrumbdiv fixed');
+
+    $html_head .= '<div id="itemviewSearchBlock">
 					<input name="typeversion_id" TYPE="hidden" VALUE="'.$this->dbtable->typeversion_id.'">
 					<input id="search_string" class="inputboxclass" type="text" name="search_string">
 					<INPUT class="searchbutton" TYPE="submit" VALUE="Search" NAME="btnSearch">
 				</div>';
-  	
-  	
-    
+
+
+
     // let user copy a link to this page
-    $detailslinks->add_link(linkify('#','Link to Page','Copy of link to this page','bd-button',"","",'linkToPageButton'));
-    
-    
+    $detailslinks->add_link(linkify('#', 'Link to Page', 'Copy of link to this page', 'bd-button', "", "", 'linkToPageButton'));
+
+
     // this is sneaky, but this link will actually work if the JS is not executed, but is normally overridden by the JS.
-    $pdf_url = $this->navigator->getCurrentViewUrl('itemdefinitionviewpdf',null,array('typeversion_id' => $this->dbtable->typeversion_id));    
-    $detailslinks->add_link(linkify($pdf_url,'PDF','Open a printable PDF view of this definition','bd-button','','','pdfButton'));    
-    
-    $list_url =  DBTableRowTypeVersion::getListViewAbsoluteUrl($this->dbtable->typeobject_id,$_SESSION['account']->getPreference('chkShowProcMatrix'));
-    $detailslinks->add_link(linkify($list_url,'List All Items','List all items of this type','bd-button'));    
-        
+    $pdf_url = $this->navigator->getCurrentViewUrl('itemdefinitionviewpdf', null, array('typeversion_id' => $this->dbtable->typeversion_id));
+    $detailslinks->add_link(linkify($pdf_url, 'PDF', 'Open a printable PDF view of this definition', 'bd-button', '', '', 'pdfButton'));
+
+    $list_url =  DBTableRowTypeVersion::getListViewAbsoluteUrl($this->dbtable->typeobject_id, $_SESSION['account']->getPreference('chkShowProcMatrix'));
+    $detailslinks->add_link(linkify($list_url, 'List All Items', 'List all items of this type', 'bd-button'));
+
     $html .= '<div class="edittablewrapper">';
-    	
-    if (!$this->dbtable->isCurrentVersion()) {
-		$query_params = array();
-		$query_params['typeversion_id'] = $this->dbtable->to__cached_current_typeversion_id;
-        $view_url = $this->navigator->getCurrentViewUrl(null,null,$query_params);
-        $version_view = linkify( $view_url, 'View current version.', "View the current version of this type");
-        list($statustext, $statusclass, $definitiondescription) = DBTableRowTypeVersion::formatSubActiveDefinitionStatus($this->dbtable->to__typedisposition, $this->dbtable->versionstatus, $this->dbtable->isCurrentVersion());
-        if (!$statustext) $definitiondescription = 'This is not the current version of this definition.';
-        
-        // if draft or review, then show what the differences are
-        $CurrentActiveTypeVersion = new DBTableRowTypeVersion();
-        $got_current_active_tv = $CurrentActiveTypeVersion->getCurrentActiveRecordByObjectId($this->dbtable->typeobject_id);
-        $notes_html = '';
-        if ($this->dbtable->versionstatus!='A') {
-        	// if this is a draft AND there is an active current version, then we show the differences here (as well as in the eventstream)
-        	$notes_html = '';
-        	if ($got_current_active_tv) {
-        		$notes_html = '<h2>Redlines Compared to Active (Released) Version:</h2>'.$this->dbtable->typeDifferencesFromHtml($CurrentActiveTypeVersion);
-        	}
-        } else {
-        	$count = DBTableRowTypeVersion::getNumberOfItemsForTypeVersion($this->dbtable->typeversion_id);
-        	if ($count > 0) {
-	        	// only talk about upgrading if we are allowed to do it.
-	        	if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'ui:caneditdefinitions')) {
-		        	if ($got_current_active_tv) {
-			        	$error_msgs = $this->dbtable->canVersionBeUpgradedSafelyTo($CurrentActiveTypeVersion);
-			        	if (count($error_msgs)==0) {
-			        		// we can offer to upgrade to the current version
-			        		$detailslinks->add_item( $this->navigator->getCurrentHandlerUrl('btnUpgradeVersion',null,null,array('typeversion_id' => $this->dbtable->typeversion_id, 'to_typeversion_id' => $CurrentActiveTypeVersion->typeversion_id)) ,'Upgrade Items', "Automatically upgrade the {$count} items with this version (Type Version = {$this->dbtable->typeversion_id}), to the current version (Type Version = {$CurrentActiveTypeVersion->typeversion_id}).",'return confirm(\'This will automatically upgrade the '.$count.' existing items of this version (Type Version = '.$this->dbtable->typeversion_id.') to the current version (Type Version = '.$CurrentActiveTypeVersion->typeversion_id.').  It appears that this is a compatible upgrade, so no data loss will occur.  However you cannot undo this operation.  Continue?\');');
-			        		$notes_html .= '<h2>There are '.$count.' items with this older version.  They can be upgraded to the current version by clicking Upgrade Items.';
-			        	} else {
-			        		// say why we cannot upgrade
-				        	$notes_html .= '<h2>The '.$count.' items with this older version cannot be upgraded to the current Type Version ID for the following reason(s):</h2> <ul><li>'.implode('</li><li>', $error_msgs).'</li></ul>';
-			        	}
-		        	}
-		        }
-	        	
-        	}
-        }
-        if ($notes_html) $notes_html = '<div class="changesinbox">'.$notes_html.'</div>';
-        
-    	$html .= '<div class="itemview_notice">'.$definitiondescription.' ('.$version_view.')'.$notes_html.'</div>';
-    } else if ($this->dbtable->versionstatus!='A') {
-    	list($statustext, $statusclass, $definitiondescription) = DBTableRowTypeVersion::formatSubActiveDefinitionStatus($this->dbtable->to__typedisposition, $this->dbtable->versionstatus, $this->dbtable->isCurrentVersion());
-    	$html .= '<div class="itemview_notice">'.$definitiondescription.'</div>';
+
+if (!$this->dbtable->isCurrentVersion()) {
+    $query_params = array();
+    $query_params['typeversion_id'] = $this->dbtable->to__cached_current_typeversion_id;
+    $view_url = $this->navigator->getCurrentViewUrl(null, null, $query_params);
+    $version_view = linkify( $view_url, 'View current version.', "View the current version of this type");
+    list($statustext, $statusclass, $definitiondescription) = DBTableRowTypeVersion::formatSubActiveDefinitionStatus($this->dbtable->to__typedisposition, $this->dbtable->versionstatus, $this->dbtable->isCurrentVersion());
+    if (!$statustext) {
+        $definitiondescription = 'This is not the current version of this definition.';
     }
-    
+
+    // if draft or review, then show what the differences are
+    $CurrentActiveTypeVersion = new DBTableRowTypeVersion();
+    $got_current_active_tv = $CurrentActiveTypeVersion->getCurrentActiveRecordByObjectId($this->dbtable->typeobject_id);
+    $notes_html = '';
+    if ($this->dbtable->versionstatus!='A') {
+        // if this is a draft AND there is an active current version, then we show the differences here (as well as in the eventstream)
+        $notes_html = '';
+        if ($got_current_active_tv) {
+            $notes_html = '<h2>Redlines Compared to Active (Released) Version:</h2>'.$this->dbtable->typeDifferencesFromHtml($CurrentActiveTypeVersion);
+        }
+    } else {
+        $count = DBTableRowTypeVersion::getNumberOfItemsForTypeVersion($this->dbtable->typeversion_id);
+        if ($count > 0) {
+            // only talk about upgrading if we are allowed to do it.
+            if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'ui:caneditdefinitions')) {
+                if ($got_current_active_tv) {
+                    $error_msgs = $this->dbtable->canVersionBeUpgradedSafelyTo($CurrentActiveTypeVersion);
+                    if (count($error_msgs)==0) {
+                        // we can offer to upgrade to the current version
+                        $detailslinks->add_item( $this->navigator->getCurrentHandlerUrl('btnUpgradeVersion', null, null, array('typeversion_id' => $this->dbtable->typeversion_id, 'to_typeversion_id' => $CurrentActiveTypeVersion->typeversion_id)), 'Upgrade Items', "Automatically upgrade the {$count} items with this version (Type Version = {$this->dbtable->typeversion_id}), to the current version (Type Version = {$CurrentActiveTypeVersion->typeversion_id}).", 'return confirm(\'This will automatically upgrade the '.$count.' existing items of this version (Type Version = '.$this->dbtable->typeversion_id.') to the current version (Type Version = '.$CurrentActiveTypeVersion->typeversion_id.').  It appears that this is a compatible upgrade, so no data loss will occur.  However you cannot undo this operation.  Continue?\');');
+                        $notes_html .= '<h2>There are '.$count.' items with this older version.  They can be upgraded to the current version by clicking Upgrade Items.';
+                    } else {
+                        // say why we cannot upgrade
+                        $notes_html .= '<h2>The '.$count.' items with this older version cannot be upgraded to the current Type Version ID for the following reason(s):</h2> <ul><li>'.implode('</li><li>', $error_msgs).'</li></ul>';
+                    }
+                }
+            }
+        }
+    }
+    if ($notes_html) {
+        $notes_html = '<div class="changesinbox">'.$notes_html.'</div>';
+    }
+
+    $html .= '<div class="itemview_notice">'.$definitiondescription.' ('.$version_view.')'.$notes_html.'</div>';
+} else if ($this->dbtable->versionstatus!='A') {
+    list($statustext, $statusclass, $definitiondescription) = DBTableRowTypeVersion::formatSubActiveDefinitionStatus($this->dbtable->to__typedisposition, $this->dbtable->versionstatus, $this->dbtable->isCurrentVersion());
+    $html .= '<div class="itemview_notice">'.$definitiondescription.'</div>';
+}
+
     // get list of available version of this type
     $query = "SELECT * FROM typeversion WHERE typeobject_id='{$this->dbtable->typeobject_id}' ORDER BY effective_date";
-    $records = DbSchema::getInstance()->getRecords('typeversion_id',$query);
+    $records = DbSchema::getInstance()->getRecords('typeversion_id', $query);
     $current_url = '';
     $out = array();
-    foreach($records as $record) {   
-    	$txt = '';
-    	if ($record['typeversion_id']==$this->dbtable->to__cached_current_typeversion_id) {
-    		$txt = ', Current';
-    	}
-    	if ($record['versionstatus']=='D') {
-    		$txt .= ', Draft';
-    	} else if ($record['versionstatus']=='R') {
-    		$txt .= ', Review';
-    	}
-    	$count = DBTableRowTypeVersion::getNumberOfItemsForTypeVersion($record['typeversion_id']);
-    	$counttxt = ($count==0 && $record['versionstatus']!='A') ? '' : ($count==1 ? ' ('.$count.' item)' : ' ('.$count.' items)');
-		$datetime = date('D',strtotime($record['effective_date'])).' '.date('M j, Y',strtotime($record['effective_date'])).' - '.date('G:i',strtotime($record['effective_date'])).$txt.$counttxt;
-    	$jump_url = $this->navigator->getCurrentViewUrl(null,null,array('typeversion_id' => $record['typeversion_id']));
-    	if ($record['typeversion_id']==$this->dbtable->typeversion_id) {
-    		$current_url = $jump_url;
-    	}
-    	$out[$jump_url] = 'Version: '.$datetime;
+foreach ($records as $record) {
+    $txt = '';
+    if ($record['typeversion_id']==$this->dbtable->to__cached_current_typeversion_id) {
+        $txt = ', Current';
     }
-    $html .= '<div style="margin-bottom:15px;">'.format_select_tag($out,'url',array('url' => $current_url),"MM_jumpMenu('parent',this,0)",false,'-- New Procedure --').'</div>';
-    
+    if ($record['versionstatus']=='D') {
+        $txt .= ', Draft';
+    } else if ($record['versionstatus']=='R') {
+        $txt .= ', Review';
+    }
+    $count = DBTableRowTypeVersion::getNumberOfItemsForTypeVersion($record['typeversion_id']);
+    $counttxt = ($count==0 && $record['versionstatus']!='A') ? '' : ($count==1 ? ' ('.$count.' item)' : ' ('.$count.' items)');
+    $datetime = date('D', strtotime($record['effective_date'])).' '.date('M j, Y', strtotime($record['effective_date'])).' - '.date('G:i', strtotime($record['effective_date'])).$txt.$counttxt;
+    $jump_url = $this->navigator->getCurrentViewUrl(null, null, array('typeversion_id' => $record['typeversion_id']));
+    if ($record['typeversion_id']==$this->dbtable->typeversion_id) {
+        $current_url = $jump_url;
+    }
+    $out[$jump_url] = 'Version: '.$datetime;
+}
+    $html .= '<div style="margin-bottom:15px;">'.format_select_tag($out, 'url', array('url' => $current_url), "MM_jumpMenu('parent',this,0)", false, '-- New Procedure --').'</div>';
+
     $html .= '<div class="buttonrow">'.$detailslinks->buttons_html().'</div>';
-    
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_WATCH_BUTTON_DEF','Click the "Watch" button to create a personal watchlist and receive email notifications when something changes on this page or any items that have this definition.','6/16/2016');        
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('OBS_PARTS_AND_ALIASES','You can now define multiple part numbers (aliases) for the same part.  Use this for generic part definitions.  You can also now obsolete parts & procedures which keeps them in the system but prevents new ones from being created.','1/6/2016');    
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('DRAFT_DEF_EVENT_STREAM','IMPORTANT!  Making changes to definitions is now a 2 step process.  Whenever you Edit a definition, a new Draft version is created.  This is new.  You must then Release this Draft version before it becomes Active and visible to your users. 
+
+    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_WATCH_BUTTON_DEF', 'Click the "Watch" button to create a personal watchlist and receive email notifications when something changes on this page or any items that have this definition.', '6/16/2016');
+    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('OBS_PARTS_AND_ALIASES', 'You can now define multiple part numbers (aliases) for the same part.  Use this for generic part definitions.  You can also now obsolete parts & procedures which keeps them in the system but prevents new ones from being created.', '1/6/2016');
+    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('DRAFT_DEF_EVENT_STREAM', 'IMPORTANT!  Making changes to definitions is now a 2 step process.  Whenever you Edit a definition, a new Draft version is created.  This is new.  You must then Release this Draft version before it becomes Active and visible to your users.
     		                                    Different versions are tracked in the right-hand side of this page similar to parts and procedures.
     		                                    You cannot directly edit Active definitions for existing parts and procedures.  So, if you want to bulk-upgrade existing items to the latest version, you must select the older version of the definition in the list, then click the
-									    		Upgrade Version button.','2/24/2016');
-    
+									    		Upgrade Version button.', '2/24/2016');
+
     $html .= '<div class="defsheetheaderwrapper">'.$this->dbtable->fetchFullDefinitionSheetHeader(false).'</div>';
-    
+
     $html .= '<h2 class="bd-edit-page-headers">Field Layout</h2>';
-    
+
     $fieldwarnings = array();
     if (Zend_Registry::get('config')->warn_of_hidden_fields) {
-	    $hidden = $this->dbtable->getHiddenFieldnames();
-	    if (count($hidden)>0) {
-	    	$enum = count($hidden)==1 ? 'is one defined field' : 'are '.count($hidden).' defined fields';
-	    	$fieldwarnings[] = '! There '.$enum.' not in the layout (<i>'.implode(', ',$hidden).'</i>).  Such fields should be removed from the definition or added to the layout.';
-	    }
+        $hidden = $this->dbtable->getHiddenFieldnames();
+        if (count($hidden)>0) {
+            $enum = count($hidden)==1 ? 'is one defined field' : 'are '.count($hidden).' defined fields';
+            $fieldwarnings[] = '! There '.$enum.' not in the layout (<i>'.implode(', ', $hidden).'</i>).  Such fields should be removed from the definition or added to the layout.';
+        }
     }
     if (count($fieldwarnings)>0) {
-    	$html .= '<div class="layout_width"><div class="itemview_notice red">'.implode('<br /><br />',$fieldwarnings).'</div></div>';
+        $html .= '<div class="layout_width"><div class="itemview_notice red">'.implode('<br /><br />', $fieldwarnings).'</div></div>';
     }
-    
-    
-        
+
+
+
     $EmptyItemVersion = new DBTableRowItemVersion();
     $EmptyItemVersion->typeversion_id = $this->dbtable->typeversion_id;
     $EmptyItemVersion->setFieldTypeForRecordLocator();
     $fields_to_remove = array();
-	$layout_key = $this->dbtable->getTableName();
-	$fieldlayout = $EmptyItemVersion->getEditViewFieldLayout($EmptyItemVersion->getEditFieldNames(array('')),$fields_to_remove,$layout_key);
-	if (!empty($fieldlayout)) {
-		$html .= '<div class="edittablewrapper"><table class="edittable">
+    $layout_key = $this->dbtable->getTableName();
+    $fieldlayout = $EmptyItemVersion->getEditViewFieldLayout($EmptyItemVersion->getEditFieldNames(array('')), $fields_to_remove, $layout_key);
+    if (!empty($fieldlayout)) {
+        $html .= '<div class="edittablewrapper"><table class="edittable"><colgroup>
 				 <col class="table_label_width">
 				 <col class="table_value_width">
 				 <col class="table_label_width">
-				 <col class="table_value_width">';
-				 
+				 <col class="table_value_width"></colgroup>';
+
         $this->dbtable->_navigator = $this->navigator; // need this for generating print view.
-        
-		$html .= DBTableRowItemVersion::fetchItemVersionEditTableTR($fieldlayout, $EmptyItemVersion, array(), '', false, 'formatMockField', array());
-		$html .= '</table></div>
-		';    
-	}
 
-	// only parts can be components of another object
-	if ($is_a_part) {
-		$html .= getLinkedDefinitionsHtml($this->dbtable, $this->navigator, 1, 'Linked Procedure');
-		$html .= getLinkedDefinitionsHtml($this->dbtable, $this->navigator, 0, 'Linked Part');
-	}
-	
-	$DefinitionEventStream = new DefinitionEventStream($this->dbtable->typeobject_id);
-	$records = $DefinitionEventStream->assembleStreamArray();
-	$lines = DefinitionEventStream::eventStreamRecordsToLines($records, $this->dbtable, $this->navigator);		
-	$layout_rows = DefinitionEventStream::eventStreamLinesToHtml($this->dbtable, $lines, $this->navigator);
+        $html .= DBTableRowItemVersion::fetchItemVersionEditTableTR($fieldlayout, $EmptyItemVersion, array(), '', false, 'formatMockField', array());
+        $html .= '</table></div>
+		';
+    }
 
-	$html .= '</div>';
-	
-	
-	$add_links = array();
-	if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'ui:caneditdefinitions')) {
-		$add_links[] = linkify($this->navigator->getCurrentViewUrl('editview','db',array('table' => 'typecomment', 'comment_id' => 'new', 'return_url' => $return_url, 'initialize' => array('typeobject_id' => $this->dbtable->typeobject_id))), 'Add Comment','add a new comment','bd-button');
-	}	
-	
-	
-	$html_right .= '<div class="bd-list-container"><ul class="bd-stream-list">';
-	// in the following: style="position: relative; z-index: 10" seems to be absolutely necessary to get the menu to be on top in IE7
-	// see http://www.brenelz.com/blog/squish-the-internet-explorer-z-index-bug/
-	$html_right .= '<li class="bd-event-row" style="position: relative; z-index: 10; padding-bottom:0px;">
-		<div class="buttonrow">'.implode('&nbsp;',$add_links).'
+    // only parts can be components of another object
+    if ($is_a_part) {
+        $html .= getLinkedDefinitionsHtml($this->dbtable, $this->navigator, 1, 'Linked Procedure');
+        $html .= getLinkedDefinitionsHtml($this->dbtable, $this->navigator, 0, 'Linked Part');
+    }
+
+    $DefinitionEventStream = new DefinitionEventStream($this->dbtable->typeobject_id);
+    $records = $DefinitionEventStream->assembleStreamArray();
+    $lines = DefinitionEventStream::eventStreamRecordsToLines($records, $this->dbtable, $this->navigator);
+    $layout_rows = DefinitionEventStream::eventStreamLinesToHtml($this->dbtable, $lines, $this->navigator);
+
+    $html .= '</div>';
+
+
+    $add_links = array();
+    if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'ui:caneditdefinitions')) {
+        $add_links[] = linkify($this->navigator->getCurrentViewUrl('editview', 'db', array('table' => 'typecomment', 'comment_id' => 'new', 'return_url' => $return_url, 'initialize' => array('typeobject_id' => $this->dbtable->typeobject_id))), 'Add Comment', 'add a new comment', 'bd-button');
+    }
+
+
+    $html_right .= '<div class="bd-list-container"><ul class="bd-stream-list">';
+    // in the following: style="position: relative; z-index: 10" seems to be absolutely necessary to get the menu to be on top in IE7
+    // see http://www.brenelz.com/blog/squish-the-internet-explorer-z-index-bug/
+    $html_right .= '<li class="bd-event-row" style="position: relative; z-index: 10; padding-bottom:0px;">
+		<div class="buttonrow">'.implode('&nbsp;', $add_links).'
 	   </div></li>';
-	
-	$html_right .= implode('',array_reverse($layout_rows));
-	
-	$html_right .= '</ul></div>';
-	$html_page = '
+
+    $html_right .= implode('', array_reverse($layout_rows));
+
+    $html_right .= '</ul></div>';
+    $html_page = '
 		'.$html_head.'
     <div class="twocolleft twocolcol">
       <div class="twocolbody twocolrow twocolscroll-y">
@@ -360,6 +368,6 @@ $is_a_part = $this->dbtable->typecategory_id==2;
 			'.$html_right.'
 	  </div>
 	</div>
-	';	
-    
+	';
+
     echo fetch_form_tag($html_page);

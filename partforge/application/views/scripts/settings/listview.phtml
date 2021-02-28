@@ -1,57 +1,57 @@
 <?php
     $this->layout()->title = 'Manage System Settings';
     $this->layout()->setLayout('layout');
-    
+
     $html = '';
-    
+
     $BreadCrumbs = new BreadCrumbsManager();
-    $BreadCrumbs->addCurrentUrl($this->navigator->getCurrentViewUrl(),$this->layout()->title);
-    $title_html = $BreadCrumbs->render($this->navigator->getCurrentViewUrl(),$this->layout()->title,3);        
-    
+    $BreadCrumbs->addCurrentUrl($this->navigator->getCurrentViewUrl(), $this->layout()->title);
+    $title_html = $BreadCrumbs->render($this->navigator->getCurrentViewUrl(), $this->layout()->title, 3);
+
     $Obj = new TableRowSettings();
-    foreach($Obj->getSessionBooleanFieldNames() as $fieldname) {
-    	$Obj->{$fieldname} = AdminSettings::getInstance()->{$fieldname};
-    }
-    
+foreach ($Obj->getSessionBooleanFieldNames() as $fieldname) {
+    $Obj->{$fieldname} = AdminSettings::getInstance()->{$fieldname};
+}
+
     $Obj->loadGlobals();
-    
-    if (!empty($this->action_taken)) {
-        $html .= '<p class="errorred">'.$this->action_taken.'</p>';
-    }
+
+if (!empty($this->action_taken)) {
+    $html .= '<p class="errorred">'.$this->action_taken.'</p>';
+}
 
     $html .= '<h2 class="bd-edit-page-headers">Editing Overrides</h2>';
-	$html .= '<p>Set various administrative editing modes that last only a few minutes and then revert to normal mode.</p>';    
-	$html .= '<table class="edittable">
+    $html .= '<p>Set various administrative editing modes that last only a few minutes and then revert to normal mode.</p>';
+    $html .= '<table class="edittable"><colgroup>
              <col class="table_label_width">
              <col class="table_value_width">
              <col class="table_label_width">
-             <col class="table_value_width">';
+             <col class="table_value_width"></colgroup>';
     $layout = array();
-    foreach($Obj->getSessionBooleanFieldNames() as $fieldname) {
-    	$layout[] = array($fieldname);
-    } 
+foreach ($Obj->getSessionBooleanFieldNames() as $fieldname) {
+    $layout[] = array($fieldname);
+}
     $html .= fetchEditTableTR($layout, $Obj);
     $html .= '</table>
     ';
-    
-    
-    $html .= '<h2 class="bd-edit-page-headers">Banner</h2>';   
+
+
+    $html .= '<h2 class="bd-edit-page-headers">Banner</h2>';
     $html .= '<p>Put an admistrative message at the top of each page with a red background.</p>';
-    if ($Obj->getBannerError()) {
-    	$html .= '<p class="errorred">There is a problem with your banner: '.$Obj->getBannerError().'</p>';
-    } else {
-    	$html .= '<p>'.$Obj->getBannerStatus().'</p>';
-    }
-    $html .= '<table class="edittable">
+if ($Obj->getBannerError()) {
+    $html .= '<p class="errorred">There is a problem with your banner: '.$Obj->getBannerError().'</p>';
+} else {
+    $html .= '<p>'.$Obj->getBannerStatus().'</p>';
+}
+    $html .= '<table class="edittable"><colgroup>
              <col class="table_label_width">
              <col class="table_value_width">
              <col class="table_label_width">
-             <col class="table_value_width">';
+             <col class="table_value_width"></colgroup>';
     $layout = array();
     $html .= fetchEditTableTR(array(array(array('dbfield' => 'banner_text')),array('banner_show_time','banner_hide_time')), $Obj);
     $html .= '</table>
-    ';    
+    ';
 
-    echo fetch_form_page($title_html,$html,array('Save' => 'btnSave'))
+    echo fetch_form_page($title_html, $html, array('Save' => 'btnSave'))
 
 ?>

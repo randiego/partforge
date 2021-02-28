@@ -1470,11 +1470,11 @@ class DBTableRowTypeVersion extends DBTableRow {
         $username = DBTableRowUser::getFullName($this->user_id);
         $mod_username = DBTableRowUser::getFullName($this->modified_by_user_id);
         list($statustext, $statusclass, $definitiondescription) = self::formatSubActiveDefinitionStatus($this->to__typedisposition, $this->versionstatus, $this->isCurrentVersion());
-        $header_html = '<table class="edittable defheader">
+        $header_html = '<table class="edittable defheader"><colgroup>
     					 <col class="table_label_width">
     					 <col class="table_value_width">
     					 <col class="table_label_width">
-    					 <col class="table_value_width">
+    					 <col class="table_value_width"></colgroup>
     			<tr><th>Author:</th><td colspan="3">'.$username.'</td></tr>'."\r\n".'
     			<tr><th>Modified By:</th><td colspan="3">'.$mod_username.'</td></tr>'."\r\n".'
     			<tr><th>Modified On:</th><td colspan="3">'.$this->formatPrintField('record_modified').'</td></tr>'."\r\n".

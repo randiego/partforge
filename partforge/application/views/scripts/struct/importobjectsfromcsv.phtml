@@ -3,17 +3,17 @@
 	$this->layout()->title = $this->import_object->getPageTitle();
 	$this->layout()->setLayout('layoutdialog');
 	$this->layout()->show_in_any_window = true;
-        
+
 	$html = '';
 //TODO:        $html .= $this->uploaddocument->fetchHiddenIndexFormTag();
 	$html .= '
             <input type="hidden" name="MAX_FILE_SIZE" value="'.$config->max_file_upload_size.'">
             <div style="width:600px;">
-            <p>The imported files must be in CSV format.  
+            <p>The imported files must be in CSV format.
 		Column headers must start on line 1, and the data must start on line 2. </p>
             <p>Actions for each input row can be specified with an action column with values like:<dl>
             		<dt>NewObject</dt><dd>creating a new itemobject and itemversion</dd>
-            		<dt>ReplaceFields</dt><dd>this is for the case where we want to change the value of specific fields in an existing version. without creating a new version.  
+            		<dt>ReplaceFields</dt><dd>this is for the case where we want to change the value of specific fields in an existing version. without creating a new version.
             		We can even change the fieldtype_id if we enter it.  When you select the typeversion from the top dropdown on the following page for this type of import row, it does nothing more than specify the fields you can choose from the header dropdowns.</dd>
             		<dt>NewVersion</dt><dd>This is the case where we specify a serial number and some other fields.
     		The SN is used to lookup the corresponding
@@ -31,13 +31,13 @@
             		</dl></p>
             </div>
             <p>
-            <table class="edittable">
+            <table class="edittable"><colgroup>
             <col style="width: 100px;">
-            <col style="width: 500px;">
+            <col style="width: 500px;"></colgroup>
         ';
         $limit_text = number_format(ceil($config->max_file_upload_size / (1024*1024))).' MB';
         //$filetypes = text_to_wrappedhtml('(Allowed: '.implode(', ',$this->uploaddocument->getAllowedFileExtArray()).', < '.$limit_text.')',50);
-        
+
         $html .= '
         <tr>
                     <th>File Name:</th>
@@ -55,5 +55,5 @@
         </p>';
 
         echo fetch_form_page($this->layout()->title,$html,array('Upload and Preview' => 'btnUpload', 'Cancel' => 'btnCancel'),'','','enctype="multipart/form-data"');
-        
+
 ?>
