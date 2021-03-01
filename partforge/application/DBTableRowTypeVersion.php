@@ -1497,7 +1497,7 @@ class DBTableRowTypeVersion extends DBTableRow {
         $defaults['required'] = 0;
         $defaults['featured'] = 0;
         $defaults['unique'] = 0;
-        $defaults['subcaption'] = 0;
+        $defaults['subcaption'] = "";
 
         $fieldtype = array('name' => $fieldname);
         $fieldtype = array_merge($fieldtype, $typedigest['fieldtypes'][$fieldname]);
@@ -1539,7 +1539,8 @@ class DBTableRowTypeVersion extends DBTableRow {
 
         // prune the params that are not defaults to remove clutter
         foreach ($defaults as $defname => $defval) {
-            if (isset($fieldtype[$defname]) && ($fieldtype[$defname]==$defval)) {
+            if (!is_string($defval) && isset($fieldtype[$defname]) && ($fieldtype[$defname]==$defval) ||
+                is_string($defval) && isset($fieldtype[$defname]) && ($fieldtype[$defname]===$defval)) {
                 unset($fieldtype[$defname]);
             }
         }
