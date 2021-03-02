@@ -696,9 +696,10 @@ class EventStream {
                         list($user_id,$comment_added,$comment_text,$subdocuments_packed) = explode('&', $subcomment);
                         $subdatetime = time_to_bulletdate(strtotime($comment_added));
                         $comment_text = hextobin($comment_text); // we had packed this earlier for safety
+                        list($comment_html,$comment_text_array) = EventStream::textToHtmlWithEmbeddedCodes($comment_text, $navigator, $line['event_type_id'], false);
                         $subcomments_html .= '<li class="bd-event-subcomment">
 								<div class="bd-subcomment-who-message">
-								<span class="bd-subcomment-byline">'.DBTableRowUser::concatNames($user_records[$user_id]).':</span>'.TextToHtml($comment_text).'
+								<span class="bd-subcomment-byline">'.DBTableRowUser::concatNames($user_records[$user_id]).':</span>'.$comment_html.'
 										</div>
 
 										';
@@ -821,7 +822,7 @@ class EventStream {
     }
 
     /**
-     * This takes a record representation of the stream array from ::assemblyStreamArray() and generates both an array of lines and an array that
+     * This takes a record representation of the stream array from ::assembleStreamArray() and generates both an array of lines and an array that
      * clusters together referring procedures.  The array of lines ($lines) is meant to be rendered into the html event stream
      * on the itemview page using self::eventStreamLinesToHtml() and $references_by_typeobject_id is meant to be turned into
      * the dashboard view using self::renderDashBoardView(). The return value is an array.
