@@ -245,7 +245,7 @@ class TableRow {
         }
     }
 
-    public function getFieldNamesWithoutStrictValidation()
+    public function getAddOnFieldNames()
     {
         return array();
     }

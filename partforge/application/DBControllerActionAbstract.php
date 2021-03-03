@@ -328,7 +328,7 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
 
     public function show_error_dialog_if_needed($errormsg, $dbtable, $button_value)
     {
-        $fatal_fields = array_diff(array_keys($errormsg), $dbtable->getFieldNamesWithoutStrictValidation());
+        $fatal_fields = array_diff(array_keys($errormsg), $dbtable->getAddOnFieldNames());
         $buttons = array('<== Back' => $this->navigator->getCurrentViewUrl());
         $show = false;
         if (count($fatal_fields)>0) {

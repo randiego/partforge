@@ -166,7 +166,7 @@ class ImportStrategyObjects {
             $this->_log[] = 'Records Skipped = '.$this->records_skipped;
     }
 
-    function getRequiredImportFields()
+    public function getRequiredImportFields()
     {
         $out = array();
         foreach ($this->_fields as $fieldname => $fielddesc) {
@@ -191,7 +191,7 @@ class ImportStrategyObjects {
             return ($errors==0);
     }
 
-    function getPageTitle()
+    public function getPageTitle()
     {
         return 'File Import';
     }
@@ -222,7 +222,7 @@ class ImportStrategyObjects {
      * @param boolean $simlulate_only if set will not alter the database
      * @param array $errormsg = list of error message.  Empty means no errors
      */
-    static function storeObjectPerImportRules($action, $record, $curr_field_to_columns, $typeversion_id, $itemversion_id, $itemobject_id, $user_id, $effective_date, $simlulate_only, &$errormsg, &$outitemversion_id)
+    public static function storeObjectPerImportRules($action, $record, $curr_field_to_columns, $typeversion_id, $itemversion_id, $itemobject_id, $user_id, $effective_date, $simlulate_only, &$errormsg, &$outitemversion_id)
     {
         $ItemVersion = new DBTableRowItemVersion();
 
@@ -244,14 +244,16 @@ class ImportStrategyObjects {
                 $init_components['typeversion_id'] = $typeversion_id;
                 foreach ($curr_field_to_columns as $fieldname => $columnname) {
                     $type = $ItemVersion->getFieldType($fieldname);
-                    if ($type['type']=='component') {
-                        $allowedvalues = $ItemVersion->getComponentSelectOptions($fieldname, $ItemVersion->effective_date, '');
-                        $allowedvalues[''] = '';
-                        $keyval = array_search($record[$columnname], $allowedvalues);
-                        if ($keyval!==false) {
-                            $init_components[$fieldname] = $keyval;
-                        } else {
-                            $errormsg[] = "Value {$record[$columnname]} in column {$columnname} not a valid component value.";
+                    if (!is_null($type)) {
+                        if ($type['type']=='component') {
+                            $allowedvalues = $ItemVersion->getComponentSelectOptions($fieldname, $ItemVersion->effective_date, '');
+                            $allowedvalues[''] = '';
+                            $keyval = array_search($record[$columnname], $allowedvalues);
+                            if ($keyval!==false) {
+                                $init_components[$fieldname] = $keyval;
+                            } else {
+                                $errormsg[] = "Value {$record[$columnname]} in column {$columnname} not a valid component value.";
+                            }
                         }
                     }
                 }
@@ -262,19 +264,21 @@ class ImportStrategyObjects {
                 // Now that the inherited fields have all been mapped in, time to overwrite the fields
                 foreach ($curr_field_to_columns as $fieldname => $columnname) {
                     $type = $ItemVersion->getFieldType($fieldname);
-                    if ($type['type']!='component') {
-                        $ItemVersion->{$fieldname} = $record[$columnname];
-                    } else if ($fieldname=='partnumber_alias') {
-                        if ($ItemVersion->hasAliases()) {
-                            $allowedvalues = extract_column($ItemVersion->getAliases(), 'part_number');
-                            $keyval = array_search($record[$columnname], $allowedvalues);
-                            if ($keyval!==false) {
-                                $ItemVersion->partnumber_alias = $keyval;
+                    if (!is_null($type)) {
+                        if ($type['type']!='component') {
+                            $ItemVersion->{$fieldname} = $record[$columnname];
+                        } else if ($fieldname=='partnumber_alias') {
+                            if ($ItemVersion->hasAliases()) {
+                                $allowedvalues = extract_column($ItemVersion->getAliases(), 'part_number');
+                                $keyval = array_search($record[$columnname], $allowedvalues);
+                                if ($keyval!==false) {
+                                    $ItemVersion->partnumber_alias = $keyval;
+                                } else {
+                                    $errormsg[] = "Value {$record[$columnname]} in column {$columnname} not a valid partnumber alias.";
+                                }
                             } else {
-                                $errormsg[] = "Value {$record[$columnname]} in column {$columnname} not a valid partnumber alias.";
+                                $ItemVersion->partnumber_alias = 0;
                             }
-                        } else {
-                            $ItemVersion->partnumber_alias = 0;
                         }
                     }
                 }
@@ -467,7 +471,7 @@ class ImportStrategyObjects {
      * @param unknown_type $importParams['records'], ['column_defs']=, ['typeversion_id']
      * @param unknown_type $simlulate_only
      */
-    static function storeObjectsFromArray($importParams, $simlulate_only = false)
+    public static function storeObjectsFromArray($importParams, $simlulate_only = false)
     {
         if (count($importParams['records'])==0) {
             return array();
@@ -477,7 +481,7 @@ class ImportStrategyObjects {
         $field_to_columns = array();
         foreach ($importParams['column_defs'] as $columnname => $fieldname) {
             // make sure we only consider existing columns.
-            if (isset($first_row[$columnname])) {
+            if (isset($first_row[$columnname]) && $fieldname) {
                 $field_to_columns[$fieldname] = $columnname;
             }
         }
@@ -551,8 +555,5 @@ class ImportStrategyObjects {
         }
         return $outmessages;
     }
-
-
-
 
 }

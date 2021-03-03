@@ -1,72 +1,75 @@
 <?php
     $config = Zend_Registry::get('config');
-	$this->layout()->title = 'Importing of Objects';
-	$this->layout()->setLayout('layoutdialog');
+    $this->layout()->title = 'Importing of Objects';
+    $this->layout()->setLayout('layoutdialog');
     $this->layout()->show_in_any_window = true;
-        
-	$html = '';
-	
-	
-	if (count($this->import_records)>0) {
-		
-		/*
-		 * Show the selection box for the typeversion
-		 */
-		$typerecords = DbSchema::getInstance()->getRecords('typeversion_id',"SELECT typeversion.* FROM typeobject
+
+    $html = '';
+
+
+if (count($this->import_records)>0) {
+    /*
+         * Show the selection box for the typeversion
+     */
+    $typerecords = DbSchema::getInstance()->getRecords('typeversion_id', "SELECT typeversion.* FROM typeobject
     			LEFT JOIN typeversion ON typeversion.typeversion_id=typeobject.cached_current_typeversion_id
     			ORDER BY typeversion.type_part_number");
-		$out = array();
-		$selected = -1;
-		foreach($typerecords as $typeversion_id => $typerecord) {
-			if ($typeversion_id) {
-				$jump_url = $this->navigator->getCurrentHandlerUrl('btnChooseTypeVersion','','',array('typeversion_id' => $typeversion_id));
-				$out[$jump_url] = DBTableRowTypeVersion::formatPartNumberDescription($typerecord['type_part_number'],$typerecord['type_description']);
-				if (isset($_SESSION['importobjectsconfirm']['typeversion_id']) && ($typeversion_id==$_SESSION['importobjectsconfirm']['typeversion_id'])) {
-					$selected = $jump_url;
-				}
-			}
-		}
-		
-		$html .= '<p>'.format_select_tag($out,'typeversion_url',array('typeversion_url' => $selected),"MM_jumpMenu('parent',this,0)",false,'-- Select Type of Objects to Create --').'</p>';
-		$ItemVersion = new DBTableRowItemVersion();
-		if (isset($_SESSION['importobjectsconfirm']['typeversion_id']) && $_SESSION['importobjectsconfirm']['typeversion_id']) {
-			$ItemVersion->typeversion_id = $_SESSION['importobjectsconfirm']['typeversion_id'];
-			$selectfieldnames = $ItemVersion->getSaveFieldNames();
-		} else {
-			$selectfieldnames = array();
-		}
-		$selectfieldnames[] = '';
-		$selectfieldnames[] = 'IMPORT_ACTION';
-		
-		$control_array = array();
-		foreach($this->import_records[0] as $fieldname => $val) {
-			if (!isset($this->column_defs[$fieldname])) $this->column_defs[$fieldname] = '';
-			$select_arr = array();
-			$selected = -1;
-			foreach($selectfieldnames as $selectfieldname) {
-				$jump_url = $this->navigator->getCurrentHandlerUrl('btnSelectColumn','','',array('col_import_label' => $fieldname, 'col_fieldname_val' => $selectfieldname));
-				$select_arr[$jump_url] = $selectfieldname;
-				if ($selectfieldname==$this->column_defs[$fieldname]) $selected = $jump_url;
-			}
-			$control_array[$fieldname] = format_select_tag($select_arr,$fieldname,array($fieldname=>$selected),"MM_jumpMenu('parent',this,0)",false,'');	
-		}
-		$rows = array();
-		$rows[] = array_merge(array('Import Messages' => null),$control_array);
-		
-		$datarows = $this->import_records;
-		foreach($datarows as $idx => $row) {
-			$msg = isset($this->import_messages[$idx]) ? $this->import_messages[$idx] : '';
-			$datarows[$idx] = array_merge(array('Import Messages' => $msg),$row);
-		}
-		
-		$rows = array_merge($rows,$datarows);
-		$html .= DBEditView::formatSublistTableHtml($rows);
-	} else {
-		$html .= '
+    $out = array();
+    $selected = -1;
+    foreach ($typerecords as $typeversion_id => $typerecord) {
+        if ($typeversion_id) {
+            $jump_url = $this->navigator->getCurrentHandlerUrl('btnChooseTypeVersion', '', '', array('typeversion_id' => $typeversion_id));
+            $out[$jump_url] = DBTableRowTypeVersion::formatPartNumberDescription($typerecord['type_part_number'], $typerecord['type_description']);
+            if (isset($_SESSION['importobjectsconfirm']['typeversion_id']) && ($typeversion_id==$_SESSION['importobjectsconfirm']['typeversion_id'])) {
+                $selected = $jump_url;
+            }
+        }
+    }
+
+    $html .= '<p>'.format_select_tag($out, 'typeversion_url', array('typeversion_url' => $selected), "MM_jumpMenu('parent',this,0)", false, '-- Select Type of Objects to Create --').'</p>';
+    $ItemVersion = new DBTableRowItemVersion();
+    if (isset($_SESSION['importobjectsconfirm']['typeversion_id']) && $_SESSION['importobjectsconfirm']['typeversion_id']) {
+        $ItemVersion->typeversion_id = $_SESSION['importobjectsconfirm']['typeversion_id'];
+        $selectfieldnames = $ItemVersion->getSaveFieldNames();
+    } else {
+        $selectfieldnames = array();
+    }
+    $selectfieldnames[] = '';
+    $selectfieldnames[] = 'IMPORT_ACTION';
+
+    $control_array = array();
+    foreach ($this->import_records[0] as $fieldname => $val) {
+        if (!isset($this->column_defs[$fieldname])) {
+            $this->column_defs[$fieldname] = '';
+        }
+        $select_arr = array();
+        $selected = -1;
+        foreach ($selectfieldnames as $selectfieldname) {
+            $jump_url = $this->navigator->getCurrentHandlerUrl('btnSelectColumn', '', '', array('col_import_label' => $fieldname, 'col_fieldname_val' => $selectfieldname));
+            $select_arr[$jump_url] = $selectfieldname;
+            if ($selectfieldname==$this->column_defs[$fieldname]) {
+                $selected = $jump_url;
+            }
+        }
+        $control_array[$fieldname] = format_select_tag($select_arr, $fieldname, array($fieldname=>$selected), "MM_jumpMenu('parent',this,0)", false, '');
+    }
+    $rows = array();
+    $rows[] = array_merge(array('Import Messages' => null), $control_array);
+
+    $datarows = $this->import_records;
+    foreach ($datarows as $idx => $row) {
+        $msg = isset($this->import_messages[$idx]) ? $this->import_messages[$idx] : '';
+        $datarows[$idx] = array_merge(array('Import Messages' => $msg), $row);
+    }
+
+    $rows = array_merge($rows, $datarows);
+    $html .= DBEditView::formatSublistTableHtml($rows);
+} else {
+    $html .= '
 				<p>There are no eligible records to import.  Click Cancel to return.</p>
 			';
-	}
+}
 
-    echo fetch_form_page($this->layout()->title,$html,array('Import Now' => 'btnOk', 'Cancel' => 'btnCancel'));
-        
+    echo fetch_form_page($this->layout()->title, $html, array('Import Now' => 'btnOk', 'Cancel' => 'btnCancel'));
+
 ?>

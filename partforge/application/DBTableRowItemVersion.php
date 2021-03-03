@@ -294,7 +294,7 @@ class DBTableRowItemVersion extends DBTableRow {
     }
 
 
-    public function getFieldNamesWithoutStrictValidation()
+    public function getAddOnFieldNames()
     {
         $out = $this->_typeversion_digest['addon_property_fields'];
         $out = array_merge($out, $this->_typeversion_digest['addon_component_fields']);
@@ -1222,7 +1222,7 @@ class DBTableRowItemVersion extends DBTableRow {
     public function validateForFatalFields($fieldnames, &$errormsg)
     {
         $this->validateFields($fieldnames, $errormsg);
-        foreach ($this->getFieldNamesWithoutStrictValidation() as $fieldname) {
+        foreach ($this->getAddOnFieldNames() as $fieldname) {
             if (isset($errormsg[$fieldname])) {
                 unset($errormsg[$fieldname]);
             }

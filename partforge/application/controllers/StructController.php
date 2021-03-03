@@ -1134,6 +1134,16 @@ class StructController extends DBControllerActionAbstract
                     $this->navigator->returnFromCall();
                 case isset($this->params['btnChooseTypeVersion']):
                     $_SESSION['importobjectsconfirm']['typeversion_id'] = $this->params['typeversion_id'];
+                    // attempt to assign columns automatically
+                    $ItemVersion = new DBTableRowItemVersion();
+                    $ItemVersion->typeversion_id = $_SESSION['importobjectsconfirm']['typeversion_id'];
+                    $selectfieldnames = $ItemVersion->getAddOnFieldNames();
+                    foreach ($ImportRecords[0] as $fieldname_caps => $val) {
+                        if (in_array(strtolower($fieldname_caps), $selectfieldnames)) {
+                            $_SESSION['importobjectsconfirm']['column_defs'][$fieldname_caps] = strtolower($fieldname_caps);
+                        }
+                    }
+
                     $this->navigator->jumpToView();
                 case isset($this->params['btnSelectColumn']):
                     $_SESSION['importobjectsconfirm']['column_defs'][$this->params['col_import_label']] = $this->params['col_fieldname_val'];
