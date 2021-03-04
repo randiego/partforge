@@ -93,7 +93,7 @@ class Types_DocumentsController extends RestControllerActionAbstract
                 $errormsg[] = 'The parameters for this call cannot contain an ID parameter.';
             }
 
-            $TypeObject = DbSchema::getnew DBTableRowTypeObject(false, null);
+            $TypeObject = new DBTableRowTypeObject(false, null);
             if (isset($record['typeobject_id'])) {
                 if (!$TypeObject->getRecordById($record['typeobject_id'])) {
                     $errormsg[] = 'TypeObject_id = '.$record['typeobject_id'].' not found.';

@@ -151,10 +151,7 @@ class Items_CommentsController extends RestControllerActionAbstract
             }
 
             if (empty($errormsg)) {
-            //    $EditRow = DbSchema::getInstance()->dbTableRowObjectFactory('comment');
                 $EditRow = new DBTableRowComment();
-//              $EditRow->itemobject_id = $record['itemobject_id'];
-//              $EditRow->comment_text = $record['comment_text'];
                 $EditRow->assignFromAjaxPost($record);
                 $EditRow->validateFields($EditRow->getSaveFieldNames(), $errormsg);
             }

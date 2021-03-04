@@ -34,7 +34,7 @@ class UploadHandler
         'min_height' => 'Image requires a minimum height'
     );
 
-    function __construct($options = null, $initialize = true) {
+    public function __construct($options = null, $initialize = true) {
         $this->options = array(
             'script_url' => $this->get_full_url().'/',
             'upload_dir' => dirname($_SERVER['SCRIPT_FILENAME']).'/files/',
@@ -93,13 +93,13 @@ class UploadHandler
                 ),
                 */
                 // Uncomment the following to create medium sized images:
-                
+
                 'medium' => array(
                     'max_width' => 1920,
                     'max_height' => 1200,
                     'jpeg_quality' => 90
                 ),
-                
+
                 'thumbnail' => array(
                     'max_width' => 80,
                     'max_height' => 80
@@ -254,7 +254,7 @@ class UploadHandler
     protected function count_file_objects() {
         return count($this->get_file_objects('is_valid_file_object'));
     }
-    
+
     public static function create_scaled_image_core($file_name, $options, $file_path, $new_file_path) {
     	list($img_width, $img_height) = @getimagesize($file_path);
     	if (!$img_width || !$img_height) {
@@ -325,7 +325,7 @@ class UploadHandler
         } else {
             $new_file_path = $file_path;
         }
-        return self::create_scaled_image_core($file_name, $options, $file_path, $new_file_path);        
+        return self::create_scaled_image_core($file_name, $options, $file_path, $new_file_path);
     }
 
     protected function get_error_message($error) {
@@ -569,7 +569,7 @@ class UploadHandler
     protected function body($str) {
         echo $str;
     }
-    
+
     protected function header($str) {
         header($str);
     }

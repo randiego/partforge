@@ -987,7 +987,7 @@ class StructController extends DBControllerActionAbstract
     {
         // how do we know we are really logged in here.
         if (isset($this->params['itemobject_id']) && is_numeric($this->params['itemobject_id']) && $this->params['comment_text']) {
-            $Comment = new DBTableRowTypeComment();
+            $Comment = new DBTableRowComment();
             $Comment->itemobject_id = $this->params['itemobject_id'];
             $Comment->comment_text = $this->params['comment_text'];
             $Comment->save();
@@ -1079,7 +1079,7 @@ class StructController extends DBControllerActionAbstract
 
     public function documentsajaxAction()
     {
-        $EditRow = new DBTableRowTypeComment();
+        $EditRow = new DBTableRowComment();
         $EditRow->assign($_SESSION['editing_comment']);
         $upload_handler = new MyUploadHandler($EditRow);
         $_SESSION['editing_comment']['document_ids'] = $EditRow->document_ids;
