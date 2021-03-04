@@ -530,7 +530,7 @@ function renderDictRawEditor(containerSet) {
 	containerSet.html(html);
 	containerSet.dialog({
 		title: "Edit/View Raw Dictionary String",
-		width: 600,
+		width: 700,
 		modal: true,
 		closeOnEscape: false,
 		close: function( event, ui ) {containerSet.dialog('destroy'); renderAll();}
