@@ -1,17 +1,17 @@
 <?php
     $this->layout()->title = 'Help';
     $this->layout()->setLayout('layoutpopup');
-    require_once('markdown.php');
-    
+    require_once('Michelf/Markdown.inc.php');
+
     $html = '';
-    
-    
+
+
     $html .= '<div id="helpBody">';
-    $html .= Markdown($this->help_obj->help_markup);
+    $html .= Michelf\Markdown::defaultTransform($this->help_obj->help_markup);
     $html .= '</div>';
 
     $html .= '<p>';
     $html .= '<button class="bd-button" type="button" onclick="window.close();">Close</button>';
     $html .= '</p>';
-    echo fetch_form_tag($html);    
+    echo fetch_form_tag($html);
 ?>
