@@ -1243,7 +1243,7 @@ function renderFormLayout() {
 			                	dfimageupload_upload_url : TypeObjectId=='new' ? '' : baseUrl+'/types/documents?typeobject_id='+TypeObjectId+'&format=json',
 			                	dfimageupload_typeobject_id : TypeObjectId,
 			                	theme: "advanced",
-			                	plugins : "dfimageupload,autolink,lists,pagebreak,style,layer,table,save,advhr,advimage,advlink,emotions,iespell,inlinepopups,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,noneditable,visualchars,nonbreaking,xhtmlxtras,template,advlist",
+			                	plugins : "dfimageupload,autolink,lists,pagebreak,style,layer,table,save,advhr,advimage,advlink,emotions,iespell,inlinepopups,insertdatetime,preview,media,searchreplace,print,contextmenu,paste,directionality,fullscreen,noneditable,visualchars,nonbreaking,xhtmlxtras,advlist",
 			            		theme_advanced_buttons1 : "bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,formatselect,|,bullist,numlist,|,outdent,indent,blockquote,|,link,unlink,help,code",
 			            		theme_advanced_buttons2 : "tablecontrols,|,hr,removeformat,|,sub,sup,|,charmap,|,dfimageupload",
 			                	width: '100%', height: 300,
@@ -1608,7 +1608,7 @@ function checkValidCalculatedTypes() {
 	}
 
 	// now look the fields in the expressions to make sure they are actual fields.
-	var reg = /\[([a-z_0-9]+)]/g;
+	var reg = /\[([^\[^\]]+)]/g;
 	for(var ifield = 0; ifield < calculated_field_idx.length; ifield++) {
 		var idx = calculated_field_idx[ifield];
 		var fieldsinexp = [...typeDictionaryArray[idx]['expression'].matchAll(reg)];
@@ -1660,19 +1660,6 @@ $(document).ready(function() {
 		// Example content CSS (should be your site CSS)
 		content_css : baseUrl+"/commonLayout.css",
 
-		// Drop lists for link/image/media/template dialogs
-
-		template_external_list_url : "lists/template_list.js",
-		external_link_list_url : "lists/link_list.js",
-		external_image_list_url : "lists/image_list.js",
-		media_external_list_url : "lists/media_list.js",
-
-
-		// Replace values for the template plugin
-		template_replace_values : {
-			username : "Some User",
-			staffid : "991234"
-		}
 	});
 
 
@@ -1713,23 +1700,5 @@ $(document).ready(function() {
 	typeDictionaryArray = dictionaryToArray(typeDataDictionary);
 	typeFormLayoutArray = layoutToFlatArray(typeFormLayout);
 	renderAll();
-
-	/*
-	$("#testSendJson").click(function() {
-//		alert('hello:'+baseUrl + '/items/objects?format=json');
-		$.ajax({
-			  type: 'PUT',
-			  url: 'http://mylocalhost/sandbox/items/objects/3063?format=json',
-			  data: "user_id=1&typeversion_id=10&effective_date=04%2F26%2F2012+17%3A22&item_serial_number=VU783&chamber_serial_number=&vacuum_sleeve_serial_number=&superinsulation_type=Not+Tied&impedance_type=&impedance_serial_number=&clt_filter_type=&magnet_type=No+Magnet&customer_name=&system_type=ECII%2Fwater+cooled",
-			  success: function(data) {
-					alert("return payload:" + $.toJSON(data));
-			  },
-			  dataType: "json"
-			});
-
-
-		return false;
-	});
-	*/
 
 });
