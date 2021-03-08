@@ -43,7 +43,12 @@ class Types_DocumentsController extends RestControllerActionAbstract
         $this->noOp();
     }
 
-    public function getAction()
+    public function headAction()
+    {
+        return $this->getAction(true);
+    }
+
+    public function getAction($headers_only = false)
     {
         $Document = new DBTableRowTypeDocument();
         if ($Document->getRecordById($this->params['id'])) {
@@ -59,7 +64,7 @@ class Types_DocumentsController extends RestControllerActionAbstract
                     $Document->outputCustomSizeImageToBrowser($this->params['width']);
                 }
             } else {
-                $Document->outputToBrowser(true);
+                $Document->outputToBrowser(true, true, $headers_only);
             }
         } else {
             $this->view->errormessages = 'document not found.';
