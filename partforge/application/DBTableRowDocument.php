@@ -240,10 +240,15 @@ break;
 
     public function outputToBrowser($is_download = true, $cache_it = true, $headers_only = false)
     {
+        // if the file is not found on disk, I should output a static image with the message embedded in it instead of an empty body
         send_download_headers($this->document_file_type, $this->document_displayed_filename, $is_download ? 'attachment; ' : '', $cache_it ? 'max-age=2592000' : 'max-age=0');
-        header( 'Content-Length: '.filesize($this->fullStoredFileName()) );
+        $filesize = 0;
+        if (file_exists($this->fullStoredFileName())) {
+            $filesize = filesize($this->fullStoredFileName());
+        }
+        header( 'Content-Length: '.$filesize );
         header( 'Content-Description: Download Data' );
-        if (!$headers_only) {
+        if (!$headers_only && ($filesize > 0)) {
             readfile($this->fullStoredFileName());
         }
         exit;

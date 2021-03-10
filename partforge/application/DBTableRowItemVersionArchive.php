@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -25,9 +25,10 @@
 
 class DBTableRowItemVersionArchive extends DBTableRow {
 
-	public function __construct() {
-		parent::__construct('itemversionarchive');
-		$this->record_created = time_to_mysqldatetime(script_time());
-	}
+    public function __construct()
+    {
+        parent::__construct('itemversionarchive');
+        $this->record_created = time_to_mysqldatetime(script_time());
+    }
 
 }

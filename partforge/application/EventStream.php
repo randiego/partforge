@@ -136,7 +136,7 @@ class EventStream {
     {
         $end_date_and_where = is_null($end_date) ? '' : " and (effective_date >= '".time_to_mysqldatetime(strtotime($end_date))."')";
         $query = "SELECT *, (SELECT count(*) FROM itemversionarchive WHERE itemversionarchive.itemversion_id=itemversion.itemversion_id) as archive_count,
-		(SELECT min(record_created) FROM itemversionarchive WHERE itemversionarchive.itemversion_id=itemversion.itemversion_id) as oldest_record_created
+		(SELECT min(original_record_created) FROM itemversionarchive WHERE itemversionarchive.itemversion_id=itemversion.itemversion_id) as oldest_record_created
 		FROM itemversion WHERE itemobject_id='{$this->_itemobject_id}' {$end_date_and_where} ORDER BY effective_date";
         return DbSchema::getInstance()->getRecords('itemversion_id', $query);
     }
@@ -183,7 +183,7 @@ class EventStream {
         $out = array();
 
         $query = "SELECT *, (SELECT count(*) FROM itemversionarchive WHERE itemversionarchive.itemversion_id=itemversion.itemversion_id) as archive_count,
-		(SELECT min(record_created) FROM itemversionarchive WHERE itemversionarchive.itemversion_id=itemversion.itemversion_id) as oldest_record_created
+		(SELECT min(original_record_created) FROM itemversionarchive WHERE itemversionarchive.itemversion_id=itemversion.itemversion_id) as oldest_record_created
 		FROM itemversion WHERE itemobject_id='{$ItemVersionBase->itemobject_id}' ORDER BY effective_date";
         $records = DbSchema::getInstance()->getRecords('itemversion_id', $query);
         $PreviousItemVersion = new DBTableRowItemVersion(false, null);
@@ -245,7 +245,7 @@ class EventStream {
          */
         $end_date_and_where = is_null($end_date) ? '' : " and (effective_date >= '".time_to_mysqldatetime(strtotime($end_date))."')";
         $query = "SELECT *, (SELECT count(*) FROM itemversionarchive WHERE itemversionarchive.itemversion_id=itemversion.itemversion_id) as archive_count,
-				(SELECT min(record_created) FROM itemversionarchive WHERE itemversionarchive.itemversion_id=itemversion.itemversion_id) as oldest_record_created
+				(SELECT min(original_record_created) FROM itemversionarchive WHERE itemversionarchive.itemversion_id=itemversion.itemversion_id) as oldest_record_created
 				FROM itemversion WHERE itemobject_id='{$this->_itemobject_id}' {$end_date_and_where} ORDER BY effective_date";
         $records = DbSchema::getInstance()->getRecords('itemversion_id', $query);
         $is_first = true;

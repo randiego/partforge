@@ -849,7 +849,7 @@ class DBTableRowItemVersion extends DBTableRow {
      * If it's different, say so, and also save an archive copy of the one on disk to the itemversionarchive table.
      * @return boolean
      */
-    function checkAndArchiveIfThisVersionHasChanges($ItemVersionOrig = null)
+    public function checkAndArchiveIfThisVersionHasChanges($ItemVersionOrig = null)
     {
         if (is_null($ItemVersionOrig)) {
             $ItemVersionOrig = new DBTableRowItemVersion();
@@ -861,6 +861,7 @@ class DBTableRowItemVersion extends DBTableRow {
             $Arc = new DBTableRowItemVersionArchive();
             $Arc->itemversion_id = $record['itemversion_id'];
             $Arc->cached_user_id = $record['user_id'];
+            $Arc->original_record_created = $record['record_created'];
             $Arc->item_data = json_encode($record);
             $Arc->save();
         }
