@@ -69,7 +69,7 @@ class Items_DocumentsController extends RestControllerActionAbstract
     {
         $Document = new DBTableRowDocument();
         if ($Document->getRecordById($this->params['id'])) {
-            if ($Document->document_thumb_exists) {
+            if ($Document->document_thumb_exists) { // this  is one way we decide if this is an image vs some other document type.
                 $fmt = isset($this->params['fmt']) ? $this->params['fmt'] : 'full';
                 if ($fmt=='thumbnail') {
                     $Document->outputThumbnailImageToBrowser(true, $headers_only);
@@ -77,6 +77,8 @@ class Items_DocumentsController extends RestControllerActionAbstract
                     $Document->outputMediumImageToBrowser(true, $headers_only);
                 } else if ($fmt=='full') {
                     $Document->outputToBrowser(false, true, $headers_only);
+                } else if (($fmt=='customwidth') && is_numeric($this->params['width'])) {
+                    $Document->outputCustomSizeImageToBrowser($this->params['width'], $headers_only);
                 }
             } else {
                 $Document->outputToBrowser(true, true, $headers_only);

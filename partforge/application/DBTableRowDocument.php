@@ -191,23 +191,39 @@ break;
     public function outputMediumImageToBrowser($cache_it = true, $headers_only = false)
     {
         $is_download = false;
-        send_download_headers($this->document_file_type, $this->document_displayed_filename, $is_download ? 'attachment; ' : '', $cache_it ? 'max-age=2592000' : 'max-age=0');
-        $this->generateMediumImageIfNeeded();
-        $medium_file = $this->fullStoredFileName('/medium');
-        header( 'Content-Length: '.filesize($medium_file) );
+        if (file_exists($this->fullStoredFileName())) {
+            $this->generateMediumImageIfNeeded();  // need to only do this if the original exists
+            $document_file_type = $this->document_file_type;
+            $full_stored_filename = $this->fullStoredFileName('/medium');
+            $document_displayed_filename = $this->document_displayed_filename;
+        } else {
+            $document_file_type = 'image/jpeg';
+            $document_displayed_filename = 'Error Document Not Found.jpg';
+            $full_stored_filename = dirname(__FILE__) . '/../public/images/file-missing-warning-image.jpg';
+        }
+        send_download_headers($document_file_type, $document_displayed_filename, $is_download ? 'attachment; ' : '', $cache_it ? 'max-age=2592000' : 'max-age=0');
+        header( 'Content-Length: '.filesize($full_stored_filename) );
         header( 'Content-Description: Download Data' );
         if (!$headers_only) {
-            readfile($medium_file);
+            readfile($full_stored_filename);
         }
         exit;
     }
 
-    public function outputCustomSizeImageToBrowser($width)
+    public function outputCustomSizeImageToBrowser($width, $headers_only = false)
     {
         $is_download = false;
-        send_download_headers($this->document_file_type, $this->document_displayed_filename, $is_download ? 'attachment; ' : '');
-        $this->generateMediumImageIfNeeded();
-        $medium_file = $this->fullStoredFileName('/medium');
+        if (file_exists($this->fullStoredFileName())) {
+            $this->generateMediumImageIfNeeded();  // need to only do this if the original exists
+            $document_file_type = $this->document_file_type;
+            $full_stored_filename = $this->fullStoredFileName('/medium');
+            $document_displayed_filename = $this->document_displayed_filename;
+        } else {
+            $document_file_type = 'image/jpeg';
+            $document_displayed_filename = 'Error Document Not Found.jpg';
+            $full_stored_filename = dirname(__FILE__) . '/../public/images/file-missing-warning-image.jpg';
+        }
+        send_download_headers($document_file_type, $document_displayed_filename, $is_download ? 'attachment; ' : '');
 
         $tempfile = tempnam(Zend_Registry::get('config')->document_path_base.Zend_Registry::get('config')->document_directory.'/'.$this->document_stored_path, 'PDFImage');
         $options = array(
@@ -215,24 +231,34 @@ break;
                 'max_height' => 1200,
                 'jpeg_quality' => 90
         );
-        UploadHandler::create_scaled_image_core($this->document_stored_filename, $options, $this->fullStoredFileName('/medium'), $tempfile);
+        UploadHandler::create_scaled_image_core($this->document_stored_filename, $options, $full_stored_filename, $tempfile);
         header( 'Content-Length: '.filesize($tempfile) );
         header( 'Content-Description: Download Data' );
-        readfile($tempfile);
+        if (!$headers_only) {
+            readfile($tempfile);
+        }
         unlink($tempfile);
         exit;
     }
 
     public function outputThumbnailImageToBrowser($cache_it = true, $headers_only = false)
     {
-        $thumbnail_file = $this->fullStoredFileName('/thumbnail');
         $is_download = false;
-        send_download_headers($this->document_file_type, $this->document_displayed_filename, $is_download ? 'attachment; ' : '', $cache_it ? 'max-age=2592000' : 'max-age=0');
-        if (is_file($thumbnail_file)) {
-            header( 'Content-Length: '.filesize($thumbnail_file) );
+        if (file_exists($this->fullStoredFileName('/thumbnail'))) {
+            $document_file_type = $this->document_file_type;
+            $full_stored_filename = $this->fullStoredFileName('/thumbnail');
+            $document_displayed_filename = $this->document_displayed_filename;
+        } else {
+            $document_file_type = 'image/jpeg';
+            $document_displayed_filename = 'Error Document Not Found.jpg';
+            $full_stored_filename = dirname(__FILE__) . '/../public/images/file-missing-warning-image_thumb.jpg';
+        }
+        send_download_headers($document_file_type, $document_displayed_filename, $is_download ? 'attachment; ' : '', $cache_it ? 'max-age=2592000' : 'max-age=0');
+        if (is_file($full_stored_filename)) {
+            header( 'Content-Length: '.filesize($full_stored_filename) );
             header( 'Content-Description: Download Data' );
             if (!$headers_only) {
-                readfile($thumbnail_file);
+                readfile($full_stored_filename);
             }
         }
         exit;
@@ -241,15 +267,22 @@ break;
     public function outputToBrowser($is_download = true, $cache_it = true, $headers_only = false)
     {
         // if the file is not found on disk, I should output a static image with the message embedded in it instead of an empty body
-        send_download_headers($this->document_file_type, $this->document_displayed_filename, $is_download ? 'attachment; ' : '', $cache_it ? 'max-age=2592000' : 'max-age=0');
-        $filesize = 0;
         if (file_exists($this->fullStoredFileName())) {
-            $filesize = filesize($this->fullStoredFileName());
+            $document_file_type = $this->document_file_type;
+            $document_displayed_filename = $this->document_displayed_filename;
+            $full_stored_filename = $this->fullStoredFileName();
+        } else {
+            $document_file_type = 'image/jpeg';
+            $document_displayed_filename = 'Error Document Not Found.jpg';
+            $full_stored_filename = dirname(__FILE__) . '/../public/images/file-missing-warning-image.jpg';
         }
+
+        send_download_headers($document_file_type, $document_displayed_filename, $is_download ? 'attachment; ' : '', $cache_it ? 'max-age=2592000' : 'max-age=0');
+        $filesize = filesize($full_stored_filename);
         header( 'Content-Length: '.$filesize );
         header( 'Content-Description: Download Data' );
-        if (!$headers_only && ($filesize > 0)) {
-            readfile($this->fullStoredFileName());
+        if (!$headers_only) {
+            readfile($full_stored_filename);
         }
         exit;
     }

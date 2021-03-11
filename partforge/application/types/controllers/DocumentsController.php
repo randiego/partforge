@@ -55,13 +55,13 @@ class Types_DocumentsController extends RestControllerActionAbstract
             if ($Document->document_thumb_exists) {
                 $fmt = isset($this->params['fmt']) ? $this->params['fmt'] : 'full';
                 if ($fmt=='thumbnail') {
-                    $Document->outputThumbnailImageToBrowser();
+                    $Document->outputThumbnailImageToBrowser(true, $headers_only);
                 } else if ($fmt=='medium') {
-                    $Document->outputMediumImageToBrowser();
+                    $Document->outputMediumImageToBrowser(true, $headers_only);
                 } else if ($fmt=='full') {
-                    $Document->outputToBrowser(false);
+                    $Document->outputToBrowser(false, true, $headers_only);
                 } else if (($fmt=='customwidth') && is_numeric($this->params['width'])) {
-                    $Document->outputCustomSizeImageToBrowser($this->params['width']);
+                    $Document->outputCustomSizeImageToBrowser($this->params['width'], $headers_only);
                 }
             } else {
                 $Document->outputToBrowser(true, true, $headers_only);
