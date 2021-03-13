@@ -1212,6 +1212,19 @@ class DBTableRowItemVersion extends DBTableRow {
             }
         }
 
+        // make sure components are of the right type.  This should be very rare.
+        foreach ($fieldnames as $fieldname) {
+            $ft = $this->_fieldtypes[$fieldname];
+            if (isset($ft['type']) && ($ft['type']=='component')) {
+                $ComponentItemVersion = $this->getComponentAsIVObject($fieldname);
+                if (!is_null($ComponentItemVersion)) {
+                    if (!in_array($ComponentItemVersion->tv__typeobject_id, $ft['can_have_typeobject_id'])) {
+                        $errormsg[$fieldname] = 'Wrong type for this component!';
+                    }
+                }
+            }
+        }
+
         parent::validateFields($fieldnames, $errormsg);
         if ($this->is_user_procedure && ((count($errormsg)>0) || $this->hasDictionaryOverrideErrors())) {
             if ($this->disposition=='Pass') {
@@ -1287,11 +1300,6 @@ class DBTableRowItemVersion extends DBTableRow {
             }
         }
         return $out;
-    }
-
-    public function getComponentsThatHaveChanged()
-    {
-
     }
 
     /**
@@ -1680,7 +1688,8 @@ class DBTableRowItemVersion extends DBTableRow {
         }
 
         /*
-             * If the currently set value for the component is not in the list, we still need to have it show up in the list...
+            If the currently set value for the component is not in the list, we still need to have it show up in the list...
+            It gets overwritten without "wrong type" if it is a legal value.
          */
         $out = array();
         $LLC = new DBTableRowItemVersion(false, null);
@@ -1746,7 +1755,7 @@ class DBTableRowItemVersion extends DBTableRow {
      * item.
      * @see DBTableRow::getEditViewFieldLayout()
      */
-    function getEditViewFieldLayout($default_fieldnames, $parent_fields_to_remove, $layout_key = null)
+    public function getEditViewFieldLayout($default_fieldnames, $parent_fields_to_remove, $layout_key = null)
     {
         $holyheaderfields = array('typeversion_id','partnumber_alias','record_locator','effective_date','item_serial_number','disposition');
         if ($_SESSION['account']->getRole()=='DataTerminal') {
@@ -1754,8 +1763,7 @@ class DBTableRowItemVersion extends DBTableRow {
         }
 
         /*
-             * construct the header layout.  We start with the fields that should appear and then chunk
-            * into rows.
+            construct the header layout.  We start with the fields that should appear and then chunk into rows.
         */
         $headerfields = $holyheaderfields;
         if (!$this->isSaved() && !$this->previewDefinition() && ($layout_key=='editview')) {
@@ -1887,9 +1895,7 @@ class DBTableRowItemVersion extends DBTableRow {
             case 'component' :
                 return $this->formatInputTagComponent($fieldname);
 
-            /*
-                 * We don't want to use the normal jq_datetimepicker class for this, since we want to use our own handler
-             */
+            // We don't want to use the normal jq_datetimepicker class for this, since we want to use our own handler
             case 'datetime' :
                 if ($fieldname=='effective_date') {
                     if ($value == '0000-00-00 00:00:00') {  // equivalent of null in mysql

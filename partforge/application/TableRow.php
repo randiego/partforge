@@ -329,20 +329,24 @@ class TableRow {
 
     public function formatFieldname($string, $marker = '')
     {
-        $out = $this->_fieldtypes[$string]['caption'].$marker.':';
+        if (isset($this->_fieldtypes[$string])) {
+            $out = $this->_fieldtypes[$string]['caption'].$marker.':';
 
-        $subcaption = '';
+            $subcaption = '';
 
-        if (isset($this->_fieldtypes[$string]['type']) && in_array($this->_fieldtypes[$string]['type'], array('float','boolean','calculated'))) {
-            $subcaption = self::composeSubcaptionWithValidation($this->_fieldtypes[$string], true);
-        } elseif (isset($this->_fieldtypes[$string]['subcaption']) && is_string($this->_fieldtypes[$string]['subcaption'])) {
-            $subcaption = $this->_fieldtypes[$string]['subcaption'];
+            if (isset($this->_fieldtypes[$string]['type']) && in_array($this->_fieldtypes[$string]['type'], array('float','boolean','calculated'))) {
+                $subcaption = self::composeSubcaptionWithValidation($this->_fieldtypes[$string], true);
+            } elseif (isset($this->_fieldtypes[$string]['subcaption']) && is_string($this->_fieldtypes[$string]['subcaption'])) {
+                $subcaption = $this->_fieldtypes[$string]['subcaption'];
+            }
+
+            if (strlen($subcaption)>0) {
+                $out .= '<br><span class="paren">'.$subcaption.'</span>';
+            }
+            return $out;
+        } else {
+            return '';
         }
-
-        if (strlen($subcaption)>0) {
-            $out .= '<br><span class="paren">'.$subcaption.'</span>';
-        }
-        return $out;
     }
 
     public function formatFieldSimple($fieldname)
