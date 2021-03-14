@@ -41,6 +41,7 @@ $config['databaseversion'] = '7';
 $config['config_for_testing'] = false; // Makes a few minor changes to improve testability when we are running as a test instance during automated testing.
 
 $config['global_readonly'] = false;  // if false, then all users must log in to be able to view content.  If true, then it is only necessary to login to write.
+$config['enable_open_api'] = true;  // if true, than there is no authentication required on the items, types, and other controllers.  This should only be for internal trusted environments
 $config['force_login_domain'] = false; // set to false if we don't want to insist on any particular domain name.  Set to, say www.mydomain.com if you want to redirect the login page to this domain instead
 $config['db_query_dump_file'] = false; // set this to the absolute pathname of a file to force a save of every mysql query.  Normally used for testing.
 $config['document_path_base'] = realpath(dirname(__FILE__)."/..");   // set this to the absolute path of where the document_directory lives

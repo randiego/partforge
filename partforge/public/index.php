@@ -24,18 +24,18 @@ require_once("../application/init.php");
 
 $frontController = Zend_Controller_Front::getInstance();
 $frontController->setControllerDirectory(array( 'default' => APPLICATION_PATH . '/controllers',
-												'items' => APPLICATION_PATH . '/items/controllers',
-												'types' => APPLICATION_PATH . '/types/controllers'));
+                                                'items' => APPLICATION_PATH . '/items/controllers',
+                                                'types' => APPLICATION_PATH . '/types/controllers'));
 $frontController->throwExceptions(true);
 
 $acl = new CustomAcl('nobody');
-Zend_Registry::set('customAcl',$acl);
+Zend_Registry::set('customAcl', $acl);
 $frontController->registerPlugin(new CustomControllerAclManager($acl));
 $frontController->registerPlugin(new Zend_Controller_Plugin_PutHandler());
 
 if (!isset($_SESSION['account'])) {
-	$_SESSION['account'] = new DBTableRowUser();
-	$_SESSION['account']->user_type = $acl->defaultRole();
+    $_SESSION['account'] = new DBTableRowUser();
+    $_SESSION['account']->user_type = $acl->defaultRole();
 }
 
 /*
@@ -47,7 +47,7 @@ if (!isset($_SESSION['account'])) {
 $table_w_generic_controllers = array();
 
 $genericTableEditRoute = new Zend_Controller_Router_Route_Regex(
-    '('.implode('|',$table_w_generic_controllers).')/([a-z]+)',
+    '('.implode('|', $table_w_generic_controllers).')/([a-z]+)',
     array(
         'controller' => 'db',
     ),
@@ -57,7 +57,7 @@ $genericTableEditRoute = new Zend_Controller_Router_Route_Regex(
     )
 );
 
-$restRoute = new Zend_Rest_Route($frontController,array('format' => 'json'),array('items','types'));
+$restRoute = new Zend_Rest_Route($frontController, array('format' => 'json'), array('items','types'));
 $frontController->getRouter()->addRoute('rest', $restRoute);
 $frontController->getRouter()->addRoute('db', $genericTableEditRoute);
 
