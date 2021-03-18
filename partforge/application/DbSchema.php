@@ -39,6 +39,7 @@ class DbSchema {   // singleton
     protected $_rel_dep_on_table_array = array();
     protected $_rel_table_is_dep_on_array = array();
     protected $_itemversion_object_cache = array();
+    private $_has_json_support = null;
     protected static $_db_link = null;
 
     protected function __construct()
@@ -47,6 +48,21 @@ class DbSchema {   // singleton
         include(dirname(__FILE__).'/fielddictionary.php');
         $this->_dictionary = $DICTIONARY;
         $this->connectFullAccess();
+
+    }
+
+    public function hasJsonSupport() {
+        if (is_null($this->_has_json_support)) {
+            $records = $this->getRecords('', "SELECT VERSION() AS ver;");
+            $record = reset($records);
+            $arr = explode('-', $record['ver']);
+            if (isset($arr[1]) && (substr($arr[1], 0, strlen('MariaDB'))=='MariaDB')) {
+                $this->_has_json_support = version_compare($arr[0], '10.2.3') >= 0;
+            } else {
+                $this->_has_json_support = version_compare($arr[0], '5.7.2') >= 0;
+            }
+        }
+        return $this->_has_json_support;
     }
 
     public function connectReadOnly()

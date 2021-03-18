@@ -124,19 +124,20 @@ class ReportDataItemListView extends ReportDataWithCategory {
             $this->fields['part_description']   = array('display'=> ($this->is_user_procedure ? 'Name' : 'Part Name'),      'key_asc'=>'partnumbercache.part_description', 'key_desc'=>'partnumbercache.part_description desc');
         }
 
-
         if (($this->view_category!='*')) {
             foreach ($this->addon_fields_list as $fieldname => $fieldtype) {
                 $this->fields[$fieldname]    = array('display' => $fieldtype['caption']);
-                if (in_array($fieldtype['type'], array('component'))) {
-                    $this->fields[$fieldname]['key_asc'] = 'compsn:'.$fieldname.'';
-                    $this->fields[$fieldname]['key_desc'] = 'compsn:'.$fieldname.' desc';
-                } elseif (isset($fieldtype['component_subfield'])) {
-                    $this->fields[$fieldname]['key_asc'] = 'compsf:'.$fieldname.'';
-                    $this->fields[$fieldname]['key_desc'] = 'compsf:'.$fieldname.' desc';
-                } else {
-                    $this->fields[$fieldname]['key_asc'] = 'jsonx:'.$fieldname.'';
-                    $this->fields[$fieldname]['key_desc'] = 'jsonx:'.$fieldname.' desc';
+                if (DbSchema::getInstance()->hasJsonSupport()) { // we need this to see if the JSON_EXTRACT function is available in Mysql.
+                    if (in_array($fieldtype['type'], array('component'))) {
+                        $this->fields[$fieldname]['key_asc'] = 'compsn:'.$fieldname.'';
+                        $this->fields[$fieldname]['key_desc'] = 'compsn:'.$fieldname.' desc';
+                    } elseif (isset($fieldtype['component_subfield'])) {
+                        $this->fields[$fieldname]['key_asc'] = 'compsf:'.$fieldname.'';
+                        $this->fields[$fieldname]['key_desc'] = 'compsf:'.$fieldname.' desc';
+                    } else {
+                        $this->fields[$fieldname]['key_asc'] = 'jsonx:'.$fieldname.'';
+                        $this->fields[$fieldname]['key_desc'] = 'jsonx:'.$fieldname.' desc';
+                    }
                 }
             }
         }

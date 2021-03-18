@@ -219,7 +219,7 @@ function step_2()
     }
 
 
-    $minversion = '5.2.9';
+    $minversion = '5.3.0';
     $toolargeversion = '8.0.0';
     if (version_compare(PHP_VERSION, $minversion) < 0) {
         show_message("The PHP version (".PHP_VERSION.") is too low.  PartForge has only been tested to versions less than ".$toolargeversion." but at least version ".$minversion."." );
