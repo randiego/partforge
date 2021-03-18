@@ -25,8 +25,6 @@
 
 class ReportDataItemListView extends ReportDataWithCategory {
 
-    private $can_edit = false;
-    private $can_delete = false;
     private $addon_fields_list = array();
     private $export_user_records = array();
     private $is_user_procedure = false;
@@ -130,6 +128,16 @@ class ReportDataItemListView extends ReportDataWithCategory {
         if (($this->view_category!='*')) {
             foreach ($this->addon_fields_list as $fieldname => $fieldtype) {
                 $this->fields[$fieldname]    = array('display' => $fieldtype['caption']);
+                if (in_array($fieldtype['type'], array('component'))) {
+                    $this->fields[$fieldname]['key_asc'] = 'compsn:'.$fieldname.'';
+                    $this->fields[$fieldname]['key_desc'] = 'compsn:'.$fieldname.' desc';
+                } elseif (isset($fieldtype['component_subfield'])) {
+                    $this->fields[$fieldname]['key_asc'] = 'compsf:'.$fieldname.'';
+                    $this->fields[$fieldname]['key_desc'] = 'compsf:'.$fieldname.' desc';
+                } else {
+                    $this->fields[$fieldname]['key_asc'] = 'jsonx:'.$fieldname.'';
+                    $this->fields[$fieldname]['key_desc'] = 'jsonx:'.$fieldname.' desc';
+                }
             }
         }
 
@@ -382,13 +390,71 @@ class ReportDataItemListView extends ReportDataWithCategory {
 
     }
 
+    /**
+     * This takes an ORDER BY clause that might have fake names like jsonx:my_data_field and replaces these
+     * with valid SQL. The fake values are short-hand for a field that is not a native field of itemversion.
+     * jsonx:* = a user field encoded in the json field item_data
+     * compsn:* = a component name
+     * compsf:* = a component subfield
+     *
+     * @param string $expression
+     *
+     * @return string
+     */
+    public function convertSortExpressionsToJsonExtracts($expression)
+    {
+        // create SQL to handle standard fields embedded in item_data
+        $out = array();
+        $match = preg_match_all('/jsonx:([a-z_0-9]+)/i', $expression, $out);
+        for ($i=0; $i < count($out[0]); $i++) {
+            $inner = $out[1][$i];
+            $outer = $out[0][$i];
+            $expression = str_ireplace($outer, "JSON_EXTRACT(IF(item_data='','{}',item_data),'$.".$inner."')", $expression);
+        }
+
+        // create SQL to handle component fields
+        $out = array();
+        $match = preg_match_all('/compsn:([a-z_0-9]+)/i', $expression, $out);
+        for ($i=0; $i < count($out[0]); $i++) {
+            $inner = $out[1][$i];
+            $outer = $out[0][$i];
+            $expression = str_ireplace($outer,
+            "(SELECT ivcomp.item_serial_number
+            FROM itemobject as iocomp,itemversion as ivcomp, itemcomponent
+            WHERE ivcomp.itemversion_id=iocomp.cached_current_itemversion_id
+            AND iocomp.itemobject_id=itemcomponent.has_an_itemobject_id
+            AND itemcomponent.belongs_to_itemversion_id=iv__itemversion_id
+            AND itemcomponent.component_name='".$inner."' LIMIT 1)", $expression);
+        }
+
+        // create SQL to handle component subfields
+        $out = array();
+        $match = preg_match_all('/compsf:([a-z_0-9]+)/i', $expression, $out);
+        for ($i=0; $i < count($out[0]); $i++) {
+            $inner = $out[1][$i];
+            $outer = $out[0][$i];
+            $fieldtype = $this->addon_fields_list[$inner];
+            $component = $fieldtype['component_name'];
+            $subfield = $fieldtype['component_subfield'];
+            $expression = str_ireplace($outer,
+            "(SELECT JSON_EXTRACT(IF(ivcomp.item_data='','{}',ivcomp.item_data),'$.".$subfield."')
+            FROM itemobject as iocomp,itemversion as ivcomp, itemcomponent
+            WHERE ivcomp.itemversion_id=iocomp.cached_current_itemversion_id
+            AND iocomp.itemobject_id=itemcomponent.has_an_itemobject_id
+            AND itemcomponent.belongs_to_itemversion_id=iv__itemversion_id
+            AND itemcomponent.component_name='".$component."' LIMIT 1)", $expression);
+        }
+
+        return $expression;
+    }
+
     public function get_records($queryvars, $searchstr, $limitstr)
     {
 
         if ($this->output_all_versions) {
             $DBTableRowQuery = new DBTableRowQuery($this->dbtable);
             $DBTableRowQuery->addSelectFields('itemversion.effective_date as iv__effective_date, itemversion.itemversion_id as iv__itemversion_id, itemversion.disposition as iv__disposition');
-            $DBTableRowQuery->setOrderByClause("ORDER BY {$this->get_sort_key($queryvars,true)}")
+            $DBTableRowQuery->setOrderByClause($this->convertSortExpressionsToJsonExtracts("ORDER BY {$this->get_sort_key($queryvars,true)}"))
                             ->setLimitClause($limitstr);
 
             $DBTableRowQuery->addAndWhere($this->getSearchAndWhere($searchstr, $DBTableRowQuery));
@@ -405,7 +471,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
             $this->addExtraJoins($DBTableRowQuery);
         } else {
             $DBTableRowQuery = new DBTableRowQuery($this->dbtable);
-            $DBTableRowQuery->setOrderByClause("ORDER BY {$this->get_sort_key($queryvars,true)}")
+            $DBTableRowQuery->setOrderByClause($this->convertSortExpressionsToJsonExtracts("ORDER BY {$this->get_sort_key($queryvars,true)}"))
                             ->setLimitClause($limitstr)
                             ->addAndWhere($this->getSearchAndWhere($searchstr, $DBTableRowQuery));
             /*
@@ -508,7 +574,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
             $matrix_query_params = $query_params;
             unset($matrix_query_params['itemversion_id']);
             $out = array();
-            $ref_recs = explode(';', $record['all_procedure_object_ids']);
+            $ref_recs = !empty($record['all_procedure_object_ids']) ? explode(';', $record['all_procedure_object_ids']) : array();
             foreach ($ref_recs as $ref_rec) {
                 $proc_arr = explode(',', $ref_rec);
                 if (count($proc_arr)==4) {
@@ -584,7 +650,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
 
         if (count($this->_proc_matrix_column_keys)>0) {
             $out = array();
-            $ref_recs = explode(';', $record['all_procedure_object_ids']);
+            $ref_recs = !empty($record['all_procedure_object_ids']) ? explode(';', $record['all_procedure_object_ids']) : array();
             foreach ($ref_recs as $ref_rec) {
                 list($proc_to,$proc_io,$proc_disposition,$proc_effective_date) = explode(',', $ref_rec);
                 $key = 'ref_procedure_typeobject_id_'.$proc_to;

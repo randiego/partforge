@@ -1,109 +1,111 @@
 <script type="text/javascript">
-var linkToPageUrl = "<?php echo DBTableRowTypeVersion::getListViewAbsoluteUrl($this->report_data->getViewCategory(),$this->is_user_procedure ? null : $_SESSION['account']->getPreference('chkShowProcMatrix'));?>";
+var linkToPageUrl = "<?php echo DBTableRowTypeVersion::getListViewAbsoluteUrl($this->report_data->getViewCategory(), $this->is_user_procedure ? null : $_SESSION['account']->getPreference('chkShowProcMatrix'));?>";
 </script>
 <?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
 <script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemlistview.js?v=4" type="TEXT/JAVASCRIPT"></script>
 <?php
-    $this->layout()->title = $this->is_user_procedure ? 'List of Procedures' : 'List of Parts';
-    $this->layout()->setLayout('layout');
-    $this->layout()->scrollhold = true;
-    $html = '';
-    
-    $BreadCrumbs = new BreadCrumbsManager();
-    $BreadCrumbs->newAnchor($this->navigator->getCurrentViewUrl(),$this->layout()->title);
-        
-    
-    /*
-     * Get Type Records
-     */
-    $typerecords = DBTableRowTypeVersion::getListOfTypePartNumberRecordsWAliasesAllowedToUser($_SESSION['account'], $this->is_user_procedure);
-    
-    /*
-     * Build First Row (New Part Dropdown, and Utility Buttons)
-     */
-    
-    $out = array();
-    $outdesconly = array();
-    foreach($typerecords as $itemkey => $typerecord) {
-    	if ($typerecord['typeversion_id']) {
-    		if (preg_match('/^([0-9]+)a([0-9]+)$/',$itemkey,$matchout)===1) {
-    			$jump_url = $this->navigator->getCurrentHandlerUrl('btnNewItem','','',array('typeversion_id' => $typerecord['typeversion_id'], 'partnumber_alias' => $matchout[2]));
-    		} else {
-	    		$jump_url = $this->navigator->getCurrentHandlerUrl('btnNewItem','','',array('typeversion_id' => $typerecord['typeversion_id']));
-    		}
-    		if ($typerecord['typedisposition']!='B') {
-	    		$out[$jump_url] = $typerecord['description'];
-	    		$outdesconly[$jump_url] = $typerecord['desc_only'];
-    		}
-    	}
-    }    
-    
-    $minibuttons = new EditLinks();
-    define( 'ADDNEWBUTTONCOUNT', 4); // max number of Add New buttons that will be shown before reverting to a drop down
-    if ((count($out)>0) && (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'ui:itemlistview','show_addedit_item_button'))) {
-    	if (count($out)>ADDNEWBUTTONCOUNT) { //max number that will be shown as buttons
-			$minibuttons->add_link( format_select_tag($out,$this->is_user_procedure ? 'jump_new_procedure' : 'jump_new_item',array(),"MM_jumpMenu('parent',this,0)",false,$this->is_user_procedure ? '-- New Procedure --' : '-- Create New Part --', '','changeselectbox'  ) );
-    	} else {
-    		foreach($outdesconly as $url => $desc) {
-    			$minibuttons->add_item( $url,'Add New '.$desc, 'Add New '.$desc);
-    		}
-    	}
+$this->layout()->title = $this->is_user_procedure ? 'List of Procedures' : 'List of Parts';
+$this->layout()->setLayout('layout');
+$this->layout()->scrollhold = true;
+$html = '';
+
+$BreadCrumbs = new BreadCrumbsManager();
+$BreadCrumbs->newAnchor($this->navigator->getCurrentViewUrl(), $this->layout()->title);
+
+
+/*
+ * Get Type Records
+ */
+$typerecords = DBTableRowTypeVersion::getListOfTypePartNumberRecordsWAliasesAllowedToUser($_SESSION['account'], $this->is_user_procedure);
+
+/*
+ * Build First Row (New Part Dropdown, and Utility Buttons)
+ */
+
+$out = array();
+$outdesconly = array();
+foreach ($typerecords as $itemkey => $typerecord) {
+    if ($typerecord['typeversion_id']) {
+        if (preg_match('/^([0-9]+)a([0-9]+)$/', $itemkey, $matchout)===1) {
+            $jump_url = $this->navigator->getCurrentHandlerUrl('btnNewItem', '', '', array('typeversion_id' => $typerecord['typeversion_id'], 'partnumber_alias' => $matchout[2]));
+        } else {
+            $jump_url = $this->navigator->getCurrentHandlerUrl('btnNewItem', '', '', array('typeversion_id' => $typerecord['typeversion_id']));
+        }
+        if ($typerecord['typedisposition']!='B') {
+            $out[$jump_url] = $typerecord['description'];
+            $outdesconly[$jump_url] = $typerecord['desc_only'];
+        }
     }
-    
-    if (($_SESSION['account']->getRole() == 'Admin')) {
-    	$minibuttons->add_item( $this->navigator->getCurrentViewUrl('importobjectsfromcsv'),"Import from CSV", 'Import Items or Procedures from a CSV File');
+}
+
+$minibuttons = new EditLinks();
+define( 'ADDNEWBUTTONCOUNT', 4); // max number of Add New buttons that will be shown before reverting to a drop down
+if ((count($out)>0) && (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'ui:itemlistview', 'show_addedit_item_button'))) {
+    if (count($out)>ADDNEWBUTTONCOUNT) { //max number that will be shown as buttons
+        $minibuttons->add_link( format_select_tag($out, $this->is_user_procedure ? 'jump_new_procedure' : 'jump_new_item', array(), "MM_jumpMenu('parent',this,0)", false, $this->is_user_procedure ? '-- New Procedure --' : '-- Create New Part --', '', 'changeselectbox'  ) );
+    } else {
+        foreach ($outdesconly as $url => $desc) {
+            $minibuttons->add_item( $url, 'Add New '.$desc, 'Add New '.$desc);
+        }
     }
-    
-    if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'ui:nonterminalbling')) {
-	    if (is_numeric($this->report_data->getViewCategory())) {
-		    $minibuttons->add_item( $this->navigator->getCurrentHandlerUrl('btnSavetoCSV'),"Save to Spreadsheet", 'Save all data for current search results into spreadsheet-readable (.csv) file');
-		    $minibuttons->add_link( linkify('#','Link to Page','Copy of link to this page with current filter settings','bd-button',"",'','linkToPageButton'));
-	    }
+}
+
+if (($_SESSION['account']->getRole() == 'Admin')) {
+    $minibuttons->add_item( $this->navigator->getCurrentViewUrl('importobjectsfromcsv'), "Import from CSV", 'Import Items or Procedures from a CSV File');
+}
+
+if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'ui:nonterminalbling')) {
+    if (is_numeric($this->report_data->getViewCategory())) {
+        $minibuttons->add_item( $this->navigator->getCurrentHandlerUrl('btnSavetoCSV'), "Save to Spreadsheet", 'Save all data for current search results into spreadsheet-readable (.csv) file');
+        $minibuttons->add_link( linkify('#', 'Link to Page', 'Copy of link to this page with current filter settings', 'bd-button', "", '', 'linkToPageButton'));
     }
-    
-    $overtablehtml = '';
-    
-    if (!$this->is_user_procedure) $overtablehtml .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_SORT_ORDER','The sort order has changed on this page.  Now the highest serial numbers appear first in the Item Serial Number column.','1/7/2015');   
-    
-    if ($minibuttons->count() > 0) {
-    	$overtablehtml .= '<div class="firstbuttonrow">'.$minibuttons->buttons_html().'</div>';
-    } 
-    
+}
+
+$overtablehtml = '';
+
+if (!$this->is_user_procedure) {
+    $overtablehtml .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_SORT_ORDER', 'The sort order has changed on this page.  Now the highest serial numbers appear first in the Item Serial Number column.', '1/7/2015');
+}
+
+if ($minibuttons->count() > 0) {
+    $overtablehtml .= '<div class="firstbuttonrow">'.$minibuttons->buttons_html().'</div>';
+}
+
     /*
      * Build Second Row Buttons (Category Selector and New Button)
      */
-    
-    $blocks = array();
-    $_SESSION['account']->setPreference($this->report_data->pref_view_category_name,$this->report_data->ensure_category($_SESSION['account']->getPreference($this->report_data->pref_view_category_name)));
-    if (count($this->report_data->category_array)>0) {
-    	$selcategory = '';
-    	$search_string = !empty($this->queryvars['search_string']) ? $this->queryvars['search_string'] : ''; 
-    	if ($search_string) {
-    		$selcategory = $_SESSION['account']->broadestAllowedUserCategory();
-    	} else {
-    		$selcategory = $_SESSION['account']->getPreference($this->report_data->pref_view_category_name);
-    		if (isset($this->report_data->category_array['fav'.$selcategory])) {
-    			$this->report_data->category_array[$selcategory] = '*'.$this->report_data->category_array[$selcategory];
-    			$selcategory = 'fav'.$selcategory;
-    		}
-    	}
-    		
-    	$selhtml = '<span class="ui-widget" ><label>Showing: </label>';
-    	$selhtml .= format_select_tag($this->report_data->category_array,'view_category',array('view_category' =>$selcategory),"document.theform.btnOnChange.value='catchange';document.theform.submit();return false;",$search_string,'','','changeselectbox');
-    	$selhtml .= '</span>';
-    	
-    	// Create the New button(s) if we are browsing a specific part/procedure type
-    	if (($this->report_data->getViewCategory() !='*') && isset($typerecords[$this->report_data->getViewCategory()])
-    			&& ($typerecords[$this->report_data->getViewCategory()]['typedisposition']!='B')) {
-    		$io = $this->report_data->getViewCategory();
-    		$has_aliases = isset($typerecords[$io.'a0']);  // we only do these kind of indexes when there are aliases.
-    		$typerecord = $typerecords[$io];
-    		$jump_url = $this->navigator->getCurrentHandlerUrl('btnNewItem','','',array('typeversion_id' => $typerecord['typeversion_id']));
-    		$selhtml .= '<a id="newItemButton" class="bd-button" href="'.$jump_url.'" title="Create new '.$typerecord['desc_only'].'">New'.($has_aliases ? '...' : '').'</a>';
-    		
-    		// if there are aliases, we attach a pop list of part numbers to choose from.
-    		if ($has_aliases) {  			
-    			$selhtml .= '
+
+$blocks = array();
+$_SESSION['account']->setPreference($this->report_data->pref_view_category_name, $this->report_data->ensure_category($_SESSION['account']->getPreference($this->report_data->pref_view_category_name)));
+if (count($this->report_data->category_array)>0) {
+    $selcategory = '';
+    $search_string = !empty($this->queryvars['search_string']) ? $this->queryvars['search_string'] : '';
+    if ($search_string) {
+        $selcategory = $_SESSION['account']->broadestAllowedUserCategory();
+    } else {
+        $selcategory = $_SESSION['account']->getPreference($this->report_data->pref_view_category_name);
+        if (isset($this->report_data->category_array['fav'.$selcategory])) {
+            $this->report_data->category_array[$selcategory] = '*'.$this->report_data->category_array[$selcategory];
+            $selcategory = 'fav'.$selcategory;
+        }
+    }
+
+    $selhtml = '<span class="ui-widget" ><label>Showing: </label>';
+    $selhtml .= format_select_tag($this->report_data->category_array, 'view_category', array('view_category' =>$selcategory), "document.theform.btnOnChange.value='catchange';document.theform.submit();return false;", $search_string, '', '', 'changeselectbox');
+    $selhtml .= '</span>';
+
+    // Create the New button(s) if we are browsing a specific part/procedure type
+    if (($this->report_data->getViewCategory() !='*') && isset($typerecords[$this->report_data->getViewCategory()])
+            && ($typerecords[$this->report_data->getViewCategory()]['typedisposition']!='B')) {
+        $io = $this->report_data->getViewCategory();
+        $has_aliases = isset($typerecords[$io.'a0']);  // we only do these kind of indexes when there are aliases.
+        $typerecord = $typerecords[$io];
+        $jump_url = $this->navigator->getCurrentHandlerUrl('btnNewItem', '', '', array('typeversion_id' => $typerecord['typeversion_id']));
+        $selhtml .= '<a id="newItemButton" class="bd-button" href="'.$jump_url.'" title="Create new '.$typerecord['desc_only'].'">New'.($has_aliases ? '...' : '').'</a>';
+
+        // if there are aliases, we attach a pop list of part numbers to choose from.
+        if ($has_aliases) {
+            $selhtml .= '
                      <script>
     					$(document).ready(function() {
 							$("#newItemButton").click(function(link){
@@ -115,41 +117,38 @@ var linkToPageUrl = "<?php echo DBTableRowTypeVersion::getListViewAbsoluteUrl($t
 									close: function(event,ui) {$(this).dialog("destroy");}
 								});
 								return false; // prevents the default link
-    		                });	    
+    		                });
 						});
-    				</script>    					
+    				</script>
     					';
-    			$pi=0;
-    			$rawlinks = array();
-    			while (isset($typerecords[$io.'a'.$pi])) {
-    				$typerecord = $typerecords[$io.'a'.$pi];
-    				$jump_url = $this->navigator->getCurrentHandlerUrl('btnNewItem','','',array('typeversion_id' => $typerecord['typeversion_id'], 'partnumber_alias' => $pi));
-    				$rawlinks[] = '<p><a href="'.$jump_url.'" title="Create new '.$typerecord['description'].'">New '.$typerecord['description'].'</a></p>';
-    				$pi++;
-    			}
-    			$selhtml .= '<div style="display:none;" id="newLinksPopup">'.implode("\r\n",$rawlinks).'</div>';
-    			
-    			
-    			
-    		}
-    	}    	
-    	
-    	$blocks[] = $selhtml;
-    }   
-    $overtablehtml .= (count($blocks)>0) ? '<div class="catselectorrow">'.implode("",$blocks).'</div>' : '';
-        
-    /*
-     * Build the view preferences checkbox(es) and button that go next to pagination at top of table
-    */
-    
-    $pagination_line_html = '';    
-    if (is_numeric($this->report_data->getViewCategory())) {
-    	$pagination_line_html .= '<input class="minibutton2" type="submit" name="btnSetViewPreference" title="Update View Preferences" value="Update" />';
-    	if (!$this->is_user_procedure) {
-    		$pagination_line_html .= checkbox_html('chkShowProcMatrix',$_SESSION['account']->getPreference('chkShowProcMatrix')).' Show Procedure Results';
-    	}
-    	$pagination_line_html .= checkbox_html('chkShowAllFields',$_SESSION['account']->getPreference('chkShowAllFields')).' Show All Fields';
+            $pi=0;
+            $rawlinks = array();
+            while (isset($typerecords[$io.'a'.$pi])) {
+                $typerecord = $typerecords[$io.'a'.$pi];
+                $jump_url = $this->navigator->getCurrentHandlerUrl('btnNewItem', '', '', array('typeversion_id' => $typerecord['typeversion_id'], 'partnumber_alias' => $pi));
+                $rawlinks[] = '<p><a href="'.$jump_url.'" title="Create new '.$typerecord['description'].'">New '.$typerecord['description'].'</a></p>';
+                $pi++;
+            }
+            $selhtml .= '<div style="display:none;" id="newLinksPopup">'.implode("\r\n", $rawlinks).'</div>';
+        }
     }
-    
-     
-    echo fetch_form_tag($html.$this->paginated_report_page->fetch_form_body_html($overtablehtml, $pagination_line_html));
+
+    $blocks[] = $selhtml;
+}
+    $overtablehtml .= (count($blocks)>0) ? '<div class="catselectorrow">'.implode("", $blocks).'</div>' : '';
+
+/*
+ * Build the view preferences checkbox(es) and button that go next to pagination at top of table
+ */
+
+$pagination_line_html = '';
+if (is_numeric($this->report_data->getViewCategory())) {
+    $pagination_line_html .= '<input class="minibutton2" type="submit" name="btnSetViewPreference" title="Update View Preferences" value="Update" />';
+    if (!$this->is_user_procedure) {
+        $pagination_line_html .= checkbox_html('chkShowProcMatrix', $_SESSION['account']->getPreference('chkShowProcMatrix')).' <label for="chkShowProcMatrix_1">Show Procedure Results</label>';
+    }
+    $pagination_line_html .= checkbox_html('chkShowAllFields', $_SESSION['account']->getPreference('chkShowAllFields')).' <label for="chkShowAllFields_1">Show All Fields</label>';
+}
+
+
+echo fetch_form_tag($html.$this->paginated_report_page->fetch_form_body_html($overtablehtml, $pagination_line_html));
