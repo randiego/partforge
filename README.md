@@ -26,7 +26,7 @@ troubleshoot problems on a specific serial number remotely and without disassemb
 
 ### Installation
 
-Requirement: Apache 2+, php 5 versions 5.3+ or php 7.2+ (extensions: curl, gd2, mysqli, mbstrings, json; helpful settings: memory_limit=256M+, post_max_size=50M+), MySQL 5.5+ or MariaDB.
+Requirement: Apache 2+, php 5 versions 5.3+ or php 7.2+ (extensions: curl, gd2, mysqli, mbstrings, json; helpful settings: memory_limit=256M+, post_max_size=50M+), MySQL 5.7+ or MariaDB 10.2.3+.
 
 To view instructions for specific platforms, please look at the Installation section on the [Wiki][partforge-wiki].
 
