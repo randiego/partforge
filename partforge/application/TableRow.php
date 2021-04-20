@@ -406,15 +406,15 @@ class TableRow {
         $attributes = isset($fieldtype['disabled']) && $fieldtype['disabled'] ? ' disabled' : '';
         if (in_array($type, array('enum','left_join','sort_order'))) { // a dropdown box
             switch ($type) {
-                case 'enum':        $select_values = parseSelectValues($fieldname, $this);
-
-break;
-                case 'left_join':   $select_values = parseJoinValues($fieldname, $this);
-
-break;
-                case 'sort_order':  $select_values = getSortOrderArray($fieldname, $this);
-
-break;
+                case 'enum':
+                    $select_values = parseSelectValues($fieldname, $this);
+                    break;
+                case 'left_join':
+                    $select_values = parseJoinValues($fieldname, $this);
+                    break;
+                case 'sort_order':
+                    $select_values = getSortOrderArray($fieldname, $this);
+                    break;
             }
 
             if (in_array('UseRadiosForMultiSelect', $display_options)) {
@@ -488,15 +488,15 @@ break;
             return $print_function_name($value, $is_html);
         } elseif (in_array($type, array('enum','left_join','sort_order'))) { // this is a multiple choice thing
             switch ($type) {
-                case 'enum':        $value_array = parseSelectValues($fieldname, $this);
-
-break;
-                case 'left_join':   $value_array = parseJoinValues($fieldname, $this);
-
-break;
-                case 'sort_order':  $value_array = getSortOrderArray($fieldname, $this);
-
-break;
+                case 'enum':
+                    $value_array = parseSelectValues($fieldname, $this);
+                    break;
+                case 'left_join':
+                    $value_array = parseJoinValues($fieldname, $this);
+                    break;
+                case 'sort_order':
+                    $value_array = getSortOrderArray($fieldname, $this);
+                    break;
             }
             $outval = isset($value_array[$value]) ? $value_array[$value] : null;
             return $is_html ? TextToHtml($outval) : $outval;

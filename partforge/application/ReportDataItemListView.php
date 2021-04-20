@@ -128,7 +128,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
             foreach ($this->addon_fields_list as $fieldname => $fieldtype) {
                 $this->fields[$fieldname]    = array('display' => $fieldtype['caption']);
                 if (DbSchema::getInstance()->hasJsonSupport()) { // we need this to see if the JSON_EXTRACT function is available in Mysql.
-                    if (in_array($fieldtype['type'], array('component'))) {
+                    if (isset($fieldtype['type']) && in_array($fieldtype['type'], array('component'))) {
                         $this->fields[$fieldname]['key_asc'] = 'compsn:'.$fieldname.'';
                         $this->fields[$fieldname]['key_desc'] = 'compsn:'.$fieldname.' desc';
                     } elseif (isset($fieldtype['component_subfield'])) {
