@@ -35,6 +35,7 @@ if ($this->can_edit) {
     }
 }
 
+$buttons[] = linkify( $this->navigator->getCurrentViewUrl('changelistview', 'struct', array('list_type' => 'USER'.strval($this->dbtable->user_id))), 'Show Activity', 'Show all activity of this user', 'bd-button');
 
 $html = '';
 $html .= '<h1 class="dialogtitle">'.$title_html.'</h1>';

@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -235,7 +235,7 @@ class DefinitionEventStream {
 				'.$select_radio_html.'
 				<div class="bd-event-content'.($alt_edit_date_html ? ' bd-with-edit-date' : '').'">
 				<div class="bd-event-type"></div>
-				<div class="bd-event-whowhen"><div class="bd-byline">'.strtoupper($line['user_name_html']).'</div><div class="bd-dateline">'.$datetime.'</div>'.$alt_edit_date_html.'</div>
+				<div class="bd-event-whowhen"><div class="bd-byline">'.linkify(UrlCallRegistry::formatViewUrl('id/'.$line['user_id'], 'user'), strtoupper($line['user_name_html']), 'show details about this user').'</div><div class="bd-dateline">'.$datetime.'</div>'.$alt_edit_date_html.'</div>
 				<div class="bd-event-message">
 				'.$edit_buttons_html.$status_badge_html.'
 				'.$line['event_html'].'
@@ -320,6 +320,7 @@ class DefinitionEventStream {
                     'event_type_id' => isset($record['event_type_id']) ? $record['event_type_id'] : null,
                     'this_typeversion_id' => isset($record['this_typeversion_id']) ? $record['this_typeversion_id'] : null,
                     'user_name_html' => TextToHtml(DBTableRowUser::concatNames($record)),
+                    'user_id' => $record['user_id'],
                     'version_url' => $version_url,
                     'is_selected_version' => $is_selected_version,
                     'event_html'=> $event_description.$error,

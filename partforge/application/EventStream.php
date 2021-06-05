@@ -745,7 +745,7 @@ class EventStream {
 				'.$select_radio_html.''.$indented_target_link.'
 				<div class="bd-event-content'.($alt_edit_date_html ? ' bd-with-edit-date' : '').'">
 				<div class="bd-event-type"></div>
-				<div class="bd-event-whowhen"><div class="bd-byline">'.strtoupper($line['user_name_html']).'</div><div class="bd-dateline">'.$datetime.'</div>'.$alt_edit_date_html.'</div>
+				<div class="bd-event-whowhen"><div class="bd-byline">'.linkify(UrlCallRegistry::formatViewUrl('id/'.$line['user_id'], 'user'), strtoupper($line['user_name_html']), 'show details about this user').'</div><div class="bd-dateline">'.$datetime.'</div>'.$alt_edit_date_html.'</div>
 				<div class="bd-event-message">
 				'.$edit_buttons_html.$documents_html.$procedure_disposition_html.'
 				'.$line['event_html'].'
@@ -885,6 +885,7 @@ class EventStream {
                     'event_type_id' => isset($record['event_type_id']) ? $record['event_type_id'] : null,
                     'this_itemversion_id' => isset($record['this_itemversion_id']) ? $record['this_itemversion_id'] : null,
                     'user_name_html' => TextToHtml(DBTableRowUser::concatNames($record)),
+                    'user_id' => $record['user_id'],
                     'version_url' => $version_url,
                     'is_selected_version' => $is_selected_version,
                     'event_html'=> $event_description.$error,

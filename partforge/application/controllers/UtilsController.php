@@ -192,11 +192,11 @@ class UtilsController extends DBControllerActionAbstract
                         $msgs[] = 'Upgrading to version 7: proper handling of Unversions change tracking - March 2021';
                         DbSchema::getInstance()->mysqlQuery("ALTER TABLE `itemversionarchive` ADD COLUMN `original_record_created` datetime NULL AFTER `record_created`");
                         DbSchema::getInstance()->mysqlQuery("UPDATE itemversionarchive
-							SET original_record_created=REPLACE(SUBSTRING_INDEX(SUBSTR(item_data, LOCATE('record_created\":\"',item_data,1)), '\"', 3),'record_created\":\"','')");
+							SET original_record_created=REPLACE(SUBSTRING_INDEX(SUBSTR(item_data, LOCATE('record_created\":\"',item_data,1)), '\"', 3),'record_created\":\"','')
+                            WHERE REPLACE(SUBSTRING_INDEX(SUBSTR(item_data, LOCATE('record_created\":\"',item_data,1)), '\"', 3),'record_created\":\"','') != ''");
                         $databaseversion = '7';
                         setGlobal('databaseversion', $databaseversion);
                     }
-
             }
         }
         $this->view->currentversion = getGlobal('databaseversion');

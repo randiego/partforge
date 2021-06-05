@@ -1,19 +1,26 @@
 <?php
-    $this->layout()->title = 'Activity';
-    $BreadCrumbs = new BreadCrumbsManager();
-    $BreadCrumbs->newAnchor($this->navigator->getCurrentViewUrl(),$this->layout()->title);    
-    $this->layout()->setLayout('layout');
-    $this->layout()->scrollhold = true;
-    
-    $manage_watchlist_btn = '';
-    if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'user','managewatchlist')) {
-    	$manage_watchlist_btn = linkify($this->navigator->getCurrentViewUrl('watchlistview','struct',array('resetview' => 1,'search_string' => '')), 'Manage My Watchlist', 'View and manage your currently set watchlist','bd-button');
-    }
-    
-    $select_array = extract_column(ReportDataChangeLog::activityTypeOptions(), 'name');
-    $list_type_select = format_select_tag($select_array,'list_type',array('list_type' => $this->list_type),"document.theform.btnOnChange.value='listtypechange';document.theform.submit();return false;",false, '','', 'selectmenu');
-    $html = '';
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('ACTIVITY_TAB','By changing the "Showing" selector, you can view all system activity, or just the activity on your personal watchlist.  Create your watchlist by visiting Parts and Procedure pages and clicking the "Watch" button.  Manage your watchlist by returning to this page and clicking "Manage My Watchlist"','6/16/2016');
-    $html .= $this->paginated_report_page->fetch_form_body_html('<div style="display:flex; align-items: center;"><span style="font-size:13px; margin-right:5px;">Showing: </span><span>'.$list_type_select.'</span><span style="margin-left:10px;">'.$manage_watchlist_btn.'</span></div>');
-    echo fetch_form_tag($html);
+$this->layout()->title = $this->rawtitle;
+
+$BreadCrumbs = new BreadCrumbsManager();
+if (isset($this->queryvars['resetview']) && $this->queryvars['resetview']) {
+    $BreadCrumbs->newAnchor($this->navigator->getCurrentViewUrl(), $this->rawtitle);
+} else {
+    $BreadCrumbs->addCurrentUrl($this->navigator->getCurrentViewUrl(), $this->rawtitle);
+    $this->paginated_report_page->overrideReportTitle($BreadCrumbs->render($this->navigator->getCurrentViewUrl(), $this->rawtitle, 3));
+}
+
+$this->layout()->setLayout('layout');
+$this->layout()->scrollhold = true;
+
+$manage_watchlist_btn = '';
+if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'managewatchlist')) {
+    $manage_watchlist_btn = linkify($this->navigator->getCurrentViewUrl('watchlistview', 'struct', array('resetview' => 1,'search_string' => '')), 'Manage My Watchlist', 'View and manage your currently set watchlist', 'bd-button');
+}
+
+$select_array = extract_column(ReportDataChangeLog::activityTypeOptions(), 'name');
+$list_type_select = format_select_tag($select_array, 'list_type',array('list_type' => $this->list_type), "document.theform.btnOnChange.value='listtypechange';document.theform.submit();return false;",false, '','', 'selectmenu');
+$html = '';
+$html .= DBTableRowWhatsNewUser::fetchWhatsNew('ACTIVITY_TAB', 'By changing the "Showing" selector, you can view all system activity, or just the activity on your personal watchlist.  Create your watchlist by visiting Parts and Procedure pages and clicking the "Watch" button.  Manage your watchlist by returning to this page and clicking "Manage My Watchlist"','6/16/2016');
+$html .= $this->paginated_report_page->fetch_form_body_html('<div style="display:flex; align-items: center;"><span style="font-size:13px; margin-right:5px;">Showing: </span><span>'.$list_type_select.'</span><span style="margin-left:10px;">'.$manage_watchlist_btn.'</span></div>');
+echo fetch_form_tag($html);
 ?>

@@ -363,6 +363,7 @@ class StructController extends DBControllerActionAbstract
         $this->view->list_type = $list_type;
         $this->view->queryvars = $this->params;
         $this->view->paginated_report_page = $PaginatedReportPage;
+        $this->view->rawtitle = $ReportData->title;
     }
 
     public function watchlistviewAction()
