@@ -430,10 +430,6 @@ table.listtablegrouped tr.row_break td, table.listtablegrouped tr.row_bottom td 
 	border-top:1px solid #ccc;
 }
 
-table.listtable th.studentName {
-	vertical-align:middle;
-}
-
 table.listtable th, table.listtablegrouped th {
 	padding:5px;
 	background-color:#e8f2fc;
@@ -460,10 +456,12 @@ table.listtable td table td {
 	vertical-align:top;
 }
 
-table.listtable tr.trnotvisibletoapplicant td .appTableHeader3 {
-	color: #f00;
+table.listtable tr td div.cellofprocs {
+	width:100%;
+	max-height:300px;
+	overflow-y:auto;
+	overflow-x:hidden;
 }
-
 
 span.smallprint, span.paren {
 	color:#777;

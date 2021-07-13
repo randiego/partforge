@@ -2,7 +2,7 @@
 var linkToPageUrl = "<?php echo DBTableRowTypeVersion::getListViewAbsoluteUrl($this->report_data->getViewCategory(), $this->is_user_procedure ? null : $_SESSION['account']->getPreference('chkShowProcMatrix'));?>";
 </script>
 <?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
-<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemlistview.js?v=4" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemlistview.js?v=5" type="TEXT/JAVASCRIPT"></script>
 <?php
 $this->layout()->title = $this->is_user_procedure ? 'List of Procedures' : 'List of Parts';
 $this->layout()->setLayout('layout');

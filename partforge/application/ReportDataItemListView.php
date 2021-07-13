@@ -600,7 +600,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
                 }
             }
             foreach ($out as $key => $disp_array) {
-                $detail_out[$key] = implode(' ', $disp_array);
+                $detail_out[$key] = '<div class="cellofprocs">'.implode(' ', $disp_array).'</div>';
             }
         }
         $detail_out['iv__disposition'] = DBTableRowItemVersion::renderDisposition($this->dbtable->getFieldType('iv__disposition'), $record['iv__disposition']);
