@@ -324,17 +324,17 @@ class DBTableRowUser extends DBTableRow {
     {
         switch ($this->getRole()) {
             case 'Admin' :
-return UrlCallRegistry::formatViewUrl('itemlistview', 'struct', $params);
+                return UrlCallRegistry::formatViewUrl('itemlistview', 'struct', $params);
             case 'Tech' :
-return UrlCallRegistry::formatViewUrl('itemlistview', 'struct', $params);
+                return UrlCallRegistry::formatViewUrl('itemlistview', 'struct', $params);
             case 'DataTerminal' :
-return UrlCallRegistry::formatViewUrl('procedurelistview', 'struct', $params);
+                return UrlCallRegistry::formatViewUrl('procedurelistview', 'struct', $params);
             case 'Guest' :
-return UrlCallRegistry::formatViewUrl('itemlistview', 'struct', $params);
+                return UrlCallRegistry::formatViewUrl('itemlistview', 'struct', $params);
             case 'nobody' :
-return UrlCallRegistry::formatViewUrl('itemlistview', 'struct', $params);
+                return UrlCallRegistry::formatViewUrl('itemlistview', 'struct', $params);
             default :
-return UrlCallRegistry::formatViewUrl('itemlistview', 'struct', $params);
+                return UrlCallRegistry::formatViewUrl('itemlistview', 'struct', $params);
         }
         return UrlCallRegistry::formatViewUrl('login', 'user', $params);
     }

@@ -65,7 +65,7 @@ function send_template_email($templatestring, $to, $toname, $from, $fromname, $a
     $themail = new Email($to, $toname, $from, $fromname, $cc, $bcc, $subject, $message);
     $themail->setContentType($content_type);
     if (!$themail->Send()) {
-        logerror("themail->Send($to, $subject, $message) failed in send_template_email()");
+        logerror("Email($to, $toname, $from, $fromname, $cc, $bcc, $subject, $message)->Send() in send_template_email()");
         return false;
     }
     return true;

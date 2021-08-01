@@ -1,7 +1,7 @@
 <?php
 	$this->layout()->title = 'Edit Allowed Objects';
 	$this->layout()->setLayout('layoutdialog');
-		
+
 	$procedures_all_allowed = DBTableRowTypeVersion::getPartNumbersWAliasesAllowedToUser($_SESSION['account'],true,false);
 	$procedure_checkboxes = array();
 	$fieldname = 'typeobject_id';
@@ -10,7 +10,7 @@
 		$procedure_checkboxes[] = '<INPUT TYPE="hidden" NAME="'.$fieldname.'['.$typeobject_id.']" VALUE="0"'.$attributes.'>
 								  <INPUT class="checkboxclass" TYPE="checkbox" NAME="'.$fieldname.'['.$typeobject_id.']" VALUE="1"'.$checked.'>&nbsp;'.$text;
 	}
-	
+
 	$parts_all_allowed = DBTableRowTypeVersion::getPartNumbersWAliasesAllowedToUser($_SESSION['account'],false,false);
 	$parts_checkboxes = array();
 	$fieldname = 'typeobject_id';
@@ -19,13 +19,13 @@
 		$parts_checkboxes[] = '<INPUT TYPE="hidden" NAME="'.$fieldname.'['.$typeobject_id.']" VALUE="0"'.$attributes.'>
 								  <INPUT class="checkboxclass" TYPE="checkbox" NAME="'.$fieldname.'['.$typeobject_id.']" VALUE="1"'.$checked.'>&nbsp;'.$text;
 	}
-	
-	
+
+
 	$html = '';
-	$html .= '<p>This is a list of parts and procedures that this particular user is allowed to interact with.  It is meant to work specifically with a user tuype of Data Terminal.</p>';
+	$html .= '<p>This is a list of parts and procedures that this particular user is allowed to interact with.  It is meant to work specifically with a user type of Data Terminal.</p>';
 	$html .= '<table class="edittable">';
 	$html .= '<tr><th>Parts:</th><td colspan="3">'.implode('<br>',$parts_checkboxes).'</tr>';
 	$html .= '<tr><th>Procedures:</th><td colspan="3">'.implode('<br>',$procedure_checkboxes).'</tr>';
 	$html .= '</TABLE>';
-        
+
 	echo fetch_edit_page($this->layout()->title,$html);

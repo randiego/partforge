@@ -228,7 +228,7 @@ class UserController extends DBCustomControllerAction
                     $fromname = Zend_Registry::get('config')->application_title;
                     $subject = Zend_Registry::get('config')->application_title.": Password Reset";
                     if (!send_template_email($message, $to, $toname, $from, $fromname, array(), $subject)) {
-                        showdialog('An Error Occured', block_text_html("There was an error sending the email to {$to}; Your password has NOT been change. You will need to try again."),
+                        showdialog('An Error Occured', block_text_html("There was an error sending the email to {$to}; Your password has NOT been changed. You will need to try again."),
                         array('Back' => $this->navigator->getCurrentViewUrl()));
                     }
                     $User->has_temporary_password = true;
