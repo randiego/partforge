@@ -693,6 +693,7 @@ table.edittable.defheader .table_value_width {
     font-size: 11px;
     font-style: italic;
     text-align: right;
+	margin-right: 5px;
 }
 
 table.edittable .disabled_message {

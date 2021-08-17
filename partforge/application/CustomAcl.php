@@ -109,9 +109,10 @@ class CustomAcl extends Zend_Acl
             $this->allow(null, 'items_documents');
             $this->allow(null, 'types_versions');
             $this->allow(null, 'types_objects');
-            $this->allow(null, 'types_documents');
+            // $this->allow(null, 'types_documents');  temporarily moved this out to allow PDF generation
             $this->allow(null, 'api');
         }
+        $this->allow(null, 'types_documents');   // this is needed for PDF generation so is outside of authentication realm
 
         $this->allow(null, 'utils'); // this has the  DB upgrade function in it, which needs to be accessed while logged out.
         $this->allow(null, 'cron');  // this has only a single update task function and needs to be accessed while logged out.
