@@ -128,7 +128,7 @@ class DBTableRowTypeVersion extends DBTableRow {
             'date' => array('parameters' => array(
                     'required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank')
                     ),
-                    'help' => 'This data type provides a calender dropdown for entering a date.'),
+                    'help' => 'This data type provides a calendar dropdown for entering a date.'),
             'datetime' => array('parameters' => array(
                     'required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank')
                     ),

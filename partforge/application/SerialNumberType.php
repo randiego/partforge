@@ -28,19 +28,19 @@
  * For example, if serial numbers look like ABC123, these classes take care of things like figuring out the
  * number part and what the next serial number should be if we request that.  It also handles edit checking.
  * Instantial using the factory typeFactory() method with the array of serial number fields stored in the
- * typeversion record. 
+ * typeversion record.
  * @author randy
  *
  */
 abstract class SerialNumberType {
-	 
+
 	protected $_format_array = array();
-	
+
 	public function __construct($sn_format_array)
 	{
 		$this->_format_array = $sn_format_array;
 	}
-	
+
 	static function typeFactory($sn_format_array) {
 		$test = $sn_format_array['serial_number_type'];
 		switch (true) {
@@ -54,15 +54,15 @@ abstract class SerialNumberType {
 				return new SerialNumberWithDatePrefixA($sn_format_array);
 			case $test==3:
 				return new SerialNumberWithSimplePrefix($sn_format_array);
-		}	
+		}
 	}
-	
+
 	/**
 	 * Does this serial number support the "Get Next" type operation.
 	 * @return boolean
 	 */
 	abstract public function supportsGetNextNumber();
-	
+
 	/**
 	 * Searches for the largest serial number value in the database for this typeversion_id and then adds 1 and formats it
 	 * according to the rules.
@@ -70,27 +70,27 @@ abstract class SerialNumberType {
 	 * @return string formatted serial number
 	 */
 	abstract public function getNextSerialNumber($typeversion_id);
-	 
+
 	/**
 	 * Takes the serial number and sees if it it formatted correctly and generates an appropriate error message if there is a problem.
 	 * @param string $item_serial_number
 	 * @param array $errormsg
 	 */
 	abstract public function validateEnteredSerialNumber($item_serial_number, &$errormsg);
-	
+
 	/**
 	 * Checks for self-consistency among the parameters in $this->_format_array.  Does the part definition have valid parameters.
 	 * @param array $errormsg
 	 */
-	public function validateSerialNumberType(&$errormsg) {}	
-	
+	public function validateSerialNumberType(&$errormsg) {}
+
 	/**
 	 * Takes the serial number and extract the number part out and returns it.  If it cannot be extracted out for some reason, it returns null
 	 * @param string $item_serial_number
 	 * @return Ambigous <NULL, unknown>|NULL
 	 */
 	abstract public function convertSerialNumberToOrdinal($item_serial_number);
-	
+
 	/**
 	 * This returns the the captions and subcaptions that are appropriate for the fields that describe the serial numbers.
 	 * This is used for the purpose of displaying prompts for entering the values. By default they are all hidden used==false
@@ -98,13 +98,13 @@ abstract class SerialNumberType {
 	public function getParamCaptions() {
 		$out = array();
 		$out['serial_number_format'] = array(
-				'used' => false, 
-				'caption' => 'Serial Number Print Format', 
+				'used' => false,
+				'caption' => 'Serial Number Print Format',
 				'subcaption' => linkify('http://us2.php.net/sprintf','sprintf','PHP manual','','','_blank').' format for taking the raw number part of a serial number and formatting it into a serial number string. Example: ABC%03d');
 		$out['serial_number_check_regex'] = array(
 				'used' => false,
 				'caption' => 'Serial Number Check RegEx',
-				'subcaption' => 'If you only want the user to be able to enter a serial number in a specific format, enter a '.linkify('http://us2.php.net/manual/en/function.preg-match.php','regular expression','PHP manual for preg_match()','','','_blank').' like /^ABC([0-9]{3,5})$/ (only accept serial numbers of the form ABC###, ABC####, or ABC####).  If you leave this blank, any serial number is allowed as long as it is unique and not blank.');
+				'subcaption' => 'If you only want the user to be able to enter a serial number in a specific format, enter a '.linkify('http://us2.php.net/manual/en/function.preg-match.php','regular expression','PHP manual for preg_match()','','','_blank').' like /^ABC([0-9]{3,5})$/ (only accept serial numbers of the form ABC###, ABC####, or ABC#####).  If you leave this blank, any serial number is allowed as long as it is unique and not blank.');
 		$out['serial_number_parse_regex'] = array(
 				'used' => false,
 				'caption' => 'Serial Number Parse RegEx',
@@ -115,7 +115,7 @@ abstract class SerialNumberType {
 				'subcaption' => 'helpful short description of the serial number format which appears in small print near the input box.');
 		return $out;
 	}
-	
+
 	public function getHelperCaption() {
 		return $this->_format_array['serial_number_caption'];
 	}
@@ -127,17 +127,17 @@ class NoSerialNumber extends SerialNumberType {
 	public function supportsGetNextNumber() {
 		return false;
 	}
-	
+
 	public function validateEnteredSerialNumber($item_serial_number, &$errormsg) { }
-	
+
 	public function convertSerialNumberToOrdinal($item_serial_number) {
 		return null;
-	}	
-	
+	}
+
 	public function getNextSerialNumber($typeversion_id) {
 		return '';
-	}	
-	
+	}
+
 }
 
 // type = 0
@@ -145,7 +145,7 @@ class SerialNumberWithSimpleFormatChecking extends SerialNumberType {
 	public function supportsGetNextNumber() {
 		return false;
 	}
-	
+
 	public function validateEnteredSerialNumber($item_serial_number, &$errormsg) {
 		if (!empty($this->_format_array['serial_number_check_regex'])) {
 			$matchreturn = preg_match($this->_format_array['serial_number_check_regex'],$item_serial_number);
@@ -156,7 +156,7 @@ class SerialNumberWithSimpleFormatChecking extends SerialNumberType {
 			}
 		}
 	}
-	
+
 	public function validateSerialNumberType(&$errormsg) {
 		if (!empty($this->_format_array['serial_number_check_regex'])) {
 			$captions = $this->getParamCaptions();
@@ -165,33 +165,33 @@ class SerialNumberWithSimpleFormatChecking extends SerialNumberType {
 				$errormsg[] = $captions['serial_number_check_regex']['caption'].' it not a valid RegEx expression.';
 			}
 		}
-	}	
-	
+	}
+
 	public function convertSerialNumberToOrdinal($item_serial_number) {
 		return null;
-	}	
-	
+	}
+
 	public function getNextSerialNumber($typeversion_id) {
 		return '';
-	}	
+	}
 
 	public function getParamCaptions() {
 		$out = parent::getParamCaptions();
 		$out['serial_number_check_regex']['used'] = true;
 		$out['serial_number_caption']['used'] = true;
 		return $out;
-	}	
-	
+	}
+
 }
 
 
 // type = 1
 class SerialNumberWithRegexPrePostFix extends SerialNumberType {
 	public function supportsGetNextNumber() {
-		return !empty($this->_format_array['serial_number_parse_regex']) 
+		return !empty($this->_format_array['serial_number_parse_regex'])
 				&& !empty($this->_format_array['serial_number_format']);
 	}
-	
+
 	public function validateEnteredSerialNumber($item_serial_number, &$errormsg) {
 		if (!empty($this->_format_array['serial_number_check_regex'])) {
 			$matchreturn = preg_match($this->_format_array['serial_number_check_regex'],$item_serial_number);
@@ -201,8 +201,8 @@ class SerialNumberWithRegexPrePostFix extends SerialNumberType {
 				$errormsg['item_serial_number'] = 'The serial number is not in the right format.';
 			}
 		}
-	}	
-	
+	}
+
 	public function validateSerialNumberType(&$errormsg) {
 		$captions = $this->getParamCaptions();
 
@@ -215,23 +215,23 @@ class SerialNumberWithRegexPrePostFix extends SerialNumberType {
 		if ($matchreturn===false) {
 			$errormsg[] = $captions['serial_number_parse_regex']['caption'].' it not a valid RegEx expression.';
 		}
-		
+
 		// I try to use the format specifier to output serial number of 314.  I test to make sure that the result has the string "314" in it.
 		$testprint = @sprintf($this->_format_array['serial_number_format'],314);
 		if (!str_contains($testprint, '314')) {
 			$errormsg[] = $captions['serial_number_format']['caption'].' it not a valid format specifier.';
 		}
-		
-	}	
-	
+
+	}
+
 	public function convertSerialNumberToOrdinal($item_serial_number) {
 		if (!empty($this->_format_array['serial_number_parse_regex'])) {
 			preg_match($this->_format_array['serial_number_parse_regex'],$item_serial_number,$out);
 			return isset($out[1]) ? $out[1] : null;
 		}
 		return null;
-	}	
-	
+	}
+
 	public function getNextSerialNumber($typeversion_id) {
 		$records = DbSchema::getInstance()->getRecords('',"
 				SELECT max(other_iv.cached_serial_number_value) as max_serial_number
@@ -248,7 +248,7 @@ class SerialNumberWithRegexPrePostFix extends SerialNumberType {
 		}
 		return $out;
 	}
-	
+
 	public function getParamCaptions() {
 		$out = parent::getParamCaptions();
 		$out['serial_number_format']['used'] = true;
@@ -256,8 +256,8 @@ class SerialNumberWithRegexPrePostFix extends SerialNumberType {
 		$out['serial_number_parse_regex']['used'] = true;
 		$out['serial_number_caption']['used'] = true;
 		return $out;
-	}	
-	
+	}
+
 }
 
 // type = 2
@@ -265,7 +265,7 @@ class SerialNumberWithDatePrefixA extends SerialNumberType {
 	public function supportsGetNextNumber() {
 		return true;
 	}
-	
+
 	public function validateEnteredSerialNumber($item_serial_number, &$errormsg) {
 		$matchreturn = preg_match('/^[0-9]{2}-[0-9]{2}-[0-9]{2}-([0-9]{1,5})$/',$item_serial_number);
 		if ($matchreturn===false) {
@@ -273,13 +273,13 @@ class SerialNumberWithDatePrefixA extends SerialNumberType {
 		} else if ($matchreturn===0) {
 			$errormsg['item_serial_number'] = 'The serial number is not in the format MM-DD-YY-##.';
 		}
-	}	
-	
+	}
+
 	public function convertSerialNumberToOrdinal($item_serial_number) {
 		preg_match('/^[0-9]{2}-[0-9]{2}-[0-9]{2}-([0-9]{1,5})$/',$item_serial_number,$out);
 		return isset($out[1]) ? $out[1] : null;
-	}	
-	
+	}
+
 	public function getNextSerialNumber($typeversion_id) {
 		$date_prefix = date('m-d-y-',script_time());
 		// select highest cached number where the date part of the serial number is the same
@@ -293,20 +293,20 @@ class SerialNumberWithDatePrefixA extends SerialNumberType {
 		$next_value = empty($record['max_serial_number']) ? 1 : $record['max_serial_number'] + 1;
 		return $date_prefix.sprintf('%02d',$next_value);
 	}
-	
+
 	public function getParamCaptions() {
 		$out = parent::getParamCaptions();
 		$out['serial_number_caption']['used'] = true;
 		$out['serial_number_caption']['subcaption'] = 'Optional: any extra explanation for the user about the serial number, other than the formatting (which is already shown to them).';
 		return $out;
-	}	
-	
+	}
+
 	public function getHelperCaption() {
 		$entered_caption = parent::getHelperCaption();
 		return !empty($entered_caption) ? '[MM-DD-YY-##]<br />'.$entered_caption : 'MM-DD-YY-##';
 	}
-	
-	
+
+
 }
 
 // type = 3
@@ -314,7 +314,7 @@ class SerialNumberWithSimplePrefix extends SerialNumberType {
 	public function supportsGetNextNumber() {
 		return true;
 	}
-	
+
 	protected function convertToExpressions() {
 		preg_match('/^([^\#]*)(\#+)$/',$this->_format_array['serial_number_format'],$out);
 		$prefix = $out[1];
@@ -324,7 +324,7 @@ class SerialNumberWithSimplePrefix extends SerialNumberType {
 		$parse = '/^'.preg_quote($prefix).'([0-9]+)$/';
 		return array($format, $check, $parse);
 	}
-	
+
 	public function validateEnteredSerialNumber($item_serial_number, &$errormsg) {
 		list($format, $check, $parse) = $this->convertToExpressions();
 		if (!empty($check)) {
@@ -336,7 +336,7 @@ class SerialNumberWithSimplePrefix extends SerialNumberType {
 			}
 		}
 	}
-	
+
 
 	public function validateSerialNumberType(&$errormsg) {
 		$matchreturn = preg_match('/^([^\#]*)(\#+)$/',$this->_format_array['serial_number_format']);
@@ -373,7 +373,7 @@ class SerialNumberWithSimplePrefix extends SerialNumberType {
 		}
 		return $out;
 	}
-	
+
 	public function getParamCaptions() {
 		$out = parent::getParamCaptions();
 		$out['serial_number_format']['used'] = true;
@@ -382,11 +382,11 @@ class SerialNumberWithSimplePrefix extends SerialNumberType {
 		$out['serial_number_caption']['used'] = true;
 		$out['serial_number_caption']['subcaption'] = 'Optional: any extra explanation for the user about the serial number, other than the formatting (which is already shown to them).';
 		return $out;
-	}	
+	}
 
 	public function getHelperCaption() {
 		$entered_caption = parent::getHelperCaption();
 		return !empty($entered_caption) ? '['.$this->_format_array['serial_number_format'].']<br />'.$entered_caption : $this->_format_array['serial_number_format'];
-	}	
+	}
 
 }
