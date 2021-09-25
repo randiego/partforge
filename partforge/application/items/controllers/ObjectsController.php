@@ -96,7 +96,7 @@ class Items_ObjectsController extends RestControllerActionAbstract
                     $Pdf = new ItemViewPDF();
                     $Pdf->dbtable = $ItemVersion;
                     $Pdf->buildDocument($this->params);
-                    $Pdf->Output(make_filename_safe('ItemView_'.$ItemVersion->part_number.'_'.$ItemVersion->item_serial_number.'.pdf'), 'D');
+                    $Pdf->Output(make_filename_safe('ItemView_'.$ItemVersion->part_number.'_'.$ItemVersion->item_serial_number).'.pdf', 'D');
                     exit;
                 case 'nested':
                     foreach (DBTableRowItemObject::getItemObjectFullNestedArray($ItemVersion->itemobject_id, null, $max_depth, 0) as $fieldname => $value) {

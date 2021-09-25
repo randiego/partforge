@@ -711,7 +711,7 @@ class StructController extends DBControllerActionAbstract
         $Pdf = new ItemViewPDF();
         $Pdf->dbtable = $dbtable;
         $Pdf->buildDocument($queryvars);
-        $Pdf->Output(make_filename_safe('ItemView_'.$dbtable->part_number.'_'.$dbtable->item_serial_number.'.pdf'), 'D');
+        $Pdf->Output(make_filename_safe('ItemView_'.$dbtable->part_number.'_'.$dbtable->item_serial_number).'.pdf', 'D');
         exit;
     }
 
@@ -898,7 +898,7 @@ class StructController extends DBControllerActionAbstract
         // probably a more efficient way, but lets get the typeobject_id
         $TypeVersion = new DBTableRowTypeVersion();
         $TypeVersion->getRecordById($typeversion_id);
-        $Pdf->Output(make_filename_safe('Definition_'.DBTableRowTypeVersion::formatPartNumberDescription($TypeVersion->type_part_number, $TypeVersion->type_description).'.pdf'), 'D');
+        $Pdf->Output(make_filename_safe('Definition_'.DBTableRowTypeVersion::formatPartNumberDescription($TypeVersion->type_part_number, $TypeVersion->type_description)).'.pdf', 'D');
         exit;
     }
 

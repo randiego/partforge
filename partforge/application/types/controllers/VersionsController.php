@@ -72,7 +72,7 @@ class Types_VersionsController extends RestControllerActionAbstract
                 case 'pdf':
                     $Pdf = new ItemDefinitionViewPDF();
                     $Pdf->buildTypeDocument($this->params['id'], $this->params);
-                    $Pdf->Output(make_filename_safe('Definition_'.DBTableRowTypeVersion::formatPartNumberDescription($TypeVersion->type_part_number, $TypeVersion->type_description).'.pdf'), 'D');
+                    $Pdf->Output(make_filename_safe('Definition_'.DBTableRowTypeVersion::formatPartNumberDescription($TypeVersion->type_part_number, $TypeVersion->type_description)).'.pdf', 'D');
                     exit;
                 case 'nested':
                     $errors = array();
