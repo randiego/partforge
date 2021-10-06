@@ -408,7 +408,7 @@ table.listtable td.na {
 	background-color:#888;
 }
 
-table.listtable td.cell_error {
+table.listtable td.cell_error, table.sublisttable td.cell_error {
 	background-color: #fcc;
 }
 
@@ -1479,7 +1479,7 @@ ul.bd-bullet_features li {
 	padding:0;
 }
 
-ul.bd-event-subcomments li {
+ul.bd-event-subcomments li.bd-event-subcomment {
 	border-top: 1px solid #9999FF;
 	padding: 5px;
 }

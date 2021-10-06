@@ -1243,6 +1243,27 @@ class DBTableRowItemVersion extends DBTableRow {
         }
     }
 
+    /**
+     * Do a validation on all the fields, plus look for any override errors that have been placed
+     * in the dictionary_overrides and create an array of these error messages.
+     *
+     * @return array of displayable errors for this object
+     */
+    public function getArrayOfAllFieldErrors()
+    {
+        $errormsg = array();
+        $this->validateFields($this->getSaveFieldNames(), $errormsg);
+        foreach ($errormsg as $fieldname => $error) {
+            $errormsg[$fieldname] = array('name' => $this->formatFieldnameNoColon($fieldname), 'error' => $error);
+        }
+        // get the override errors
+        foreach ($this->getFieldTypes() as $fieldname => $fieldtype) {
+            if (isset($fieldtype['error'])) {
+                $errormsg[$fieldname] = array('name' => $this->formatFieldnameNoColon($fieldname), 'error' => $fieldtype['error']);
+            }
+        }
+        return $errormsg;
+    }
 
     /**
      * this will only reload the typeversion information if $this->_typeversion_digest is inconsistent

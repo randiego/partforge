@@ -300,11 +300,6 @@ class DefinitionEventStream {
             if ($previously_found_active_version && ($record['event_type_id']=='ET_CHG') && !$is_selected_version ) {
                 $is_future_version = true;
             }
-            $error = '';
-            if (!empty($record['error_message'])) {
-                list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($record['error_message'], $navigator, $record['event_type_id']);
-                $error = '<div class="event_error">'.$event_description.'</div>';
-            }
 
             $links = array();
 
@@ -323,7 +318,7 @@ class DefinitionEventStream {
                     'user_id' => $record['user_id'],
                     'version_url' => $version_url,
                     'is_selected_version' => $is_selected_version,
-                    'event_html'=> $event_description.$error,
+                    'event_html'=> $event_description,
                     'event_description_array' => $event_description_array,
                     'effective_date' => isset($record['effective_date']) ? $record['effective_date'] : null,
                     'record_created' => isset($record['record_created']) ? $record['record_created'] : null,

@@ -62,6 +62,7 @@ class EventStream {
      */
 
     private $_itemobject_id;
+    const MAX_ERRORS_TO_SHOW = 4; // how many bulleted errors to display before just presenting a count.
 
     public function __construct($itemobject_id)
     {
@@ -360,7 +361,7 @@ class EventStream {
             $itemevent['event_description'] = ($ItemVersion->event_stream_reference_prefix).$version_age." <itemversion>{$itemversion_id}</itemversion>";
             $itemevent['referenced_itemversion_id'] = null;
             $itemevent['is_current_version'] = $ItemVersion->isCurrentVersion();
-
+            $itemevent['validation_errors'] = $ItemVersion->getArrayOfAllFieldErrors();
 
             $arr = $itemevent;
             // the 3rd || handles left over entries let through by the query when we want to remove older entries ($end_date not null)
@@ -533,13 +534,24 @@ class EventStream {
             if (in_array($event_type, array('ET_PROCREF','ET_PARTREF'))) {
                 foreach ($ItemVersion->getFeaturedFieldTypes() as $fieldname => $fieldtype) {
                     if (trim($ItemVersion->{$fieldname})!=='') {
-                        $features[] = '<li><span class="label">'.$ItemVersion->formatFieldnameNoColon($fieldname).':</span> <span class="value">'.$ItemVersion->formatPrintField($fieldname, true, true, true).'</span></li>';
+                        $features[] = '<span class="label">'.$ItemVersion->formatFieldnameNoColon($fieldname).':</span> <span class="value">'.$ItemVersion->formatPrintField($fieldname, true, true, true).'</span>';
                         $features_structured[] = array('name' => $ItemVersion->formatFieldnameNoColon($fieldname), 'value' => $ItemVersion->formatPrintField($fieldname, true, true, true));
                     }
                 }
-                $featuresstr = implode('', $features);
-                if ($featuresstr!='') {
-                    $featuresstr = ' <ul>'.$featuresstr.'</ul>';
+                // if event type  is procedure, then show the errors $ItemVersion->getArrayOfAllFieldErrors()
+                if ($event_type=='ET_PROCREF') {
+                    $validation_errors = $ItemVersion->getArrayOfAllFieldErrors();
+                    if (count($validation_errors)>self::MAX_ERRORS_TO_SHOW) {
+                        $features[] = '<span class="errorred">'.count($validation_errors).' Errors</span>';
+                    } elseif (count($validation_errors)>0) {
+                        foreach ($validation_errors as $err) {
+                            $features[] = '<span class="errorred">Error: '.$err['name'].'</span>';
+                        }
+                    }
+                }
+                $featuresstr = '';
+                if (count($features)>0) {
+                    $featuresstr = ' <ul><li>'.implode('</li><li>', $features).'</li></ul>';
                 }
             } else if ($event_type=='ET_CHG') {
                 $featuresstr = '';
@@ -865,11 +877,6 @@ class EventStream {
             if ($previously_found_active_version && ($record['event_type_id']=='ET_CHG') && !$is_selected_version && empty($record['indented_component_name'])) {
                 $is_future_version = true;
             }
-            $error = '';
-            if (isset($record['error_message'])) {
-                list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($record['error_message'], $navigator, $record['event_type_id']);
-                $error = '<div class="event_error">'.$event_description.'</div>';
-            }
 
             $links = array();
 
@@ -888,7 +895,7 @@ class EventStream {
                     'user_id' => $record['user_id'],
                     'version_url' => $version_url,
                     'is_selected_version' => $is_selected_version,
-                    'event_html'=> $event_description.$error,
+                    'event_html'=> $event_description,
                     'event_description_array' => $event_description_array,
                     'effective_date' => isset($record['effective_date']) ? $record['effective_date'] : null,
                     'record_created' => isset($record['record_created']) ? $record['record_created'] : null,
@@ -897,7 +904,8 @@ class EventStream {
                     'is_future_version' => $is_future_version,
                     'documents_packed'=>'',
                     'comments_packed' =>'',
-                    'recently_edited' => false);
+                    'recently_edited' => false,
+                    'validation_errors' => isset($record['validation_errors']) ? $record['validation_errors'] : array());
             if (!empty($record['indented_component_name'])) {
                 $line['indented_component_name'] = $record['indented_component_name'];
             }
@@ -962,7 +970,7 @@ class EventStream {
      * takes a list of reference procedures generated from ::eventStreamRecordsToLines()
      * and formats this into a nice dashboard view for display on the itemview page.
      * @param DBTableRowItemVersion $dbtable This is a reference to the parent object
-     * @param array $procedure_records_by_typeobject_id This is a list of those procedure types that are allowed for this particular item
+     * @param array $procedure_records This is a list of those procedure types that are allowed for this particular item
      * @param array $references_by_typeobject_id  This is a list of all the procedures that actually exist for this item
      * @return string
      */
@@ -999,13 +1007,24 @@ class EventStream {
                             $feat[] = $feature['name'].':&nbsp;<b>'.$feature['value'].'</b>';
                         }
                     }
+
+                    if (count($reference['validation_errors'])>self::MAX_ERRORS_TO_SHOW) {
+                        $feat[] = '<span class="errorred">'.count($reference['validation_errors']).' Errors</span>';
+                    } elseif (count($reference['validation_errors'])>0) {
+                        foreach ($reference['validation_errors'] as $err) {
+                            $feat[] = '<span class="errorred">Error: '.$err['name'].'</span>';
+                        }
+                    }
+
                     $row['Data'] = count($feat)==0 ? '' : '<ul class="bd-bullet_features"><li>'.implode('</li><li>', $feat).'</li></ul>';
                     $row['Pass/Fail'] = DBTableRowItemVersion::renderDisposition($dbtable->getFieldType('disposition'), $reference['disposition']);
+
                     $dimmed_class_attr = $reference['is_future_version'] ? ' class="bd-dimmed"' : '';
+                    $disp_cell_class = isset($reference['validation_errors']['disposition']) ? ' class="cell_error"' : '';
                     $html_dashboard .= '<tr'.$dimmed_class_attr.'>
 				<td>'.nbsp_ifblank($row['Date']).'</td>
 	        	<td>'.nbsp_ifblank($row['Data']).'</td>
-	        	<td>'.nbsp_ifblank($row['Pass/Fail']).'</td>
+	        	<td'.$disp_cell_class.'>'.nbsp_ifblank($row['Pass/Fail']).'</td>
 	        	</tr>';
                 }
                 $html_dashboard .= '</table>';

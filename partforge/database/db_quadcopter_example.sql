@@ -514,7 +514,7 @@ CREATE TABLE IF NOT EXISTS `taskslog` (
   `tl_run_peak_memory` float DEFAULT NULL,
   PRIMARY KEY (`tasklog_id`),
   KEY `tl_key` (`tl_key`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 -- --------------------------------------------------------
 

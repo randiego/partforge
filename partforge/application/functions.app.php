@@ -1004,3 +1004,9 @@ function make_subcaption_if_defined($fieldkey)
     $subcaptions = Zend_Registry::get('config')->subcaptions;
     return isset($subcaptions->{$fieldkey}) ? '<br><span class="paren">'.$subcaptions->{$fieldkey}.'</span>' : '';
 }
+
+function log_message($message)
+{
+    $file =  dirname(__FILE__) . '/../debug_log.txt';
+    file_put_contents($file, $message, FILE_APPEND);
+}

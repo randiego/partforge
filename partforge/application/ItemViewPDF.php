@@ -62,28 +62,17 @@ class ItemViewPDF extends TCPDF {
         throw new Exception($msg);
     }
 
-    protected function translateUtf8ToIso($txt)
-    {
-        $txt_trans ='';
-        $len = mb_strlen($txt, 'UTF-8');
-        for ($i = 0; $i < $len; $i ++) {
-            $o = iconv("UTF-8", "ISO-8859-1//TRANSLIT//IGNORE", mb_substr($txt, $i, 1, 'UTF-8'));
-            $txt_trans .= $o=='' ? '['.substr(htmlentities(mb_substr($txt, $i, 1, 'UTF-8'), ENT_NOQUOTES, "utf-8"), 1, -1).']' : $o;
-        }
-        return $txt_trans;
-    }
-
     public function MyCell($w, $h = 0, $txt = '', $border = 0, $ln = 0, $align = '', $fill = false, $link = '')
     {
-        return parent::Cell($w, $h, $this->translateUtf8ToIso($txt), $border, $ln, $align, $fill, $link);
+        return parent::Cell($w, $h, $txt, $border, $ln, $align, $fill, $link);
     }
 
     public function clean_html($dirty_html)
     {
         // see http://www.bioinformatics.org/phplabware/internal_utilities/htmLawed/htmLawed_README.htm#s2.2
         require_once("htmLawed.php");
-        $dirty_html = $this->translateUtf8ToIso($dirty_html);
-        $clean_html = trim(htmLawed($dirty_html, array('safe' => 1, 'clean_ms_char' => 2)));
+        $clean_html = trim(htmLawed($dirty_html, array('safe' => 1)));
+        $clean_html = preg_replace('/[^\x{0009}\x{000a}\x{000d}\x{0020}-\x{D7FF}\x{E000}-\x{FFFD}]+/u', ' ', $clean_html);
         return $clean_html;
     }
 
@@ -325,6 +314,7 @@ class ItemViewPDF extends TCPDF {
                 foreach ($layout_rows_comments_change as $key => $value) {
                     $layout_rows_comments_change[$key] = $this->clean_html($value);
                 }
+                // if a procedure (three columns)...
                 if (isset($layout_rows_comments_change[2]) && $layout_rows_comments_change[2]) {
                     $html .= '<tr><td width="113">'.$layout_rows_comments_change[0].'</td><td width="386">'.$layout_rows_comments_change[1].'</td><td width="57"><span style="font-weight:bold;">'.$layout_rows_comments_change[2].'</span></td></tr>';
                 } else {
