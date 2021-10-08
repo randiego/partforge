@@ -640,7 +640,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
                     foreach ($SubIV->getFieldTypes() as $subfieldname => $subfieldtype) {
                         if ($subfieldtype['type']=='component') {
                             $value_array = $SubIV->getComponentValueAsArray($subfieldname);
-                            $detail_out[DBTableRowTypeVersion::formatSubfieldPrefix($fieldname, $SubIV->tv__typeobject_id).'.'.$subfieldname] = $value_array[$SubIV->{$subfieldname}];
+                            $detail_out[DBTableRowTypeVersion::formatSubfieldPrefix($fieldname, $SubIV->tv__typeobject_id).'.'.$subfieldname] = isset($SubIV->{$subfieldname}) ? $value_array[$SubIV->{$subfieldname}] : null;
                         } else {
                             $detail_out[DBTableRowTypeVersion::formatSubfieldPrefix($fieldname, $SubIV->tv__typeobject_id).'.'.$subfieldname] = $SubIV->{$subfieldname};
                         }

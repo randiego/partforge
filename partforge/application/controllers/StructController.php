@@ -95,8 +95,8 @@ class StructController extends DBControllerActionAbstract
                     $filename1 = $this->view->is_user_procedure ? 'ExportCurrentProcedureVersions.csv' : 'ExportCurrentItemVersions.csv';
                     $filename2 = $this->view->is_user_procedure ? 'ExportAllProcedureVersions.csv' : 'ExportAllItemVersions.csv';
                     spawnshowdialog('Save to a comma-separated values (CSV) file', '<p>To save the records, click the link below, or right-click the link and choose "Save Target/Link As":</p>
-						<p>'.linkify($this->navigator->getCurrentViewUrl('outputcsv', '', array_merge($params, array('filename' => 'ExportCurrentItemVersions.csv', 'output_all_versions' => false, 'is_user_procedure' => $this->view->is_user_procedure))), $filename1).'</p>
-						<p>'.linkify($this->navigator->getCurrentViewUrl('outputcsv', '', array_merge($params, array('filename' => 'ExportAllItemVersions.csv', 'output_all_versions' => true, 'is_user_procedure' => $this->view->is_user_procedure))), $filename2).'</p>', array('<== Back' => $this->navigator->getCurrentViewUrl()));
+						<p>'.linkify($this->navigator->getCurrentViewUrl('outputcsv', '', array_merge($params, array('filename' => $filename1, 'output_all_versions' => false, 'is_user_procedure' => $this->view->is_user_procedure))), $filename1).'</p>
+						<p>'.linkify($this->navigator->getCurrentViewUrl('outputcsv', '', array_merge($params, array('filename' => $filename2, 'output_all_versions' => true, 'is_user_procedure' => $this->view->is_user_procedure))), $filename2).'</p>', array('<== Back' => $this->navigator->getCurrentViewUrl()));
                 case (isset($this->params['btnOnChange']) && ($this->params['btnOnChange'] == 'catchange')):
                     //if $this->params['view_category'] is prefixed with "fav" then strip it before storing.  Only numeric or * are allowed.
                     if (is_numeric($this->params['view_category']) || ($this->params['view_category']=='*')) {
