@@ -82,14 +82,12 @@ class ReportDataItemListView extends ReportDataWithCategory {
         $show_early_part_numbers_column = ($this->view_category=='*') || ($this->_showing_search_results);
         $show_associated_sn_column = $this->is_user_procedure && ($this->view_category=='*');
         $show_item_sn_column = !$this->is_user_procedure;
-        $show_change_date_column_early = !$initialize_for_export && $this->is_user_procedure;
-        $show_change_date_column_late = (!$initialize_for_export && !$this->is_user_procedure) || ($initialize_for_export && !$this->output_all_versions);
+        $show_change_date_column = !$initialize_for_export || ($initialize_for_export && !$this->output_all_versions);
         $show_disposition_column = $this->is_user_procedure;
-        $show_created_on_date = (!$initialize_for_export && !$this->is_user_procedure) || ($initialize_for_export && !$this->output_all_versions);
-        $show_created_by_date = ($initialize_for_export && !$this->output_all_versions);
+        $show_created_fields = !$initialize_for_export || ($initialize_for_export && !$this->output_all_versions);
+        $show_created_field_columns_early = $show_created_fields && $this->is_user_procedure;
         $show_proc_matrix_columns = ($this->view_category!='*') && $this->_show_proc_matrix;
         $show_late_part_numbers_column = !$show_early_part_numbers_column && $this->_has_aliases;
-
 
         $this->last_select_class = 'rowlight';
 
@@ -100,20 +98,19 @@ class ReportDataItemListView extends ReportDataWithCategory {
             $this->fields['part_description']   = array('display'=> ($this->is_user_procedure ? 'Name' : 'Part Name'),      'key_asc'=>'partnumbercache.part_description', 'key_desc'=>'partnumbercache.part_description desc');
         }
 
-        if ($show_change_date_column_early) {
+        if ($show_created_fields && $show_created_field_columns_early) {
             if (!$show_early_part_numbers_column) {
-                $this->default_sort_key = 'last_change_date desc';
+                $this->default_sort_key = 'first_ref_date desc';
             }
-            $this->fields['last_change_date']   = array('display'=>($this->is_user_procedure ? 'Last Change' : 'Last Change'),      'key_asc'=>'last_change_date', 'key_desc'=>'last_change_date desc', 'start_key' => 'key_desc');
-            $this->fields['last_changed_by']    = array('display'=>($this->is_user_procedure ? 'User' : 'Changed By'),      'key_asc'=>'last_changed_by', 'key_desc'=>'last_changed_by desc');
+            $this->fields['first_ref_date']  = array('display' => 'Created On Date','key_asc'=>'first_ref_date', 'key_desc'=>'first_ref_date desc', 'start_key' => 'key_desc');
+            $this->fields['created_by']  = array('display' => 'Created By',      'key_asc'=>'created_by', 'key_desc'=>'created_by desc');
         }
-
 
         if ($show_associated_sn_column) {
             $this->fields['component_serial_numbers']   = array('display'=> 'Associated Serial Number(s)',      'key_asc'=>'component_serial_numbers', 'key_desc'=>'component_serial_numbers desc');
         }
         if ($show_item_sn_column) {
-            if ($display_only && !$show_early_part_numbers_column && !$show_change_date_column_early) {
+            if ($display_only && !$show_early_part_numbers_column && !$show_created_field_columns_early) {
                 $this->default_sort_key = 'iv__item_serial_number desc';
             }
             $this->fields['iv__item_serial_number'] = array('display'=> 'Item Serial Number', 'key_asc'=>'iv__item_serial_number', 'key_desc'=>'iv__item_serial_number desc');
@@ -167,16 +164,14 @@ class ReportDataItemListView extends ReportDataWithCategory {
             }
         }
 
-        if ($show_created_on_date) {
+        if ($show_created_fields && !$show_created_field_columns_early) {
             $this->fields['first_ref_date']  = array('display' => 'Created On Date','key_asc'=>'first_ref_date', 'key_desc'=>'first_ref_date desc', 'start_key' => 'key_desc');
-        }
-        if ($show_created_by_date) {
-            $this->fields['created_by']  = array('display' => 'Created By');
+            $this->fields['created_by']  = array('display' => 'Created By',      'key_asc'=>'created_by', 'key_desc'=>'created_by desc');
         }
 
-        if ($show_change_date_column_late) {
+        if ($show_change_date_column) {
             $this->fields['last_change_date']   = array('display'=>($this->is_user_procedure ? 'Last Change' : 'Last Change'),      'key_asc'=>'last_change_date', 'key_desc'=>'last_change_date desc', 'start_key' => 'key_desc');
-            $this->fields['last_changed_by']    = array('display'=>($this->is_user_procedure ? 'User' : 'Changed By'),      'key_asc'=>'last_changed_by', 'key_desc'=>'last_changed_by desc');
+            $this->fields['last_changed_by']    = array('display'=>($this->is_user_procedure ? 'Changed By' : 'Changed By'),      'key_asc'=>'last_changed_by', 'key_desc'=>'last_changed_by desc');
         }
 
         if ($initialize_for_export) {
