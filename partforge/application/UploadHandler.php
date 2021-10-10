@@ -317,6 +317,13 @@ class UploadHandler
                 $write_image = 'imagewebp';
                 $image_quality = isset($options['webp_quality']) ? $options['webp_quality'] : 75;
                 break;
+            case 'image/bmp':
+            case 'image/x-ms-bmp':
+            case 'image/x-bmp':
+                $src_img = function_exists('imagecreatefrombmp') ? @imagecreatefrombmp($file_path) : null;
+                $write_image = 'imagebmp';
+                $image_quality = null;
+                break;
             default:
                 $src_img = null;
         }
