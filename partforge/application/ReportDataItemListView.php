@@ -190,6 +190,9 @@ class ReportDataItemListView extends ReportDataWithCategory {
                     }
                 }
             }
+            if (isset($this->csvfields['iv__effective_date']) && isset($this->csvfields['effective_date'])) {
+                unset($this->csvfields['effective_date']);
+            }
             $this->csvfields['itemobject_id'] = 'itemobject_id';
             $this->csvfields['itemversion_id'] = 'itemversion_id';
             $this->csvfields['typeversion_id'] = 'typeversion_id';
