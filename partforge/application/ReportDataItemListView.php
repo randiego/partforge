@@ -533,8 +533,9 @@ class ReportDataItemListView extends ReportDataWithCategory {
         $detail_out['type_part_number'] = TextToHtml(DBTableRowTypeVersion::formatPartNumberDescription($record['type_part_number']));
 
         $last_change_date_str = date('M j, Y G:i', strtotime($record['last_change_date']));
-        $detail_out['last_change_date'] = empty($record['last_change_date']) ? '' : ($this->is_user_procedure ? linkify($edit_url, $last_change_date_str, 'View') : $last_change_date_str);
-        $detail_out['first_ref_date'] = empty($record['first_ref_date']) ? '' : date('M j, Y G:i', strtotime($record['first_ref_date']));
+        $first_ref_date_str = date('M j, Y G:i', strtotime($record['first_ref_date']));
+        $detail_out['last_change_date'] = empty($record['last_change_date']) ? '' : $last_change_date_str;
+        $detail_out['first_ref_date'] = empty($record['first_ref_date']) ? '' : ($this->is_user_procedure ? linkify($edit_url, $first_ref_date_str, 'View') : $first_ref_date_str);
 
         // used for the csv export of all versions
         $detail_out['iv__effective_date'] = empty($record['iv__effective_date']) ? '' : date('M j, Y G:i', strtotime($record['iv__effective_date']));
