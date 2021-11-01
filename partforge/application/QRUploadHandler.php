@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -23,20 +23,24 @@
  * @license GPL-3.0+ <http://spdx.org/licenses/GPL-3.0+>
  */
 
-class MyUploadHandler extends UploadHandler
+class QRUploadHandler extends UploadHandler
 {
-    protected $db_comment_table;
+    public $document_ids;
+    protected $user_id;
+    protected $uploadkey;
     protected $db_document_table;
-    public function __construct(DBTableRowComment $db_comment_table, $process_now = true)
+    public function __construct($document_ids, $user_id, $uploadkey, $process_now = true)
     {
         $uploader_options = array(
-                'script_url' => Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/struct/documentsajax/',
+                'script_url' => Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/utils/qrupload/'.$uploadkey.'?initialized=&ajaxaction=',
                 'upload_dir' => Zend_Registry::get('config')->document_path_base.Zend_Registry::get('config')->document_directory.'/',
                 'upload_url' => Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().Zend_Registry::get('config')->document_directory.'/',
                 'orient_image' => true,
         );
         parent::__construct($uploader_options, false);
-        $this->db_comment_table = $db_comment_table;
+        $this->document_ids = $document_ids;
+        $this->user_id = $user_id;
+        $this->uploadkey = $uploadkey;
         $this->db_document_table = new DBTableRowDocument();
         if ($process_now) {
             $this->initialize();
@@ -62,7 +66,7 @@ class MyUploadHandler extends UploadHandler
     protected function set_file_delete_properties($file)
     {
         $file->delete_url = $this->options['script_url']
-        .'?document_id='.rawurlencode($this->db_document_table->document_id).'&file='.rawurlencode($file->name);
+        .'&document_id='.rawurlencode($this->db_document_table->document_id).'&file='.rawurlencode($file->name);
         $file->delete_type = $this->options['delete_type'];
         if ($file->delete_type !== 'DELETE') {
             $file->delete_url .= '&_method=DELETE';
@@ -76,8 +80,8 @@ class MyUploadHandler extends UploadHandler
     protected function get_file_objects($iteration_method = 'get_file_object')
     {
         // if $iteration_method is set to 'is_valid_file_object' then we only need to return an array whos count is the number of files
-        if (count($this->db_comment_table->document_ids)>0) {
-            $records = DbSchema::getInstance()->getRecords('document_id', "SELECT * FROM document WHERE document_id IN (".implode(',', $this->db_comment_table->document_ids).")");
+        if (count($this->document_ids)>0) {
+            $records = DbSchema::getInstance()->getRecords('document_id', "SELECT * FROM document WHERE document_id IN (".implode(',', $this->document_ids).")");
         } else {
             $records = array();
         }
@@ -110,9 +114,7 @@ class MyUploadHandler extends UploadHandler
         $content_range = null
     ) {
         // we are uploading, so make a new one.
-        // use the comment user ID if we are not logged in.
-        $user_id = is_numeric($_SESSION['account']->user_id) ? $_SESSION['account']->user_id : $this->db_comment_table->user_id;
-        $this->db_document_table = new DBTableRowDocument($user_id);
+        $this->db_document_table = new DBTableRowDocument($this->user_id);
 
         $fileobj = parent::handle_file_upload($uploaded_file, $name, $size, $type, $error, $index, $content_range);
         if (empty($fileobj->error) && ($fileobj->size>0)) {
@@ -121,9 +123,6 @@ class MyUploadHandler extends UploadHandler
             $this->db_document_table->document_filesize = $fileobj->size;
             $this->db_document_table->document_file_type = $fileobj->type;
             $this->db_document_table->document_thumb_exists = isset($fileobj->thumbnail_url);
-            if ($this->db_comment_table->isSaved()) {
-                $this->db_document_table->comment_id = $this->db_comment_table->comment_id;
-            }
             $this->db_document_table->save();
 
             // in the call to handle_file_upload above it didn't yet have the document_id, so it set the json response incorrectly.  So now we populate the url fields with the actual document_ids
@@ -134,7 +133,7 @@ class MyUploadHandler extends UploadHandler
 
             $this->set_file_delete_properties($fileobj);
             // add to the current list of documents being displayed.
-            $this->db_comment_table->document_ids = array_unique(array_merge($this->db_comment_table->document_ids, array($this->db_document_table->document_id)));
+            $this->document_ids = array_unique(array_merge($this->document_ids, array($this->db_document_table->document_id)));
         }
         return $fileobj;
     }
@@ -155,7 +154,7 @@ class MyUploadHandler extends UploadHandler
                         }
                     }
                 }
-                $this->db_comment_table->document_ids = array_diff($this->db_comment_table->document_ids, array($this->db_document_table->document_id));
+                $this->document_ids = array_diff($this->document_ids, array($this->db_document_table->document_id));
                 $this->db_document_table->delete();
             }
             return $this->generate_response(array('success' => $success), $print_response);
@@ -165,12 +164,11 @@ class MyUploadHandler extends UploadHandler
     protected function get_download_url($file_name, $version = null)
     {
         if ($this->options['download_via_php']) {
-            throw new Exception('download_via_php option not allowed in MyUploadHandler:get_download_url().');
+            throw new Exception('download_via_php option not allowed in QRUploadHandler:get_download_url().');
         }
 
-        $fmt = empty($version) ? '' :  '?fmt='.$version;
-        return Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/items/documents/'.$this->db_document_table->document_id.$fmt;
+        $fmt = empty($version) ? '' :  '&fmt='.$version;
+        return Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/utils/qrupload/'.$this->uploadkey.'?initialized=&showdoc=&document_id='.$this->db_document_table->document_id.$fmt;
     }
-
 
 }

@@ -51,6 +51,7 @@ class MaintenanceTaskRunner {
             array('name' => 'update_cached_fields', 'interval' => 8*3600),
             array('name' => 'update_user_stats', 'interval' => 3600),
             array('name' => 'generate_user_reports', 'interval' => 5*60),   // reports have their own intervals, so this is not too frequent
+            array('name' => 'cleanup_qr_upload_records', 'interval' => 3600),
         );
 
     }
@@ -213,4 +214,8 @@ class MaintenanceTaskRunner {
         WatchListReporter::processCurrentInstantNotifications();
     }
 
+    private function cleanup_qr_upload_records(&$messages)
+    {
+        DBTableRowQRUploadKey::cleanupOldRecords();
+    }
 }

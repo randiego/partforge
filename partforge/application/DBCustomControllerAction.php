@@ -30,27 +30,27 @@
 
 class DBCustomControllerAction extends DBControllerActionAbstract
 {
-    
+
     public function init() {
         parent::init();
         $this->ensureTableParam();
     }
-    
-    public function indexAction() 
+
+    public function indexAction()
     {
         $this->navigator->jumpToView('listview');
     }
-    
+
     protected function ensureTableParam() {
         $table = $this->getRequest()->getControllerName();
-        
-        if (!in_array($table,DbSchema::getInstance()->getTableNames())) {
+
+        if (!in_array($table, DbSchema::getInstance()->getTableNames())) {
             throw new Exception("controller name {$this->params['controller']} is not a valid table name in DBCustomControllerAction::ensureTableParam()");
         } else {
             $this->params['table'] = $table;
         }
     }
-    
+
     public function editviewAction() {
         /*
             there are other ways to do this too.  First, I could redirect to /db/editview making sure ?table={tablename}.
@@ -59,11 +59,11 @@ class DBCustomControllerAction extends DBControllerActionAbstract
         $params = $this->getRequest()->getQuery();
         $this->navigator->jumpToView('editview','db',$params);
     }
-    
+
     public function deleteAction() {
         return parent::deleteAction();
     }
-    
+
     public function listviewAction() {
         $table_index = DbSchema::getInstance()->getPrimaryIndexName($this->params['table']);
         $this->navigator->jumpToView('listview','db',array($table_index => $this->params[$table_index], 'table' => $this->params['table']));

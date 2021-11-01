@@ -197,6 +197,29 @@ class UtilsController extends DBControllerActionAbstract
                         $databaseversion = '7';
                         setGlobal('databaseversion', $databaseversion);
                     }
+
+                    if ($databaseversion=='7') {
+                        $msgs[] = 'Upgrading to version 8: QR Code Uploading from comments page - Oct 2021';
+                        DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS `qruploadkey` (
+							  `qruploadkey_id` int(11) NOT NULL AUTO_INCREMENT,
+							  `user_id` int(11) NOT NULL DEFAULT -1,
+							  `created_on` datetime NOT NULL,
+							  `is_validated` INT(1) NOT NULL DEFAULT 0,
+							  `is_closed` INT(1) NOT NULL DEFAULT 0,
+							  `qruploadkey_value` varchar(32) DEFAULT NULL,
+							  UNIQUE KEY `qruploadkey_value` (`qruploadkey_value`),
+							  PRIMARY KEY (`qruploadkey_id`),
+							  KEY `user_id` (`user_id`)
+							) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
+                        DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS `qruploaddocument` (
+							  `qruploaddocument_id` int(11) NOT NULL AUTO_INCREMENT,
+							  `qruploadkey_id` int(11) NOT NULL,
+							  `document_id` int(11) NOT NULL,
+							  PRIMARY KEY (`qruploaddocument_id`)
+							) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
+                        $databaseversion = '8';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
             }
         }
         $this->view->currentversion = getGlobal('databaseversion');
@@ -208,4 +231,72 @@ class UtilsController extends DBControllerActionAbstract
         $this->view->params = $this->params;
     }
 
+    public function qruploadAction()
+    {
+        $QRUploadKey = new DBTableRowQRUploadKey();
+        if (!$QRUploadKey->getRecordByUploadKey($this->params['qrkey'])) {
+            $QRUploadKey->qruploadkey_value = $this->params['qrkey'];
+            $QRUploadKey->created_on = time_to_mysqldatetime(script_time());
+            $QRUploadKey->save();
+
+            // we only just created the record, now we need to wait for the commenteditview process
+            // to validate it, so re return qruploadwaiting
+            $this->view->qruploadkey_value = $QRUploadKey->qruploadkey_value;
+            $this->view->time_elapsed = $QRUploadKey->timeElapsed();
+            $this->render('qruploadwaiting');
+        } elseif (!$QRUploadKey->is_validated || $QRUploadKey->is_closed) {
+            // we are stll not ready to open the doors
+            $this->view->qruploadkey_value = $QRUploadKey->qruploadkey_value;
+            $this->view->time_elapsed = $QRUploadKey->timeElapsed();
+            $this->view->is_closed = $QRUploadKey->is_closed;
+            $this->render('qruploadwaiting');
+        }
+        if (!isset($this->params['initialized']) || !isset($_SESSION['qrupload'])) {
+            // we come here if we really haven't gotten started yet
+            $_SESSION['qrupload'] = array();
+            $_SESSION['qrupload']['document_ids'] = $QRUploadKey->syncAndGetDocumentIds();
+            $_SESSION['qrupload']['user_id'] = $QRUploadKey->user_id;
+            spawnurl($this->getRequest()->getBaseUrl().'/utils/qrupload/'.$this->params['qrkey'].'?initialized=');
+        }
+
+        // this is the background loop and upload handler for the fileuploader stuff.
+        if (isset($this->params['ajaxaction'])) {
+            if (isset($this->params['close_connection'])) {
+                $QRUploadKey->is_closed = true;
+                $QRUploadKey->save(array('is_closed'));
+                echo json_encode(array('status' => 'closed'));
+            } else {
+                $upload_handler = new QRUploadHandler($_SESSION['qrupload']['document_ids'], $_SESSION['qrupload']['user_id'], $QRUploadKey->qruploadkey_value);
+                $_SESSION['qrupload']['document_ids'] = $upload_handler->document_ids;
+                $QRUploadKey->saveDocumentIds($_SESSION['qrupload']['document_ids']);
+            }
+            die();
+        }
+
+        // Handle the display of documents being uploaded. We need this here because we are not logged-in.
+        if (isset($this->params['showdoc'])) {
+            $Document = new DBTableRowDocument();
+            if ($Document->getRecordById($this->params['document_id'])) {
+                if ($Document->document_thumb_exists) { // this  is one way we decide if this is an image vs some other document type.
+                    $fmt = isset($this->params['fmt']) ? $this->params['fmt'] : 'medium';
+                    if ($fmt=='thumbnail') {
+                        $Document->outputThumbnailImageToBrowser(true, false);
+                    } else if ($fmt=='medium') {
+                        $Document->outputMediumImageToBrowser(true, false);
+                    }
+                } else {
+                    $Document->outputIconToBrowser();
+                }
+            } else {
+                $this->view->errormessages = 'document not found.';
+            }
+            die();
+        }
+
+        // at this point 'initialized' is set, so we know the session vars are set.
+        $this->view->document_ids = $_SESSION['qrupload']['document_ids'];
+        $this->view->user_id = $QRUploadKey->user_id;
+        $this->view->qruploadkey_value = $QRUploadKey->qruploadkey_value;
+
+    }
 }

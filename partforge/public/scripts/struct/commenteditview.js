@@ -1,3 +1,37 @@
+function startQRUploadPolling() {
+	$.getJSON(baseUrl + '/struct/qruploadrefresh',
+    {qruploadkey : $('input[name="qruploadkey_value"]').val()},
+    function(data) {
+        var status = (typeof data['status'] == 'undefined') ? "" : data['status'];
+        if (status=="changed") {
+            $('#updatebannerId').html('Updating...').fadeIn();
+            loadExistingFiles();
+        } else if (status=="connected") {
+            $('#updatebannerId').html('Connected.').fadeIn();
+        } else if (status=="reload") {
+            $('#theform').submit();
+        } else {
+            $('#updatebannerId').fadeOut();
+        }
+    });
+    setTimeout( 'startQRUploadPolling()', 5000);
+};
+
+function loadExistingFiles()
+{
+    $.ajax({
+        // Uncomment the following to send cross-domain cookies:
+        //xhrFields: {withCredentials: true},
+        url: $('#fileupload').fileupload('option', 'url'),
+        dataType: 'json',
+        context: $('#fileupload')[0]
+    }).done(function (result) {
+        $('#fileupload table.table-striped tbody').empty();
+        $(this).fileupload('option', 'done')
+            .call(this, null, {result: result});
+    });
+}
+
 $(function () {
     'use strict';
 
@@ -35,9 +69,13 @@ $(function () {
     	}
     	return true;
     });
-    
+
 	if ($('input[type="file"]').is(':disabled')) {
 		$('<p class="errorred">File Uploads might not<br /> work in this browser.</p>').appendTo(".fileupload-buttonbar");
 	}
+    if ($('input[name="qruploadkey_value"]').val()) {
+        startQRUploadPolling();
+        $('#qrcode').qrcode(qrUploadUrl);
+    }
 
 });

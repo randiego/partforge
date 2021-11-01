@@ -272,10 +272,65 @@ class StructController extends DBControllerActionAbstract
         $this->view->params = $_SESSION['joinedexport'];
     }
 
+    /**
+     * When commenteditview is open, this function is called in the background every few seconds to see if
+     * the QR code has been scanned by a phone. When the code is scanned it creates an unvalidated record that
+     * this process will then validate by setting its is_validated field. If new files were uploaded, this process
+     * merges them into the current sessions documents list and signals changed. If this process detect is_closed
+     * in the record, it regenerates a new qr code and askes commenteditview to reload so that we stop looking
+     * at the closed channel. The method cleanupOldRecords() will take care of cleaning up these old records.
+     *
+     * @return void
+     */
+    public function qruploadrefreshAction()
+    {
+        $out = array();
+        $out['status'] = 'noconnection';
+        if (isset($_SESSION['editing_comment'])) {
+            $current_document_ids = $_SESSION['editing_comment']['document_ids'];
+            $QRUploadKey = new DBTableRowQRUploadKey();
+            if ($QRUploadKey->getRecordByUploadKey($this->params['qruploadkey'])) {
+                if (!$QRUploadKey->is_validated) {
+                    // this action signals to the qrupload page that it is safe to allow uploading
+                    $QRUploadKey->is_validated = true;
+                    $QRUploadKey->user_id = $_SESSION['account']->user_id;
+                    $QRUploadKey->save(array('is_validated','user_id'));
+                    $out['status'] = 'connected';
+                } else {
+                    $out['status'] = 'connected';
+                    //merge document_ids from both qruploads and the commenteditview page
+                    $new_document_ids = array_unique(array_merge($current_document_ids, $QRUploadKey->syncAndGetDocumentIds()));
+                    // keep only document_ids that actually exist
+                    if (count($new_document_ids)>0) {
+                        $records = DbSchema::getInstance()->getRecords('document_id', "SELECT * FROM document WHERE (document_id IN (".implode(',', $new_document_ids)."))");
+                        $new_document_ids = array_keys($records);
+                        $_SESSION['editing_comment']['document_ids'] = $new_document_ids;
+                        if (count(array_diff($current_document_ids, $new_document_ids)) || count(array_diff($new_document_ids, $current_document_ids))) {
+                            $out['status'] = 'changed';
+                        }
+                    }
+                    // check this last to make sure we've gotten all the changes.
+                    if ($QRUploadKey->is_closed) {
+                        // this means someone has requested that the connection end. We honor that by fetching a new qruploadkey
+                        $_SESSION['editing_comment']['qruploadkey_value'] = generateRandomString(32);
+                        $out['status'] = 'reload';
+                    }
+                }
+            }
+        }
+        echo json_encode($out);
+        die();
+    }
+
     public function commenteditviewAction()
     {
-        // calls the normal action two classes up.
-        return DBControllerActionAbstract::editviewAction();
+        // get all the session variables and edit buffer setup
+        $edit_buffer_key = $this->preEditViewSessionLoad();
+
+        // create a fairly unique upload key for the QR code in case the user scans the code
+        $_SESSION['editing_'.$edit_buffer_key]['qruploadkey_value'] = generateRandomString(32);
+
+        $this->jumpToEditViewDb($edit_buffer_key);
     }
 
 

@@ -1,7 +1,11 @@
 <script type="text/javascript">
-<?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
+<?php
+$baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();
+$qrUploadUrl = $this->dbtable->qruploadkey_value ? Zend_Controller_Front::getInstance()->getRequest()->getScheme().'://'.Zend_Controller_Front::getInstance()->getRequest()->getHttpHost().$baseUrl.'/utils/qrupload/'.$this->dbtable->qruploadkey_value : ""
+?>
 var fileUploadLimit = '<?php echo Zend_Registry::get('config')->max_file_upload_size;?>';
 var numAttachedDocs = <?php echo count($this->dbtable->document_ids);?>;
+var qrUploadUrl = "<?php echo $qrUploadUrl;?>";
 $(document).ready(function () {
     $("textarea[name='comment_text']").focus();
 });
@@ -10,16 +14,16 @@ $(document).ready(function () {
 
 <?php
 
-    $title = 'Edit Comment';
-    $linkified_title = 'Edit Comment';
+$title = 'Edit Comment';
+$linkified_title = 'Edit Comment';
 
-    $this->layout()->title = $title;
-    $this->layout()->setLayout('layoutdialog');
-    $this->layout()->scrollhold = true;
-    $this->layout()->scrollholdkey = $this->dbtable->getTableName();
+$this->layout()->title = $title;
+$this->layout()->setLayout('layoutdialog');
+$this->layout()->scrollhold = true;
+$this->layout()->scrollholdkey = $this->dbtable->getTableName();
 
 
-    $buttons = array();
+$buttons = array();
 if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'table:'.$this->dbtable->getTableName(), 'edit')
                 && !$this->dbtable->isEditOperationBlocked('save', $this->dbtable->getTableName())) {
     $buttons[] = '<input class="bd-button" type="submit" value="Save" name="btnOK">';
@@ -28,31 +32,32 @@ if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 
     $buttons[] = '<input class="bd-button" type="submit" value="Close" name="btnCancel">';
 }
 
-    $html = '';
-    $html .= '
-    		<h1 class="dialogtitle">'.$linkified_title.'</h1>';
+$html = '';
+$html .= '
+        <h1 class="dialogtitle">'.$linkified_title.'</h1>';
 
-    $html .= $this->dbtable->fetchHiddenTableAndIndexFormTags();
+$html .= $this->dbtable->fetchHiddenTableAndIndexFormTags();
 if ($this->edit_buffer_key) {
     $html .= '<input type="hidden" name="edit_buffer_key" value="'.$this->edit_buffer_key.'">';
 }
-    $html .= '<input type="hidden" name="btnOnChange" value="">';
-    $html .= '<input type="hidden" name="onChangeParams" value="">';   // if btnOnChange is set, this is sometimes used for params
-    $html .= '<input type="hidden" name="btnAddIncomingJoin" value="">'; // set this to join name to add an incoming join record
-    $html .= '<input type="hidden" name="btnDeleteIncomingJoin" value="">'; // set this to join name to delete an incoming join record
-    $html .= '<input type="hidden" name="btnSubEditParams" value="">'; // when calling a subpage will look like table=grades&grade_id=3 for example
+$html .= '<input type="hidden" name="qruploadkey_value" value="'.$this->dbtable->qruploadkey_value.'">';
+$html .= '<input type="hidden" name="btnOnChange" value="">';
+$html .= '<input type="hidden" name="onChangeParams" value="">';   // if btnOnChange is set, this is sometimes used for params
+$html .= '<input type="hidden" name="btnAddIncomingJoin" value="">'; // set this to join name to add an incoming join record
+$html .= '<input type="hidden" name="btnDeleteIncomingJoin" value="">'; // set this to join name to delete an incoming join record
+$html .= '<input type="hidden" name="btnSubEditParams" value="">'; // when calling a subpage will look like table=grades&grade_id=3 for example
 
-    $html .= '<p><table class="edittable"><colgroup>
-    					 <col class="table_label_width">
-    					 <col class="table_value_width">
-    					 <col class="table_label_width">
-    					 <col class="table_value_width"></colgroup>';
+$html .= '<p><table class="edittable"><colgroup>
+                        <col class="table_label_width">
+                        <col class="table_value_width">
+                        <col class="table_label_width">
+                        <col class="table_value_width"></colgroup>';
 
-    // don't show fields as editable if editing of this record is not allowed
-    $editable = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'table:'.$this->dbtable->getTableName(), 'edit')
-        && !$this->dbtable->isEditOperationBlocked('save', $this->dbtable->getTableName());
+// don't show fields as editable if editing of this record is not allowed
+$editable = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'table:'.$this->dbtable->getTableName(), 'edit')
+    && !$this->dbtable->isEditOperationBlocked('save', $this->dbtable->getTableName());
 
-    $fieldlayout = array();
+$fieldlayout = array();
 if ($_SESSION['account']->getRole()=='DataTerminal') {
     $fieldlayout[] = array(  array('dbfield' => 'user_id'));
 }
@@ -60,58 +65,61 @@ if (AdminSettings::getInstance()->edit_comment_data) {
     $fieldlayout[] = array(  array('dbfield' => 'itemobject_id'),  array('dbfield' => 'comment_added'));
 }
 
-    $subcaption = '<a href="#" class="a_pop_link">tips</a>
-							<div style="display:none;">
-    					 	'.DBTableRowComment::commentTipsHtml().'
-							</div>';
+$subcaption = '<a href="#" class="a_pop_link">tips</a>
+                        <div style="display:none;">
+                        '.DBTableRowComment::commentTipsHtml().'
+                        </div>';
 
-    $fieldlayout[] = array(array('dbfield' => 'comment_text', 'field_attributes' => array('input_cols' => 70, 'input_rows' => 8, 'subcaption' => $subcaption)));
-    $html .= fetchEditTableTR($fieldlayout, $this->dbtable, '', $editable);
-    $html .= '</table></p>
-    			';
+$fieldlayout[] = array(array('dbfield' => 'comment_text', 'field_attributes' => array('input_cols' => 70, 'input_rows' => 8, 'subcaption' => $subcaption)));
+$html .= fetchEditTableTR($fieldlayout, $this->dbtable, '', $editable);
+$html .= '</table></p>
+            ';
 
-    $html .= '<p>'.implode('&nbsp;', $buttons).'</p>';
-    $html .= '<h2 class="bd-edit-page-headers">Documents / Photos</h2>';
-    $html .= '<div id="documentsEditorDiv" class="bd-edit-block"></div>';
+$html .= '<p>'.implode('&nbsp;', $buttons).'</p>';
+$html .= '<h2 class="bd-edit-page-headers">Documents / Photos</h2>';
+$html .= '<div id="documentsEditorDiv" class="bd-edit-block"></div>';
 
-    echo '  <div class="dialogbody">
-            '.fetch_form_tag('
-                             <div class="dialogcontent">'.$html.'
-                             </div>
-			').'
-	    </div>';
-    ?>
+echo '  <div class="dialogbody">
+        '.fetch_form_tag('
+                            <div class="dialogcontent">'.$html.'
+                            </div>
+        ').'
+    </div>';
+?>
 
-    <!-- The file upload form used as target for the file upload widget -->
-    <form id="fileupload" action="//dummydomain.com/" method="POST" enctype="multipart/form-data">
-        <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
-        <div class="row fileupload-buttonbar">
-            <div class="span7">
-                <!-- The fileinput-button span is used to style the file input field as button -->
-                <span class="btn btn-success fileinput-button">
-                    <i class="icon-plus icon-white"></i>
-                    <span>Add files...</span>
-                    <input type="file" name="files[]" multiple>
-                </span>
+<!-- The file upload form used as target for the file upload widget -->
+<form id="fileupload" action="//dummydomain.com/" method="POST" enctype="multipart/form-data">
+    <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
+    <div class="row fileupload-buttonbar">
+        <div class="span7">
+            <!-- The fileinput-button span is used to style the file input field as button -->
+            <span class="btn btn-success fileinput-button">
+                <i class="icon-plus icon-white"></i>
+                <span>Add Files...</span>
+                <input type="file" name="files[]" multiple>
+            </span>
 
-            </div>
-            <!-- The global progress information -->
-            <div class="fileupload-progress fade">
-                <!-- The global progress bar -->
-                <div class="progress progress-success progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100">
-                    <div class="bar" style="width:0%;"></div>
-                </div>
-                <!-- The extended global progress information -->
-                <div class="progress-extended">&nbsp;</div>
-            </div>
         </div>
-        <div>(or drag and drop here)</div>
-        <!-- The loading indicator is shown during file processing -->
-        <div class="fileupload-loading"></div>
-        <br>
-        <!-- The table listing the files available for upload/download -->
-        <table role="presentation" class="table table-striped"><tbody class="files" data-toggle="modal-gallery" data-target="#modal-gallery"></tbody></table>
-    </form>
+        <!-- The global progress information -->
+        <div class="fileupload-progress fade">
+            <!-- The global progress bar -->
+            <div class="progress progress-success progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+                <div class="bar" style="width:0%;"></div>
+            </div>
+            <!-- The extended global progress information -->
+            <div class="progress-extended">&nbsp;</div>
+        </div>
+    </div>
+    <div class="qrwrapper"><div><ul style="margin-left: -25px; margin-top:0px; margin-bottom: 0px; font-weight: bold;"><li>Drag and Drop Files Here or</li><li>Scan this Code with Your Mobile Device</ul></div>
+    <div id="updatebannerId" class="qrupload_comm_banner" style="display:none;">Connected</div>
+    <div style="margin-top:10px;" id="qrcode"></div></div>
+    <!-- The loading indicator is shown during file processing -->
+    <div class="fileupload-loading"></div>
+    <br>
+    <!-- The table listing the files available for upload/download -->
+    <table role="presentation" class="table table-striped"><tbody class="files" data-toggle="modal-gallery" data-target="#modal-gallery"></tbody></table>
+</form>
+
 
 <!-- The template to display files available for upload -->
 <script id="template-upload" type="text/x-tmpl">
@@ -189,7 +197,8 @@ if (AdminSettings::getInstance()->edit_comment_data) {
 <script src="<?php echo $baseUrl;?>/jqueryextras/jquery-file-upload/js/jquery.fileupload-ui.js"></script>
 <!-- The File Upload jQuery UI plugin -->
 <script src="<?php echo $baseUrl;?>/jqueryextras/jquery-file-upload/js/jquery.fileupload-jui.js"></script>
-<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/commenteditview.js?v=3" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/commenteditview.js?v=15" type="TEXT/JAVASCRIPT"></script>
+
 
 <!-- The XDomainRequest Transport is included for cross-domain file deletion for IE8+ -->
 <!--[if gte IE 8]><script src="js/cors/jquery.xdr-transport.js"></script><![endif]-->

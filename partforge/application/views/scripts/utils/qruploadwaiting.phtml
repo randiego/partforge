@@ -1,0 +1,22 @@
+<?php
+$this->layout()->title = 'Verifying Connection';
+$this->layout()->setLayout('layoutdialogmobile');
+
+$retry_url = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/utils/qrupload/'.$this->qruploadkey_value;
+if ($this->is_closed) {
+    echo "<h1>Connection is closed</h1>";
+    echo js_wrapper("$(document).ready(function () {
+        setTimeout(function() {window.close()}, 2000);
+    });");
+} else {
+    echo "<h1>Connecting...".str_repeat('.',round($this->time_elapsed))."</h1>";
+    if ($this->time_elapsed<20.0) {
+        echo js_wrapper("$(document).ready(function () {
+            setInterval(function() {location.reload()}, 2000);
+        });");
+    } else {
+        echo "<h1>Failed to Connect.</h1>";
+    }
+}
+?>
+

@@ -173,6 +173,16 @@ class DBTableRowComment extends DBTableRow {
             $Doc->comment_id = $this->comment_id;
             $Doc->save();
         }
+
+        // cleanup the qrupload records if there are any.
+        if (!empty($this->qruploadkey_value)) {
+            $QRUploadKey = new DBTableRowQRUploadKey();
+            if ($QRUploadKey->getRecordByUploadKey($this->qruploadkey_value)) {
+                $QRUploadKey->deleteChildren();
+                $QRUploadKey->delete();
+            }
+        }
+
         return true;
     }
 

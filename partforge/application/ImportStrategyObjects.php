@@ -219,10 +219,10 @@ class ImportStrategyObjects {
      * @param int $itemobject_id
      * @param string $user_id if numeric uses the user_id code.  Otherwise uses username (login)
      * @param string $effective_date
-     * @param boolean $simlulate_only if set will not alter the database
+     * @param boolean $simulate_only if set will not alter the database
      * @param array $errormsg = list of error message.  Empty means no errors
      */
-    public static function storeObjectPerImportRules($action, $record, $curr_field_to_columns, $typeversion_id, $itemversion_id, $itemobject_id, $user_id, $effective_date, $simlulate_only, &$errormsg, &$outitemversion_id)
+    public static function storeObjectPerImportRules($action, $record, $curr_field_to_columns, $typeversion_id, $itemversion_id, $itemobject_id, $user_id, $effective_date, $simulate_only, &$errormsg, &$outitemversion_id)
     {
         $ItemVersion = new DBTableRowItemVersion();
 
@@ -288,7 +288,7 @@ class ImportStrategyObjects {
                 $errormsg[] = 'TypeVersion ID missing.  You must select what type of record you are importing.';
             }
 
-            if ((count($errormsg) == 0) && !$simlulate_only) {
+            if ((count($errormsg) == 0) && !$simulate_only) {
                 $ItemVersion->saveVersioned($ItemVersion->user_id);
             }
             /*
@@ -341,7 +341,7 @@ class ImportStrategyObjects {
                     $fields_to_check = $ItemVersion->getSaveFieldNames();
                     $fields_to_check = array_diff($fields_to_check, array('effective_date'));
                     $ItemVersion->validateForFatalFields($fields_to_check, $errormsg);
-                    if ((count($errormsg) == 0) && !$simlulate_only) {
+                    if ((count($errormsg) == 0) && !$simulate_only) {
                         $ItemVersion->save(array(), true, $ItemVersion->user_id);
                     }
                 } else {
@@ -444,7 +444,7 @@ class ImportStrategyObjects {
                 $PreviousItemVersion->effective_date = $ItemVersion->effective_date;
                 $has_changes = $ItemVersion->checkDifferencesFrom($PreviousItemVersion);
                 $PreviousItemVersion->effective_date = $hold_effective_date;
-                if ((count($errormsg) == 0) && !$simlulate_only) {
+                if ((count($errormsg) == 0) && !$simulate_only) {
                     if (!$has_changes && strtotime($ItemVersion->effective_date)<strtotime($PreviousItemVersion->effective_date)) {
                         $ItemVersion->save(array(), true, $ItemVersion->user_id);  // save the same version only with the earlier date.
                     } else if ($has_changes) {
@@ -466,12 +466,12 @@ class ImportStrategyObjects {
      * translation from between incoming column name and the internal field name is is done
      * using the column_defs array.
      * It will return an array (indexed by record index in $importParams['records'].
-     * $simlulate_only will generate messages but not perform any updating of the database.
+     * $simulate_only will generate messages but not perform any updating of the database.
      *
      * @param unknown_type $importParams['records'], ['column_defs']=, ['typeversion_id']
-     * @param unknown_type $simlulate_only
+     * @param unknown_type $simulate_only
      */
-    public static function storeObjectsFromArray($importParams, $simlulate_only = false)
+    public static function storeObjectsFromArray($importParams, $simulate_only = false)
     {
         if (count($importParams['records'])==0) {
             return array();
@@ -548,7 +548,7 @@ class ImportStrategyObjects {
             }
 
             $outitemversion_id = null;
-            self::storeObjectPerImportRules($action, $record, $curr_field_to_columns, $typeversion_id, $itemversion_id, $itemobject_id, $user_id, $effective_date, $simlulate_only, $errormsg, $outitemversion_id);
+            self::storeObjectPerImportRules($action, $record, $curr_field_to_columns, $typeversion_id, $itemversion_id, $itemobject_id, $user_id, $effective_date, $simulate_only, $errormsg, $outitemversion_id);
 
             $errortext = count($errormsg) > 0 ? ', ERR:'.implode(', ', $errormsg) : '';
             $outmessages[$idx] = $errortext;

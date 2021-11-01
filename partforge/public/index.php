@@ -71,6 +71,8 @@ $frontController->getRouter()->addRoute('iv', new Zend_Controller_Router_Route('
 $frontController->getRouter()->addRoute('userid', new Zend_Controller_Router_Route('/user/id/:user_id', array('controller' => 'user', 'action' => 'itemview') ) );
 $frontController->getRouter()->addRoute('dotask', new Zend_Controller_Router_Route('/dotask/:assigned_to_task_id/:link_password', array('controller' => 'user', 'action' => 'workflowtaskresponse') ) );
 
+$frontController->getRouter()->addRoute('qrupload', new Zend_Controller_Router_Route('/utils/qrupload/:qrkey', array('controller' => 'utils', 'action' => 'qrupload') ) );
+
 // setup layout processing
 Zend_Layout::startMvc(APPLICATION_PATH . '/layouts/scripts');
 

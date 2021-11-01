@@ -287,4 +287,19 @@ break;
         exit;
     }
 
+    public function outputIconToBrowser($cache_it = true, $headers_only = false)
+    {
+        $icon_basename = DBTableRowDocument::findIconFileName($this->document_file_type, $this->document_displayed_filename);
+        $icon_filename = dirname(__FILE__) . '/../public/images/'.$icon_basename;
+
+        send_download_headers('image/gif', $icon_basename, '', $cache_it ? 'max-age=2592000' : 'max-age=0');
+        $filesize = filesize($icon_filename);
+        header( 'Content-Length: '.$filesize );
+        header( 'Content-Description: Download Data' );
+        if (!$headers_only) {
+            readfile($icon_filename);
+        }
+        exit;
+    }
+
 }
