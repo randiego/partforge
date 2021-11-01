@@ -101,6 +101,10 @@ function generate_password()
 
 function generateRandomString($length = 32)
 {
+    if (Zend_Registry::get('config')->config_for_testing) {
+        // if we are doing approval testing, this needs to be the same each time.
+        return md5(time_to_mysqldatetime(script_time()));
+    }
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     $charactersLength = strlen($characters);
     $randomString = '';

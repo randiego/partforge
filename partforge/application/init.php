@@ -89,27 +89,27 @@ $config['scheme'] = $config['local_testing'] ? 'http' : 'http';
 
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 
-ini_set('display_errors',1);
+ini_set('display_errors', 1);
 
 // get local configuration
 require_once(dirname(__FILE__)."/../config.php");
 
 // the read-only passwords default to the rw ones
 if (!$config['db_params']['ro_username']) {
-	$config['db_params']['ro_username'] = $config['db_params']['username'];
-	$config['db_params']['ro_password'] = $config['db_params']['password'];
+    $config['db_params']['ro_username'] = $config['db_params']['username'];
+    $config['db_params']['ro_password'] = $config['db_params']['password'];
 }
 
 $script_time = (isset($config['fake_date']) && $config['fake_date']) ? strtotime($config['fake_date']) : time();
-Zend_Registry::set('script_time',$script_time);
+Zend_Registry::set('script_time', $script_time);
 
 if ($config['lockout_all_users']) {
-	echo 'The System is Temporarily Unavailable.  To retry, click refresh in your browser.';
-	die();
+    echo 'The System is Temporarily Unavailable.  To retry, click refresh in your browser.';
+    die();
 }
 
 Zend_Registry::set('config', new Zend_Config($config));
 // This helps with really long execution times.
 if ($config['local_testing']) {
-	set_time_limit(1200);
+    set_time_limit(1200);
 }

@@ -310,6 +310,7 @@ class EventStream {
 								CONCAT(themcomment.user_id,'&',themcomment.comment_added,'&',CONVERT(HEX(themcomment.comment_text),CHAR),'&',IFNULL((SELECT
 									GROUP_CONCAT(
 										CONCAT(document.document_id,',',document.document_filesize,',',CONVERT(HEX(document.document_displayed_filename),CHAR),',',CONVERT(HEX(document.document_stored_filename),CHAR),',',document.document_stored_path,',',document.document_file_type,',',document.document_thumb_exists)
+                                        ORDER BY document.document_date_added
 										SEPARATOR ';'
 									)
 								FROM document WHERE (document.comment_id = themcomment.comment_id) and (document.document_path_db_key='{$config->document_path_db_key}')),''))
@@ -382,7 +383,7 @@ class EventStream {
 
 				SELECT comment.*, (SELECT GROUP_CONCAT(
 				CONCAT(document.document_id,',',document.document_filesize,',',CONVERT(HEX(document.document_displayed_filename),CHAR),',',CONVERT(HEX(document.document_stored_filename),CHAR),',',document.document_stored_path,',',document.document_file_type,',',document.document_thumb_exists)
-					SEPARATOR ';') FROM document WHERE (document.comment_id = comment.comment_id) and (document.document_path_db_key='{$config->document_path_db_key}')) as documents_packed FROM comment
+				ORDER BY document.document_date_added SEPARATOR ';') FROM document WHERE (document.comment_id = comment.comment_id) and (document.document_path_db_key='{$config->document_path_db_key}')) as documents_packed FROM comment
 				WHERE itemobject_id='{$this->_itemobject_id}' {$end_date_and_where}
 			";
         $records = DbSchema::getInstance()->getRecords('comment_id', $query);
@@ -604,12 +605,6 @@ class EventStream {
         }
         return array($event_description,$event_description_array);
     }
-
-    /*
-    public function number_to_kb_format($int) {
-        return number_format(ceil($int / 1024)).' KB';
-    }
-    */
 
     public static function documentsPackedToFileGallery($baseUrl, $slideshow_unique_id, $documents_packed)
     {
