@@ -379,9 +379,9 @@ class ImportStrategyObjects {
                 }
             } else if (isset($curr_field_to_columns['item_serial_number'])) {
                 $sn = $record[$curr_field_to_columns['item_serial_number']];
-                $records = DBTableRowItemVersion::getRecordsBySerialNumbers($sn, $effective_date);
+                $records = DBTableRowItemVersion::getRecordsBySerialNumbers($sn, $typeversion_id, $effective_date);
                 if (count($records)==0 && $effective_date) { // try again without the effective_date constraint: maybe the date is too early
-                    $records = DBTableRowItemVersion::getRecordsBySerialNumbers($sn);
+                    $records = DBTableRowItemVersion::getRecordsBySerialNumbers($sn, $typeversion_id);
                 }
                 if (count($records)==1) {
                     $rec = reset($records);

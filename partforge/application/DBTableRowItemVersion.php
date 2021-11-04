@@ -975,7 +975,7 @@ class DBTableRowItemVersion extends DBTableRow {
      * @param unknown_type $serial_number
      * @param unknown_type $effective_date
      */
-    static public function getRecordsBySerialNumbers($serial_number, $effective_date = null)
+    static public function getRecordsBySerialNumbers($serial_number, $typeversion_id, $effective_date = null)
     {
         $date_where = is_null($effective_date) ? '(1=1)' : "(aa_iv.effective_date<='".time_to_mysqldatetime(strtotime($effective_date))."')";
         $records = DbSchema::getInstance()->getRecords('',
@@ -989,7 +989,7 @@ class DBTableRowItemVersion extends DBTableRow {
 				WHERE {$date_where}) as aa_date_comp
 			GROUP BY aa_date_comp.aa_itemobject_id) as bb_date_comp ON bb_date_comp.bb_itemobject_id = cc_iv.itemobject_id
 		WHERE (bb_date_comp.bb_max_effective_date=cc_iv.effective_date)
-		 and (cc_iv.item_serial_number='".addslashes($serial_number)."')");
+		 and (cc_iv.item_serial_number='".addslashes($serial_number)."') and (cc_iv.typeversion_id='{$typeversion_id}')");
         return $records;
     }
 

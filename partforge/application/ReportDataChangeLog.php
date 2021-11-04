@@ -74,7 +74,7 @@ class ReportDataChangeLog extends ReportDataWithCategory {
 
         $this->fields['change_code_name']   = array('display'=>'Change Description',        'key_asc'=>'changecode.change_code_name', 'key_desc'=>'changecode.change_code_name desc');
 
-        $this->fields['typecategory_name']  = array('display'=>'Type',      'key_asc'=>'typecategory.typecategory_name', 'key_desc'=>'typecategory.typecategory_name desc');
+        $this->fields['typecategory_name']  = array('display'=>'Type',      'key_asc'=>'changelog.desc_typecategory_id', 'key_desc'=>'changelog.desc_typecategory_id desc');
         $this->fields['part_number']    = array('display'=> 'Number',       'key_asc'=>'partnumbercache.part_number', 'key_desc'=>'partnumbercache.part_number desc');
         $this->fields['part_description']   = array('display'=> 'Name',     'key_asc'=>'partnumbercache.part_description', 'key_desc'=>'partnumbercache.part_description desc');
 
@@ -110,14 +110,13 @@ class ReportDataChangeLog extends ReportDataWithCategory {
         $DBTableRowQuery->addJoinClause("LEFT JOIN partnumbercache ON partnumbercache.typeversion_id=changelog.desc_typeversion_id AND partnumbercache.partnumber_alias=IFNULL(changelog.desc_partnumber_alias,0)")
                         ->addSelectFields('partnumbercache.part_number, partnumbercache.part_description');
 
-        $DBTableRowQuery->addJoinClause("LEFT JOIN typecategory on typecategory.typecategory_id = changelog.desc_typecategory_id")
-                        ->addSelectFields('typecategory.is_user_procedure, typecategory.typecategory_name');
+        $DBTableRowQuery->addSelectFields('IF(changelog.desc_typecategory_id=1,1,0) as is_user_procedure, IF(changelog.desc_typecategory_id=1,"Procedure","Part") as typecategory_name');
 
         $DBTableRowQuery->addJoinClause("LEFT JOIN itemversion on itemversion.itemversion_id = changelog.desc_itemversion_id")
-                        ->addSelectFields('IF(typecategory.is_user_procedure=1,null,itemversion.item_serial_number) as item_serial_number');
+                        ->addSelectFields('IF(changelog.desc_typecategory_id=1,null,itemversion.item_serial_number) as item_serial_number');
 
         $DBTableRowQuery->addJoinClause("LEFT JOIN itemobject on itemobject.itemobject_id = itemversion.itemobject_id")
-                        ->addSelectFields('itemobject.cached_current_itemversion_id, IF(typecategory.is_user_procedure=1, itemobject.cached_first_ver_date, null) as procedure_date');
+                        ->addSelectFields('itemobject.cached_current_itemversion_id, IF(changelog.desc_typecategory_id=1, itemobject.cached_first_ver_date, null) as procedure_date');
 
         $DBTableRowQuery->addJoinClause("LEFT JOIN changecode on changecode.change_code = changelog.change_code")
                         ->addSelectFields('changecode.change_code_name');

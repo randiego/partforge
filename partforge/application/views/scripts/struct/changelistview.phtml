@@ -1,5 +1,7 @@
 <?php
 $this->layout()->title = $this->rawtitle;
+$this->layout()->setLayout('layout');
+$this->layout()->scrollhold = true;
 
 $BreadCrumbs = new BreadCrumbsManager();
 if (isset($this->queryvars['resetview']) && $this->queryvars['resetview']) {
@@ -9,8 +11,6 @@ if (isset($this->queryvars['resetview']) && $this->queryvars['resetview']) {
     $this->paginated_report_page->overrideReportTitle($BreadCrumbs->render($this->navigator->getCurrentViewUrl(), $this->rawtitle, 3));
 }
 
-$this->layout()->setLayout('layout');
-$this->layout()->scrollhold = true;
 
 $manage_watchlist_btn = '';
 if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'managewatchlist')) {
