@@ -29,6 +29,7 @@ class PaginatedReportPage {
     public $search_btn_table = '';
     protected $_navigator;
     protected $rows_per_page_array = array('5','10','30','50','100','500','1000');
+    protected $_override_title_html = '';
 
     public function __construct($queryvars, ReportDataWithCategory $table_obj, $navigator)
     {
@@ -39,7 +40,7 @@ class PaginatedReportPage {
 
     public function overrideReportTitle($title)
     {
-        $this->_report_data_obj->title = $title;
+        $this->_override_title_html = $title;
     }
 
     /*
@@ -78,7 +79,7 @@ class PaginatedReportPage {
 
     protected function title_html($numrows)
     {
-        $html = $this->_report_data_obj->title;
+        $html = !empty($this->_override_title_html) ? $this->_override_title_html : $this->_report_data_obj->title;
         if (!empty($this->queryvars['search_string'])) {
             $hold_prop_params = $this->_navigator->getPropagatingParamNames();
             $unsearchlink_html = linkify($this->_navigator->unsetPropagatingParam(array('search_string'))->getCurrentViewUrl(), 'clear search', 'go back to viewing all '.$this->_report_data_obj->title.' entries');
