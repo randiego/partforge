@@ -32,9 +32,9 @@ class ReportDataChangeLog extends ReportDataWithCategory {
     static public function activityTypeOptions()
     {
         if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'managewatchlist')) {
-            $out = array('WATCHING' => array('name' => 'My Watchlist'),'WATCHING24' => array('name' => 'My Watchlist (past 24 hours)'),
-                'MINE' => array('name' => 'My Changes Only'), 'MINE24' => array('name' => 'My Changes Only (past 24 hours)'),
-                'ALL' => array('name' => 'All Changes'), 'ALL24' => array('name' => 'All Changes (past 24 hours)'));
+            $out = array('WATCHING' => array('name' => 'My Watchlist'),'WATCHING7D' => array('name' => 'My Watchlist (past 7 days)'),
+                'MINE' => array('name' => 'My Changes Only'), 'MINE7D' => array('name' => 'My Changes Only (past 7 days)'),
+                'ALL' => array('name' => 'All Changes'), 'ALL7D' => array('name' => 'All Changes (past 7 days)'));
             $records = DBSchema::getInstance()->getRecords('user_id', "SELECT user_id, concat(last_name,', ',first_name) as full_name FROM user ORDER BY last_name, first_name");
             $users = array();
             foreach ($records as $user_id => $record)
@@ -44,13 +44,13 @@ class ReportDataChangeLog extends ReportDataWithCategory {
             $out = array_merge($out, $users);
             return $out;
         } else {
-            return array('ALL' => array('name' => 'All Changes'), 'ALL24' => array('name' => 'All Changes (past 24 hours)'));
+            return array('ALL' => array('name' => 'All Changes'), 'ALL7D' => array('name' => 'All Changes (past 7 days)'));
         }
     }
 
     static public function activityTypeDefault()
     {
-        return Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'managewatchlist') ? 'WATCHING' : 'ALL';
+        return Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'managewatchlist') ? 'WATCHING7D' : 'ALL';
     }
 
     /**
@@ -121,14 +121,14 @@ class ReportDataChangeLog extends ReportDataWithCategory {
         $DBTableRowQuery->addJoinClause("LEFT JOIN changecode on changecode.change_code = changelog.change_code")
                         ->addSelectFields('changecode.change_code_name');
 
-        $yesterday_mysql = time_to_mysqldatetime(script_time()-24*3600);
+        $timecutoff_mysql = time_to_mysqldatetime(script_time()-24*3600*7);
         if (preg_match('/^USER(.*)$/', $this->_activity_list_type, $match)) {
             $user_id = $match[1];
             $DBTableRowQuery->addAndWhere(" and (changelog.user_id='{$user_id}')");
         } else {
             switch ($this->_activity_list_type) {
-                case 'WATCHING24':
-                    $DBTableRowQuery->addAndWhere(" and (changelog.changed_on>'{$yesterday_mysql}')");
+                case 'WATCHING7D':
+                    $DBTableRowQuery->addAndWhere(" and (changelog.changed_on>'{$timecutoff_mysql}')");
                 case 'WATCHING':
                     $DBTableRowQuery->addAndWhere(" and Exists (select 1 from changesubscription where (
                             (
@@ -144,13 +144,13 @@ class ReportDataChangeLog extends ReportDataWithCategory {
                             )
                         ) and (changesubscription.user_id='{$this->_user_id}'))");
                     break;
-                case 'MINE24':
-                    $DBTableRowQuery->addAndWhere(" and (changelog.changed_on>'{$yesterday_mysql}')");
+                case 'MINE7D':
+                    $DBTableRowQuery->addAndWhere(" and (changelog.changed_on>'{$timecutoff_mysql}')");
                 case 'MINE':
                     $DBTableRowQuery->addAndWhere(" and (changelog.user_id='{$this->_user_id}')");
                     break;
-                case 'ALL24':
-                    $DBTableRowQuery->addAndWhere(" and (changelog.changed_on>'{$yesterday_mysql}')");
+                case 'ALL7D':
+                    $DBTableRowQuery->addAndWhere(" and (changelog.changed_on>'{$timecutoff_mysql}')");
                 case 'ALL': // ALL, no filters
             }
         }

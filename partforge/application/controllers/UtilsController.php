@@ -220,6 +220,13 @@ class UtilsController extends DBControllerActionAbstract
                         $databaseversion = '8';
                         setGlobal('databaseversion', $databaseversion);
                     }
+
+                    if ($databaseversion=='8') {
+                        $msgs[] = 'Upgrading to version 9: Adding DB indexes and 7 days watches';
+                        DbSchema::getInstance()->mysqlQuery("ALTER TABLE changelog ADD INDEX (changed_on)");
+                        $databaseversion = '9';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
             }
         }
         $this->view->currentversion = getGlobal('databaseversion');
