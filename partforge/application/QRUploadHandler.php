@@ -58,9 +58,7 @@ class QRUploadHandler extends UploadHandler
      */
     protected function get_upload_path($file_name = null, $version = null)
     {
-        $file_name = $file_name ? $file_name : '';
-        $version_path = empty($version) ? '' : $version.'/';
-        return $this->options['upload_dir'].$this->db_document_table->document_stored_path.'/'.$version_path.$file_name;
+        return $this->db_document_table->getUploadPathByVersion($file_name, $version);
     }
 
     protected function set_file_delete_properties($file)
@@ -142,18 +140,8 @@ class QRUploadHandler extends UploadHandler
     {
         $this->db_document_table = new DBTableRowDocument();
         if ($this->db_document_table->getRecordById($_GET['document_id'])) {
-            $file_name = $this->db_document_table->document_stored_filename;
-            $file_path = $this->get_upload_path($file_name);
-            $success = is_file($file_path) && $file_name[0] !== '.' && unlink($file_path);
+            $success = $this->db_document_table->unlinkAssociatedFiles();
             if ($success) {
-                foreach ($this->options['image_versions'] as $version => $options) {
-                    if (!empty($version)) {
-                        $file = $this->get_upload_path($file_name, $version);
-                        if (is_file($file)) {
-                            unlink($file);
-                        }
-                    }
-                }
                 $this->document_ids = array_diff($this->document_ids, array($this->db_document_table->document_id));
                 $this->db_document_table->delete();
             }

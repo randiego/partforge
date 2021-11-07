@@ -302,4 +302,69 @@ break;
         exit;
     }
 
+    public static function imageVersionsArray()
+    {
+        return array(
+            // Uncomment the following version to restrict the size of
+            // uploaded images:
+            /*
+            '' => array(
+                'max_width' => 1920,
+                'max_height' => 1200,
+                'jpeg_quality' => 95
+            ),
+            */
+            // Uncomment the following to create medium sized images:
+
+            'medium' => array(
+                'max_width' => 1920,
+                'max_height' => 1200,
+                'jpeg_quality' => 90
+            ),
+
+            'thumbnail' => array(
+                'max_width' => 80,
+                'max_height' => 80
+            )
+        );
+    }
+
+    public function getUploadPathByVersion($file_name = null, $version = null)
+    {
+        $file_name = $file_name ? $file_name : '';
+        $version_path = empty($version) ? '' : $version.'/';
+        return Zend_Registry::get('config')->document_path_base.Zend_Registry::get('config')->document_directory.'/'.$this->document_stored_path.'/'.$version_path.$file_name;
+    }
+
+    public function unlinkAssociatedFiles()
+    {
+        $file_name = $this->document_stored_filename;
+        $file_path = $this->getUploadPathByVersion($file_name);
+        $success = is_file($file_path) && $file_name[0] !== '.' && unlink($file_path);
+        if ($success) {
+            foreach (self::imageVersionsArray() as $version => $options) {
+                if (!empty($version)) {
+                    $file = $this->getUploadPathByVersion($file_name, $version);
+                    if (is_file($file)) {
+                        unlink($file);
+                    }
+                }
+            }
+        }
+        return $success;
+    }
+
+// **TODO: Need to complete this once I get done refactoring.
+    public static function cleanupOrphanDocuments()
+    {
+        $records = DBSchema::getInstance()->getRecords('document_id', "SELECT * FROM `document` where comment_id=-1 and (NOW() - INTERVAL 7 DAY > document_date_added) LIMIT 20");
+        foreach ($records as $document_id => $record) {
+            $Document = new self;
+            if ($Document->getRecordById($document_id)) {
+                $Document->unlinkAssociatedFiles();
+                $Document->delete();
+            }
+        }
+    }
+
 }

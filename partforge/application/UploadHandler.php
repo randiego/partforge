@@ -86,29 +86,7 @@ class UploadHandler
             'discard_aborted_uploads' => true,
             // Set to true to rotate images based on EXIF meta data, if available:
             'orient_image' => false,
-            'image_versions' => array(
-                // Uncomment the following version to restrict the size of
-                // uploaded images:
-                /*
-                '' => array(
-                    'max_width' => 1920,
-                    'max_height' => 1200,
-                    'jpeg_quality' => 95
-                ),
-                */
-                // Uncomment the following to create medium sized images:
-
-                'medium' => array(
-                    'max_width' => 1920,
-                    'max_height' => 1200,
-                    'jpeg_quality' => 90
-                ),
-
-                'thumbnail' => array(
-                    'max_width' => 80,
-                    'max_height' => 80
-                )
-            )
+            'image_versions' => DBTableRowDocument::imageVersionsArray()
         );
         if ($options) {
             $this->options = array_merge($this->options, $options);

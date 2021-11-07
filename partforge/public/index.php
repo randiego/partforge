@@ -22,6 +22,11 @@ require_once("../application/functions.app.php");
 Zend_Session::start();
 require_once("../application/init.php");
 
+if (getGlobal('databaseversion') != Zend_Registry::get('config')->databaseversion) {
+    LoginStatus::getInstance()->setValidUser(false);
+    unset($_SESSION['account']);
+}
+
 $frontController = Zend_Controller_Front::getInstance();
 $frontController->setControllerDirectory(array( 'default' => APPLICATION_PATH . '/controllers',
                                                 'items' => APPLICATION_PATH . '/items/controllers',
