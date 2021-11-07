@@ -217,5 +217,6 @@ class MaintenanceTaskRunner {
     private function cleanup_qr_upload_records(&$messages)
     {
         DBTableRowQRUploadKey::cleanupOldRecords();
+        DBTableRowDocument::cleanupOrphanDocuments();
     }
 }

@@ -354,7 +354,6 @@ break;
         return $success;
     }
 
-// **TODO: Need to complete this once I get done refactoring.
     public static function cleanupOrphanDocuments()
     {
         $records = DBSchema::getInstance()->getRecords('document_id', "SELECT * FROM `document` where comment_id=-1 and (NOW() - INTERVAL 7 DAY > document_date_added) LIMIT 20");
