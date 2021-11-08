@@ -24,15 +24,40 @@
  */
 
 class DBTableRowTypeDocument extends DBTableRowDocument {
-        
-	public function __construct($user_id=null) {
-		DBTableRow::__construct('typedocument');
-		$this->document_date_added = time_to_mysqldatetime(script_time());
-		if (is_null($user_id)) $user_id = $_SESSION['account']->user_id;
-		$this->user_id = $user_id;
-		$this->typeobject_id = -1;  // this is default until one is attached
-		$this->document_path_db_key = Zend_Registry::get('config')->document_path_db_key;
-		$this->document_stored_path = date('Y/m/',script_time()).$user_id;
-	}
+
+    public function __construct($user_id = null)
+    {
+        DBTableRow::__construct('typedocument');
+        $this->document_date_added = time_to_mysqldatetime(script_time());
+        if (is_null($user_id)) {
+            $user_id = $_SESSION['account']->user_id;
+        }
+        $this->user_id = $user_id;
+        $this->typeobject_id = -1;  // this is default until one is attached
+        $this->document_path_db_key = Zend_Registry::get('config')->document_path_db_key;
+        $this->document_stored_path = date('Y/m/', script_time()).$user_id;
+    }
+
+    public function outputPerQueryParams($params, $headers_only)
+    {
+        $fmt = isset($params['fmt']) ? $params['fmt'] : 'full';
+        if ($this->document_thumb_exists) {
+            if ($fmt=='thumbnail') {
+                $this->outputThumbnailImageToBrowser(true, $headers_only);
+            } else if ($fmt=='medium') {
+                $this->outputMediumImageToBrowser(true, $headers_only);
+            } else if ($fmt=='full') {
+                $this->outputToBrowser(false, true, $headers_only);
+            } else if (($fmt=='customwidth') && is_numeric($params['width'])) {
+                $this->outputCustomSizeImageToBrowser($params['width'], $headers_only);
+            }
+        } else {
+            if ($fmt=='thumbnail') { // if I'm asking for a thumbnail and !document_thumb_exists, output an icon instead
+                $this->outputIconToBrowser(true, $headers_only);
+            } else {
+                $this->outputToBrowser(true, true, $headers_only);
+            }
+        }
+    }
 
 }

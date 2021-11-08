@@ -52,24 +52,7 @@ class Types_DocumentsController extends RestControllerActionAbstract
     {
         $Document = new DBTableRowTypeDocument();
         if ($Document->getRecordById($this->params['id'])) {
-            $fmt = isset($this->params['fmt']) ? $this->params['fmt'] : 'full';
-            if ($Document->document_thumb_exists) {
-                if ($fmt=='thumbnail') {
-                    $Document->outputThumbnailImageToBrowser(true, $headers_only);
-                } else if ($fmt=='medium') {
-                    $Document->outputMediumImageToBrowser(true, $headers_only);
-                } else if ($fmt=='full') {
-                    $Document->outputToBrowser(false, true, $headers_only);
-                } else if (($fmt=='customwidth') && is_numeric($this->params['width'])) {
-                    $Document->outputCustomSizeImageToBrowser($this->params['width'], $headers_only);
-                }
-            } else {
-                if ($fmt=='thumbnail') { // if I'm asking for a thumbnail and !document_thumb_exists, output an icon instead
-                    $Document->outputIconToBrowser(true, $headers_only);
-                } else {
-                    $Document->outputToBrowser(true, true, $headers_only);
-                }
-            }
+            $Document->outputPerQueryParams($this->params, $headers_only);
         } else {
             $this->view->errormessages = 'document not found.';
         }
