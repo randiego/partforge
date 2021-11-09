@@ -225,7 +225,7 @@ break;
         }
         send_download_headers($document_file_type, $document_displayed_filename, $is_download ? 'attachment; ' : '');
 
-        $tempfile = tempnam(Zend_Registry::get('config')->document_path_base.Zend_Registry::get('config')->document_directory.'/'.$this->document_stored_path, 'PDFImage');
+        $tempfile = tempnam(sys_get_temp_dir(), 'PDFImage');
         $options = array(
                 'max_width' => $width,
                 'max_height' => 1200,

@@ -153,12 +153,14 @@ class ItemViewPDF extends TCPDF {
     }
 
     /**
-     * Convert to src="../types/documents/nnn"  to src="//mylocalhost/sandbox/types/documents/nnn"
+     * Convert all src="../types/documents/nnn"  to src="<local temporary files>". Each target is converted
+     * to a new size and held in a temp file for PDF generation. These files are supposed to be deleted after
+     * the script ends.
      *
      * @param html string $html
      * @return html string
      */
-    function convertIMGsToAbsoluteUrls($html)
+    public function convertImgImgUrlsToLocalTempFiles($html)
     {
 
         $match = preg_match_all('#\<IMG(.+?)src=\"\.\./types/documents/([0-9]+?)\"(.+?)\>#ims', $html, $out);
@@ -168,12 +170,28 @@ class ItemViewPDF extends TCPDF {
             $typedocument_id = $out[2][$sub_index];
             $size_attrib = $out[3][$sub_index];   // contain width="nnn" and possibly height="nnn"
             $match = preg_match_all('#width=\"(.+?)\"#ims', $size_attrib, $width_out);
-            // a resolution of 1.5 x requested width turns out to be a good balance.
-            $width_params = count($width_out[1])==1 ? '?fmt=customwidth&width='.(1.5*$width_out[1][0]) : '';
+            // a resolution of 1.5 x requested width turns out to be a good balance for rendering the PDF
+            $width = $match ? (1.5*$width_out[1][0]) : "300";
 
-            $replace = '<img'.$out[1][$sub_index].'src="'.Zend_Controller_Front::getInstance()->getRequest()->getScheme().'://'.Zend_Controller_Front::getInstance()->getRequest()->getHttpHost().Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/types/documents/'.$typedocument_id.$width_params.'"'.$size_attrib.'>';
-
-            $html = str_ireplace($out[0][$sub_index], $replace, $html);
+            // create a resized temporary image. These files will need to be cleaned up by the system
+            $tempfile = tempnam(sys_get_temp_dir(), 'PDFImage');
+            $options = array(
+                    'max_width' => $width,
+                    'max_height' => 1200,
+                    'jpeg_quality' => 90
+            );
+            $Document = new DBTableRowTypeDocument();
+            if ($Document->getRecordById($typedocument_id)) {
+                if (file_exists($Document->fullStoredFileName())) {
+                    $Document->generateMediumImageIfNeeded();  // need to only do this if the original exists
+                    $full_stored_filename = $Document->fullStoredFileName('/medium');
+                } else {
+                    $full_stored_filename = dirname(__FILE__) . '/../public/images/file-missing-warning-image.jpg';
+                }
+                UploadHandler::create_scaled_image_core($Document->document_stored_filename, $options, $full_stored_filename, $tempfile);
+                $replace = '<img'.$out[1][$sub_index].'src="'.$tempfile.'"'.$size_attrib.'>';
+                $html = str_ireplace($out[0][$sub_index], $replace, $html);
+            }
         }
         return $html;
     }
@@ -253,7 +271,7 @@ class ItemViewPDF extends TCPDF {
             } else if (($row['type']=='html') && ($this->show_text_fields)) {
                 $user_html_in = $row['html'];
                 $user_html_clean = $this->clean_html($user_html_in);
-                $user_html_clean = $this->convertIMGsToAbsoluteUrls($user_html_clean);
+                $user_html_clean = $this->convertImgImgUrlsToLocalTempFiles($user_html_clean);
                 $html .= '<tr>';
                 $html .= '<td colspan="4" style="border-left:0.5px solid #fff;border-right:0.5px solid #fff;"><div>'.$user_html_clean.'</div></td>';
                 $html .= '</tr>';
@@ -380,7 +398,7 @@ class ItemViewPDF extends TCPDF {
 
         // QR Code
         require_once('../library/phpqrcode/qrlib.php');
-        $temp = tempnam('', '');
+        $temp = tempnam(sys_get_temp_dir(), 'QRCode');
         QRcode::png($this->dbtable->absoluteUrl(), $temp);
         $this->Image($temp, 176, $this->GetY(), 30, 30, 'png');
         unlink($temp);
