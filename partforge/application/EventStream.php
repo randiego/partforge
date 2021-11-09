@@ -748,11 +748,14 @@ class EventStream {
 
 
             $highlight_class = $line['recently_edited'] ? (in_array($line['event_type_id'], array('ET_PROCREF','ET_PARTREF')) ? ' event_afterglow_r' : ' event_afterglow_c') : '';
+            $user_name_html = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'ui:nonterminalbling')
+                            ? linkify(UrlCallRegistry::formatViewUrl('id/'.$line['user_id'], 'user'), strtoupper($line['user_name_html']), 'show details about this user')
+                            : strtoupper($line['user_name_html']);
             $layout_rows[] = '<li class="bd-event-row '.$event_type_to_class[$line['event_type_id']].$dimmed_class.$highlight_class.$indent_class.'">
 				'.$select_radio_html.''.$indented_target_link.'
 				<div class="bd-event-content'.($alt_edit_date_html ? ' bd-with-edit-date' : '').'">
 				<div class="bd-event-type"></div>
-				<div class="bd-event-whowhen"><div class="bd-byline">'.linkify(UrlCallRegistry::formatViewUrl('id/'.$line['user_id'], 'user'), strtoupper($line['user_name_html']), 'show details about this user').'</div><div class="bd-dateline">'.$datetime.'</div>'.$alt_edit_date_html.'</div>
+				<div class="bd-event-whowhen"><div class="bd-byline">'.$user_name_html.'</div><div class="bd-dateline">'.$datetime.'</div>'.$alt_edit_date_html.'</div>
 				<div class="bd-event-message">
 				'.$edit_buttons_html.$documents_html.$procedure_disposition_html.'
 				'.$line['event_html'].'
