@@ -1220,6 +1220,8 @@ class DBTableRowItemVersion extends DBTableRow {
                 if (!is_null($ComponentItemVersion)) {
                     if (!in_array($ComponentItemVersion->tv__typeobject_id, $ft['can_have_typeobject_id'])) {
                         $errormsg[$fieldname] = 'Wrong type for this component!';
+                    } else if (!$this->is_user_procedure) {
+                        $this->checkComponentOverUsedOn($fieldname, $ft, $ComponentItemVersion->itemobject_id, $errormsg);
                     }
                 }
             }
@@ -1230,6 +1232,31 @@ class DBTableRowItemVersion extends DBTableRow {
             if ($this->disposition=='Pass') {
                 $errormsg['disposition'] = 'There cannot be errors and a disposition of Pass.  Use Signed Off instead.';
             }
+        }
+    }
+
+    public function checkComponentOverUsedOn($fieldname, $component_fieldtype, $component_io, &$errormsg)
+    {
+        $query = "SELECT CAST((SELECT GROUP_CONCAT(concat(iv_them.itemobject_id,',',iv_them.item_serial_number) ORDER BY iv_them.effective_date SEPARATOR ';') as used_on
+                            FROM itemcomponent
+                            LEFT JOIN itemversion AS iv_them ON iv_them.itemversion_id=itemcomponent.belongs_to_itemversion_id
+                            LEFT JOIN itemobject AS io_them ON io_them.itemobject_id=iv_them.itemobject_id
+                            LEFT JOIN typeversion AS tv_them ON tv_them.typeversion_id=iv_them.typeversion_id
+                            WHERE (io_them.cached_current_itemversion_id=iv_them.itemversion_id) and (iv_them.itemobject_id != '{$this->itemobject_id}') and (itemcomponent.has_an_itemobject_id='{$component_io}') and (tv_them.typecategory_id=2)
+                            ORDER BY iv_them.itemversion_id) AS CHAR) as used_on_io";
+        $records = DbSchema::getInstance()->getRecords('', $query);
+        $record = reset($records);
+        $used_on_arr = $record['used_on_io'] ? explode(';', $record['used_on_io']) : array();
+        //$component_fieldtype['max_uses'] = 2;
+        $max_uses = isset($component_fieldtype['max_uses']) && is_numeric($component_fieldtype['max_uses']) ? $component_fieldtype['max_uses'] : 1;
+        if (count($used_on_arr) > $max_uses - 1) {
+            $sn_arr = array();
+            foreach ($used_on_arr as $useditem) {
+                $sn_arr[] = explode(',', $useditem)[1];
+            }
+            $max_uses_txt = $max_uses==1 ? '.' : ', but Max Uses = '.$max_uses.'.';
+            $used_count_txt = count($used_on_arr)>2 ? count($used_on_arr).' times' : 'on '.implode(' and ', $sn_arr);
+            $errormsg[$fieldname] = 'Component already used '.$used_count_txt.$max_uses_txt;
         }
     }
 
@@ -1483,7 +1510,7 @@ class DBTableRowItemVersion extends DBTableRow {
         $DBTableRowQuery->setLimitClause('LIMIT 1')->addSelectors(array($this->_idField => $id));
         $DBTableRowQuery->addSelectFields(array("CAST((SELECT GROUP_CONCAT(concat(typecomponent.typecomponent_id,',',typecomponent.component_name,',',(
   SELECT GROUP_CONCAT(DISTINCT typecomponent_typeobject.can_have_typeobject_id ORDER BY typecomponent_typeobject.can_have_typeobject_id SEPARATOR '|') FROM typecomponent_typeobject WHERE typecomponent_typeobject.typecomponent_id=typecomponent.typecomponent_id
-),',',CONVERT(HEX(IFNULL(typecomponent.caption,'')),CHAR),',',CONVERT(HEX(IFNULL(typecomponent.subcaption,'')),CHAR),',',IFNULL(typecomponent.featured,0),',',IFNULL(typecomponent.required,0))  ORDER BY typecomponent.component_name SEPARATOR ';') FROM typecomponent WHERE typecomponent.belongs_to_typeversion_id=itemversion.typeversion_id) AS CHAR) as list_of_typecomponents"));
+),',',CONVERT(HEX(IFNULL(typecomponent.caption,'')),CHAR),',',CONVERT(HEX(IFNULL(typecomponent.subcaption,'')),CHAR),',',IFNULL(typecomponent.featured,0),',',IFNULL(typecomponent.required,0),',',IFNULL(typecomponent.max_uses,1))  ORDER BY typecomponent.component_name SEPARATOR ';') FROM typecomponent WHERE typecomponent.belongs_to_typeversion_id=itemversion.typeversion_id) AS CHAR) as list_of_typecomponents"));
         $DBTableRowQuery->addSelectFields("(SELECT count(*) FROM partnumbercache WHERE itemversion.typeversion_id=partnumbercache.typeversion_id) as partnumber_count");
         $DBTableRowQuery->addSelectFields(array("CAST((SELECT GROUP_CONCAT(concat(itemcomponent.itemcomponent_id,',',itemcomponent.component_name,',',itemcomponent.has_an_itemobject_id)  ORDER BY itemcomponent.component_name SEPARATOR ';') FROM itemcomponent WHERE itemcomponent.belongs_to_itemversion_id=itemversion.itemversion_id) AS CHAR) as list_of_itemcomponents"));
         $DBTableRowQuery->addJoinClause("LEFT JOIN typecategory ON typecategory.typecategory_id={$DBTableRowQuery->getJoinAlias('typeversion')}.typecategory_id")
@@ -1687,7 +1714,14 @@ class DBTableRowItemVersion extends DBTableRow {
                         (select count(*) from itemcomponent WHERE (itemcomponent.belongs_to_itemversion_id=itemversion.itemversion_id) and (itemcomponent.has_an_itemobject_id='{$this->itemobject_id}')) as self_count,
 	            		IF(itemobject.cached_first_ver_date<='$effective_date',0,1) as is_future_component,
 	            		itemversion.effective_date, itemversion.itemobject_id,
-	            		partnumbercache.part_description, partnumbercache.part_number
+	            		partnumbercache.part_description, partnumbercache.part_number,
+                        CAST((SELECT GROUP_CONCAT(concat(iv_them.itemobject_id,',',iv_them.item_serial_number) ORDER BY iv_them.effective_date SEPARATOR ';') as used_on
+                            FROM itemcomponent
+                            LEFT JOIN itemversion AS iv_them ON iv_them.itemversion_id=itemcomponent.belongs_to_itemversion_id
+                            LEFT JOIN itemobject AS io_them ON io_them.itemobject_id=iv_them.itemobject_id
+                            LEFT JOIN typeversion AS tv_them ON tv_them.typeversion_id=iv_them.typeversion_id
+                            WHERE (io_them.cached_current_itemversion_id=iv_them.itemversion_id) and (iv_them.itemobject_id != '{$this->itemobject_id}') and (itemcomponent.has_an_itemobject_id=itemversion.itemobject_id) and (tv_them.typecategory_id=2)
+                            ORDER BY iv_them.itemversion_id) AS CHAR) as used_on_io
 	            	FROM itemversion
 	               	LEFT JOIN itemobject on itemversion.itemobject_id=itemobject.itemobject_id
 	               	LEFT JOIN typeversion on typeversion.typeversion_id=itemversion.typeversion_id
@@ -1725,7 +1759,20 @@ class DBTableRowItemVersion extends DBTableRow {
                     $out[$record['itemobject_id']] = date("m/d/Y H:i", strtotime($record['effective_date'])).$type_desc.($record['disposition'] ? ' ('.$record['disposition'].')' : '');
                 }
             } else {
-                $out[$record['itemobject_id']] = $record['sn'].$type_desc.($record['is_future_component'] ? $future_suffix_label : '');
+                $used_on_arr = $record['used_on_io'] ? explode(';', $record['used_on_io']) : array();
+                $used_on = '';
+                if ((count($used_on_arr)>0) && $this->hasASerialNumber()) {  // TODO: Need to only do this if this is a part
+                    $sn_arr = array();
+                    foreach ($used_on_arr as $useditem) {
+                        $sn_arr[] = explode(',', $useditem)[1];
+                    }
+                    if (count($used_on_arr)>2) {
+                        $used_on = ' (used '.count($used_on_arr).' times)';
+                    } else {
+                        $used_on = ' (used on '.implode(', ', $sn_arr).')';
+                    }
+                }
+                $out[$record['itemobject_id']] = $record['sn'].$type_desc.($record['is_future_component'] ? $future_suffix_label : '').$used_on;
             }
         }
         natcasesort($out);

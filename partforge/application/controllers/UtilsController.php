@@ -227,6 +227,12 @@ class UtilsController extends DBControllerActionAbstract
                         $databaseversion = '9';
                         setGlobal('databaseversion', $databaseversion);
                     }
+                    if ($databaseversion=='9') {
+                        $msgs[] = 'Upgrading to version 10: Use each components only once with override';
+                        DbSchema::getInstance()->mysqlQuery("ALTER TABLE typecomponent ADD COLUMN max_uses INT DEFAULT 1 AFTER required");
+                        $databaseversion = '10';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
             }
         }
         $this->view->currentversion = getGlobal('databaseversion');

@@ -685,7 +685,7 @@ function componentStrToArray(cStr) {
 		var compArray = cStr.split(';');
 		for(var i=0; i<compArray.length; i++) {
 			var fields = compArray[i].split(',');
-			out.push({"typecomponent_id" : fields[0], "component_name" : fields[1], "can_have_typeobject_id" : fields[2], "caption" : Hex2Str(fields[3]), "subcaption" : Hex2Str(fields[4]), "featured" : ZeroIfUndefined(fields[5]), "required" : ZeroIfUndefined(fields[6])});
+			out.push({"typecomponent_id" : fields[0], "component_name" : fields[1], "can_have_typeobject_id" : fields[2], "caption" : Hex2Str(fields[3]), "subcaption" : Hex2Str(fields[4]), "featured" : ZeroIfUndefined(fields[5]), "required" : ZeroIfUndefined(fields[6]), "max_uses" : ZeroIfUndefined(fields[7])});
 		}
 	}
 	return out;
@@ -694,7 +694,7 @@ function componentStrToArray(cStr) {
 function arrayToComponentStr(compArray) {
 	var out = [];
 	for(var i=0; i<compArray.length; i++) {
-		out.push(compArray[i]["typecomponent_id"]+","+compArray[i]["component_name"]+","+compArray[i]["can_have_typeobject_id"]+","+Str2Hex(compArray[i]["caption"])+","+Str2Hex(compArray[i]["subcaption"])+","+compArray[i]["featured"]+","+compArray[i]["required"]);
+		out.push(compArray[i]["typecomponent_id"]+","+compArray[i]["component_name"]+","+compArray[i]["can_have_typeobject_id"]+","+Str2Hex(compArray[i]["caption"])+","+Str2Hex(compArray[i]["subcaption"])+","+compArray[i]["featured"]+","+compArray[i]["required"]+","+compArray[i]["max_uses"]);
 	}
 	return out.join(";");
 }
@@ -770,7 +770,7 @@ function renderListOfComponents() {
 		if (a.component_name < b.component_name) return -1;
 		return 0;
 	});
-	html += '<table class="listtable"><tr><th>Name</th><th>Type(s)</th><th>Caption / Subcaption</th><th>Featured</th><th>Required</th><th> </th>';
+	html += '<table class="listtable"><tr><th>Name</th><th>Type(s)</th><th>Caption / Subcaption</th><th>Featured</th><th>Required</th><th>Max Uses</th><th> </th>';
 	for(var i = 0; i<typeComponents.length; i++) {
 		var f = typeComponents[i];
 	    html += '<tr>';
@@ -784,7 +784,7 @@ function renderListOfComponents() {
 
 	    var delete_btn = !isWriteProtected(f["component_name"]) ? '<a data-key="'+i+'" class="bd-linkbtn linedeletelink" href="#">delete</a>' : '';
 
-	    html += '<td>'+f["component_name"]+'</td><td>'+desc.join('<br />')+'</td><td>'+renderCaption(f["component_name"],f["caption"])+'<br /><span class="paren">'+blankIfUndefined(f["subcaption"])+'</span></td><td>'+f["featured"]+'</td><td>'+f["required"]+'</td>';
+	    html += '<td>'+f["component_name"]+'</td><td>'+desc.join('<br />')+'</td><td>'+renderCaption(f["component_name"],f["caption"])+'<br /><span class="paren">'+blankIfUndefined(f["subcaption"])+'</span></td><td>'+f["featured"]+'</td><td>'+f["required"]+'</td><td>'+f["max_uses"]+'</td>';
 		html += '<td><a data-key="'+i+'" class="bd-linkbtn lineeditlink" href="#">edit</a> '+delete_btn+'</td>';
 		html += '</tr>';
 	}
@@ -795,7 +795,7 @@ function renderListOfComponents() {
 	$("#componentEditorDiv").html(html);
 
 	$("#addComponentLink").click(function(event) {
-		compEditBuff = {"typecomponent_id" : "new", "component_name" : "", "can_have_typeobject_id" : "", "caption" : "", "subcaption" : "", "featured" : "0", "required" : ""};
+		compEditBuff = {"typecomponent_id" : "new", "component_name" : "", "can_have_typeobject_id" : "", "caption" : "", "subcaption" : "", "featured" : "0", "required" : "", "max_uses" : "1"};
 		var key = -1; // nothing
 		renderCompEditor($('#compEditorContainer'), true, key);
 		return false;
@@ -863,6 +863,10 @@ function fetchCompEditorHtml() {
 	var valueinput = selectHtml('compRequired','de-propval', {"0":"0","1":"1"}, compEditBuff["required"]);
 	html += '<tr data-paramkey="caption"><th>Required:<br /><span class="paren">1 = user must enter something for this field.</span></th><td>'+valueinput+'</td></tr>';
 
+	// max_uses
+	var valueinput = '<input id="compMaxUses" class="de-propval" type="text" value="'+htmlEscape(compEditBuff["max_uses"])+'">';
+	html += '<tr data-paramkey="caption"><th>Max Uses:<br /><span class="paren">This is the number of times that the component can be associated with a current version of a part. Set this to 1 (the default) if you only want users to be able to use a part once. A value of 2 would allow 2 instances of the component to be used before showing an error.</span></th><td>'+valueinput+'</td></tr>';
+
 	html += '</table></div>';
 	html += '<a class="bd-linkbtn propeditdonelink" href="#">done</a> <a class="bd-linkbtn propeditcancellink" href="#">cancel</a>';
 	html += '</div>';
@@ -904,11 +908,18 @@ function saveCompEditorToBuff(showAlerts,isNew,key) {
 		return false;
 	}
 
+	var max_uses_val = $("#compMaxUses").val();
+	if (!IsNumeric(max_uses_val) || (IsNumeric(max_uses_val) && (parseFloat(max_uses_val)<1))) {
+		alert('the Max Uses field must be 1 or greater.');
+		ok = false;
+	}
+
 	compEditBuff["can_have_typeobject_id"] = getCompEditorTypesToBuff($('#compEditorContainer select.comptypesel'));
 	compEditBuff["caption"] = $.trim($("#compCaption").val());
 	compEditBuff["subcaption"] = $.trim($("#compSubCaption").val());
 	compEditBuff["featured"] = $("#compFeatured").val();
 	compEditBuff["required"] = $("#compRequired").val();
+	compEditBuff["max_uses"] = $("#compMaxUses").val();
 
 	return ok;
 
@@ -1585,6 +1596,7 @@ function checkValidComponents() {
 		alert("You have at least one component [ " + unknownFields.join(", ") + " ] that does not have a valid type selected.");
 		ok = false;
 	}
+
 	return ok;
 }
 
