@@ -1,4 +1,4 @@
-<script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/struct/typeeditview.js?v=36" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/struct/typeeditview.js?v=37" type="TEXT/JAVASCRIPT"></script>
 <script type="text/javascript">
 var typeDataDictionary = <?php echo $this->dbtable->type_data_dictionary ? $this->dbtable->type_data_dictionary : '{}'?>;
 var typeFormLayout = <?php echo $this->dbtable->type_form_layout ? $this->dbtable->type_form_layout : '[]'?>;
@@ -8,6 +8,7 @@ var TypeObjectId = <?php echo !is_numeric($this->dbtable->typeobject_id) ? '"new
 var ReservedWords = <?php echo json_encode(DBTableRowTypeObject::getReservedFieldNames());?>;
 var MaxAllowedFieldLength = <?php echo Zend_Registry::get('config')->max_allowed_field_length;?>;
 var sessionTimeoutInterval = <?php echo Zend_Registry::get('config')->edit_form_keep_alive_interval*1000;?>;
+var isAPart = <?php echo $this->dbtable->typecategory_id==2 ? "true" : "false";?>;
 var UserType = '<?php echo $_SESSION['account']->getRole();?>';
 </script>
 
@@ -27,27 +28,31 @@ var UserType = '<?php echo $_SESSION['account']->getRole();?>';
 
 
     $edit_action_verb = 'Edit';
-    if ('vem_edit_version'==$this->version_edit_mode) $edit_action_verb = Zend_Registry::get('config')->button_edit_version_save;
-    if ('vem_finish_save_record'==$this->version_edit_mode) $edit_action_verb = 'Save';
-    if ('vem_new_version'==$this->version_edit_mode) $edit_action_verb = Zend_Registry::get('config')->button_new_version_save;
+if ('vem_edit_version'==$this->version_edit_mode) {
+    $edit_action_verb = Zend_Registry::get('config')->button_edit_version_save;
+}
+if ('vem_finish_save_record'==$this->version_edit_mode) {
+    $edit_action_verb = 'Save';
+}
+if ('vem_new_version'==$this->version_edit_mode) {
+    $edit_action_verb = Zend_Registry::get('config')->button_new_version_save;
+}
 
 
     $buttons = array();
 
-    if (!$this->dbtable->isExistingObject()) {
-
-    	if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'table:typeversion','add')) {
-    		$buttons[] = '<input class="bd-button" type="submit" value="'.Zend_Registry::get('config')->button_new_object_save.'" name="btnOK">';
-    	}
-    	$buttons[] = '<input class="bd-button" type="submit" value="Cancel" name="btnCancel">';
-    } else {
-
-    	if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'table:typeversion','add')) {
-    		$buttons[] = '<input class="bd-button" type="submit" value="'.$edit_action_verb.'" name="'.$this->edit_action_button.'">';
-    	}
-
-    	$buttons[] = '<input class="bd-button" type="submit" value="Cancel" name="btnCancel">';
+if (!$this->dbtable->isExistingObject()) {
+    if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'table:typeversion', 'add')) {
+        $buttons[] = '<input class="bd-button" type="submit" value="'.Zend_Registry::get('config')->button_new_object_save.'" name="btnOK">';
     }
+    $buttons[] = '<input class="bd-button" type="submit" value="Cancel" name="btnCancel">';
+} else {
+    if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'table:typeversion', 'add')) {
+        $buttons[] = '<input class="bd-button" type="submit" value="'.$edit_action_verb.'" name="'.$this->edit_action_button.'">';
+    }
+
+    $buttons[] = '<input class="bd-button" type="submit" value="Cancel" name="btnCancel">';
+}
 
 
 
@@ -55,15 +60,15 @@ var UserType = '<?php echo $_SESSION['account']->getRole();?>';
     $html .= '<h1 class="dialogtitle">'.$linkified_title.'</h1>';
 
     list($statustext, $statusclass, $definitiondescription) = DBTableRowTypeVersion::formatSubActiveDefinitionStatus($this->dbtable->to__typedisposition, $this->dbtable->versionstatus, $this->dbtable->isCurrentVersion());
-    if ($statustext) {
-	    $html .= '<div class="edittablewrapper"><div class="itemview_notice">'.$definitiondescription.'</div></div>';
-    }
+if ($statustext) {
+    $html .= '<div class="edittablewrapper"><div class="itemview_notice">'.$definitiondescription.'</div></div>';
+}
 
 
     $html .= $this->dbtable->fetchHiddenTableAndIndexFormTags();
-    if ($this->edit_buffer_key) {
-    	$html .= '<input type="hidden" name="edit_buffer_key" value="'.$this->edit_buffer_key.'">';
-    }
+if ($this->edit_buffer_key) {
+    $html .= '<input type="hidden" name="edit_buffer_key" value="'.$this->edit_buffer_key.'">';
+}
     $html .= '<input type="hidden" name="list_of_typecomponents" value="'.$this->dbtable->list_of_typecomponents.'">';
     $html .= '<input type="hidden" name="btnOnChange" value="">';
     $html .= '<input type="hidden" name="onChangeParams" value="">';   // if btnOnChange is set, this is sometimes used for params
@@ -76,15 +81,15 @@ var UserType = '<?php echo $_SESSION['account']->getRole();?>';
 
 
     // don't show fields as editable if editing of this record is not allowed
-    $editable = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'table:'.$this->dbtable->getTableName(),'edit')
-    && !$this->dbtable->isEditOperationBlocked('save',$this->dbtable->getTableName());
+    $editable = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'table:'.$this->dbtable->getTableName(), 'edit')
+    && !$this->dbtable->isEditOperationBlocked('save', $this->dbtable->getTableName());
 
     $html .= '<table class="edittable defheader"><colgroup>
     					 <col class="table_label_width">
     					 <col class="table_value_width">
     					 <col class="table_label_width">
     					 <col class="table_value_width"></colgroup>';
-    $html .= $this->dbtable->fetchHeaderEditTableRowsHtml($editable,false);
+    $html .= $this->dbtable->fetchHeaderEditTableRowsHtml($editable, false);
     $html .= '</table>';
 
     $html .= '<h2 class="bd-edit-page-headers">Data Dictionary</h2>';
@@ -93,15 +98,15 @@ var UserType = '<?php echo $_SESSION['account']->getRole();?>';
     	    "add" link, then click the "edit" link that appears next to the new entry in the dictionary.
     		The required, minimum, and maximum fields will generate warnings and show error messages in red, but
     		will NOT prevent a user from saving data, even if it is incomplete or out of range.</p>';
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('SORTED_DICTIONARY','The dictionary is now sorted alphabetically.  Previously it was sorted in the order entered.','1/22/2015');
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('MIN_MAX_DICTIONARY_ATTR','float data types now have minimum, maximum, and units attributes.  Read the explanation above and in the dictionary editor for more information.','1/31/2015');
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('MIN_MAX_DICTIONARY_ATTR2','boolean data types now have minimum, maximum attributes.  Read the explanation in the dictionary editor for more information.','4/28/2019');
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('SPECIAL_CHARS_HTML','you can now enter special characters and markup in captions and subcaption using HTML.  See the help text when editing a caption for more information.','3/15/2015');
+    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('SORTED_DICTIONARY', 'The dictionary is now sorted alphabetically.  Previously it was sorted in the order entered.', '1/22/2015');
+    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('MIN_MAX_DICTIONARY_ATTR', 'float data types now have minimum, maximum, and units attributes.  Read the explanation above and in the dictionary editor for more information.', '1/31/2015');
+    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('MIN_MAX_DICTIONARY_ATTR2', 'boolean data types now have minimum, maximum attributes.  Read the explanation in the dictionary editor for more information.', '4/28/2019');
+    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('SPECIAL_CHARS_HTML', 'you can now enter special characters and markup in captions and subcaption using HTML.  See the help text when editing a caption for more information.', '3/15/2015');
     $html .= '<div id="dictionaryEditorDiv" class="bd-edit-block"></div>';
 
     $html .= '<h2 class="bd-edit-page-headers">Components</h2>';
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_COMPONENT_CAPTIONS','Components have been enhanced.  You can now have independent captions and subcaptions (and featured and required attributes) for your components. You are no longer stuck with the default caption based on the component name.','1/16/2015');
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('COMPONENT_WITH_MULTITYPES','You can now have more than one type for each component.  So instead of creating multiple mutually-exclusive component, you can create a single one that allows more than on type.','11/20/2015');
+    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_COMPONENT_CAPTIONS', 'Components have been enhanced.  You can now have independent captions and subcaptions (and featured and required attributes) for your components. You are no longer stuck with the default caption based on the component name.', '1/16/2015');
+    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('COMPONENT_WITH_MULTITYPES', 'You can now have more than one type for each component.  So instead of creating multiple mutually-exclusive component, you can create a single one that allows more than on type.', '11/20/2015');
     $html .= '<p class="bd-instruction-text">Components refer to other record types that are associated with this record
     		type.  For example, if this is a test procedure for a magnet, then you could include an existing magnet component
     		in this list of components.  That way, both this procedure and the magnet would be linked together.
@@ -111,8 +116,8 @@ var UserType = '<?php echo $_SESSION['account']->getRole();?>';
     $html .= '<div id="componentEditorDiv" class="bd-edit-block"></div>';
 
     $html .= '<h2 class="bd-edit-page-headers">Form Layout</h2>';
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('PHOTOS_IN_DEFINITIONS','You can now use photos in your definitions.  When you add a text block there is a photo upload button available.','10/19/2015');
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_LAYOUT_EDITING','The layout editor has changed.  Now you can insert fields into the middle of the layout with "ins field" and "ins text".  Also, to arrange items, you now click the "move" button and finish with "done moving".','8/27/2016');
+    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('PHOTOS_IN_DEFINITIONS', 'You can now use photos in your definitions.  When you add a text block there is a photo upload button available.', '10/19/2015');
+    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_LAYOUT_EDITING', 'The layout editor has changed.  Now you can insert fields into the middle of the layout with "ins field" and "ins text".  Also, to arrange items, you now click the "move" button and finish with "done moving".', '8/27/2016');
     $html .= '<p class="bd-instruction-text">This is the form layout designer.
 	    	The layout is structured into two columns where fields can span both columns or
     		only one.  If you click the "add field" button, it will add
@@ -123,7 +128,7 @@ var UserType = '<?php echo $_SESSION['account']->getRole();?>';
 
     $html .= '<div id="HtmlEditorContainer"></div>';
 
-    $html .= '<p>'.implode('&nbsp;',$buttons).'</p>';
+    $html .= '<p>'.implode('&nbsp;', $buttons).'</p>';
 
     echo '  <div class="dialogbody">
             '.fetch_form_tag('
@@ -132,10 +137,4 @@ var UserType = '<?php echo $_SESSION['account']->getRole();?>';
 			').'
 	    </div>';
 
-
-
-
-
-
-
-?>
+    ?>

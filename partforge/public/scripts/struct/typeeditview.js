@@ -770,7 +770,7 @@ function renderListOfComponents() {
 		if (a.component_name < b.component_name) return -1;
 		return 0;
 	});
-	html += '<table class="listtable"><tr><th>Name</th><th>Type(s)</th><th>Caption / Subcaption</th><th>Featured</th><th>Required</th><th>Max Uses</th><th> </th>';
+	html += '<table class="listtable"><tr><th>Name</th><th>Type(s)</th><th>Caption / Subcaption</th><th>Featured</th><th>Required</th>'+(isAPart ? '<th>Max Uses</th>' : '')+'<th> </th>';
 	for(var i = 0; i<typeComponents.length; i++) {
 		var f = typeComponents[i];
 	    html += '<tr>';
@@ -784,7 +784,7 @@ function renderListOfComponents() {
 
 	    var delete_btn = !isWriteProtected(f["component_name"]) ? '<a data-key="'+i+'" class="bd-linkbtn linedeletelink" href="#">delete</a>' : '';
 
-	    html += '<td>'+f["component_name"]+'</td><td>'+desc.join('<br />')+'</td><td>'+renderCaption(f["component_name"],f["caption"])+'<br /><span class="paren">'+blankIfUndefined(f["subcaption"])+'</span></td><td>'+f["featured"]+'</td><td>'+f["required"]+'</td><td>'+f["max_uses"]+'</td>';
+	    html += '<td>'+f["component_name"]+'</td><td>'+desc.join('<br />')+'</td><td>'+renderCaption(f["component_name"],f["caption"])+'<br /><span class="paren">'+blankIfUndefined(f["subcaption"])+'</span></td><td>'+f["featured"]+'</td><td>'+f["required"]+'</td>'+(isAPart ? '<td>'+f["max_uses"]+'</td>' : '');
 		html += '<td><a data-key="'+i+'" class="bd-linkbtn lineeditlink" href="#">edit</a> '+delete_btn+'</td>';
 		html += '</tr>';
 	}
@@ -864,8 +864,10 @@ function fetchCompEditorHtml() {
 	html += '<tr data-paramkey="caption"><th>Required:<br /><span class="paren">1 = user must enter something for this field.</span></th><td>'+valueinput+'</td></tr>';
 
 	// max_uses
-	var valueinput = '<input id="compMaxUses" class="de-propval" type="text" value="'+htmlEscape(compEditBuff["max_uses"])+'">';
-	html += '<tr data-paramkey="caption"><th>Max Uses:<br /><span class="paren">This is the number of times that the component can be associated with a current version of a part. Set this to 1 (the default) if you only want users to be able to use a part once. A value of 2 would allow 2 instances of the component to be used before showing an error.</span></th><td>'+valueinput+'</td></tr>';
+	if (isAPart) {
+		var valueinput = '<input id="compMaxUses" class="de-propval" type="text" value="'+htmlEscape(compEditBuff["max_uses"])+'">';
+		html += '<tr data-paramkey="caption"><th>Max Uses:<br /><span class="paren">This is the number of times that the component can be associated with a current version of a part. Set this to 1 (the default) if you only want users to be able to use a part once. A value of 2 would allow 2 instances of the component to be used before showing an error.</span></th><td>'+valueinput+'</td></tr>';
+	}
 
 	html += '</table></div>';
 	html += '<a class="bd-linkbtn propeditdonelink" href="#">done</a> <a class="bd-linkbtn propeditcancellink" href="#">cancel</a>';
@@ -908,10 +910,12 @@ function saveCompEditorToBuff(showAlerts,isNew,key) {
 		return false;
 	}
 
-	var max_uses_val = $("#compMaxUses").val();
-	if (!IsNumeric(max_uses_val) || (IsNumeric(max_uses_val) && (parseFloat(max_uses_val)<1))) {
-		alert('the Max Uses field must be 1 or greater.');
-		ok = false;
+	if (isAPart) {
+		var max_uses_val = $("#compMaxUses").val();
+		if (!IsNumeric(max_uses_val) || (IsNumeric(max_uses_val) && (parseFloat(max_uses_val)<1))) {
+			alert('the Max Uses field must be 1 or greater.');
+			ok = false;
+		}
 	}
 
 	compEditBuff["can_have_typeobject_id"] = getCompEditorTypesToBuff($('#compEditorContainer select.comptypesel'));
@@ -919,7 +923,7 @@ function saveCompEditorToBuff(showAlerts,isNew,key) {
 	compEditBuff["subcaption"] = $.trim($("#compSubCaption").val());
 	compEditBuff["featured"] = $("#compFeatured").val();
 	compEditBuff["required"] = $("#compRequired").val();
-	compEditBuff["max_uses"] = $("#compMaxUses").val();
+	compEditBuff["max_uses"] = isAPart ? $("#compMaxUses").val() : '1';
 
 	return ok;
 
