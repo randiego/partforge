@@ -1247,9 +1247,8 @@ class DBTableRowItemVersion extends DBTableRow {
         $records = DbSchema::getInstance()->getRecords('', $query);
         $record = reset($records);
         $used_on_arr = $record['used_on_io'] ? explode(';', $record['used_on_io']) : array();
-        //$component_fieldtype['max_uses'] = 2;
         $max_uses = isset($component_fieldtype['max_uses']) && is_numeric($component_fieldtype['max_uses']) ? $component_fieldtype['max_uses'] : 1;
-        if (count($used_on_arr) > $max_uses - 1) {
+        if ((count($used_on_arr) > $max_uses - 1) && ($max_uses != 0)) {
             $sn_arr = array();
             foreach ($used_on_arr as $useditem) {
                 $sn_arr[] = explode(',', $useditem)[1];

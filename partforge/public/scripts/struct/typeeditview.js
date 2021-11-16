@@ -866,7 +866,7 @@ function fetchCompEditorHtml() {
 	// max_uses
 	if (isAPart) {
 		var valueinput = '<input id="compMaxUses" class="de-propval" type="text" value="'+htmlEscape(compEditBuff["max_uses"])+'">';
-		html += '<tr data-paramkey="caption"><th>Max Uses:<br /><span class="paren">This is the number of times that the component can be associated with a current version of a part. Set this to 1 (the default) if you only want users to be able to use a part once. A value of 2 would allow 2 instances of the component to be used before showing an error.</span></th><td>'+valueinput+'</td></tr>';
+		html += '<tr data-paramkey="caption"><th>Max Uses:<br /><span class="paren">This is the number of times that the component can be associated with a current version of a part. Set this to 1 (the default) if you only want users to be able to use a part once. A value of 2 would allow 2 instances of the component to be used before showing an error. 0 disables the Max Uses checking.</span></th><td>'+valueinput+'</td></tr>';
 	}
 
 	html += '</table></div>';
@@ -912,8 +912,8 @@ function saveCompEditorToBuff(showAlerts,isNew,key) {
 
 	if (isAPart) {
 		var max_uses_val = $("#compMaxUses").val();
-		if (!IsNumeric(max_uses_val) || (IsNumeric(max_uses_val) && (parseFloat(max_uses_val)<1))) {
-			alert('the Max Uses field must be 1 or greater.');
+		if (!IsNumeric(max_uses_val) || (IsNumeric(max_uses_val) && (parseFloat(max_uses_val)<0))) {
+			alert('the Max Uses field must be 0 or greater.');
 			ok = false;
 		}
 	}
