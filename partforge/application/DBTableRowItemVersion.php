@@ -1220,7 +1220,7 @@ class DBTableRowItemVersion extends DBTableRow {
                 if (!is_null($ComponentItemVersion)) {
                     if (!in_array($ComponentItemVersion->tv__typeobject_id, $ft['can_have_typeobject_id'])) {
                         $errormsg[$fieldname] = 'Wrong type for this component!';
-                    } else if (!$this->is_user_procedure) {
+                    } else if (!$this->hasADisposition()) {
                         $this->checkComponentOverUsedOn($fieldname, $ft, $ComponentItemVersion->itemobject_id, $errormsg);
                     }
                 }
