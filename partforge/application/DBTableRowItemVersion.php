@@ -1242,13 +1242,15 @@ class DBTableRowItemVersion extends DBTableRow {
                             LEFT JOIN itemversion AS iv_them ON iv_them.itemversion_id=itemcomponent.belongs_to_itemversion_id
                             LEFT JOIN itemobject AS io_them ON io_them.itemobject_id=iv_them.itemobject_id
                             LEFT JOIN typeversion AS tv_them ON tv_them.typeversion_id=iv_them.typeversion_id
-                            WHERE (io_them.cached_current_itemversion_id=iv_them.itemversion_id) and (iv_them.itemobject_id != '{$this->itemobject_id}') and (itemcomponent.has_an_itemobject_id='{$component_io}') and (tv_them.typecategory_id=2)
+                            LEFT JOIN typecomponent as tc_them ON (tc_them.component_name=itemcomponent.component_name) and (tc_them.belongs_to_typeversion_id=iv_them.typeversion_id)
+                            WHERE (io_them.cached_current_itemversion_id=iv_them.itemversion_id) and (iv_them.itemobject_id != '{$this->itemobject_id}')
+                              and (itemcomponent.has_an_itemobject_id='{$component_io}') and (tv_them.typecategory_id=2) and (tc_them.max_uses!=-1)
                             ORDER BY iv_them.itemversion_id) AS CHAR) as used_on_io";
         $records = DbSchema::getInstance()->getRecords('', $query);
         $record = reset($records);
         $used_on_arr = $record['used_on_io'] ? explode(';', $record['used_on_io']) : array();
         $max_uses = isset($component_fieldtype['max_uses']) && is_numeric($component_fieldtype['max_uses']) ? $component_fieldtype['max_uses'] : 1;
-        if ((count($used_on_arr) > $max_uses - 1) && ($max_uses != 0)) {
+        if ((count($used_on_arr) > $max_uses - 1) && ($max_uses > 0)) {
             $sn_arr = array();
             foreach ($used_on_arr as $useditem) {
                 $sn_arr[] = explode(',', $useditem)[1];
@@ -1714,11 +1716,12 @@ class DBTableRowItemVersion extends DBTableRow {
 	            		IF(itemobject.cached_first_ver_date<='$effective_date',0,1) as is_future_component,
 	            		itemversion.effective_date, itemversion.itemobject_id,
 	            		partnumbercache.part_description, partnumbercache.part_number,
-                        CAST((SELECT GROUP_CONCAT(concat(iv_them.itemobject_id,',',iv_them.item_serial_number) ORDER BY iv_them.effective_date SEPARATOR ';') as used_on
+                        CAST((SELECT GROUP_CONCAT(concat(iv_them.itemobject_id,',',iv_them.item_serial_number,IF(tc_them.max_uses=-1,'*','')) ORDER BY iv_them.effective_date SEPARATOR ';') as used_on
                             FROM itemcomponent
                             LEFT JOIN itemversion AS iv_them ON iv_them.itemversion_id=itemcomponent.belongs_to_itemversion_id
                             LEFT JOIN itemobject AS io_them ON io_them.itemobject_id=iv_them.itemobject_id
                             LEFT JOIN typeversion AS tv_them ON tv_them.typeversion_id=iv_them.typeversion_id
+                            LEFT JOIN typecomponent as tc_them ON (tc_them.component_name=itemcomponent.component_name) and (tc_them.belongs_to_typeversion_id=iv_them.typeversion_id)
                             WHERE (io_them.cached_current_itemversion_id=iv_them.itemversion_id) and (iv_them.itemobject_id != '{$this->itemobject_id}') and (itemcomponent.has_an_itemobject_id=itemversion.itemobject_id) and (tv_them.typecategory_id=2)
                             ORDER BY iv_them.itemversion_id) AS CHAR) as used_on_io
 	            	FROM itemversion
