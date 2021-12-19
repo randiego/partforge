@@ -233,6 +233,13 @@ class UtilsController extends DBControllerActionAbstract
                         $databaseversion = '10';
                         setGlobal('databaseversion', $databaseversion);
                     }
+                    if ($databaseversion=='10') {
+                        $msgs[] = 'Upgrading to version 11: Recursive validation error reporting.';
+                        DbSchema::getInstance()->mysqlQuery("ALTER TABLE itemobject ADD COLUMN validation_cache_is_valid INT DEFAULT 0");
+                        DbSchema::getInstance()->mysqlQuery("ALTER TABLE itemobject ADD COLUMN cached_has_validation_errors INT DEFAULT 0");
+                        $databaseversion = '11';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
             }
         }
         $this->view->currentversion = getGlobal('databaseversion');

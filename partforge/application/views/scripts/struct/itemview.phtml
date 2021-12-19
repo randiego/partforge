@@ -150,6 +150,8 @@ if ($this->show_big_page_controls) {
     $html .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_BIG_PAGE_CONTROL', 'Pages with a lot of history use the above selector to let you choose how much history to show.', '6/16/2016');
 }
 
+//$html .= '<div class="itemview_notice">ItemObject IDs:'.implode(', ', DBTableRowItemObject::getWhereUsedItemObjectIDs($this->dbtable->itemobject_id)).'</div>';
+
 if (!$is_current_version) {
     $query_params = array();
     $query_params['itemversion_id'] = $this->dbtable->io__cached_current_itemversion_id;
@@ -185,6 +187,8 @@ if (!empty($fieldlayout)) {
 
     $errormsg = array();
     $this->dbtable->validateFields($this->dbtable->getSaveFieldNames(), $errormsg);
+    // the following MUST be called after validateFields because otherwise validate fields will think component errors are real errors
+    $this->dbtable->getComponentValidationErrors($errormsg);
 
     $html .= DBTableRowItemVersion::fetchItemVersionEditTableTR($fieldlayout, $this->dbtable, $errormsg, '', false, null, $this->fieldhistory);
     $html .= '</table></div>

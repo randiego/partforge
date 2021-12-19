@@ -190,6 +190,100 @@ class DBTableRowItemObject extends DBTableRow {
         return $out;
     }
 
+    public static function getWhereUsedItemObjectIDs($itemobject_id, $parents=array())
+    {
+        $out = array();
+        $query = "SELECT DISTINCT iv_them.itemobject_id
+            FROM itemcomponent
+            LEFT JOIN itemversion AS iv_them ON iv_them.itemversion_id=itemcomponent.belongs_to_itemversion_id
+            LEFT JOIN typeversion ON typeversion.typeversion_id=iv_them.typeversion_id
+            WHERE itemcomponent.has_an_itemobject_id='{$itemobject_id}' and typeversion.typecategory_id=2";
+        $records = DbSchema::getInstance()->getRecords('itemobject_id', $query);
+        foreach ($records as $itemobject_id => $record) {
+            $out[] = $itemobject_id;
+            if (!in_array($itemobject_id, $parents)) {   // this prevents infinite loops
+                $new_parents = array_merge($parents, array($itemobject_id));
+                $whereused = self::getWhereUsedItemObjectIDs($itemobject_id, $new_parents);
+                $out = array_merge($out, $whereused);
+            }
+        }
+        return $out;
+    }
+
+    /**
+     * This is called when a change is made to a part so we can set all the itemobject.validation_cache_is_valid=0 for
+     * affected items where this itemobject is used.
+     *
+     * @param int $itemobject_id
+     *
+     * @return void
+     */
+    public static function invalidateValidationCacheOnAllWhereUsed($itemobject_id)
+    {
+        $itemobject_ids = self::getWhereUsedItemObjectIDs($itemobject_id);
+        $itemobject_ids[] = $itemobject_id;
+        $query = "UPDATE itemobject SET validation_cache_is_valid=0 WHERE itemobject_id IN (".implode(',', $itemobject_ids).")";
+        DbSchema::getInstance()->mysqlQuery($query);
+    }
+
+    public static function countKeys($array, $key_value)
+    {
+        $count = 0;
+        foreach ($array as $key => $value) {
+            if ($key==$key_value) {
+                $count += count($value);
+            } else if (is_array($value)) {
+                $count += self::countKeys($value, $key_value);
+            }
+        }
+        return $count;
+    }
+
+    /**
+     * returns an array of validation error counts for the specified array of itemobject IDs.
+     * This either uses the caches value or, if necessary, updates the cached value and returns that
+     *
+     * @param array $itemobject_ids
+     *
+     * @return array of validation error counts indexed by itemobject ID.
+     */
+    public static function refreshAndGetValidationErrorCounts($itemobject_ids)
+    {
+        $out = array();
+        $query = "SELECT itemobject_id, validation_cache_is_valid, cached_has_validation_errors
+            FROM itemobject
+            WHERE itemobject_id IN (".implode(',', $itemobject_ids).")";
+        $records = DbSchema::getInstance()->getRecords('itemobject_id', $query);
+        foreach ($records as $itemobject_id => $record) {
+            if ($record['validation_cache_is_valid']) {
+                $out[$itemobject_id] = $record['cached_has_validation_errors'];
+            } else {
+                $errorcount = DBTableRowItemObject::countKeys(DBTableRowItemObject::getItemObjectFullNestedArray($itemobject_id), 'field_validation_errors');
+                $query = "UPDATE itemobject SET validation_cache_is_valid=1, cached_has_validation_errors='{$errorcount}' WHERE itemobject_id='{$itemobject_id}'";
+                DbSchema::getInstance()->mysqlQuery($query);
+                $out[$itemobject_id] = $errorcount;
+            }
+        }
+        return $out;
+    }
+
+    public static function refreshValidationCache($count)
+    {
+        $query = "SELECT DISTINCT itemobject.itemobject_id
+            FROM itemobject
+            LEFT JOIN itemversion AS iv ON iv.itemversion_id=itemobject.cached_current_itemversion_id
+            LEFT JOIN typeversion ON typeversion.typeversion_id=iv.typeversion_id
+            WHERE itemobject.validation_cache_is_valid=0 and typeversion.typecategory_id=2
+            LIMIT {$count}";
+        $records = DbSchema::getInstance()->getRecords('itemobject_id', $query);
+        $itemobject_ids = array_keys($records);
+        if (count($itemobject_ids) > 0) {
+            $error_counts_array = self::refreshAndGetValidationErrorCounts($itemobject_ids);
+        }
+    }
+
+
+
     /**
      * returns a nested dictionary of fields given a specific itemversion_id.  Unlike getItemObjectFullNestedArray this starts with the
      * specified itemVERSION_id instead of inferring the version from the itemobject_id and the effective_date.  For sub components, though,

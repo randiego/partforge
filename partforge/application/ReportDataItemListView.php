@@ -552,6 +552,8 @@ class ReportDataItemListView extends ReportDataWithCategory {
             $ItemVersion->_navigator = $navigator;
             $ItemVersion->getRecordById($record['iv__itemversion_id']);
             $ItemVersion->validateFields($ItemVersion->getSaveFieldNames(), $errormsg);
+            // the following MUST be called after validateFields because otherwise validate fields will think component errors are real errors
+            $ItemVersion->getComponentValidationErrors($errormsg);
         }
 
         if ($need_to_load_ItemVersion && (count($this->addon_fields_list)>0)) {

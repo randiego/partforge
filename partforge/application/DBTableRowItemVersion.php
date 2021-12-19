@@ -710,6 +710,9 @@ class DBTableRowItemVersion extends DBTableRow {
             $affected_itemobjects[] = $this->itemobject_id;
             DBTableRowItemObject::updateCachedLastReferenceFields($affected_itemobjects);
             DBTableRowItemObject::updateCachedCreatedOnFields($this->itemobject_id);
+            if ($this->hasASerialNumber()) {
+                DBTableRowItemObject::invalidateValidationCacheOnAllWhereUsed($this->itemobject_id);
+            }
 
             if ($new_object) {
                 DBTableRowChangeLog::addedItemObject($this->itemobject_id, $this->itemversion_id);
@@ -842,6 +845,9 @@ class DBTableRowItemVersion extends DBTableRow {
         $affected_itemobjects[] = $this->itemobject_id;
         DBTableRowItemObject::updateCachedLastReferenceFields($affected_itemobjects);
         DBTableRowItemObject::updateCachedCreatedOnFields($this->itemobject_id);
+        if ($this->hasASerialNumber()) {
+            DBTableRowItemObject::invalidateValidationCacheOnAllWhereUsed($this->itemobject_id);
+        }
     }
 
     /**
@@ -900,6 +906,9 @@ class DBTableRowItemVersion extends DBTableRow {
      */
     public function delete()
     {
+        if ($this->hasASerialNumber()) {
+            DBTableRowItemObject::invalidateValidationCacheOnAllWhereUsed($this->itemobject_id);
+        }
         $itemobject_id = $this->itemobject_id;
         $itemversion_id = $this->itemversion_id;
         $typeversion_id = $this->typeversion_id;
@@ -1267,6 +1276,24 @@ class DBTableRowItemVersion extends DBTableRow {
         foreach ($this->getAddOnFieldNames() as $fieldname) {
             if (isset($errormsg[$fieldname])) {
                 unset($errormsg[$fieldname]);
+            }
+        }
+    }
+
+    public function getComponentValidationErrors(&$errormsg)
+    {
+        $itemobject_ids = array();
+        foreach ($this->getComponentFieldNames() as $fieldname) {
+            if (is_numeric($this->{$fieldname})) {
+                $itemobject_ids[$fieldname] = $this->{$fieldname};
+            }
+        }
+        if (count($itemobject_ids) > 0) {
+            $error_counts_array = DBTableRowItemObject::refreshAndGetValidationErrorCounts($itemobject_ids);
+            foreach ($itemobject_ids as $fieldname => $itemobject_id) {
+                if ($error_counts_array[$itemobject_id] > 0) {
+                    $errormsg[$fieldname] = 'Component has errors.';
+                }
             }
         }
     }

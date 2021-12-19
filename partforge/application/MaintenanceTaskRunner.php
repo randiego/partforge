@@ -52,6 +52,7 @@ class MaintenanceTaskRunner {
             array('name' => 'update_user_stats', 'interval' => 3600),
             array('name' => 'generate_user_reports', 'interval' => 5*60),   // reports have their own intervals, so this is not too frequent
             array('name' => 'cleanup_qr_upload_records', 'interval' => 3600),
+            array('name' => 'refresh_validation_cache', 'interval' => 30),
         );
 
     }
@@ -219,4 +220,10 @@ class MaintenanceTaskRunner {
         DBTableRowQRUploadKey::cleanupOldRecords();
         DBTableRowDocument::cleanupOrphanDocuments();
     }
+
+    private function refresh_validation_cache(&$messages)
+    {
+        DBTableRowItemObject::refreshValidationCache(10);
+    }
+
 }
