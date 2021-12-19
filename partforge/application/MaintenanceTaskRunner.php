@@ -188,8 +188,8 @@ class MaintenanceTaskRunner {
     private function update_user_stats(&$messages)
     {
         $query = "UPDATE user as u SET cached_items_created_count=((select count(*) from document where (user_id=u.user_id))
-								+ (select count(*) from comment where (user_id=u.user_id) or (proxy_user_id=u.user_id) )
-								+ (select count(*) from itemversion where (user_id=u.user_id) or (proxy_user_id=u.user_id) ))";
+								+ (select count(*) from comment where (user_id=u.user_id))
+								+ (select count(*) from itemversion where (user_id=u.user_id)))";
         DbSchema::getInstance()->mysqlQuery($query);
     }
 
