@@ -1236,7 +1236,7 @@ class DBTableRowItemVersion extends DBTableRow {
         }
 
         parent::validateFields($fieldnames, $errormsg);
-        if ($this->is_user_procedure && ((count($errormsg)>0) || $this->hasDictionaryOverrideErrors())) {
+        if ($this->hasADisposition() && ((count($errormsg)>0) || $this->hasDictionaryOverrideErrors())) {
             if ($this->disposition=='Pass') {
                 $errormsg['disposition'] = 'There cannot be errors and a disposition of Pass.  Use Signed Off instead.';
             }
