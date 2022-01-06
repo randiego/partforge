@@ -299,7 +299,6 @@ class DBTableRowItemVersion extends DBTableRow {
         $out = $this->_typeversion_digest['addon_property_fields'];
         $out = array_merge($out, $this->_typeversion_digest['addon_component_fields']);
         $out = array_merge($out, $this->_typeversion_digest['addon_component_subfields']);
-        $out[] = 'disposition';
         return $out;
     }
 

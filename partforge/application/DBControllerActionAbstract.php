@@ -339,6 +339,11 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
         }
         if ($show) {
             $_SESSION['user_tried_to_save_bad_data'] = true;
+            foreach ($errormsg as $fieldname => $message) {
+                if (in_array($fieldname, $fatal_fields)) {
+                    $errormsg[$fieldname] = '<div class="errorred">'.$message.'</div>';
+                }
+            }
             showdialog('Invalid Input', implode('<br>', $errormsg)."<br><br>Please press the Back button to re-enter the information.", $buttons);
         }
     }
