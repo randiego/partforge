@@ -26,6 +26,7 @@ Public Class PartForgeDocument
 
     Private _data_items As Dictionary(Of String, String)
     Private _comment_items As Dictionary(Of String, String)
+    Private _fieldcomments As Dictionary(Of String, Dictionary(Of String, String))
     Private _last_web_response_strings As Dictionary(Of String, String)
     Private _fileExtension As String
 
@@ -39,6 +40,7 @@ Public Class PartForgeDocument
         Me._fileExtension = fileExtension
         Me._data_items = New Dictionary(Of String, String)
         Me._comment_items = New Dictionary(Of String, String)
+        Me._fieldcomments = New Dictionary(Of String, Dictionary(Of String, String))
         Me._last_web_response_strings = New Dictionary(Of String, String)
         Me.SavedDocument_ids = New List(Of String)
         Me.SaveList = New Dictionary(Of String, String)
@@ -78,6 +80,10 @@ Public Class PartForgeDocument
         Me._typeobject_id = ""
         Me._data_items.Clear()
         Me._comment_items.Clear()
+        For Each field_name As String In Me._fieldcomments.Keys
+            Me._fieldcomments(field_name).Clear()
+        Next
+        Me._fieldcomments.Clear()
         Me._last_web_response_strings.Clear()
         Me.SaveList.Clear()
         Me.SavedDocument_ids.Clear()
@@ -196,10 +202,29 @@ Public Class PartForgeDocument
             Next
             For Each field As XPathNavigator In nav.Select("measurement/data")
                 For Each child As XPathNavigator In field.SelectChildren(XPathNodeType.Element)
+                    Dim field_name As String
                     If (child.Name = "field") And child.HasAttributes And child.GetAttribute("name", "") <> "" Then
-                        Me._data_items(child.GetAttribute("name", "")) = child.Value
+                        field_name = child.GetAttribute("name", "")
                     Else
-                        Me._data_items(child.Name) = child.Value
+                        field_name = child.Name
+                    End If
+                    For Each subchild As XPathNavigator In child.Select("comment")
+                        For Each subsubchild As XPathNavigator In subchild.SelectChildren(XPathNodeType.Element)
+                            If Not Me._fieldcomments.ContainsKey(field_name) Then
+                                Me._fieldcomments(field_name) = New Dictionary(Of String, String)
+                            End If
+                            If Me._fieldcomments(field_name).ContainsKey(subsubchild.Name) Then
+                                ' It looks like we have more than one, so we will append with seperator.  There is probably a much better way to do this, but...
+                                Me._fieldcomments(field_name)(subsubchild.Name) = Me._fieldcomments(field_name)(subsubchild.Name) & "|" & subsubchild.Value
+                            Else
+                                Me._fieldcomments(field_name)(subsubchild.Name) = subsubchild.Value
+                            End If
+                        Next
+                    Next
+                    If Not Me._fieldcomments.ContainsKey(field_name) Then
+                        Me._data_items(field_name) = child.Value
+                    Else
+                        Me._data_items(field_name) = ""
                     End If
                 Next
             Next
@@ -299,6 +324,24 @@ Public Class PartForgeDocument
         End If
     End Function
 
+    Public Function HasFieldCommentText(fieldname As String) As Boolean
+        HasFieldCommentText = False
+        If Me._fieldcomments(fieldname).ContainsKey("text") Then
+            If Me._fieldcomments(fieldname)("text") <> "" Then
+                HasFieldCommentText = True
+            End If
+        End If
+    End Function
+
+    Public Function HasFieldCommentFileAttachment(fieldname As String) As Boolean
+        HasFieldCommentFileAttachment = False
+        If Me._fieldcomments(fieldname).ContainsKey("fileattachment") Then
+            If Me._fieldcomments(fieldname)("fileattachment") <> "" Then
+                HasFieldCommentFileAttachment = True
+            End If
+        End If
+    End Function
+
     Public Function CommentTextToPostVars(ByVal ItemVersion_Id As String) As String
         Dim varpairs As List(Of String) = New List(Of String)
         varpairs.Add("user_id=" & HttpUtility.UrlEncode(Me._user))
@@ -310,6 +353,20 @@ Public Class PartForgeDocument
             varpairs.Add("comment_text=" & HttpUtility.UrlEncode("[AUTOPOSTED]: " & Me._comment_items("text")))
         End If
         CommentTextToPostVars = String.Join("&", varpairs.ToArray())
+    End Function
+
+    Public Function FieldCommentTextToPostVars(fieldname As String) As String
+        Dim varpairs As List(Of String) = New List(Of String)
+        varpairs.Add("user_id=" & HttpUtility.UrlEncode(Me._user))
+        varpairs.Add("itemobject_id=-1")
+        varpairs.Add("is_fieldcomment=1")
+        If Me._fieldcomments(fieldname).ContainsKey("comment_date") Then
+            varpairs.Add("comment_added=" & HttpUtility.UrlEncode(Me._fieldcomments(fieldname)("comment_date")))
+        End If
+        If Me._fieldcomments(fieldname).ContainsKey("text") Then
+            varpairs.Add("comment_text=" & HttpUtility.UrlEncode("[AUTOPOSTED]: " & Me._fieldcomments(fieldname)("text")))
+        End If
+        FieldCommentTextToPostVars = String.Join("&", varpairs.ToArray())
     End Function
 
     Public Function DocumentToPostVars(ByVal Comment_Id As String) As String
@@ -462,7 +519,7 @@ Public Class PartForgeDocument
 
     ' Save to PartForge DB.  Returns true if something was saved.  
     ' This looks at the SaveList dictionary and tries to save items that have not yet been successfully saved.
-    ' It does this in the following order: itemversion, comment, documents
+    ' It does this in the following order: fieldcomments, itemversion, comment, documents
     Public Function SavePendingToDataBase(ByVal BaseUrl As String, ByRef GotSomethingUploaded As Boolean) As Boolean
 
         WriteLog(Now().ToString("MM/dd/yyyy HH:mm") & ": Starting to upload XML file: " & Me.FileName)
@@ -471,6 +528,61 @@ Public Class PartForgeDocument
         If Not Me.SaveList.ContainsKey("itemversion_id") Then
             Me.SaveList("itemversion_id") = "new"
         End If
+
+        ' Save fieldcomments first since we need to know the comment_id before we can save the main form data
+        For Each field_name As String In Me._fieldcomments.Keys()
+            If (Me.HasFieldCommentText(field_name) Or Me.HasFieldCommentFileAttachment(field_name)) Then
+                If Not Me.SaveList.ContainsKey(field_name & " comment_id") Then
+                    Me.SaveList(field_name & " comment_id") = "new"
+                End If
+
+                If Not IsNumeric(Me.SaveList(field_name & " comment_id")) Then
+                    ' then we will save the comment now
+                    WriteLog("Saving fieldcomment record...")
+                    Me.SaveList(field_name & " comment_id") = "new"
+                    Success = Me.HttpPostToPartForge(BaseUrl & "items/comments?format=json", Me.FieldCommentTextToPostVars(field_name))
+                    If Success Then
+                        GotSomethingUploaded = True
+                        Me.SaveList(field_name & " comment_id") = Me.LastResponse("comment_id")
+                        WriteLog("Successful save of comment record: attachment comment_id=" & Me.LastResponse("comment_id"))
+                    Else
+                        Me.SaveList(field_name & " comment_id") = "error"
+                        WriteLog("Failed to save comment record: " & Me.LastResponse("errormessages"))
+                    End If
+                End If
+            End If
+
+            If Success Then
+                Me._data_items(field_name) = Me.SaveList(field_name & " comment_id")
+            End If
+
+            If Success And HasFieldCommentFileAttachment(field_name) Then
+                Dim i As Integer = 0
+                Dim dockey As String
+                For Each FName As String In New List(Of String)(Me._fieldcomments(field_name)("fileattachment").Split(CChar("|")))
+                    dockey = field_name & "_document_id[" & i.ToString() & "]"
+                    If Not Me.SaveList.ContainsKey(dockey) Then
+                        Me.SaveList(dockey) = "new"
+                    End If
+                    If Not IsNumeric(Me.SaveList(dockey)) Then
+                        WriteLog("Saving attachement (" & dockey & ")...")
+                        ' we should try to save it, since it was not saved yet
+                        Success = Me.HttpSendFileToPartForge(BaseUrl & "items/documents?format=json&comment_id=" & Me.SaveList(field_name & " comment_id"), FName)
+                        If Success Then
+                            GotSomethingUploaded = True
+                            Me.SaveList(dockey) = Me.LastResponse("document_id")
+                            WriteLog("Successful save of file (" & FName & ") record: document_id=" & Me.LastResponse("document_id"))
+                        Else
+                            Me.SaveList(dockey) = "error"
+                            WriteLog("Failed to save file record: " & Me.LastResponse("errormessages"))
+                            Exit For
+                        End If
+                    End If
+                    i = i + 1
+                Next
+            End If
+
+        Next
 
         If Not IsNumeric(Me.SaveList("itemversion_id")) Then
             Me.SaveList("itemversion_id") = "new"
@@ -513,31 +625,31 @@ Public Class PartForgeDocument
             End If
         End If
 
-            ' success means that we have a valid itemversion_id that we can save a comment under if one exists.
-            If Success And (Me.HasCommentText Or Me.HasCommentFileAttachment()) Then
-                If Not Me.SaveList.ContainsKey("comment_id") Then
-                    Me.SaveList("comment_id") = "new"
-                End If
-
-                If Not IsNumeric(Me.SaveList("comment_id")) Then
-                    ' then we will save the comment now
-                    WriteLog("Saving comment record...")
-                    Me.SaveList("comment_id") = "new"
-                    Success = Me.HttpPostToPartForge(BaseUrl & "items/comments?format=json", Me.CommentTextToPostVars(Me.SaveList("itemversion_id")))
-                    If Success Then
-                        GotSomethingUploaded = True
-                        Me.SaveList("comment_id") = Me.LastResponse("comment_id")
-                        WriteLog("Successful save of comment record: comment_id=" & Me.LastResponse("comment_id"))
-                    Else
-                        Me.SaveList("comment_id") = "error"
-                        WriteLog("Failed to save comment record: " & Me.LastResponse("errormessages"))
-                    End If
-                End If
+        ' success means that we have a valid itemversion_id that we can save a comment under if one exists.
+        If Success And (Me.HasCommentText Or Me.HasCommentFileAttachment()) Then
+            If Not Me.SaveList.ContainsKey("comment_id") Then
+                Me.SaveList("comment_id") = "new"
             End If
 
-            If Success And Me.HasCommentFileAttachment() Then
-                Dim i As Integer = 0
-                Dim dockey As String
+            If Not IsNumeric(Me.SaveList("comment_id")) Then
+                ' then we will save the comment now
+                WriteLog("Saving comment record...")
+                Me.SaveList("comment_id") = "new"
+                Success = Me.HttpPostToPartForge(BaseUrl & "items/comments?format=json", Me.CommentTextToPostVars(Me.SaveList("itemversion_id")))
+                If Success Then
+                    GotSomethingUploaded = True
+                    Me.SaveList("comment_id") = Me.LastResponse("comment_id")
+                    WriteLog("Successful save of comment record: comment_id=" & Me.LastResponse("comment_id"))
+                Else
+                    Me.SaveList("comment_id") = "error"
+                    WriteLog("Failed to save comment record: " & Me.LastResponse("errormessages"))
+                End If
+            End If
+        End If
+
+        If Success And Me.HasCommentFileAttachment() Then
+            Dim i As Integer = 0
+            Dim dockey As String
             For Each FName As String In New List(Of String)(Me._comment_items("fileattachment").Split(CChar("|")))
                 dockey = "document_id[" & i.ToString() & "]"
                 If Not Me.SaveList.ContainsKey(dockey) Then
@@ -560,9 +672,9 @@ Public Class PartForgeDocument
                 i = i + 1
             Next
         End If
-            If (Not Success) And GotSomethingUploaded Then
-                WriteLog("Even though something failed, it appears that at least something was uploaded.")
-            End If
+        If (Not Success) And GotSomethingUploaded Then
+            WriteLog("Even though something failed, it appears that at least something was uploaded.")
+        End If
         WriteLog(IIf(Success, "Successful", "Unsuccessful").ToString & " end of Upload procedure for " & Me.FileName)
         SavePendingToDataBase = Success
     End Function

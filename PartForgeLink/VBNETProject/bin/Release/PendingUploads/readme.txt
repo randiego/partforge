@@ -24,3 +24,22 @@ See https://github.com/randiego/partforge/wiki/PartForgeLink-exe-auto-uploading-
     <fileattachment>C:\MyDataLocation\FlightTest\FlightLog_2020-10-02-0732.csv</fileattachment>
   </comment>
 </measurement>
+
+
+An example with an attachment type field:
+
+<measurement>
+	<header>
+	<typeobject_id>1194</typeobject_id>
+	<item_serial_number>SN000070</item_serial_number>
+	</header>
+	<data>
+	  <report_attachment>
+		<comment>
+		<text><![CDATA[Battery Temperature Log.]]></text>
+		<fileattachment>C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf</fileattachment>
+		<fileattachment>C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf</fileattachment>
+		</comment>
+	  </report_attachment>
+	</data>
+</measurement>
