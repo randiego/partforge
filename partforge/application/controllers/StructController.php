@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -499,7 +499,15 @@ class StructController extends DBControllerActionAbstract
                 $dbtable->itemversion_id = 'new';
                 $dbtable->validateFields($save_fieldnames, $errormsg);
                 $dbtable->itemversion_id = $itemversion_hold;
-                $this->show_error_dialog_if_needed($errormsg, $dbtable, isset($this->params['btnChangePart']) ? 'btnChangePart' : 'btnSaveBeforeSubEdit');
+                $added_params = array();
+                if (isset($this->params['sub_edit_params'])) {
+                    $added_params = array('sub_edit_params' => $this->params['sub_edit_params']);
+                    // don't complain about nonstrict errors since we are coming back to finish.
+                    if (isset($this->params['btnSaveBeforeSubEdit'])) {
+                        $this->params['ignore_nonstrict_errors'] = 1;
+                    }
+                }
+                $this->show_error_dialog_if_needed($errormsg, $dbtable, isset($this->params['btnChangePart']) ? 'btnChangePart' : 'btnSaveBeforeSubEdit', $added_params);
                 /*
                    When calling the following, if we are a data terminal type user, we want to pass in the select user_id.
                    But if we are a normal user, we want it to be the logged-in user.
@@ -558,7 +566,6 @@ class StructController extends DBControllerActionAbstract
         return $dbtable->getTableName().$dbtable->typeversion_id;
     }
 
-
     /*
       this is the action for editing a record in the SESSION variable.
       override this to simply change the view and save handling
@@ -611,6 +618,13 @@ class StructController extends DBControllerActionAbstract
                         $EditRow->ensureEffectiveDateValid();
                     }
                 }
+            } elseif ('editfieldcomment'==$previous_action) {
+                if (isset($_SESSION[$edited_buffer]) && isset($_SESSION[$edited_buffer]['form_result'])) {
+                    if (('btnOK'==$_SESSION[$edited_buffer]['form_result'])) {
+                        $EditRow->{$edited_field} = $_SESSION[$edited_buffer]['comment_id'];
+                        $_SESSION[$edit_buffer][$edited_field] = $_SESSION[$edited_buffer]['comment_id'];
+                    }
+                }
             }
         }
 
@@ -634,6 +648,12 @@ class StructController extends DBControllerActionAbstract
             $this->render('commenteditview');
         }
 
+    }
+
+    public function deletefieldcommentAction()
+    {
+        $_SESSION['editing_'.$this->params['buffer_key']][$this->params['fieldname']] = null;
+        spawnurl($this->params['return_url']);
     }
 
     /**
@@ -1250,7 +1270,7 @@ class StructController extends DBControllerActionAbstract
                         if (count($ref_records)>0) {
                             $msgs[] = 'You cannot delete this if there are other parts or procedures that reference it.  You must delete them first.';
                         }
-                        $com_records = DbSchema::getInstance()->getRecords('', "SELECT * FROM comment where itemobject_id='{$EditRow->itemobject_id}'");
+                        $com_records = DbSchema::getInstance()->getRecords('', "SELECT * FROM comment where (itemobject_id='{$EditRow->itemobject_id}') and (comment.is_fieldcomment=0)");
                         if (count($com_records)>0) {
                             $msgs[] = 'You cannot delete this if there are comments.  You must delete them first.';
                         }

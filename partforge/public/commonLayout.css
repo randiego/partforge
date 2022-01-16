@@ -1361,6 +1361,10 @@ div.bd-event-document a {
 	color:#0073ea;
 }
 
+.bd-event-documents a:link, .bd-event-documents a:visited, .bd-event-documents a:hover, .bd-event-documents a:active {
+	text-decoration:none;
+}
+
 div.bd-event-document a .size {
 	color:#777;
 	margin-left: 5px;
@@ -1956,11 +1960,12 @@ span.monthsmenu {
 }
 
 table.edittable th.hidden_properties_array_cell, table.edittable td.hidden_properties_array_cell,
-table.edittable th.hidden_components_array_cell, table.edittable td.hidden_components_array_cell {
+table.edittable th.hidden_components_array_cell, table.edittable td.hidden_components_array_cell,
+table.edittable th.hidden_attachments_array_cell, table.edittable td.hidden_attachments_array_cell {
 	background-color: #fcc;
 }
 
-th.hidden_properties_array_cell .paren, th.hidden_components_array_cell .paren {
+th.hidden_properties_array_cell .paren, th.hidden_components_array_cell .paren, th.hidden_attachments_array_cell .paren {
 	color: #555;
 }
 

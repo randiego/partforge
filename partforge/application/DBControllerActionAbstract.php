@@ -326,7 +326,7 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
 
     }
 
-    public function show_error_dialog_if_needed($errormsg, $dbtable, $button_value)
+    public function show_error_dialog_if_needed($errormsg, $dbtable, $button_value, $added_params=array())
     {
         $fatal_fields = array_diff(array_keys($errormsg), $dbtable->getAddOnFieldNames());
         $buttons = array('<== Back' => $this->navigator->getCurrentViewUrl());
@@ -335,7 +335,7 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
             $show = true;
         } else if ((count($errormsg)>0) && !isset($this->params['ignore_nonstrict_errors'])) {
             $show = true;
-            $buttons['Save Anyway'] = $this->navigator->getCurrentHandlerUrl($button_value, null, null, array('ignore_nonstrict_errors' => 1));
+            $buttons['Save Anyway'] = $this->navigator->getCurrentHandlerUrl($button_value, null, null, array_merge(array('ignore_nonstrict_errors' => 1), $added_params));
         }
         if ($show) {
             $_SESSION['user_tried_to_save_bad_data'] = true;

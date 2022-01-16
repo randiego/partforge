@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -334,7 +334,7 @@ class TableRow {
 
             $subcaption = '';
 
-            if (isset($this->_fieldtypes[$string]['type']) && in_array($this->_fieldtypes[$string]['type'], array('float','boolean','calculated'))) {
+            if (isset($this->_fieldtypes[$string]['type']) && in_array($this->_fieldtypes[$string]['type'], array('float','boolean','calculated','attachment'))) {
                 $subcaption = self::composeSubcaptionWithValidation($this->_fieldtypes[$string], true);
             } elseif (isset($this->_fieldtypes[$string]['subcaption']) && is_string($this->_fieldtypes[$string]['subcaption'])) {
                 $subcaption = $this->_fieldtypes[$string]['subcaption'];
@@ -509,7 +509,7 @@ class TableRow {
             }
             return $is_html ? implode('<br>', $out) : implode("\r\n", $out);
         } else if ($type == 'boolean') { // a boolean
-            return is_null($value) ? '' : ($value ? 'Yes' : 'No');
+            return is_null($value) || ($value==='') ? '' : ($value ? 'Yes' : 'No');
         } else if ($type == 'datetime') {
             return ($value && (strtotime($value) != -1)) ? date('m/d/Y G:i', strtotime($value)) : $value;
         } else if ($type == 'date') {

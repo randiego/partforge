@@ -152,3 +152,19 @@ if (is_numeric($this->report_data->getViewCategory())) {
 
 
 echo fetch_form_tag($html.$this->paginated_report_page->fetch_form_body_html($overtablehtml, $pagination_line_html));
+?>
+
+<!-- The dialog widget -->
+<div id="blueimp-gallery-dialog" data-show="fade" data-hide="fade">
+    <!-- The gallery widget  -->
+    <div class="blueimp-gallery blueimp-gallery-carousel blueimp-gallery-controls"  data-transition-speed=100>
+        <div class="slides"></div>
+        <h3 class="title"></h3>
+        <a class="prev">‹</a>
+        <a class="next">›</a>
+        <a class="play-pause"></a>
+        <ol class="indicator"></ol>
+    </div>
+</div>
+<script src="<?php echo $baseUrl;?>/jqueryextras/gallery-2.15.2/js/blueimp-gallery.min.js"></script>
+<script src="<?php echo $baseUrl;?>/jqueryextras/image-gallery/js/jquery.image-gallery.custom.js"></script>

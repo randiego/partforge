@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -243,7 +243,13 @@ class ItemViewPDF extends TCPDF {
                         if (isset($fieldtype['error'])) {
                             $validate_msg[] = $fieldtype['error'];
                         }
-                        $rhs_html = $this->dbtable->formatPrintField($fieldname);
+                        if ($fieldtype['type']=='attachment') {
+                            list($documents_gallery_html, $comment_html, $record) = DBTableRowItemVersion::getFieldCommentRecord(null, $this->dbtable->{$fieldname}, '');
+                            $documents_html = isset($record['documents_packed']) ? EventStream::renderCommentDocumentsPackedToPdfHtml($record['documents_packed']) : '';
+                            $rhs_html = $documents_html.$comment_html;
+                        } else {
+                            $rhs_html = $this->dbtable->formatPrintField($fieldname);
+                        }
                     }
 
                     $fieldtype = $this->dbtable->getFieldType($fieldname);

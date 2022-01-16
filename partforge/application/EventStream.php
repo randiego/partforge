@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -164,7 +164,7 @@ class EventStream {
 
         // comments
         $end_date_and_where = is_null($end_date) ? '' : " and (comment.comment_added >= '".time_to_mysqldatetime(strtotime($end_date))."')";
-        $query = "SELECT count(*) as record_count FROM comment WHERE itemobject_id='{$this->_itemobject_id}' {$end_date_and_where}";
+        $query = "SELECT count(*) as record_count FROM comment WHERE is_fieldcomment=0 and itemobject_id='{$this->_itemobject_id}' {$end_date_and_where}";
         $records = DbSchema::getInstance()->getRecords('', $query);
         $record = reset($records);
         $count += $record['record_count'];
@@ -315,7 +315,7 @@ class EventStream {
 									)
 								FROM document WHERE (document.comment_id = themcomment.comment_id) and (document.document_path_db_key='{$config->document_path_db_key}')),''))
 								SEPARATOR '|')
-						FROM comment as themcomment WHERE themcomment.itemobject_id=iv_them.itemobject_id
+						FROM comment as themcomment WHERE themcomment.itemobject_id=iv_them.itemobject_id and themcomment.is_fieldcomment=0
 					) as comments_packed
 				FROM itemcomponent
 				LEFT JOIN itemversion AS iv_them ON iv_them.itemversion_id=itemcomponent.belongs_to_itemversion_id
@@ -384,7 +384,7 @@ class EventStream {
 				SELECT comment.*, (SELECT GROUP_CONCAT(
 				CONCAT(document.document_id,',',document.document_filesize,',',CONVERT(HEX(document.document_displayed_filename),CHAR),',',CONVERT(HEX(document.document_stored_filename),CHAR),',',document.document_stored_path,',',document.document_file_type,',',document.document_thumb_exists)
 				ORDER BY document.document_date_added SEPARATOR ';') FROM document WHERE (document.comment_id = comment.comment_id) and (document.document_path_db_key='{$config->document_path_db_key}')) as documents_packed FROM comment
-				WHERE itemobject_id='{$this->_itemobject_id}' {$end_date_and_where}
+				WHERE is_fieldcomment=0 and itemobject_id='{$this->_itemobject_id}' {$end_date_and_where}
 			";
         $records = DbSchema::getInstance()->getRecords('comment_id', $query);
         foreach ($records as $comment_id => $record) {
@@ -397,6 +397,7 @@ class EventStream {
             $itemevent['record_created'] = $record['record_created'];
             $itemevent['user_id'] = $record['user_id'];
             $itemevent['proxy_user_id'] = $record['proxy_user_id'];
+            $itemevent['is_fieldcomment'] = $record['is_fieldcomment'];
             $itemevent['description_is_html'] = false;
             $itemevent['event_description'] = $record['comment_text'];
             if ($record['documents_packed']) {
@@ -767,6 +768,21 @@ class EventStream {
         return $layout_rows;
     }
 
+    public static function renderCommentDocumentsPackedToPdfHtml($documents_packed)
+    {
+        $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getScheme().'://'.Zend_Controller_Front::getInstance()->getRequest()->getHttpHost().Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();
+        $documents_html = '<ul>';
+        foreach (explode(';', $documents_packed) as $document_packed) {
+            list($document_id,$document_filesize,$document_displayed_filename,$document_stored_filename,$document_stored_path,$document_file_type,$document_thumb_exists) = explode(',', $document_packed);
+            $document_stored_filename = hextobin($document_stored_filename); // we had to store this earlier for safety
+            $document_displayed_filename = hextobin($document_displayed_filename); // we had to store this earlier for safety
+            $filename_url = $baseUrl.'/items/documents/'.$document_id."?fmt=medium";
+            $documents_html .= '<li><a href="'.$filename_url.'">'.$document_displayed_filename.'</a></li>';
+        }
+        $documents_html .= '</ul>';
+        return $documents_html;
+    }
+
     /**
      * Takes the lines output from ::eventStreamRecordsToLines() and renders it into simple html that is meant to be rendered
      * as PDF in ItemViewPDF.
@@ -776,7 +792,6 @@ class EventStream {
      */
     public static function renderEventStreamHtmlForPdfFromLines($dbtable, $lines, $show_procedures = true)
     {
-        $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getScheme().'://'.Zend_Controller_Front::getInstance()->getRequest()->getHttpHost().Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();
         $event_type_to_class = array('ET_CHG' => 'bd-type-change', 'ET_PROCREF' => 'bd-type-link-proc', 'ET_PARTREF' => 'bd-type-link-part', 'ET_COM' => 'bd-type-comment');
         $layout_rows = array();
         foreach ($lines as $line) {
@@ -792,15 +807,7 @@ class EventStream {
 
             if ($line['event_type_id']=='ET_COM') {
                 if ($line['documents_packed']) {
-                    $documents_html = '<ul>';
-                    foreach (explode(';', $line['documents_packed']) as $document_packed) {
-                        list($document_id,$document_filesize,$document_displayed_filename,$document_stored_filename,$document_stored_path,$document_file_type,$document_thumb_exists) = explode(',', $document_packed);
-                        $document_stored_filename = hextobin($document_stored_filename); // we had to store this earlier for safety
-                        $document_displayed_filename = hextobin($document_displayed_filename); // we had to store this earlier for safety
-                        $filename_url = $baseUrl.'/items/documents/'.$document_id."?fmt=medium";
-                        $documents_html .= '<li><a href="'.$filename_url.'">'.$document_displayed_filename.'</a></li>';
-                    }
-                    $documents_html .= '</ul>';
+                    $documents_html = EventStream::renderCommentDocumentsPackedToPdfHtml($line['documents_packed']);
                 }
                 $show_line = true;
             }
@@ -942,13 +949,14 @@ class EventStream {
             }
 
             if ($record['event_type_id']=='ET_COM') {
-                $line['edit_links'] = !is_null($navigator) ? DBTableRowComment::commentEditLinks($navigator, $return_url, $dbtable->itemobject_id, $record['comment_id'], $record['effective_date'], $record['user_id'], $record['proxy_user_id']) : array();
+                $line['edit_links'] = !is_null($navigator) && !$record['is_fieldcomment'] ? DBTableRowComment::commentEditLinks($navigator, $return_url, $dbtable->itemobject_id, $record['comment_id'], $record['effective_date'], $record['user_id'], $record['proxy_user_id']) : array();
                 if (isset($record['documents_packed']) && $record['documents_packed']) {
                     $line['documents_packed'] = $record['documents_packed'];
                 }
                 if (DBTableRow::wasItemTouchedRecently('comment', $record['comment_id'])) {
                     $line['recently_edited'] = true;
                 }
+                $line['is_fieldcomment'] = $record['is_fieldcomment'];
             }
 
 

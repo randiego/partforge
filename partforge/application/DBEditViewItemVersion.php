@@ -47,7 +47,8 @@ class DBEditViewItemVersion extends DBEditView {
             $editable = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'table:'.$this->dbtable->getTableName(), 'edit')
                 && !$this->dbtable->isEditOperationBlocked('save', $this->dbtable->getTableName());
 
-            $html .= DBTableRowItemVersion::fetchItemVersionEditTableTR($fieldlayout, $this->dbtable, $this->error_msg_array, '', $editable, null, array());
+            $options = 'vem_new_version'==$this->version_edit_mode ? 'AlwaysAllowFieldAttachmentDelete' : '';
+            $html .= DBTableRowItemVersion::fetchItemVersionEditTableTR($fieldlayout, $this->dbtable, $this->error_msg_array, $options, $editable, null, array());
             $html .= '</table>
 			';
         }

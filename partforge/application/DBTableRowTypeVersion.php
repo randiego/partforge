@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -125,6 +125,12 @@ class DBTableRowTypeVersion extends DBTableRow {
                     'maximum' => array('type' => 'pickone', 'values' => array('','0','1'), 'help' => 'See explanation for minimum.'),
                     ),
                     'help' => 'This data type represents a boolean with a Yes, No radio button pair.  For new records, neither Yes or No is selected.'),
+            'attachment' => array('parameters' => array(
+                    'required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they do not attach at least a comment.'),
+                    'minimum' => array('type' => 'string', 'help' => 'Warn the user if they attach less than this number of documents.  Leave blank if no minimum.'),
+                    'maximum' => array('type' => 'string', 'help' => 'Warn the user if they attach more than this number of documents.  Leave blank if no maximum.'),
+                    ),
+                    'help' => 'This data type represents an attachment type. This provided a specific place to attach files or photos within the form layout.'),
             'date' => array('parameters' => array(
                     'required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank')
                     ),
@@ -395,6 +401,10 @@ class DBTableRowTypeVersion extends DBTableRow {
             $select[] = "SUM((SELECT count(*) FROM itemcomponent WHERE iv.itemversion_id=itemcomponent.belongs_to_itemversion_id AND itemcomponent.component_name='{$fieldname}')) as  `{$fieldname}`";
         }
 
+        foreach ($type_digest['addon_attachment_fields'] as $fieldname) {
+            $select[] = "SUM((SELECT count(*) FROM itemcomment WHERE iv.itemversion_id=itemcomment.belongs_to_itemversion_id AND itemcomment.field_name='{$fieldname}')) as  `{$fieldname}`";
+        }
+
         foreach ($type_digest['addon_property_fields'] as $fieldname) {
             $like_something = fetch_like_query('"'.$fieldname.'":');
             $like_null = fetch_like_query('"'.$fieldname.'":null');
@@ -560,7 +570,8 @@ class DBTableRowTypeVersion extends DBTableRow {
         $out['has_a_serial_number'] = $has_a_serial_number;
         $out['has_a_disposition'] = $has_a_disposition;
         $out['serial_number_format'] = extract_prefixed_keys($all_typeversion_fields, 'serial_number_');
-        $out['addon_property_fields'] = array();      // contains data dictionary items that are NOT in the addon_component_subfields list.
+        $out['addon_property_fields'] = array();      // contains data dictionary items that are NOT in the addon_component_subfields list or addon_attachment_fields list.
+        $out['addon_attachment_fields'] = array();      // contains data dictionary items that are NOT in the addon_component_subfields list or addon_property_fields list.
         $out['addon_component_fields'] = array();     // contains only component field names
         $out['addon_component_subfields'] = array();  // fieldnames that happen to be component subfields.  if a field appears here, it doesn't in the addon_property_fields list
         $out['dictionary_field_layout'] = json_decode($type_form_layout, true);
@@ -578,6 +589,7 @@ class DBTableRowTypeVersion extends DBTableRow {
 
         // process the type dictionary.  This might also contain add-on properties for the components, so don't clobber the ones already read in above
         $pn = array();
+        $fa = array();
         $subfieldtype = array(); // subfield name
         $component_typeversions_to_load = array(); // type versions we should load.  Note that each entry is an array of typeobject_ids (normally 1 entry)
         if ($type_data_dictionary) {
@@ -605,11 +617,17 @@ class DBTableRowTypeVersion extends DBTableRow {
                         $type_array['caption'] = ucwords(str_replace('_', ' ', $fieldname));
                     }
                     $fieldtypes[$fieldname] = $type_array;
-                    $pn[] = $fieldname;
+                    if (isset($type_array['type']) && ($type_array['type']=='attachment')) {
+                        $fa[] = $fieldname;
+                    } else {
+                        $pn[] = $fieldname;
+                    }
+
                 }
             }
         }
         $out['addon_property_fields'] = $pn;
+        $out['addon_attachment_fields'] = $fa;
 
         // process the subfieldnames if present.  This will NOT be processed if $skip_components is true (see above)
         $typeversion_digests_by_to_id = array();
@@ -707,6 +725,7 @@ class DBTableRowTypeVersion extends DBTableRow {
     {
         $out = array('effective_date','record_locator','item_serial_number','typeversion_id','disposition','partnumber_alias');
         $out = array_merge($out, $typeversion_digest['addon_property_fields']);
+        $out = array_merge($out, $typeversion_digest['addon_attachment_fields']);
         $out = array_merge($out, $typeversion_digest['addon_component_fields']);
         $out = array_merge($out, $typeversion_digest['addon_component_subfields']);
         return $out;
@@ -837,6 +856,7 @@ class DBTableRowTypeVersion extends DBTableRow {
         $type_digest = $this->getLoadedTypeVersionDigest(false);
         $defined = array();
         $defined = array_merge($defined, $type_digest['addon_property_fields']);
+        $defined = array_merge($defined, $type_digest['addon_attachment_fields']);
         $defined = array_merge($defined, $type_digest['addon_component_fields']);
         $defined = array_merge($defined, $type_digest['addon_component_subfields']);
         return $defined;
@@ -1608,7 +1628,7 @@ class DBTableRowTypeVersion extends DBTableRow {
         // we only want to write out non standard fields.  The standard ones like item_serial_number are redundent.
         $dict = array();
         $allowed_attr = self::typesListing();
-        foreach (array_merge($digest['addon_property_fields'], $digest['addon_component_subfields']) as $fieldname) {
+        foreach (array_merge($digest['addon_property_fields'], $digest['addon_attachment_fields'], $digest['addon_component_subfields']) as $fieldname) {
             $dict[$fieldname] = $digest['fieldtypes'][$fieldname];
             // get rid of any attributes that are not explicitely in the self::typesListing()
             if (isset($dict[$fieldname]['type']) && isset($allowed_attr[ $dict[$fieldname]['type'] ]['parameters'])) { // some weird cases were the type is not defined.  Roll with it.

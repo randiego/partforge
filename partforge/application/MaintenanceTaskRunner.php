@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -51,7 +51,7 @@ class MaintenanceTaskRunner {
             array('name' => 'update_cached_fields', 'interval' => 8*3600),
             array('name' => 'update_user_stats', 'interval' => 3600),
             array('name' => 'generate_user_reports', 'interval' => 5*60),   // reports have their own intervals, so this is not too frequent
-            array('name' => 'cleanup_qr_upload_records', 'interval' => 3600),
+            array('name' => 'cleanup_orphaned_records', 'interval' => 3600),
             array('name' => 'refresh_validation_cache', 'interval' => 30),
         );
 
@@ -188,7 +188,7 @@ class MaintenanceTaskRunner {
     private function update_user_stats(&$messages)
     {
         $query = "UPDATE user as u SET cached_items_created_count=((select count(*) from document where (user_id=u.user_id))
-								+ (select count(*) from comment where (user_id=u.user_id))
+								+ (select count(*) from comment where (user_id=u.user_id) and is_fieldcomment=0)
 								+ (select count(*) from itemversion where (user_id=u.user_id)))";
         DbSchema::getInstance()->mysqlQuery($query);
     }
@@ -215,10 +215,11 @@ class MaintenanceTaskRunner {
         WatchListReporter::processCurrentInstantNotifications();
     }
 
-    private function cleanup_qr_upload_records(&$messages)
+    private function cleanup_orphaned_records(&$messages)
     {
         DBTableRowQRUploadKey::cleanupOldRecords();
         DBTableRowDocument::cleanupOrphanDocuments();
+        DBTableRowComment::cleanupOrphanFieldComments();
     }
 
     private function refresh_validation_cache(&$messages)

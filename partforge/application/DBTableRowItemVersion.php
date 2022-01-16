@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -282,6 +282,9 @@ class DBTableRowItemVersion extends DBTableRow {
         foreach ($this->_typeversion_digest['addon_property_fields'] as $dictionary_field_name) {
             $out[$dictionary_field_name] = $this->getFieldType($dictionary_field_name);
         }
+        foreach ($this->_typeversion_digest['addon_attachment_fields'] as $dictionary_field_name) {
+            $out[$dictionary_field_name] = $this->getFieldType($dictionary_field_name);
+        }
         return $out;
     }
 
@@ -297,6 +300,7 @@ class DBTableRowItemVersion extends DBTableRow {
     public function getAddOnFieldNames()
     {
         $out = $this->_typeversion_digest['addon_property_fields'];
+        $out = array_merge($out, $this->_typeversion_digest['addon_attachment_fields']);
         $out = array_merge($out, $this->_typeversion_digest['addon_component_fields']);
         $out = array_merge($out, $this->_typeversion_digest['addon_component_subfields']);
         return $out;
@@ -306,6 +310,12 @@ class DBTableRowItemVersion extends DBTableRow {
     {
         $this->refreshLoadedTypeVersionFields($this->typeversion_id);
         return $this->_typeversion_digest['addon_component_fields'];
+    }
+
+    public function getFieldAttachmentFieldNames()
+    {
+        $this->refreshLoadedTypeVersionFields($this->typeversion_id);
+        return $this->_typeversion_digest['addon_attachment_fields'];
     }
 
     public function getComponentSubFieldNames()
@@ -327,6 +337,18 @@ class DBTableRowItemVersion extends DBTableRow {
         }
         return $out;
     }
+
+    public function getCurrentlySetFieldAttachmentValues()
+    {
+        $out = array();
+        foreach ($this->getFieldAttachmentFieldNames() as $fieldname) {
+            if (isset($this->{$fieldname}) && $this->{$fieldname}) {
+                $out[$fieldname] = $this->{$fieldname};
+            }
+        }
+        return $out;
+    }
+
 
     /**
      * Return a list of component names that are not currently set to any value
@@ -390,12 +412,20 @@ class DBTableRowItemVersion extends DBTableRow {
 
         if ( (strtotime($this->effective_date)!=strtotime($CompareItem->effective_date)) || ($this->partnumber_alias!=$CompareItem->partnumber_alias) || ($this->item_serial_number!=$CompareItem->item_serial_number) || ($this->disposition!=$CompareItem->disposition) || ($this_item_data!=$compare_item_data)
             || ($this->typeversion_id!=$CompareItem->typeversion_id)
-            || (count($this->getCurrentlySetComponentValues())!=count($CompareItem->getCurrentlySetComponentValues())) ) {
+            || (count($this->getCurrentlySetComponentValues())!=count($CompareItem->getCurrentlySetComponentValues()))
+            || (count($this->getCurrentlySetFieldAttachmentValues())!=count($CompareItem->getCurrentlySetFieldAttachmentValues())) ) {
             $something_has_changed = true;
         } else {
             $saved_components = $CompareItem->getCurrentlySetComponentValues();
             foreach ($this->getCurrentlySetComponentValues() as $fieldname => $itemobject_id) {
                 if ($saved_components[$fieldname]!=$itemobject_id) {
+                    $something_has_changed = true;
+                    break;
+                }
+            }
+            $saved_attachments = $CompareItem->getCurrentlySetFieldAttachmentValues();
+            foreach ($this->getCurrentlySetFieldAttachmentValues() as $fieldname => $comment_id) {
+                if ($saved_attachments[$fieldname]!=$comment_id) {
                     $something_has_changed = true;
                     break;
                 }
@@ -421,6 +451,9 @@ class DBTableRowItemVersion extends DBTableRow {
 
         // this is need to create navigable links in the descriptions of what changed
         $ItemVersionCurr->_navigator = $Navigator;
+//        if (!$ItemVersionCurr->hasAliases()) {
+//            unset($ItemVersionCurr->part_number); // this is needed because the $arc_records don't have part_number if there were not aliases.
+//        }
         $arc_records = DbSchema::getInstance()->getRecords('itemversionarchive_id', "SELECT * FROM itemversionarchive WHERE itemversion_id='{$itemversion_id}' ORDER BY record_created desc");
         $out = array();
         $first_entry = null;
@@ -431,10 +464,25 @@ class DBTableRowItemVersion extends DBTableRow {
             $ItemVersionArc = new DBTableRowItemVersion();
             $ItemVersionArc->_navigator = $Navigator;
             $ItemVersionArc->typeversion_id = $arc_fields['typeversion_id'];
+            // just in case the typeversion is no longer valid, lets just use the current one
+            if (count($ItemVersionArc->_typeversion_digest)==0) {
+                $ItemVersionArc->typeversion_id = $ItemVersionCurr->_typeversion_digest['typeversion_id'];
+            }
+            $fieldtypes = $ItemVersionArc->getFieldTypes();
             $fieldnames_to_assign = array_diff(array_keys($arc_fields), array('typeversion_id'));
             foreach ($fieldnames_to_assign as $fieldname) {
-                if (is_array($arc_fields[$fieldname])) {  // this is a component, not a normal property
-                    $ItemVersionArc->{$fieldname} = $arc_fields[$fieldname]['itemobject_id'];
+                if (isset($fieldtypes[$fieldname])) {
+                    if ($fieldtypes[$fieldname]['type']=='component') {
+                        if (isset($arc_fields[$fieldname]['itemobject_id'])) {
+                            $ItemVersionArc->{$fieldname} = $arc_fields[$fieldname]['itemobject_id'];
+                        } else if (is_numeric($arc_fields[$fieldname])) {
+                            $ItemVersionArc->{$fieldname} = $arc_fields[$fieldname];
+                        }
+                    } else if ($fieldtypes[$fieldname]['type']=='attachment') {
+                        $ItemVersionArc->{$fieldname} = $arc_fields[$fieldname];
+                    } else {
+                        $ItemVersionArc->{$fieldname} = $arc_fields[$fieldname];
+                    }
                 } else {
                     $ItemVersionArc->{$fieldname} = $arc_fields[$fieldname];
                 }
@@ -486,11 +534,13 @@ class DBTableRowItemVersion extends DBTableRow {
 
         // check the header items
 
-        if ($this->part_number!=$CompareItem->part_number) {
+        $this_part_number = $this->hasAliases() ? $this->formatPrintField('part_number', false) : '';
+        $compareitem_part_number = $CompareItem->hasAliases() ? $CompareItem->formatPrintField('part_number', false) : '';
+        if ($this_part_number!=$compareitem_part_number) {
             if ($output_by_fieldname) {
-                $list['part_number'] = "set to '".$this->formatPrintField('part_number', false)."'";
+                $list['part_number'] = "set to '".$this_part_number."'";
             } else {
-                $list[] = "<b>Part Number Alias</b> changed from '".$CompareItem->formatPrintField('part_number', false)."' to '".$this->formatPrintField('part_number', false)."'";
+                $list[] = "<b>Part Number Alias</b> changed from '".$compareitem_part_number."' to '".$this_part_number."'";
             }
         }
         if ($this->disposition!=$CompareItem->disposition) {
@@ -549,6 +599,46 @@ class DBTableRowItemVersion extends DBTableRow {
                 checkWasChangedItemField($list, $CompareItem->formatFieldnameNoColon($fieldname), $CompareItem->formatPrintField($fieldname, false), $this->formatPrintField($fieldname, false));
             }
         }
+
+        /*
+            check attachment types for changes
+        */
+
+        $thisVals = $this->getCurrentlySetFieldAttachmentValues();
+        $thatVals = $CompareItem->getCurrentlySetFieldAttachmentValues();
+        $added = array_diff_key($thisVals, $thatVals);
+        $removed = array_diff_key($thatVals, $thisVals);
+        $possibly_changed = array_intersect_key($thisVals, $thatVals);
+        $changed = array_diff_assoc($possibly_changed, $thatVals);
+
+        foreach (array_keys($removed) as $fieldname) {
+            $compare_value = $CompareItem->formatPrintField($fieldname, false);
+            if ($output_by_fieldname) {
+                checkWasChangedItemFieldByFieldname($list, $fieldname, $compare_value, null);
+            } else {
+                checkWasChangedItemField($list, $CompareItem->formatFieldnameNoColon($fieldname), $compare_value, null);
+            }
+        }
+
+        foreach (array_keys($changed) as $fieldname) {
+            $this_value = $this->formatPrintField($fieldname, false);
+            $compare_value = $CompareItem->formatPrintField($fieldname, false);
+            if ($output_by_fieldname) {
+                checkWasChangedItemFieldByFieldname($list, $fieldname, $compare_value, $this->formatPrintField($fieldname, false));
+            } else {
+                checkWasChangedItemField($list, $CompareItem->formatFieldnameNoColon($fieldname), $compare_value, $this_value);
+            }
+        }
+
+        foreach (array_keys($added) as $fieldname) {
+            $this_value = $this->formatPrintField($fieldname, false);
+            if ($output_by_fieldname) {
+                checkWasChangedItemFieldByFieldname($list, $fieldname, null, $this->formatPrintField($fieldname, false));
+            } else {
+                checkWasChangedItemField($list, $this->formatFieldnameNoColon($fieldname), null, $this_value);
+            }
+        }
+
 
         /*
              * check the components to see if anything changed.
@@ -681,8 +771,9 @@ class DBTableRowItemVersion extends DBTableRow {
             $this->user_id = $user_id;
             $this->record_created = time_to_mysqldatetime(script_time());
 
-            // don't try to save component fieldnames
-            $fieldnames = array_diff($fieldnames, $this->getComponentFieldNames(), $this->getComponentSubFieldNames());
+            // don't try to save component fieldnames or fieldattachent fieldname
+            $fieldnames = array_diff($fieldnames, $this->getComponentFieldNames(), $this->getComponentSubFieldNames(), $this->getFieldAttachmentFieldNames());
+
             parent::save($fieldnames, $handle_err_dups_too);
 
             $previous_rev_components = !is_null($Temp) ? $Temp->getCurrentlySetComponentValues() : array();
@@ -699,6 +790,22 @@ class DBTableRowItemVersion extends DBTableRow {
                     DBTableRowChangeLog::addedItemReference($itemobject_id, $this->itemversion_id);
                 }
             }
+
+            // save all the itemcomment records
+            foreach ($this->getCurrentlySetFieldAttachmentValues() as $fieldname => $comment_id) {
+                $FieldComm = new DBTableRow('itemcomment');
+                $FieldComm->field_name = $fieldname;
+                $FieldComm->belongs_to_itemversion_id = $this->itemversion_id;
+                $FieldComm->has_a_comment_id = $comment_id;
+                $FieldComm->save();
+
+                $Comm = new DBTableRowComment();
+                if ($Comm->getRecordById($comment_id)) {
+                    $Comm->itemobject_id = $this->itemobject_id;
+                    $Comm->save(array('itemobject_id'));
+                }
+            }
+
 
             $this->getRecordById($this->itemversion_id);
             self::updateCurrentItemVersionIds($this->itemobject_id);
@@ -792,8 +899,8 @@ class DBTableRowItemVersion extends DBTableRow {
             $this->itemobject_id = $ItemObject->itemobject_id;
         }
 
-        // don't try to save component fieldnames
-        $fieldnames = array_diff($fieldnames, $this->getComponentFieldNames(), $this->getComponentSubFieldNames());
+        // don't try to save component fieldnames or Field Attachments
+        $fieldnames = array_diff($fieldnames, $this->getComponentFieldNames(), $this->getComponentSubFieldNames(), $this->getFieldAttachmentFieldNames());
         parent::save($fieldnames, $handle_err_dups_too);
 
         /*
@@ -802,8 +909,8 @@ class DBTableRowItemVersion extends DBTableRow {
         $this->saveComponentSubFieldsUnversioned();
 
         /*
-             *  Save component itemcomponent records as needed.  Don't mindlessly delete and re-add, but
-            *  check first to make sure there are actually changes.
+            Save component itemcomponent records as needed.  Don't mindlessly delete and re-add, but
+            check first to make sure there are actually changes.
         */
 
         $comp_records_to_delete = DbSchema::getInstance()->getRecords('itemcomponent_id', "SELECT * FROM itemcomponent WHERE belongs_to_itemversion_id='{$this->itemversion_id}'");
@@ -835,6 +942,44 @@ class DBTableRowItemVersion extends DBTableRow {
             DBTableRowChangeLog::addedItemReference($itemobject_id, $this->itemversion_id);
         }
 
+        /*
+            Save attachment types as needed, but don't mindlessly delete and resave
+        */
+        $records_to_delete = DbSchema::getInstance()->getRecords('itemcomment_id', "SELECT * FROM itemcomment WHERE belongs_to_itemversion_id='{$this->itemversion_id}'");
+        $records_to_save = $this->getCurrentlySetFieldAttachmentValues();
+
+        foreach ($records_to_delete as $itemcomment_id => $itemcomment) {
+            $comment_name_on_disk = $itemcomment['field_name'];
+            // if this is one we are going to turn around and recreated anyway, then remove it from both $records_to_delete and $records_to_save
+            if (isset($records_to_save[$comment_name_on_disk]) && ($itemcomment['has_a_comment_id']==$records_to_save[$comment_name_on_disk])) {
+                unset($records_to_delete[$itemcomment_id]);
+                unset($records_to_save[$comment_name_on_disk]);
+            }
+        }
+
+        // delete any from the delete list that are still there
+        foreach ($records_to_delete as $itemcomment_id => $itemcomment) {
+            $FieldComm  = new DBTableRow('itemcomment');
+            $FieldComm ->getRecordById($itemcomment_id);
+            $FieldComm ->delete();
+        }
+
+        // save any attachment types that are left in the $records_to_save list
+        foreach ($records_to_save as $fieldname => $comment_id) {
+            $FieldComm = new DBTableRow('itemcomment');
+            $FieldComm->field_name = $fieldname;
+            $FieldComm->belongs_to_itemversion_id = $this->itemversion_id;
+            $FieldComm->has_a_comment_id = $comment_id;
+            $FieldComm->save();
+
+            $Comm = new DBTableRowComment();
+            if ($Comm->getRecordById($comment_id)) {
+                $Comm->itemobject_id = $this->itemobject_id;
+                $Comm->save(array('itemobject_id'));
+            }
+        }
+
+
         $this->getRecordById($this->itemversion_id);
         self::updateCurrentItemVersionIds($this->itemobject_id);
         $_SESSION['most_recent_new_itemversion_id'] = $this->itemversion_id;
@@ -861,6 +1006,7 @@ class DBTableRowItemVersion extends DBTableRow {
             $ItemVersionOrig->getRecordById($this->itemversion_id);
         }
         $something_has_changed = $this->checkDifferencesFrom($ItemVersionOrig);
+        //$outdiff = $this->itemDifferencesFrom($ItemVersionOrig, true);
         if ($something_has_changed) {
             $record = DBTableRowItemObject::getItemObjectFullNestedArray($ItemVersionOrig->itemobject_id, $ItemVersionOrig->effective_date, 1, 0);
             $Arc = new DBTableRowItemVersionArchive();
@@ -884,7 +1030,7 @@ class DBTableRowItemVersion extends DBTableRow {
             $user_id = $_SESSION['account']->user_id;
         }
         $new_object = !$this->isSaved();
-        if ($this->isSaved()) {
+        if ($this->isSaved() && ($this->version_edit_mode != 'vem_finish_save_record')) {
             $something_has_changed = $this->checkAndArchiveIfThisVersionHasChanges();
             if ($something_has_changed) { // user and record_created should reflect the current user and time
                 $this->user_id = $user_id;
@@ -916,6 +1062,7 @@ class DBTableRowItemVersion extends DBTableRow {
         // gather all the itemobjects that will be affected by removing this itemversion.  These will be needed to refresh those itemobject fields
         $affected_itemobjects = self::getHasItemObjectsAsArray($itemversion_id);
         DbSchema::getInstance()->mysqlQuery("delete from itemcomponent where belongs_to_itemversion_id='{$itemversion_id}'");
+        DbSchema::getInstance()->mysqlQuery("delete from itemcomment where belongs_to_itemversion_id='{$itemversion_id}'");
         DbSchema::getInstance()->mysqlQuery("delete from itemversionarchive where itemversion_id='{$itemversion_id}'");
         // if we have just deleted the last itemversion, then we should cleanup the whole itemobject
         $iv_records = DbSchema::getInstance()->getRecords('', "SELECT * FROM itemversion where itemobject_id='{$itemobject_id}'");
@@ -1029,6 +1176,7 @@ class DBTableRowItemVersion extends DBTableRow {
     {
         $out = parent::getSaveFieldNames($join_names);
         $out = array_merge($out, $this->_typeversion_digest['addon_property_fields']);
+        $out = array_merge($out, $this->_typeversion_digest['addon_attachment_fields']);
         $out = array_merge($out, $this->_typeversion_digest['addon_component_fields']);
         $out = array_merge($out, $this->_typeversion_digest['addon_component_subfields']);
         return $out;
@@ -1138,6 +1286,30 @@ class DBTableRowItemVersion extends DBTableRow {
         return $out;
     }
 
+    protected static function minMaxMessages($ft, $val, $fieldname, $msgsubjectclause, &$errormsg)
+    {
+        $min = isset($ft['minimum']) ? trim($ft['minimum']) : '';
+        $max = isset($ft['maximum']) ? trim($ft['maximum']) : '';
+        if (is_numeric($min) && is_numeric($max)) {
+            $min_ok = ($val >=$min);
+            $max_ok = ($val <=$max);
+            $range_msg = $min==$max ? 'exactly '.$min : 'in the range '.$min.' to '.$max;
+            if (!$min_ok || !$max_ok) {
+                $errormsg[$fieldname] = $msgsubjectclause.' must be '.$range_msg;
+            }
+        } else if (is_numeric($min)) {
+            $min_ok = ($val >=$min);
+            if (!$min_ok) {
+                $errormsg[$fieldname] = $msgsubjectclause.' should not be less than '.$min;
+            }
+        } else if (is_numeric($max)) {
+            $max_ok = ($val <=$max);
+            if (!$max_ok) {
+                $errormsg[$fieldname] = $msgsubjectclause.' should not be greater than '.$max;
+            }
+        }
+    }
+
     /**
      * overrides standard field input validation to catch duplicate serial numbers, and bad effective dates.
      * The messages are indexed by fieldname so the errors can later be placed in the right edit boxes.
@@ -1186,26 +1358,7 @@ class DBTableRowItemVersion extends DBTableRow {
             $val = $this->{$fieldname};
             $caption = $this->formatFieldnameNoColon($fieldname);
             if (isset($ft['type']) && in_array($ft['type'], array('float','calculated')) && is_numeric($val)) {  // the non-numeric and empty case is handled by the parent method
-                $min = isset($ft['minimum']) ? trim($ft['minimum']) : '';
-                $max = isset($ft['maximum']) ? trim($ft['maximum']) : '';
-                if (is_numeric($min) && is_numeric($max)) {
-                    $min_ok = ($val >=$min);
-                    $max_ok = ($val <=$max);
-                    $range_msg = $min==$max ? 'exactly '.$min : 'in the range '.$min.' to '.$max;
-                    if (!$min_ok || !$max_ok) {
-                        $errormsg[$fieldname] = 'The value "'.$val.'" for '.$caption.' must be '.$range_msg;
-                    }
-                } else if (is_numeric($min)) {
-                    $min_ok = ($val >=$min);
-                    if (!$min_ok) {
-                        $errormsg[$fieldname] = 'The value "'.$val.'" for '.$caption.' should not be less than '.$min;
-                    }
-                } else if (is_numeric($max)) {
-                    $max_ok = ($val <=$max);
-                    if (!$max_ok) {
-                        $errormsg[$fieldname] = 'The value "'.$val.'" for '.$caption.' should not be greater than '.$max;
-                    }
-                }
+                self::minMaxMessages($ft, $val, $fieldname, 'The value "'.$val.'" for '.$caption, $errormsg);
             } elseif (isset($ft['type']) && ($ft['type']=='boolean') && !is_null($val) && ($val!=='')) {  // the non-numeric and empty case is handled by the parent method
                 $min = isset($ft['minimum']) ? trim($ft['minimum']) : '';
                 $max = isset($ft['maximum']) ? trim($ft['maximum']) : '';
@@ -1220,20 +1373,32 @@ class DBTableRowItemVersion extends DBTableRow {
             }
         }
 
-        // make sure components are of the right type.  This should be very rare.
+        // check other things like make sure components are of the right type (rare) or overused.
         foreach ($fieldnames as $fieldname) {
             $ft = $this->_fieldtypes[$fieldname];
-            if (isset($ft['type']) && ($ft['type']=='component')) {
-                $ComponentItemVersion = $this->getComponentAsIVObject($fieldname);
-                if (!is_null($ComponentItemVersion)) {
-                    if (!in_array($ComponentItemVersion->tv__typeobject_id, $ft['can_have_typeobject_id'])) {
-                        $errormsg[$fieldname] = 'Wrong type for this component!';
-                    } else if (!$this->hasADisposition()) {
-                        $this->checkComponentOverUsedOn($fieldname, $ft, $ComponentItemVersion->itemobject_id, $errormsg);
+            if (isset($ft['type'])) {
+                if ($ft['type']=='component') {
+                    $ComponentItemVersion = $this->getComponentAsIVObject($fieldname);
+                    if (!is_null($ComponentItemVersion)) {
+                        if (!in_array($ComponentItemVersion->tv__typeobject_id, $ft['can_have_typeobject_id'])) {
+                            $errormsg[$fieldname] = 'Wrong type for this component!';
+                        } else if (!$this->hasADisposition()) {
+                            $this->checkComponentOverUsedOn($fieldname, $ft, $ComponentItemVersion->itemobject_id, $errormsg);
+                        }
+                    }
+                } elseif (($ft['type']=='attachment') && is_numeric($this->{$fieldname})) {
+                    $min = isset($ft['minimum']) ? trim($ft['minimum']) : '';
+                    $max = isset($ft['maximum']) ? trim($ft['maximum']) : '';
+                    if (is_numeric($min) || is_numeric($max)) {
+                        // get count of attachments
+                        $records = DbSchema::getInstance()->getRecords('', "SELECT count(*) as count FROM document WHERE comment_id='{$this->{$fieldname}}'");
+                        $val =  (count($records)>0) ? $records[0]['count'] : 0;
+                        self::minMaxMessages($ft, $val, $fieldname, 'The number of attachments ('.$val.') for '.$caption, $errormsg);
                     }
                 }
             }
         }
+
 
         parent::validateFields($fieldnames, $errormsg);
         if ($this->hasADisposition() && ((count($errormsg)>0) || $this->hasDictionaryOverrideErrors())) {
@@ -1522,7 +1687,13 @@ class DBTableRowItemVersion extends DBTableRow {
 
         $this->loadComponentValuesFromItemComponentsList($record_vars['list_of_itemcomponents'], $record_vars['effective_date']);
 
-
+        foreach (explode(';', $record_vars['list_of_itemcomments']) as $itemcomment) {
+            $comment_params = explode(',', $itemcomment);
+            if (count($comment_params)==3) {
+                list($itemcomment_id, $field_name, $has_a_comment_id) = $comment_params;
+                $record_vars[$field_name] = $has_a_comment_id;
+            }
+        }
 
         return true;
     }
@@ -1540,6 +1711,7 @@ class DBTableRowItemVersion extends DBTableRow {
 ),',',CONVERT(HEX(IFNULL(typecomponent.caption,'')),CHAR),',',CONVERT(HEX(IFNULL(typecomponent.subcaption,'')),CHAR),',',IFNULL(typecomponent.featured,0),',',IFNULL(typecomponent.required,0),',',IFNULL(typecomponent.max_uses,1))  ORDER BY typecomponent.component_name SEPARATOR ';') FROM typecomponent WHERE typecomponent.belongs_to_typeversion_id=itemversion.typeversion_id) AS CHAR) as list_of_typecomponents"));
         $DBTableRowQuery->addSelectFields("(SELECT count(*) FROM partnumbercache WHERE itemversion.typeversion_id=partnumbercache.typeversion_id) as partnumber_count");
         $DBTableRowQuery->addSelectFields(array("CAST((SELECT GROUP_CONCAT(concat(itemcomponent.itemcomponent_id,',',itemcomponent.component_name,',',itemcomponent.has_an_itemobject_id)  ORDER BY itemcomponent.component_name SEPARATOR ';') FROM itemcomponent WHERE itemcomponent.belongs_to_itemversion_id=itemversion.itemversion_id) AS CHAR) as list_of_itemcomponents"));
+        $DBTableRowQuery->addSelectFields(array("CAST((SELECT GROUP_CONCAT(concat(itemcomment.itemcomment_id,',',itemcomment.field_name,',',itemcomment.has_a_comment_id)  ORDER BY itemcomment.field_name SEPARATOR ';') FROM itemcomment WHERE itemcomment.belongs_to_itemversion_id=itemversion.itemversion_id) AS CHAR) as list_of_itemcomments"));
         $DBTableRowQuery->addJoinClause("LEFT JOIN typecategory ON typecategory.typecategory_id={$DBTableRowQuery->getJoinAlias('typeversion')}.typecategory_id")
                         ->addSelectFields('typecategory.*');
         $DBTableRowQuery->addJoinClause("LEFT JOIN partnumbercache ON partnumbercache.typeversion_id=itemversion.typeversion_id AND partnumbercache.partnumber_alias=itemversion.partnumber_alias")
@@ -1554,6 +1726,13 @@ class DBTableRowItemVersion extends DBTableRow {
         $this->refreshLoadedTypeVersionFields($this->typeversion_id);
         return $this->_typeversion_digest['has_a_serial_number'];
     }
+
+    public function hasAValidTypeVersionId()
+    {
+        $this->refreshLoadedTypeVersionFields($this->typeversion_id);
+        return count($this->_typeversion_digest) > 0;
+    }
+
 
     public function hasADisposition()
     {
@@ -1815,6 +1994,7 @@ class DBTableRowItemVersion extends DBTableRow {
     {
         $hidden_properties_array = array();
         $hidden_components_array = array();
+        $hidden_attachments_array = array();
 
         // we assume that inside >_typeversion_digest is a reliable source for property and components
         $SavedRecord = new self();
@@ -1824,7 +2004,7 @@ class DBTableRowItemVersion extends DBTableRow {
                 $item_data = array(); // sometimes this field is not initialized
             }
             foreach ($item_data as $fieldname => $fieldval) {
-                if (!in_array($fieldname, $this->_typeversion_digest['addon_property_fields'])) {
+                if (!in_array($fieldname, $this->_typeversion_digest['addon_property_fields']) && !in_array($fieldname, $this->_typeversion_digest['addon_attachment_fields'])) {
                     $hidden_properties_array[$fieldname] = $fieldval;
                 }
             }
@@ -1835,8 +2015,15 @@ class DBTableRowItemVersion extends DBTableRow {
                     $hidden_components_array[$component_name] = $has_an_itemobject_id;
                 }
             }
+            $itemcomments = $SavedRecord->list_of_itemcomments ? explode(';', $SavedRecord->list_of_itemcomments) : array();
+            foreach ($itemcomments as $itemcomment) {
+                list($itemcomment_id, $field_name, $has_a_comment_id) = explode(',', $itemcomment);
+                if ($field_name && !in_array($field_name, $this->_typeversion_digest['addon_attachment_fields'])) {
+                    $hidden_attachments_array[$field_name] = $has_a_comment_id;
+                }
+            }
         }
-        return array($hidden_properties_array,$hidden_components_array);
+        return array($hidden_properties_array, $hidden_components_array, $hidden_attachments_array);
     }
 
     public function previewDefinition()
@@ -1898,7 +2085,7 @@ class DBTableRowItemVersion extends DBTableRow {
 
         // prepare the orphan field descriptions if needed.
         $orphan_layout = array();
-        list($this->hidden_properties_array,$this->hidden_components_array) = $this->loadOrphanFieldsIntoHiddenArrays();
+        list($this->hidden_properties_array,$this->hidden_components_array, $this->hidden_attachments_array) = $this->loadOrphanFieldsIntoHiddenArrays();
         if (count($this->hidden_properties_array)>0) {
             $this->setFieldAttribute('hidden_properties_array', 'caption', 'Orphaned Fields');
             $this->setFieldAttribute('hidden_properties_array', 'subcaption', 'These fields were entered using a different version of this form.   Editing will erase these.');
@@ -1908,6 +2095,11 @@ class DBTableRowItemVersion extends DBTableRow {
             $this->setFieldAttribute('hidden_components_array', 'caption', 'Orphaned Components');
             $this->setFieldAttribute('hidden_components_array', 'subcaption', 'These components were entered using a different version of this form.   Editing will erase these.');
             $orphan_layout[] = array('name' => 'hidden_components_array');
+        }
+        if (count($this->hidden_attachments_array)>0) {
+            $this->setFieldAttribute('hidden_attachments_array', 'caption', 'Orphaned Attachments');
+            $this->setFieldAttribute('hidden_attachments_array', 'subcaption', 'These attachments were entered using a different version of this form.   Editing will erase these.');
+            $orphan_layout[] = array('name' => 'hidden_attachments_array');
         }
         if (count($orphan_layout)>0) {
             $fieldlayout[] = array('type' => 'columns', 'columns' => $orphan_layout);
@@ -1926,7 +2118,6 @@ class DBTableRowItemVersion extends DBTableRow {
              * Prepare the Add button for new items
          */
 
-        $add_btn = array();
         $link_info = array();
 
         if (!$this->previewDefinition()) {
@@ -1961,7 +2152,7 @@ class DBTableRowItemVersion extends DBTableRow {
         if (count($link_info)==1) {
             $buttons = linkify('#', 'New', 'Add a component that does not already exist in the list', 'minibutton2', $link_info[0]['js']);
         } else if (count($link_info)>1) {
-            $buttons = linkify('#', 'New...', 'Add a component that does not already exist in the list', 'minibutton2', "$(this).next('.comp_add_button_group').toggle();");
+            $buttons = linkify('#', 'New...', 'Add a component that does not already exist in the list', 'minibutton2', "$(this).next('.comp_add_button_group').toggle(); return false;");
             $buttons .= '<div style="display:none;" class="comp_add_button_group">';
             foreach ($link_info as $li) {
                 $buttons .= '<div>'.linkify('#', $li['desc'], 'Add a new '.$li['pn'].' ('.$li['desc'].')', '', $li['js']).'</div>';
@@ -1971,6 +2162,57 @@ class DBTableRowItemVersion extends DBTableRow {
 
         $footer  = !is_valid_datetime($this->effective_date) ? '<span class="paren_red">Select Effective Date for more choices.</span>' : $buttons;
         return format_select_tag($select_values, $fieldname, $this->getArray(), $fieldtype['onchange_js']).'<br />'.$footer;
+    }
+
+    public static function getFieldCommentRecord($navigator, $comment_id, $gallery_id)
+    {
+        $config = Zend_Registry::get('config');
+        $query = "
+                SELECT comment.*, (SELECT GROUP_CONCAT(
+                CONCAT(document.document_id,',',document.document_filesize,',',CONVERT(HEX(document.document_displayed_filename),CHAR),',',CONVERT(HEX(document.document_stored_filename),CHAR),',',document.document_stored_path,',',document.document_file_type,',',document.document_thumb_exists)
+                ORDER BY document.document_date_added SEPARATOR ';') FROM document WHERE (document.comment_id = comment.comment_id) and (document.document_path_db_key='{$config->document_path_db_key}')) as documents_packed FROM comment
+                WHERE comment_id='{$comment_id}'
+            ";
+        $records = DbSchema::getInstance()->getRecords('comment_id', $query);
+        if (count($records)>0) {
+            $record = reset($records);
+            list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($record['comment_text'], $navigator, 'ET_COM', false);
+            return array($record['documents_packed'] ? EventStream::documentsPackedToFileGallery(Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl(), $gallery_id, $record['documents_packed']) : '', $event_description, $record);
+        }
+        return array("","",array());
+    }
+
+    protected function formatInputTagFieldAttachment($fieldname, $display_options = array())
+    {
+        $out = '';
+        if (is_numeric($this->{$fieldname})) {
+            list($documents_gallery_html, $comment_html, $record) = self::getFieldCommentRecord($this->_navigator, $this->{$fieldname}, 'id_edit_'.$this->{$fieldname});
+            // we fudge the date to the current date if want to be able to delete. This side-steps the grace-period logic.
+            $comment_added = in_array('AlwaysAllowFieldAttachmentDelete', $display_options) ? time_to_mysqldatetime(script_time()) : $record['comment_added'];
+            $comment_actions = DBTableRowComment::getListOfCommentActions($comment_added, $record['user_id'], $record['proxy_user_id']);
+            $buttons = '';
+            if (isset($comment_actions['delete'])) {
+                $buffer_key = $this->getTableName().$this->typeversion_id;
+                $js_go = "document.theform.btnSubEditParams.value='action=deletefieldcomment&controller=struct&buffer_key={$buffer_key}&fieldname={$fieldname}';document.theform.submit(); return false;";
+                $detail_action = $comment_actions['delete'];
+                $icon_html = detailActionToHtml('delete', $detail_action);
+                $title = isset($detail_action['title']) ? $detail_action['title'] : $detail_action['buttonname'];
+                $confirm_js = isset($detail_action['confirm'])  ? "if (confirm('".$detail_action['confirm']."')) {".$js_go."} else {return true;};"
+                                                                : (isset($detail_action['alert'])   ? "alert('".$detail_action['alert']."'); return false;"
+                                                                                                    : "return true;");
+                $buttons = linkify('#', empty($icon_html) ? $detail_action['buttonname'] : $icon_html, $title, empty($icon_html) ? 'minibutton2' : '', $confirm_js, '', 'btn-delete-'.$this->{$fieldname});
+            }
+            $out .= '<div class="bd-event-documents">';
+            $out .= '<div style="float: right;">'.$buttons.'</div>';
+            $out .= $documents_gallery_html;
+            $out .= '</div>'.$comment_html;
+        } else {
+            $buffer_key = $this->getTableName().$this->typeversion_id;
+            $return_param = 'editfieldcomment,'.$fieldname.',comment';
+            $js = "document.theform.btnSubEditParams.value='action=commenteditview&controller=struct&table=comment&comment_id=new&initialize[itemobject_id]={$this->itemobject_id}&initialize[is_fieldcomment]=1&buffer_key={$buffer_key}&fieldname={$fieldname}&subedit_return_value={$return_param}';document.theform.submit(); return false;";
+            $out = linkify('#', 'Add Attachments', 'add attachments and a caption to this field.', 'minibutton2', $js);
+        }
+        return $out;
     }
 
     public function getAliases()
@@ -1990,6 +2232,9 @@ class DBTableRowItemVersion extends DBTableRow {
         switch (isset($fieldtype['type']) ? $fieldtype['type'] : '') {
             case 'component' :
                 return $this->formatInputTagComponent($fieldname);
+
+            case 'attachment' :
+                return $this->formatInputTagFieldAttachment($fieldname, $display_options);
 
             // We don't want to use the normal jq_datetimepicker class for this, since we want to use our own handler
             case 'datetime' :
@@ -2042,8 +2287,8 @@ class DBTableRowItemVersion extends DBTableRow {
                         $warning = '';
                         if (AdminSettings::getInstance()->use_any_typeversion_id) {
                             $warning =  '<div style="margin-top:4px;"><span class="paren_red">Type Version editing restrictions overridden.  Be careful!</span></div>';
-                        } else if ((!$TV->isCurrentVersion()) && isset($this->is_user_procedure) && ($this->is_user_procedure==0)) {
-                            $warning =  '<div style="margin-top:4px;"><span class="paren_red">There is not the current version of this form.  You can select the current one from the above list.</span></div>';
+                        } else if ((!$TV->isCurrentVersion()) && !$this->hasADisposition()) {
+                            $warning =  '<div style="margin-top:4px;"><span class="paren_red">This is not the current version of this form.  You can select the current one from the above list.</span></div>';
                         }
                         $obsolete = $TV->isObsolete() ? '<div style="margin-top:4px;"><span class="disposition Obsolete">Obsolete</span><div>' : '';
                         return '<div>'.parent::formatInputTag($fieldname, $display_options).'</div>'.$warning.$obsolete;
@@ -2129,7 +2374,7 @@ class DBTableRowItemVersion extends DBTableRow {
 
     public static function fetchComponentPrintFieldHtml($navigator, $ComponentItemVersion, $text_name, $value, $is_html)
     {
-        $text = !is_null($ComponentItemVersion) ? $ComponentItemVersion->shortName() : '';
+        $text = !is_null($ComponentItemVersion) && $ComponentItemVersion->hasAValidTypeVersionId() ? $ComponentItemVersion->shortName() : '';
         if (($navigator instanceof UrlCallRegistry)) {
             $query_params = array();
             $query_params['itemobject_id'] = $value;
@@ -2141,7 +2386,7 @@ class DBTableRowItemVersion extends DBTableRow {
             $html_text = TextToHtml($text);
         }
 
-        if (!is_null($ComponentItemVersion) && !$ComponentItemVersion->hasASerialNumber()) {
+        if (!is_null($ComponentItemVersion) && $ComponentItemVersion->hasAValidTypeVersionId() && !$ComponentItemVersion->hasASerialNumber()) {
             $features = array();
             foreach ($ComponentItemVersion->getFeaturedFieldTypes() as $fname => $fieldtype) {
                 if (trim($ComponentItemVersion->{$fname})!=='') {
@@ -2156,6 +2401,7 @@ class DBTableRowItemVersion extends DBTableRow {
         }
         return $is_html ? $html_text : $text;
     }
+
 
     public function formatEffectiveDatePrintField($is_html)
     {
@@ -2207,6 +2453,43 @@ class DBTableRowItemVersion extends DBTableRow {
         return $out;
     }
 
+    public static function fetchOrphanedAttachmentsHtml($navigator, $value_array)
+    {
+        $is_html=true;
+        $out = array();
+        if (is_array($value_array)) {
+            foreach ($value_array as $f => $v) {
+                if (is_numeric($v)) {
+                    $text_name = ucwords(str_replace('_', ' ', $f));
+                    $out[] = ucwords(str_replace('_', ' ', $f)).':&nbsp;'.self::formatPrintFieldAttachment($navigator, $v, $is_html);
+                }
+            }
+        }
+        return count($out)==0 ? '' : '<ul class="bd-bullet_features"><li>'.implode('</li><li>', $out).'</li></ul>';
+    }
+
+    protected static function formatPrintFieldAttachment($navigator, $comment_id, $is_html)
+    {
+        $out = '';
+        if (is_numeric($comment_id)) {
+            list($documents_gallery_html, $comment_html, $record) = self::getFieldCommentRecord($navigator, $comment_id, 'id_print_'.$comment_id);
+            if (count($record) != 0) { // only do this if the comment record really exists.
+                if ($is_html) {
+                    $out = '<div class="bd-event-documents">';
+                    $out .= $documents_gallery_html;
+                    $out .= '</div>';
+                    $out .= $comment_html;
+                } else {
+                    $document_count = $record['documents_packed'] ? count(explode(';', $record['documents_packed'])) : 0;
+                    $out = '(id:'.$comment_id.') '.($record['comment_text'] ? 'A comment and ' : '').$document_count.' document(s)';
+                }
+            } else {
+                $out = '(unknown id:'.$comment_id.')';
+            }
+        }
+        return $out;
+    }
+
     public function formatPrintField($fieldname, $is_html = true, $nowrap = true, $show_float_units = false)
     {
         $fieldtype = $this->getFieldType($fieldname);
@@ -2219,6 +2502,8 @@ class DBTableRowItemVersion extends DBTableRow {
                 // if this component can be more than one type, we should say what that type is.
                 $type_addon = (count($fieldtype['can_have_typeobject_id']) > 1) && !is_null($ComponentItemVersion) ? ' ['.$ComponentItemVersion->part_description.']' : '';
                 return self::fetchComponentPrintFieldHtml($this->_navigator, $ComponentItemVersion, $text_name, $value, $is_html).$type_addon;
+            case 'attachment' :
+                return self::formatPrintFieldAttachment($this->_navigator, $this->{$fieldname}, $is_html);
             default:
                 // if float type and there are units, then show them if $show_float_units
                 if (in_array($type, array('float','calculated')) && $show_float_units) {
@@ -2244,6 +2529,8 @@ class DBTableRowItemVersion extends DBTableRow {
                         return self::fetchOrphanedFieldsHtml($value);
                     case 'hidden_components_array':
                         return self::fetchOrphanedComponentsHtml($this->_navigator, $value);
+                    case 'hidden_attachments_array':
+                        return self::fetchOrphanedAttachmentsHtml($this->_navigator, $value);
                     case 'typeversion_id':
                         $TV = new DBTableRowTypeVersion();
                         $TV->getRecordById($this->typeversion_id);
@@ -2449,14 +2736,11 @@ class DBTableRowItemVersion extends DBTableRow {
      */
     public function applyCategoryDependentHeaderCaptions($is_editing)
     {
-        if (isset($this->is_user_procedure) && !$is_editing) {
-            $this->setFieldAttribute('typeversion_id', 'caption', $this->is_user_procedure ? 'Procedure Number' : 'Part Number');
+        if (!$is_editing) {
+            $this->setFieldAttribute('typeversion_id', 'caption', $this->hasADisposition() ? 'Procedure Number' : 'Part Number');
             $this->setFieldAttribute('typeversion_id', 'subcaption', 'and version date');
         }
-        if (isset($this->is_user_procedure)) {
-            $this->setFieldAttribute('effective_date', 'subcaption', $this->is_user_procedure ? 'when procedure performed' : 'when part created or changed');
-            //$this->setFieldAttribute('effective_date', 'subcaption', '');
-        }
+        $this->setFieldAttribute('effective_date', 'subcaption', $this->hasADisposition() ? 'when procedure performed' : 'when part created or changed');
     }
 
 

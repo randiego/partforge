@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -131,7 +131,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
                     } elseif (isset($fieldtype['component_subfield'])) {
                         $this->fields[$fieldname]['key_asc'] = 'compsf:'.$fieldname.'';
                         $this->fields[$fieldname]['key_desc'] = 'compsf:'.$fieldname.' desc';
-                    } else {
+                    } elseif (isset($fieldtype['type']) && !in_array($fieldtype['type'], array('attachment'))) {
                         $this->fields[$fieldname]['key_asc'] = 'jsonx:'.$fieldname.'';
                         $this->fields[$fieldname]['key_desc'] = 'jsonx:'.$fieldname.' desc';
                     }

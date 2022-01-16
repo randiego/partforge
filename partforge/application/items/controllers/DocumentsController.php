@@ -38,12 +38,27 @@ class Items_DocumentsController extends RestControllerActionAbstract
         $select = "SELECT document.document_id, document.comment_id, document.document_displayed_filename as filename, document.document_thumb_exists as thumb_exists, document.document_filesize as size, document.document_file_type as mime_type, document.document_date_added as date_added, user.user_id, user.login_id
 				FROM document
 				LEFT JOIN comment ON comment.comment_id=document.comment_id
-				LEFT JOIN user ON user.user_id=document.user_id";
+				LEFT JOIN user ON user.user_id=document.user_id
+                LEFT JOIN itemobject ON itemobject.itemobject_id=comment.itemobject_id
+				LEFT JOIN itemversion ON itemversion.itemversion_id=itemobject.cached_current_itemversion_id";
 
         $itemobject_id = isset($this->params['itemobject_id']) ? (is_numeric($this->params['itemobject_id']) ? addslashes($this->params['itemobject_id']) : null) : null;
         $get_info = isset($this->params['get_info']) && $this->params['get_info']  ? true : false;
+        $field_name =  isset($this->params['field_name']) ? addslashes($this->params['field_name']) : null;
+        $is_fieldcomment = isset($this->params['is_fieldcomment']) ? ($this->params['is_fieldcomment'] ? true : false) : false;
+
         if (!is_null($itemobject_id)) {
-            $records = DbSchema::getInstance()->getRecords('', "{$select} WHERE comment.itemobject_id='{$itemobject_id}' ORDER BY document.document_date_added");
+            $where = array();
+            $where[] = "(comment.itemobject_id='{$itemobject_id}')";
+            if ($is_fieldcomment) {
+                $where[] = "((comment.is_fieldcomment=1) and EXISTS(SELECT * FROM itemcomment WHERE (itemversion.itemversion_id=itemcomment.belongs_to_itemversion_id) and (itemcomment.has_a_comment_id=comment.comment_id)))";
+            } else {
+                $where[] = "(comment.is_fieldcomment=0)";
+            }
+            if ($field_name) {
+                $where[] = "((comment.is_fieldcomment=1) and EXISTS(SELECT * FROM itemcomment WHERE (itemversion.itemversion_id=itemcomment.belongs_to_itemversion_id) and (itemcomment.has_a_comment_id=comment.comment_id) and (itemcomment.field_name='{$field_name}')))";
+            }
+            $records = DbSchema::getInstance()->getRecords('', "{$select} WHERE ".implode(' AND ', $where)." ORDER BY document.document_date_added");
             if ($get_info) {
                 $this->view->documents = $records;
             } else {

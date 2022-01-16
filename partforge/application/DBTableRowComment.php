@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -45,7 +45,6 @@ class DBTableRowComment extends DBTableRow {
         $can_edit = false;
         $can_deleteblocked = false;
         $can_delete = false;
-        $time = strtotime($comment_added);
         $inside_grace_period = strtotime($comment_added) + $config->delete_grace_in_sec > script_time();
         if (($_SESSION['account']->getRole() == 'Admin')) {
             $can_edit = true;
@@ -111,7 +110,7 @@ class DBTableRowComment extends DBTableRow {
                                                                                                     : "return true;");
                 $url = $navigator->getCurrentViewUrl($action_name, 'struct', array('table' => 'comment', 'comment_id' => $comment_id, 'return_url' => $return_url));
                 $target = isset($detail_action['target']) ? $detail_action['target'] : "";
-                $links[] = linkify($url, empty($icon_html) ? $detail_action['buttonname'] : $icon_html, $title, empty($icon_html) ? 'minibutton2' : '',
+                $links[$action_name] = linkify($url, empty($icon_html) ? $detail_action['buttonname'] : $icon_html, $title, empty($icon_html) ? 'minibutton2' : '',
                     "{$confirm_js}", $target, 'btn-'.$action_name.'-'.$comment_id);
             }
         }
@@ -251,5 +250,31 @@ class DBTableRowComment extends DBTableRow {
 				    </dl>';
     }
 
+    /**
+     * Deletes comments where is_fieldcomment=1 that are not associated with an itemversion (through the itemcomment table)
+     * AND that are older than a week. This is part of routine garbage collection.
+     *
+     * @return void
+     */
+    static public function cleanupOrphanFieldComments()
+    {
+        $query = "SELECT comment.comment_id FROM `comment`
+                LEFT JOIN itemcomment as ic ON ic.has_a_comment_id=comment.comment_id
+                WHERE comment.is_fieldcomment=1 and (ic.itemcomment_id IS NULL) and (NOW() - INTERVAL 7 DAY > comment.record_created)";
+        $comment_records = DbSchema::getInstance()->getRecords('comment_id', $query);
+        foreach ($comment_records as $comment_id => $comment_record) {
+            $Comment = new self();
+            if ($Comment->getRecordById($comment_id)) {
+                foreach ($Comment->document_ids as $document_id) {
+                    $Document = new DBTableRowDocument();
+                    if ($Document->getRecordById($document_id)) {
+                        $Document->unlinkAssociatedFiles();
+                        $Document->delete();
+                    }
+                }
+                $Comment->delete();
+            }
+        }
+    }
 
 }

@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -238,6 +238,21 @@ class UtilsController extends DBControllerActionAbstract
                         DbSchema::getInstance()->mysqlQuery("ALTER TABLE itemobject ADD COLUMN validation_cache_is_valid INT DEFAULT 0");
                         DbSchema::getInstance()->mysqlQuery("ALTER TABLE itemobject ADD COLUMN cached_has_validation_errors INT DEFAULT 0");
                         $databaseversion = '11';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
+                    if ($databaseversion=='11') {
+                        $msgs[] = 'Upgrading to version 12: This update adds in-form file attachments.';
+                        DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS `itemcomment` (
+							  `itemcomment_id` int(11) NOT NULL AUTO_INCREMENT,
+							  `belongs_to_itemversion_id` int(11) NOT NULL,
+                              `field_name` varchar(80) DEFAULT NULL COMMENT 'field name of this itemcomment in the dictionary',
+							  `has_a_comment_id` int(11) NOT NULL,
+							  PRIMARY KEY (`itemcomment_id`),
+                              KEY `belongs_to_itemversion_id` (`belongs_to_itemversion_id`),
+                              KEY `has_a_comment_id` (`has_a_comment_id`)
+							) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
+                        DbSchema::getInstance()->mysqlQuery("ALTER TABLE comment ADD COLUMN is_fieldcomment INT(1) DEFAULT 0");
+                        $databaseversion = '12';
                         setGlobal('databaseversion', $databaseversion);
                     }
             }

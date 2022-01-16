@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -38,7 +38,7 @@ class Items_CommentsController extends RestControllerActionAbstract
     public function indexAction()
     {
 
-        $select = "SELECT comment.comment_id
+        $select = "SELECT DISTINCT comment.comment_id
 				FROM comment
 				LEFT JOIN user ON user.user_id=comment.user_id
 				LEFT JOIN user as proxy_user ON proxy_user.user_id=comment.proxy_user_id
@@ -48,9 +48,19 @@ class Items_CommentsController extends RestControllerActionAbstract
 
         $itemobject_id = isset($this->params['itemobject_id']) ? (is_numeric($this->params['itemobject_id']) ? addslashes($this->params['itemobject_id']) : null) : null;
         $typeobject_id = isset($this->params['typeobject_id']) ? (is_numeric($this->params['typeobject_id']) ? addslashes($this->params['typeobject_id']) : null) : null;
+        $field_name =  isset($this->params['field_name']) ? addslashes($this->params['field_name']) : null;
+        $is_fieldcomment = isset($this->params['is_fieldcomment']) ? ($this->params['is_fieldcomment'] ? true : false) : false;
         $get_info = isset($this->params['get_info']) && $this->params['get_info']  ? true : false;
         if (!is_null($itemobject_id) || !is_null($typeobject_id)) {
             $where = array();
+            if ($is_fieldcomment) {
+                $where[] = "((comment.is_fieldcomment=1) and EXISTS(SELECT * FROM itemcomment WHERE (itemversion.itemversion_id=itemcomment.belongs_to_itemversion_id) and (itemcomment.has_a_comment_id=comment.comment_id)))";
+            } else {
+                $where[] = "(comment.is_fieldcomment=0)";
+            }
+            if ($field_name) {
+                $where[] = "((comment.is_fieldcomment=1) and EXISTS(SELECT * FROM itemcomment WHERE (itemversion.itemversion_id=itemcomment.belongs_to_itemversion_id) and (itemcomment.has_a_comment_id=comment.comment_id) and (itemcomment.field_name='{$field_name}')))";
+            }
             if (!is_null($itemobject_id)) {
                 $where[] = "(comment.itemobject_id='{$itemobject_id}')";
             }
@@ -63,7 +73,11 @@ class Items_CommentsController extends RestControllerActionAbstract
                 $Comment = new DBTableRowComment();
                 foreach ($records as $record) {
                     if ($Comment->getRecordById($record['comment_id'])) {
-                        $this->view->comments[] = $Comment->getArray();
+                        $out = $Comment->getArray();
+                        if ($Comment->is_fieldcomment) {
+                            $out['itemcomments'] = DbSchema::getInstance()->getRecords('', "SELECT field_name, belongs_to_itemversion_id FROM itemcomment WHERE has_a_comment_id='".$record['comment_id']."' ORDER BY belongs_to_itemversion_id");
+                        }
+                        $this->view->comments[] = $out;
                     }
                 }
             } else {
@@ -115,11 +129,15 @@ class Items_CommentsController extends RestControllerActionAbstract
 
             $itemobject_id = null;
             if (isset($record['itemobject_id'])) {
-                $ItemObject = new DBTableRowItemObject();
-                if ($ItemObject->getRecordById($record['itemobject_id'])) {
-                    $itemobject_id = $record['itemobject_id'];
+                if ($record['itemobject_id']==-1) {
+                    $itemobject_id =-1;
                 } else {
-                    $errormsg[] = 'itemobject_id ('.$record['itemobject_id'].') cannot be found.';
+                    $ItemObject = new DBTableRowItemObject();
+                    if ($ItemObject->getRecordById($record['itemobject_id'])) {
+                        $itemobject_id = $record['itemobject_id'];
+                    } else {
+                        $errormsg[] = 'itemobject_id ('.$record['itemobject_id'].') cannot be found.';
+                    }
                 }
                 unset($record['itemversion_id']);
                 unset($record['itemobject_id']);

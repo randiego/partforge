@@ -35,6 +35,7 @@ class DBTableRowItemObject extends DBTableRow {
      * This updates the fields itemobject.cached_last_comment_date and itemobject.cached_last_comment_person
      * It is used strictly for performance.   It should be called when a comment is added, edited, deleted.
      * If $itemobject_id is set then is only updates the cached fields for that specific itemobject_id.
+     * Note that this procedure does not include comment.is_fieldcomment=1 (attachment) type comments.
      */
     static public function updateCachedLastCommentFields($itemobject_id = null)
     {
@@ -53,9 +54,9 @@ class DBTableRowItemObject extends DBTableRow {
 					FROM comment as bb_c
 					LEFT JOIN user as bb_user on bb_user.user_id=bb_c.user_id
 					LEFT JOIN (
-					  SELECT aa_c.itemobject_id as aa_io, max(aa_c.comment_added) as max_comment_added FROM comment as aa_c GROUP BY aa_c.itemobject_id
+					  SELECT aa_c.itemobject_id as aa_io, max(aa_c.comment_added) as max_comment_added FROM comment as aa_c WHERE aa_c.is_fieldcomment=0 GROUP BY aa_c.itemobject_id
 					  ) as max_comment_dates on max_comment_dates.aa_io=bb_c.itemobject_id
-				    WHERE max_comment_dates.max_comment_added=bb_c.comment_added
+				    WHERE (max_comment_dates.max_comment_added=bb_c.comment_added) and (bb_c.is_fieldcomment=0)
 					{$inner_group_by}
 						) as last_comment_tbl ON cc_io.itemobject_id=last_comment_tbl.bb_io
 
@@ -164,12 +165,12 @@ class DBTableRowItemObject extends DBTableRow {
         $out = array();
         $ItemVersion = new DBTableRowItemVersion();
         if ($ItemVersion->getCurrentRecordByObjectId($itemobject_id, $effective_date)) {
+            $errormsg=array();
+            $ItemVersion->validateFields($ItemVersion->getSaveFieldNames(), $errormsg);
+            if (count($errormsg)>0) {
+                $out['field_validation_errors'] = $errormsg;
+            }
             foreach ($ItemVersion->getExportFieldTypes() as $fieldname => $fieldtype) {
-                $errormsg=array();
-                $ItemVersion->validateFields($ItemVersion->getSaveFieldNames(), $errormsg);
-                if (count($errormsg)>0) {
-                    $out['field_validation_errors'] = $errormsg;
-                }
                 if (isset($ItemVersion->{$fieldname})) {
                     if (isset($fieldtype['type']) && ($fieldtype['type']=='component')) {
                         if ((is_null($max_depth) || ($max_depth >$level)) && !in_array($ItemVersion->{$fieldname}, $parents)) {
@@ -301,12 +302,12 @@ class DBTableRowItemObject extends DBTableRow {
         $out = array();
         $ItemVersion = new DBTableRowItemVersion();
         if ($ItemVersion->getRecordById($itemversion_id)) {
+            $errormsg=array();
+            $ItemVersion->validateFields($ItemVersion->getSaveFieldNames(), $errormsg);
+            if (count($errormsg)>0) {
+                $out['field_validation_errors'] = $errormsg;
+            }
             foreach ($ItemVersion->getExportFieldTypes() as $fieldname => $fieldtype) {
-                $errormsg=array();
-                $ItemVersion->validateFields($ItemVersion->getSaveFieldNames(), $errormsg);
-                if (count($errormsg)>0) {
-                    $out['field_validation_errors'] = $errormsg;
-                }
                 if (isset($ItemVersion->{$fieldname})) {
                     if (isset($fieldtype['type']) && ($fieldtype['type']=='component')) {
                         if ((is_null($max_depth) || ($max_depth >$level)) && !in_array($ItemVersion->{$fieldname}, $parents)) {
