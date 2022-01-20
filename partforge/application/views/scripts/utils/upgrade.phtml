@@ -3,7 +3,7 @@ $this->layout()->title = 'Upgrade Database';
 $this->layout()->setLayout('layoutdialog');
 ?>
 
-<p class="errorred"><?php echo implode('<br />',$this->msgs); ?></p>
+<p class="successgreen"><?php echo implode('<br />',$this->msgs); ?></p>
 <form id="theform" method="POST" action="<?php echo self_url();?>" name="theform">
 <input type="hidden" name="form" value="">
 <p>Your Database Version: <b><?php echo $this->currentversion; ?></b></p>

@@ -777,6 +777,10 @@ td.editlink_td_left {
 	color: #FF0000;
 }
 
+.successgreen {
+	color: green;
+}
+
 .fakedatestyle {
 	color: #FF0000;
 	background-color: #FFF;

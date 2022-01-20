@@ -448,72 +448,36 @@ class DBTableRowItemVersion extends DBTableRow {
     {
         $ItemVersionCurr = new DBTableRowItemVersion();
         $ItemVersionCurr->getRecordById($itemversion_id);
+        $curr_record_created = $ItemVersionCurr->record_created;
+        $curr_user_id = $ItemVersionCurr->user_id;
 
         // this is need to create navigable links in the descriptions of what changed
-        $ItemVersionCurr->_navigator = $Navigator;
-//        if (!$ItemVersionCurr->hasAliases()) {
-//            unset($ItemVersionCurr->part_number); // this is needed because the $arc_records don't have part_number if there were not aliases.
-//        }
         $arc_records = DbSchema::getInstance()->getRecords('itemversionarchive_id', "SELECT * FROM itemversionarchive WHERE itemversion_id='{$itemversion_id}' ORDER BY record_created desc");
         $out = array();
-        $first_entry = null;
+        $entry_count = 0;
+        $original_entry = "";
         foreach ($arc_records as $arc_record) {
-            $arc_fields = json_decode($arc_record['item_data'], true);
-
-            // assign the fields from the archive to the $ItemVersionArc object
-            $ItemVersionArc = new DBTableRowItemVersion();
-            $ItemVersionArc->_navigator = $Navigator;
-            $ItemVersionArc->typeversion_id = $arc_fields['typeversion_id'];
-            // just in case the typeversion is no longer valid, lets just use the current one
-            if (count($ItemVersionArc->_typeversion_digest)==0) {
-                $ItemVersionArc->typeversion_id = $ItemVersionCurr->_typeversion_digest['typeversion_id'];
-            }
-            $fieldtypes = $ItemVersionArc->getFieldTypes();
-            $fieldnames_to_assign = array_diff(array_keys($arc_fields), array('typeversion_id'));
-            foreach ($fieldnames_to_assign as $fieldname) {
-                if (isset($fieldtypes[$fieldname])) {
-                    if ($fieldtypes[$fieldname]['type']=='component') {
-                        if (isset($arc_fields[$fieldname]['itemobject_id'])) {
-                            $ItemVersionArc->{$fieldname} = $arc_fields[$fieldname]['itemobject_id'];
-                        } else if (is_numeric($arc_fields[$fieldname])) {
-                            $ItemVersionArc->{$fieldname} = $arc_fields[$fieldname];
-                        }
-                    } else if ($fieldtypes[$fieldname]['type']=='attachment') {
-                        $ItemVersionArc->{$fieldname} = $arc_fields[$fieldname];
-                    } else {
-                        $ItemVersionArc->{$fieldname} = $arc_fields[$fieldname];
-                    }
-                } else {
-                    $ItemVersionArc->{$fieldname} = $arc_fields[$fieldname];
-                }
-            }
-
-            // figure out the difference using the standard EventStream method.
-            list($description_html,$dummy) = EventStream::textToHtmlWithEmbeddedCodes($ItemVersionCurr->itemDifferencesFrom($ItemVersionArc, true), $Navigator, 'ET_CHG', true);
-            $desc_arr = array();
-            if (trim($description_html)!='') {
-                $desc_arr[] = $description_html;
-            }
-            if (strtotime($ItemVersionCurr->effective_date)!=strtotime($ItemVersionArc->effective_date)) {
-                $desc_arr[] = 'Effective Date changed from '.$ItemVersionArc->formatPrintField('effective_date').' to '.$ItemVersionCurr->formatPrintField('effective_date');
-            }
-            if (is_null($first_entry)) {
-                $first_entry = array(
-                        'date' => time_to_bulletdate(strtotime($ItemVersionArc->effective_date), false),
-                        'name' => TextToHtml(strtoupper(DBTableRowUser::getFullName($ItemVersionArc->user_id))),
+            $entry_count++;
+            $is_last_record = $entry_count == count($arc_records);
+            $description_html = $arc_record['changes_html'];
+            if ($is_last_record) {
+                $original_entry = array(
+                        'date' => time_to_bulletdate(strtotime($arc_record['original_record_created']), false),
+                        'name' => TextToHtml(strtoupper(DBTableRowUser::getFullName($arc_record['cached_user_id']))),
                         'differences' => 'New Version',
                 );
             }
             $out[] = array(
-                    'date' => time_to_bulletdate(strtotime($ItemVersionCurr->record_created), false),
-                    'name' => TextToHtml(strtoupper(DBTableRowUser::getFullName($ItemVersionCurr->user_id))),
-                    'differences' => implode(', ', $desc_arr),
+                    'date' => time_to_bulletdate(strtotime($curr_record_created), false),
+                    'name' => TextToHtml(strtoupper(DBTableRowUser::getFullName($curr_user_id))),
+                    'differences' => $description_html,
                     );
 
-            $ItemVersionCurr = $ItemVersionArc;
+            $curr_record_created = $arc_record['original_record_created'];
+            $curr_user_id = $arc_record['cached_user_id'];
         }
-        if (!is_null($first_entry)) {
-            $out[] = $first_entry;
+        if ($original_entry) {
+            $out[] = $original_entry;
         }
         return $out;
     }
@@ -1006,13 +970,14 @@ class DBTableRowItemVersion extends DBTableRow {
             $ItemVersionOrig->getRecordById($this->itemversion_id);
         }
         $something_has_changed = $this->checkDifferencesFrom($ItemVersionOrig);
-        //$outdiff = $this->itemDifferencesFrom($ItemVersionOrig, true);
         if ($something_has_changed) {
             $record = DBTableRowItemObject::getItemObjectFullNestedArray($ItemVersionOrig->itemobject_id, $ItemVersionOrig->effective_date, 1, 0);
             $Arc = new DBTableRowItemVersionArchive();
             $Arc->itemversion_id = $record['itemversion_id'];
             $Arc->cached_user_id = $record['user_id'];
             $Arc->original_record_created = $record['record_created'];
+            $event_description_array = array();
+            $Arc->changes_html = EventStream::itemversionMarkupToHtmlTags($this->itemDifferencesFrom($ItemVersionOrig, true), null, 'ET_CHG', $event_description_array, false);
             $Arc->item_data = json_encode($record);
             $Arc->save();
         }
@@ -1987,7 +1952,7 @@ class DBTableRowItemVersion extends DBTableRow {
     }
 
     /**
-     * Determines if there are properties or components for this item that don't have a definition in the typeversion record.
+     * Determines if there are properties or components or attachments for this item that don't have a definition in the typeversion record.
      * Any such are put doublet return array to assign to list($this->hidden_properties_array,$this->hidden_components_array)
      */
     private function loadOrphanFieldsIntoHiddenArrays()
@@ -2480,9 +2445,20 @@ class DBTableRowItemVersion extends DBTableRow {
                     $out .= '</div>';
                     $out .= $comment_html;
                 } else {
-                    $document_count = $record['documents_packed'] ? count(explode(';', $record['documents_packed'])) : 0;
-                    $out = '(id:'.$comment_id.') '.($record['comment_text'] ? 'A comment and ' : '').$document_count.' document(s)';
+                    $max_len_all_filenames = 100;
+                    $max_len_one_filename = 40;
+                    $max_len_comment = 80;
+                    $fieldnames = array();
+                    if ($record['documents_packed']) {
+                        foreach (explode(';', $record['documents_packed']) as $document_packed) {
+                            list($document_id,$document_filesize,$document_displayed_filename,$document_stored_filename,$document_stored_path,$document_file_type,$document_thumb_exists) = explode(',', $document_packed);
+                            $fieldnames[] = trunc_text(hextobin($document_displayed_filename), $max_len_one_filename);
+                        }
+                    }
+                    $document_summary = trunc_text((count($fieldnames) > 0) ? ' and file(s): '.implode(', ', $fieldnames) : '', $max_len_all_filenames);
+                    $out = ($record['comment_text'] ? '"'.trunc_text($record['comment_text'], $max_len_comment).'" ' : '').'('.$comment_id.')'.$document_summary;
                 }
+
             } else {
                 $out = '(unknown id:'.$comment_id.')';
             }

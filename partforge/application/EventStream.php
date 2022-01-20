@@ -574,7 +574,7 @@ class EventStream {
             $query_params['itemversion_id'] = $itemversion_id;
             $query_params['resetview'] = 1;
             $edit_url = !is_null($navigator) ? $navigator->getCurrentViewUrl('itemview', '', $query_params) : '';
-            $link = linkify( $edit_url, $part_name, "go to ".$part_name.", ItemVersion:".$itemversion_id);
+            $link = $edit_url ? linkify( $edit_url, $part_name, "go to ".$part_name.", ItemVersion:".$itemversion_id) : $part_name;
             $used_on = ($include_html_wrapper ? '<html>' : '').$link.$featuresstr.($include_html_wrapper ? '</html>' : '');
             $event_description = str_ireplace($out[0][$sub_index], $used_on, $event_description);
             $event_description_array[$itemversion_id]['url'] = $edit_url;

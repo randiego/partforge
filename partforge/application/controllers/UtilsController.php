@@ -255,6 +255,13 @@ class UtilsController extends DBControllerActionAbstract
                         $databaseversion = '12';
                         setGlobal('databaseversion', $databaseversion);
                     }
+                    if ($databaseversion=='12') {
+                        $msgs[] = 'Upgrading to version 13: This adds better tracking of unversioned changes.';
+                        DbSchema::getInstance()->mysqlQuery("ALTER TABLE itemversionarchive ADD COLUMN changes_html text AFTER item_data");
+                        DBTableRowItemVersionArchive::buildSomeArchiveChangesHtml();
+                        $databaseversion = '13';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
             }
         }
         $this->view->currentversion = getGlobal('databaseversion');
