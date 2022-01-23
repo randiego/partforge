@@ -493,9 +493,6 @@ class DBTableRowItemVersion extends DBTableRow {
     {
         $list = array();
 
-        list($this_item_data,$this_fieldnames_converted)    = $this->propertyFieldsToItemData();
-        list($compare_item_data,$compare_fieldnames_converted)  = $CompareItem->propertyFieldsToItemData();
-
         // check the header items
 
         $this_part_number = $this->hasAliases() ? $this->formatPrintField('part_number', false) : '';
@@ -529,134 +526,111 @@ class DBTableRowItemVersion extends DBTableRow {
             }
         }
 
-        // check the properties
+        // get all the fieldnames
 
-        // need to look at detailed differences:
-        $properties_deleted = array_diff($compare_fieldnames_converted, $this_fieldnames_converted);
-        foreach ($properties_deleted as $fieldname) {
-            if ($output_by_fieldname) {
-                $item[$fieldname] = "deleted";
-            } else {
-                $item[] = '<b>'.$CompareItem->formatFieldnameNoColon($fieldname)."</b> deleted";
-            }
-        }
-        $properties_added = array_diff($this_fieldnames_converted, $compare_fieldnames_converted);
-        foreach ($properties_added as $fieldname) {
-            if ($output_by_fieldname) {
-                $list[$fieldname] = "added with value '".$this->formatPrintField($fieldname, false)."'";
-            } else {
-                $list[] = '<b>'.$this->formatFieldnameNoColon($fieldname)."</b> added with value '".$this->formatPrintField($fieldname, false)."'";
-            }
-        }
+        $this_fieldnames = array();
+        $compare_fieldnames = array();
 
-        // Now see if any of the properties that are in both the old and new have a changed value
-        foreach (array_intersect($this_fieldnames_converted, $compare_fieldnames_converted) as $fieldname) {
-            $this_type = $this->getFieldType($fieldname);
-            $compare_type = $CompareItem->getFieldType($fieldname);
-            $this_value = self::varToStandardForm($this->{$fieldname}, $this_type);
-            $compare_value = self::varToStandardForm($CompareItem->{$fieldname}, $compare_type);
-            $this_value_empty = is_null($this_value) || ($this_value==='');
-            $compare_value_empty = is_null($compare_value) || ($compare_value==='');
-            if ($output_by_fieldname) {
-                checkWasChangedItemFieldByFieldname($list, $fieldname, $CompareItem->formatPrintField($fieldname, false), $this->formatPrintField($fieldname, false));
-            } else {
-                checkWasChangedItemField($list, $CompareItem->formatFieldnameNoColon($fieldname), $CompareItem->formatPrintField($fieldname, false), $this->formatPrintField($fieldname, false));
-            }
-        }
+        // properties
+        list($this_item_data,$this_property_fieldnames)    = $this->propertyFieldsToItemData();
+        list($compare_item_data,$compare_property_fieldnames)  = $CompareItem->propertyFieldsToItemData();
+        $this_fieldnames = array_unique(array_merge($this_fieldnames, $this_property_fieldnames));
+        $compare_fieldnames = array_unique(array_merge($compare_fieldnames, $compare_property_fieldnames));
 
-        /*
-            check attachment types for changes
-        */
+        // attachments
+        $this_attachment_fieldnames = array_keys($this->getCurrentlySetFieldAttachmentValues());
+        $compare_attachment_fieldnames = array_keys($CompareItem->getCurrentlySetFieldAttachmentValues());
+        $this_fieldnames = array_unique(array_merge($this_fieldnames, $this_attachment_fieldnames));
+        $compare_fieldnames = array_unique(array_merge($compare_fieldnames, $compare_attachment_fieldnames));
 
-        $thisVals = $this->getCurrentlySetFieldAttachmentValues();
-        $thatVals = $CompareItem->getCurrentlySetFieldAttachmentValues();
-        $added = array_diff_key($thisVals, $thatVals);
-        $removed = array_diff_key($thatVals, $thisVals);
-        $possibly_changed = array_intersect_key($thisVals, $thatVals);
-        $changed = array_diff_assoc($possibly_changed, $thatVals);
+        // components
+        $this_component_fieldnames = array_keys($this->getCurrentlySetComponentValues());
+        $compare_component_fieldnames = array_keys($CompareItem->getCurrentlySetComponentValues());
+        $this_fieldnames = array_unique(array_merge($this_fieldnames, $this_component_fieldnames));
+        $compare_fieldnames = array_unique(array_merge($compare_fieldnames, $compare_component_fieldnames));
 
-        foreach (array_keys($removed) as $fieldname) {
-            $compare_value = $CompareItem->formatPrintField($fieldname, false);
-            if ($output_by_fieldname) {
-                checkWasChangedItemFieldByFieldname($list, $fieldname, $compare_value, null);
-            } else {
-                checkWasChangedItemField($list, $CompareItem->formatFieldnameNoColon($fieldname), $compare_value, null);
-            }
-        }
-
-        foreach (array_keys($changed) as $fieldname) {
-            $this_value = $this->formatPrintField($fieldname, false);
-            $compare_value = $CompareItem->formatPrintField($fieldname, false);
-            if ($output_by_fieldname) {
-                checkWasChangedItemFieldByFieldname($list, $fieldname, $compare_value, $this->formatPrintField($fieldname, false));
-            } else {
-                checkWasChangedItemField($list, $CompareItem->formatFieldnameNoColon($fieldname), $compare_value, $this_value);
-            }
-        }
-
-        foreach (array_keys($added) as $fieldname) {
-            $this_value = $this->formatPrintField($fieldname, false);
-            if ($output_by_fieldname) {
-                checkWasChangedItemFieldByFieldname($list, $fieldname, null, $this->formatPrintField($fieldname, false));
-            } else {
-                checkWasChangedItemField($list, $this->formatFieldnameNoColon($fieldname), null, $this_value);
-            }
-        }
-
-
-        /*
-             * check the components to see if anything changed.
-         */
-        $thisVals = $this->getCurrentlySetComponentValues();
-        $thatVals = $CompareItem->getCurrentlySetComponentValues();
-
-        $added_components = array_diff_key($thisVals, $thatVals);
-        $removed_components = array_diff_key($thatVals, $thisVals);
-        $possibly_changed_components = array_intersect_key($thisVals, $thatVals);
-        $changed_components = array_diff_assoc($possibly_changed_components, $thatVals);
-
-        foreach (array_keys($removed_components) as $fieldname) {
-            if ($say_more_about_starting_state) {
-                $itemversion_id = DBTableRowItemVersion::getItemVersionIdFromByObjectId($CompareItem->{$fieldname}, $CompareItem->effective_date);
-                $compare_value = $CompareItem->formatPrintField($fieldname, false).": <itemversion>{$itemversion_id}</itemversion>";
-            } else {
+        // now lets do messages for fields (of all types) that were DELETED
+        $deleted = array_diff($compare_fieldnames, $this_fieldnames);
+        foreach ($deleted as $fieldname) {
+            if (in_array($fieldname, $compare_property_fieldnames)
+                || in_array($fieldname, $compare_attachment_fieldnames)) {
                 $compare_value = $CompareItem->formatPrintField($fieldname, false);
-            }
-            if ($output_by_fieldname) {
-                checkWasChangedItemFieldByFieldname($list, $fieldname, $compare_value, null);
-            } else {
-                checkWasChangedItemField($list, $CompareItem->formatFieldnameNoColon($fieldname), $compare_value, null);
+                if ($output_by_fieldname) {
+                    checkWasChangedItemFieldByFieldname($list, $fieldname, $compare_value, null);
+                } else {
+                    checkWasChangedItemField($list, $CompareItem->formatFieldnameNoColon($fieldname), $compare_value, null);
+                }
+            } else if (in_array($fieldname, $compare_component_fieldnames)) {
+                if ($say_more_about_starting_state) {
+                    $itemversion_id = DBTableRowItemVersion::getItemVersionIdFromByObjectId($CompareItem->{$fieldname}, $CompareItem->effective_date);
+                    $compare_value = $CompareItem->formatPrintField($fieldname, false).": <itemversion>{$itemversion_id}</itemversion>";
+                } else {
+                    $compare_value = $CompareItem->formatPrintField($fieldname, false);
+                }
+                if ($output_by_fieldname) {
+                    checkWasChangedItemFieldByFieldname($list, $fieldname, $compare_value, null);
+                } else {
+                    checkWasChangedItemField($list, $CompareItem->formatFieldnameNoColon($fieldname), $compare_value, null);
+                }
             }
         }
 
-        foreach (array_keys($changed_components) as $fieldname) {
-            if ($say_more_about_starting_state) {
-                $itemversion_id = DBTableRowItemVersion::getItemVersionIdFromByObjectId($CompareItem->{$fieldname}, $CompareItem->effective_date);
-                $compare_value = $CompareItem->formatPrintField($fieldname, false).": <itemversion>{$itemversion_id}</itemversion>";
+        // now fields that were ADDED
+        $added = array_diff($this_fieldnames, $compare_fieldnames);
+        foreach ($added as $fieldname) {
+            if (in_array($fieldname, $this_property_fieldnames)
+                || in_array($fieldname, $this_attachment_fieldnames)) {
                 $this_value = $this->formatPrintField($fieldname, false);
-            } else {
-                $itemversion_id = DBTableRowItemVersion::getItemVersionIdFromByObjectId($this->{$fieldname}, $this->effective_date);
+                if ($output_by_fieldname) {
+                    checkWasChangedItemFieldByFieldname($list, $fieldname, null, $this_value);
+                } else {
+                    checkWasChangedItemField($list, $this->formatFieldnameNoColon($fieldname), null, $this_value);
+                }
+            } else if (in_array($fieldname, $this_component_fieldnames)) {
+                if ($say_more_about_starting_state) {
+                    $this_value = $this->formatPrintField($fieldname, false);
+                } else {
+                    $itemversion_id = DBTableRowItemVersion::getItemVersionIdFromByObjectId($this->{$fieldname}, $this->effective_date);
+                    $this_value = $this->formatPrintField($fieldname, false).": <itemversion>{$itemversion_id}</itemversion>";
+                }
+                if ($output_by_fieldname) {
+                    checkWasChangedItemFieldByFieldname($list, $fieldname, null, $this->formatPrintField($fieldname, false));
+                } else {
+                    checkWasChangedItemField($list, $this->formatFieldnameNoColon($fieldname), null, $this_value);
+                }
+            }
+        }
+
+        // now fields that possibly CHANGED
+        $maybe_changed = array_intersect($this_fieldnames, $compare_fieldnames);
+        foreach ($maybe_changed as $fieldname) {
+            if (in_array($fieldname, $this_property_fieldnames + $compare_property_fieldnames )
+                    || in_array($fieldname, $this_attachment_fieldnames + $compare_attachment_fieldnames )) {
+                $this_value = $this->formatPrintField($fieldname, false);
                 $compare_value = $CompareItem->formatPrintField($fieldname, false);
-                $this_value = $this->formatPrintField($fieldname, false).": <itemversion>{$itemversion_id}</itemversion>";
-            }
-            if ($output_by_fieldname) {
-                checkWasChangedItemFieldByFieldname($list, $fieldname, $compare_value, $this->formatPrintField($fieldname, false));
-            } else {
-                checkWasChangedItemField($list, $CompareItem->formatFieldnameNoColon($fieldname), $compare_value, $this_value);
-            }
-        }
-
-        foreach (array_keys($added_components) as $fieldname) {
-            if ($say_more_about_starting_state) {
-                $this_value = $this->formatPrintField($fieldname, false);
-            } else {
-                $itemversion_id = DBTableRowItemVersion::getItemVersionIdFromByObjectId($this->{$fieldname}, $this->effective_date);
-                $this_value = $this->formatPrintField($fieldname, false).": <itemversion>{$itemversion_id}</itemversion>";
-            }
-            if ($output_by_fieldname) {
-                checkWasChangedItemFieldByFieldname($list, $fieldname, null, $this->formatPrintField($fieldname, false));
-            } else {
-                checkWasChangedItemField($list, $this->formatFieldnameNoColon($fieldname), null, $this_value);
+                if ($output_by_fieldname) {
+                    checkWasChangedItemFieldByFieldname($list, $fieldname, $compare_value, $this_value);
+                } else {
+                    checkWasChangedItemField($list, $CompareItem->formatFieldnameNoColon($fieldname), $compare_value, $this_value);
+                }
+            } else if (in_array($fieldname, $this_component_fieldnames + $compare_component_fieldnames )) {
+                // I have to directly compare here instead of in checkWasChangedItemField since I'm decorating the start and finish values differently
+                if ($this->{$fieldname} !== $CompareItem->{$fieldname}) {
+                    if ($say_more_about_starting_state) {
+                        $itemversion_id = DBTableRowItemVersion::getItemVersionIdFromByObjectId($CompareItem->{$fieldname}, $CompareItem->effective_date);
+                        $compare_value = $CompareItem->formatPrintField($fieldname, false).": <itemversion>{$itemversion_id}</itemversion>";
+                        $this_value = $this->formatPrintField($fieldname, false);
+                    } else {
+                        $itemversion_id = DBTableRowItemVersion::getItemVersionIdFromByObjectId($this->{$fieldname}, $this->effective_date);
+                        $compare_value = $CompareItem->formatPrintField($fieldname, false);
+                        $this_value = $this->formatPrintField($fieldname, false).": <itemversion>{$itemversion_id}</itemversion>";
+                    }
+                    if ($output_by_fieldname) {
+                        checkWasChangedItemFieldByFieldname($list, $fieldname, $compare_value, $this->formatPrintField($fieldname, false));
+                    } else {
+                        checkWasChangedItemField($list, $CompareItem->formatFieldnameNoColon($fieldname), $compare_value, $this_value);
+                    }
+                }
             }
         }
 
@@ -2150,8 +2124,15 @@ class DBTableRowItemVersion extends DBTableRow {
     protected function formatInputTagFieldAttachment($fieldname, $display_options = array())
     {
         $out = '';
+        $got_a_valid_fieldcomment = false;
         if (is_numeric($this->{$fieldname})) {
             list($documents_gallery_html, $comment_html, $record) = self::getFieldCommentRecord($this->_navigator, $this->{$fieldname}, 'id_edit_'.$this->{$fieldname});
+            if ((count($record) > 0) && $record['is_fieldcomment']) {
+                $got_a_valid_fieldcomment = true;
+            }
+        }
+        if ($got_a_valid_fieldcomment) {
+            //list($documents_gallery_html, $comment_html, $record) = self::getFieldCommentRecord($this->_navigator, $this->{$fieldname}, 'id_edit_'.$this->{$fieldname});
             // we fudge the date to the current date if want to be able to delete. This side-steps the grace-period logic.
             $comment_added = in_array('AlwaysAllowFieldAttachmentDelete', $display_options) ? time_to_mysqldatetime(script_time()) : $record['comment_added'];
             $comment_actions = DBTableRowComment::getListOfCommentActions($comment_added, $record['user_id'], $record['proxy_user_id']);
@@ -2436,8 +2417,14 @@ class DBTableRowItemVersion extends DBTableRow {
     protected static function formatPrintFieldAttachment($navigator, $comment_id, $is_html)
     {
         $out = '';
+        $got_a_valid_fieldcomment = false;
         if (is_numeric($comment_id)) {
             list($documents_gallery_html, $comment_html, $record) = self::getFieldCommentRecord($navigator, $comment_id, 'id_print_'.$comment_id);
+            if ((count($record) > 0) && $record['is_fieldcomment']) {
+                $got_a_valid_fieldcomment = true;
+            }
+        }
+        if ($got_a_valid_fieldcomment) {
             if (count($record) != 0) { // only do this if the comment record really exists.
                 if ($is_html) {
                     $out = '<div class="bd-event-documents">';
