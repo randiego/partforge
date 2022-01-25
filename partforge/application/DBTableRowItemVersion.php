@@ -2132,10 +2132,11 @@ class DBTableRowItemVersion extends DBTableRow {
             }
         }
         if ($got_a_valid_fieldcomment) {
-            //list($documents_gallery_html, $comment_html, $record) = self::getFieldCommentRecord($this->_navigator, $this->{$fieldname}, 'id_edit_'.$this->{$fieldname});
-            // we fudge the date to the current date if want to be able to delete. This side-steps the grace-period logic.
-            $comment_added = in_array('AlwaysAllowFieldAttachmentDelete', $display_options) ? time_to_mysqldatetime(script_time()) : $record['comment_added'];
-            $comment_actions = DBTableRowComment::getListOfCommentActions($comment_added, $record['user_id'], $record['proxy_user_id']);
+            if (in_array('AlwaysAllowFieldAttachmentDelete', $display_options)) {
+                $comment_actions['delete'] = array('buttonname' => 'Delete', 'privilege' => 'delete', 'confirm' => 'Are you sure you want to delete this?');
+            } else {
+                $comment_actions = DBTableRowComment::getListOfCommentActions($record['comment_added'], $record['user_id'], $record['proxy_user_id']);
+            }
             $buttons = '';
             if (isset($comment_actions['delete'])) {
                 $buffer_key = $this->getTableName().$this->typeversion_id;
