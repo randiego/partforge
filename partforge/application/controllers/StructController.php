@@ -482,7 +482,6 @@ class StructController extends DBControllerActionAbstract
 
     protected function edit_db_handler(DBTableRow $dbtable, $save_fieldnames)
     {
-        $dbschema = DbSchema::getInstance();
         $edit_buffer = 'editing_'.$this->getBufferKey($dbtable);
         switch (true) {
             // make a change to a record instead of adding a new version of the same one.

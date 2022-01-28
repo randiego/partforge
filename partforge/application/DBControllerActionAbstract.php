@@ -359,7 +359,6 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
                 $errormsg = array();
                 $dbtable->validateFields($save_fieldnames, $errormsg);
                 $this->show_error_dialog_if_needed($errormsg, $dbtable, isset($this->params['btnOK']) ? 'btnOK' : 'btnSaveBeforeSubEdit');
-                $is_new = !$dbtable->isSaved();
                 $dbtable->save($save_fieldnames);
                 // renumber all the sort keys if there is a dedicate sort key associated with this table
                 if ($dbtable->hasDedicatedSortOrderField()) {

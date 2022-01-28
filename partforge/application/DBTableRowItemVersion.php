@@ -2124,15 +2124,22 @@ class DBTableRowItemVersion extends DBTableRow {
     protected function formatInputTagFieldAttachment($fieldname, $display_options = array())
     {
         $out = '';
-        $got_a_valid_fieldcomment = false;
+        $got_a_valid_add_case = true;
+        $initial_text = '';
+        $got_something_to_delete = false;
         if (is_numeric($this->{$fieldname})) {
             list($documents_gallery_html, $comment_html, $record) = self::getFieldCommentRecord($this->_navigator, $this->{$fieldname}, 'id_edit_'.$this->{$fieldname});
             if ((count($record) > 0) && $record['is_fieldcomment']) {
-                $got_a_valid_fieldcomment = true;
+                $got_something_to_delete = true;
+                $initial_text = $record['comment_text']; // since there's a commment here, we can seed it if we want to use the add button.
+                if ($record['documents_packed']) {
+                    $got_a_valid_add_case = false;
+                }
             }
         }
-        if ($got_a_valid_fieldcomment) {
-            if (in_array('AlwaysAllowFieldAttachmentDelete', $display_options)) {
+
+        if ($got_something_to_delete) {
+            if (in_array('AlwaysAllowFieldAttachmentDelete', $display_options)  || !$record['documents_packed']) {
                 $comment_actions['delete'] = array('buttonname' => 'Delete', 'privilege' => 'delete', 'confirm' => 'Are you sure you want to delete this?');
             } else {
                 $comment_actions = DBTableRowComment::getListOfCommentActions($record['comment_added'], $record['user_id'], $record['proxy_user_id']);
@@ -2152,13 +2159,16 @@ class DBTableRowItemVersion extends DBTableRow {
             $out .= '<div class="bd-event-documents">';
             $out .= '<div style="float: right;">'.$buttons.'</div>';
             $out .= $documents_gallery_html;
-            $out .= '</div>'.$comment_html;
-        } else {
+            $out .= '</div><div>'.$comment_html.'</div>';
+        }
+
+        if ($got_a_valid_add_case) {
             $buffer_key = $this->getTableName().$this->typeversion_id;
             $return_param = 'editfieldcomment,'.$fieldname.',comment';
-            $js = "document.theform.btnSubEditParams.value='action=commenteditview&controller=struct&table=comment&comment_id=new&initialize[itemobject_id]={$this->itemobject_id}&initialize[is_fieldcomment]=1&buffer_key={$buffer_key}&fieldname={$fieldname}&subedit_return_value={$return_param}';document.theform.submit(); return false;";
-            $out = linkify('#', 'Add Attachments', 'add attachments and a caption to this field.', 'minibutton2', $js);
+            $js = "document.theform.btnSubEditParams.value='action=commenteditview&controller=struct&table=comment&comment_id=new&initialize[itemobject_id]={$this->itemobject_id}&initialize[is_fieldcomment]=1&initialize[comment_text]=".rawurlencode($initial_text)."&buffer_key={$buffer_key}&fieldname={$fieldname}&subedit_return_value={$return_param}';document.theform.submit(); return false;";
+            $out .= '<div>'.linkify('#', 'Add Attachments', 'add attachments and a caption to this field.', 'minibutton2', $js).'</div>';
         }
+
         return $out;
     }
 
