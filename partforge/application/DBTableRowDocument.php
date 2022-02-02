@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -336,8 +336,23 @@ break;
         return Zend_Registry::get('config')->document_path_base.Zend_Registry::get('config')->document_directory.'/'.$this->document_stored_path.'/'.$version_path.$file_name;
     }
 
+    public function hasSharedAssociatedFiles()
+    {
+        $records = DbSchema::getInstance()->getRecords('', "SELECT count(*) as cnt FROM document WHERE
+            document_stored_filename='".addslashes($this->document_stored_filename)."' and
+            document_stored_path='".addslashes($this->document_stored_path)."' and
+            document_path_db_key='".$this->document_path_db_key."' and
+            document_id<>'{$this->document_id}'");
+        $record = reset($records);
+        return $record['cnt'] > 0;
+    }
+
     public function unlinkAssociatedFiles()
     {
+        if ($this->hasSharedAssociatedFiles()) {
+            // we don't do anything because these files are used by another document
+            return true;
+        }
         $file_name = $this->document_stored_filename;
         $file_path = $this->getUploadPathByVersion($file_name);
         $success = is_file($file_path) && $file_name[0] !== '.' && unlink($file_path);
@@ -352,6 +367,12 @@ break;
             }
         }
         return $success;
+    }
+
+    public function saveAsDuplicate()
+    {
+        $this->document_id = 'new';
+        $this->save();
     }
 
     public static function cleanupOrphanDocuments()

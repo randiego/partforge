@@ -327,6 +327,22 @@ class StructController extends DBControllerActionAbstract
         // get all the session variables and edit buffer setup
         $edit_buffer_key = $this->preEditViewSessionLoad();
 
+        // if save_as_new, then we should duplicate the documents because we are likely editing an attachment field
+        if (isset($this->params['save_as_new'])) {
+            $new_document_ids = array();
+            foreach ($_SESSION['editing_'.$edit_buffer_key]['document_ids'] as $document_id) {
+                $Document = new DBTableRowDocument();
+                if ($Document->getRecordById($document_id)) {
+                    $Document->comment_id = -1; // break the link to the original comment which we are duplicating.
+                    $Document->saveAsDuplicate();
+                    if (is_numeric($Document->document_id)) {
+                        $new_document_ids[] = $Document->document_id;
+                    }
+                }
+            }
+            $_SESSION['editing_'.$edit_buffer_key]['document_ids'] = $new_document_ids;
+        }
+
         // create a fairly unique upload key for the QR code in case the user scans the code
         $_SESSION['editing_'.$edit_buffer_key]['qruploadkey_value'] = generateRandomString(32);
 

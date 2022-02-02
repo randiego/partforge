@@ -2126,25 +2126,36 @@ class DBTableRowItemVersion extends DBTableRow {
         $out = '';
         $got_a_valid_add_case = true;
         $initial_text = '';
-        $got_something_to_delete = false;
+        $got_something_to_edit = false;
         if (is_numeric($this->{$fieldname})) {
             list($documents_gallery_html, $comment_html, $record) = self::getFieldCommentRecord($this->_navigator, $this->{$fieldname}, 'id_edit_'.$this->{$fieldname});
             if ((count($record) > 0) && $record['is_fieldcomment']) {
-                $got_something_to_delete = true;
+                $got_something_to_edit = true;
                 $initial_text = $record['comment_text']; // since there's a commment here, we can seed it if we want to use the add button.
-                if ($record['documents_packed']) {
+                if ($record['documents_packed']) { // there are attachments
                     $got_a_valid_add_case = false;
                 }
             }
         }
 
-        if ($got_something_to_delete) {
+        if ($got_something_to_edit) {
             if (in_array('AlwaysAllowFieldAttachmentDelete', $display_options)  || !$record['documents_packed']) {
                 $comment_actions['delete'] = array('buttonname' => 'Delete', 'privilege' => 'delete', 'confirm' => 'Are you sure you want to delete this?');
+                $comment_actions['commenteditview'] = array('buttonname' => 'Edit', 'privilege' => 'view');
             } else {
                 $comment_actions = DBTableRowComment::getListOfCommentActions($record['comment_added'], $record['user_id'], $record['proxy_user_id']);
             }
-            $buttons = '';
+            $buttons = array();
+            if (isset($comment_actions['commenteditview'])) {
+                $buffer_key = $this->getTableName().$this->typeversion_id;
+                $return_param = 'editfieldcomment,'.$fieldname.',comment';
+                $js_go = "document.theform.btnSubEditParams.value='action=commenteditview&controller=struct&table=comment&comment_id={$this->{$fieldname}}&save_as_new=&buffer_key={$buffer_key}&fieldname={$fieldname}&subedit_return_value={$return_param}';document.theform.submit(); return false;";
+                $detail_action = $comment_actions['commenteditview'];
+                $icon_html = detailActionToHtml('commenteditview', $detail_action);
+                $title = isset($detail_action['title']) ? $detail_action['title'] : $detail_action['buttonname'];
+                $buttons[] = linkify('#', empty($icon_html) ? $detail_action['buttonname'] : $icon_html, $title, empty($icon_html) ? 'minibutton2' : '', $js_go, '', 'btn-edit-'.$this->{$fieldname});
+            }
+
             if (isset($comment_actions['delete'])) {
                 $buffer_key = $this->getTableName().$this->typeversion_id;
                 $js_go = "document.theform.btnSubEditParams.value='action=deletefieldcomment&controller=struct&buffer_key={$buffer_key}&fieldname={$fieldname}';document.theform.submit(); return false;";
@@ -2154,10 +2165,10 @@ class DBTableRowItemVersion extends DBTableRow {
                 $confirm_js = isset($detail_action['confirm'])  ? "if (confirm('".$detail_action['confirm']."')) {".$js_go."} else {return true;};"
                                                                 : (isset($detail_action['alert'])   ? "alert('".$detail_action['alert']."'); return false;"
                                                                                                     : "return true;");
-                $buttons = linkify('#', empty($icon_html) ? $detail_action['buttonname'] : $icon_html, $title, empty($icon_html) ? 'minibutton2' : '', $confirm_js, '', 'btn-delete-'.$this->{$fieldname});
+                $buttons[] = linkify('#', empty($icon_html) ? $detail_action['buttonname'] : $icon_html, $title, empty($icon_html) ? 'minibutton2' : '', $confirm_js, '', 'btn-delete-'.$this->{$fieldname});
             }
             $out .= '<div class="bd-event-documents">';
-            $out .= '<div style="float: right;">'.$buttons.'</div>';
+            $out .= '<div style="float: right;">'.implode('', $buttons).'</div>';
             $out .= $documents_gallery_html;
             $out .= '</div><div>'.$comment_html.'</div>';
         }
