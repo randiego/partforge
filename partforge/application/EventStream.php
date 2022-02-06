@@ -633,6 +633,20 @@ class EventStream {
     }
 
     /**
+     * looks to see if records_created is out of whack with effective_date
+     *
+     * @param array $record
+     *
+     * @return boolean
+     */
+    public static function isWeirdRecordCreatedDate($record)
+    {
+        $one_hour = 3600;
+        return (strtotime($record['record_created']) + $one_hour < strtotime($record['effective_date']))
+                        || (strtotime($record['record_created']) - 25*$one_hour > strtotime($record['effective_date']));
+    }
+
+    /**
      * Takes the lines output from ::eventStreamRecordsToLines() and renders it into the stream view (RHS of itemview).
      * @param DBTableRowItemVersion $dbtable
      * @param array $lines
@@ -668,14 +682,10 @@ class EventStream {
                 $onclick_html = " onClick=\"window.location='".$line['version_url']."'\"";
                 $select_radio_html = '<div class="bd-event-select-button"><input class="radioclass" type="radio" name="itemversion_ck" value="'.$this_itemversion_id.'" id="itemversion_ck_'.$this_itemversion_id.'"'.$selected.$onclick_html.' /></div>';
                 $edit_buttons_html = '<div class="bd-edit">'.implode('', $line['edit_links']).'</div>';
-                $one_hour = 3600;
-                // if entering a date in the future, that's weird.  If entering a date more than one day past, that's weird too.
-                $is_weird_record_created_date = (strtotime($line['record_created']) + $one_hour < strtotime($line['effective_date']))
-                        || (strtotime($line['record_created']) - 25*$one_hour > strtotime($line['effective_date']));
                 $editing_msg = '';
                 if ($line['archive_count']>0) {
                     $editing_msg = 'Edited '.linkify('#', ($line['archive_count']==1 ? 'Once' : $line['archive_count'].' Times'), 'show the changes made to this version...', 'unversioned_pop_link').'<div class="unversioned_pop_div" id="unversioned_pop_'.$this_itemversion_id.'" title="Unversioned Changes" style="display: none;"></div>';
-                } else if ($is_weird_record_created_date) {
+                } else if (self::isWeirdRecordCreatedDate($line)) {
                     // there are not changes, but we should at least say something about the odd date
                     $editing_msg = 'Added: '.time_to_bulletdate(strtotime($line['record_created']), false);
                 }
@@ -691,6 +701,9 @@ class EventStream {
                     $documents_html .= '</div>';
                 } else {
                     $documents_html = '';
+                }
+                if (self::isWeirdRecordCreatedDate($line)) {
+                    $alt_edit_date_html = '<div class="bd-dateline-edited">(Added: '.time_to_bulletdate(strtotime($line['record_created']), false).')</div>';
                 }
                 $edit_buttons_html = '<div class="bd-edit">'.implode('', $line['edit_links']).'</div>';
             }
@@ -949,7 +962,7 @@ class EventStream {
             }
 
             if ($record['event_type_id']=='ET_COM') {
-                $line['edit_links'] = !is_null($navigator) && !$record['is_fieldcomment'] ? DBTableRowComment::commentEditLinks($navigator, $return_url, $dbtable->itemobject_id, $record['comment_id'], $record['effective_date'], $record['user_id'], $record['proxy_user_id']) : array();
+                $line['edit_links'] = !is_null($navigator) && !$record['is_fieldcomment'] ? DBTableRowComment::commentEditLinks($navigator, $return_url, $dbtable->itemobject_id, $record['comment_id'], $record['record_created'], $record['user_id'], $record['proxy_user_id']) : array();
                 if (isset($record['documents_packed']) && $record['documents_packed']) {
                     $line['documents_packed'] = $record['documents_packed'];
                 }

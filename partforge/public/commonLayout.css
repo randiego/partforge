@@ -1258,7 +1258,10 @@ li.bd-event-row.bd-event-indented {
 	min-height: 32px;
 }
 
-.bd-event-row.bd-type-change .bd-event-content.bd-with-edit-date, .bd-event-row.bd-type-link-proc .bd-event-content.bd-with-edit-date, .bd-event-row.bd-type-def-change .bd-event-content.bd-with-edit-date {
+.bd-event-row.bd-type-change .bd-event-content.bd-with-edit-date,
+	.bd-event-row.bd-type-link-proc .bd-event-content.bd-with-edit-date,
+	.bd-event-row.bd-type-def-change .bd-event-content.bd-with-edit-date,
+	.bd-event-row.bd-type-comment .bd-event-content.bd-with-edit-date {
 	min-height: 44px;
 }
 

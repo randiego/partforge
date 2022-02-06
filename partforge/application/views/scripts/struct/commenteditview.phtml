@@ -61,8 +61,12 @@ $fieldlayout = array();
 if ($_SESSION['account']->getRole()=='DataTerminal') {
     $fieldlayout[] = array(  array('dbfield' => 'user_id'));
 }
+if (!$this->dbtable->is_fieldcomment || AdminSettings::getInstance()->edit_comment_data) {
+    $this->dbtable->setFieldAttribute('comment_added', 'caption', 'Effective Date');
+    $fieldlayout[] = array(array('dbfield' => 'comment_added'));
+}
 if (AdminSettings::getInstance()->edit_comment_data) {
-    $fieldlayout[] = array(  array('dbfield' => 'itemobject_id'),  array('dbfield' => 'comment_added'));
+    $fieldlayout[] = array(  array('dbfield' => 'itemobject_id'));
 }
 
 $subcaption = '<a href="#" class="a_pop_link">tips</a>
