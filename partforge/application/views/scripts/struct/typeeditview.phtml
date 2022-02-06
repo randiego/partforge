@@ -98,15 +98,11 @@ if ($this->edit_buffer_key) {
     	    "add" link, then click the "edit" link that appears next to the new entry in the dictionary.
     		The required, minimum, and maximum fields will generate warnings and show error messages in red, but
     		will NOT prevent a user from saving data, even if it is incomplete or out of range.</p>';
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('SORTED_DICTIONARY', 'The dictionary is now sorted alphabetically.  Previously it was sorted in the order entered.', '1/22/2015');
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('MIN_MAX_DICTIONARY_ATTR', 'float data types now have minimum, maximum, and units attributes.  Read the explanation above and in the dictionary editor for more information.', '1/31/2015');
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('MIN_MAX_DICTIONARY_ATTR2', 'boolean data types now have minimum, maximum attributes.  Read the explanation in the dictionary editor for more information.', '4/28/2019');
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('SPECIAL_CHARS_HTML', 'you can now enter special characters and markup in captions and subcaption using HTML.  See the help text when editing a caption for more information.', '3/15/2015');
+    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('ATTACHMENT_TYPES', 'There is a new type of field called attachment. This is a form field where you can have your user attach files and photos directly in the form. Like other dictionary items, these attachment can be required or have a minimum or maximum number.', '2/2/2022');
     $html .= '<div id="dictionaryEditorDiv" class="bd-edit-block"></div>';
 
     $html .= '<h2 class="bd-edit-page-headers">Components</h2>';
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_COMPONENT_CAPTIONS', 'Components have been enhanced.  You can now have independent captions and subcaptions (and featured and required attributes) for your components. You are no longer stuck with the default caption based on the component name.', '1/16/2015');
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('COMPONENT_WITH_MULTITYPES', 'You can now have more than one type for each component.  So instead of creating multiple mutually-exclusive component, you can create a single one that allows more than on type.', '11/20/2015');
+    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('MAX_USES_PARAMETER', 'Components have been enhanced with a max_uses parameter that defaults to 1. If a component is used in more than one place it appears with a red background.', '2/2/2022');
     $html .= '<p class="bd-instruction-text">Components refer to other record types that are associated with this record
     		type.  For example, if this is a test procedure for a magnet, then you could include an existing magnet component
     		in this list of components.  That way, both this procedure and the magnet would be linked together.
@@ -116,8 +112,6 @@ if ($this->edit_buffer_key) {
     $html .= '<div id="componentEditorDiv" class="bd-edit-block"></div>';
 
     $html .= '<h2 class="bd-edit-page-headers">Form Layout</h2>';
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('PHOTOS_IN_DEFINITIONS', 'You can now use photos in your definitions.  When you add a text block there is a photo upload button available.', '10/19/2015');
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_LAYOUT_EDITING', 'The layout editor has changed.  Now you can insert fields into the middle of the layout with "ins field" and "ins text".  Also, to arrange items, you now click the "move" button and finish with "done moving".', '8/27/2016');
     $html .= '<p class="bd-instruction-text">This is the form layout designer.
 	    	The layout is structured into two columns where fields can span both columns or
     		only one.  If you click the "add field" button, it will add

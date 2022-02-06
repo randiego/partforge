@@ -262,6 +262,15 @@ class UtilsController extends DBControllerActionAbstract
                         $databaseversion = '13';
                         setGlobal('databaseversion', $databaseversion);
                     }
+                    if ($databaseversion=='13') {
+                        $msgs[] = 'Upgrading to version 14: Improvements to recursive validation caching.';
+                        DbSchema::getInstance()->mysqlQuery("ALTER TABLE itemobject ADD COLUMN validated_on datetime AFTER validation_cache_is_valid");
+                        DbSchema::getInstance()->mysqlQuery("ALTER TABLE itemobject ADD INDEX (validated_on)");
+                        $script_time = time_to_mysqldatetime(script_time());
+                        DbSchema::getInstance()->mysqlQuery("UPDATE itemobject SET validated_on='{$script_time}' WHERE validation_cache_is_valid=1");
+                        $databaseversion = '14';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
             }
         }
         $this->view->currentversion = getGlobal('databaseversion');

@@ -281,13 +281,6 @@ foreach ($records as $record) {
 
     $html .= '<div class="buttonrow">'.$detailslinks->buttons_html().'</div>';
 
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_WATCH_BUTTON_DEF', 'Click the "Watch" button to create a personal watchlist and receive email notifications when something changes on this page or any items that have this definition.', '6/16/2016');
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('OBS_PARTS_AND_ALIASES', 'You can now define multiple part numbers (aliases) for the same part.  Use this for generic part definitions.  You can also now obsolete parts & procedures which keeps them in the system but prevents new ones from being created.', '1/6/2016');
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('DRAFT_DEF_EVENT_STREAM', 'IMPORTANT!  Making changes to definitions is now a 2 step process.  Whenever you Edit a definition, a new Draft version is created.  This is new.  You must then Release this Draft version before it becomes Active and visible to your users.
-    		                                    Different versions are tracked in the right-hand side of this page similar to parts and procedures.
-    		                                    You cannot directly edit Active definitions for existing parts and procedures.  So, if you want to bulk-upgrade existing items to the latest version, you must select the older version of the definition in the list, then click the
-									    		Upgrade Version button.', '2/24/2016');
-
     $html .= '<div class="defsheetheaderwrapper">'.$this->dbtable->fetchFullDefinitionSheetHeader(false).'</div>';
 
     $html .= '<h2 class="bd-edit-page-headers">Field Layout</h2>';

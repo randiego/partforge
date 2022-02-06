@@ -20,7 +20,6 @@ if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 
 $select_array = extract_column(ReportDataChangeLog::activityTypeOptions(), 'name');
 $list_type_select = format_select_tag($select_array, 'list_type',array('list_type' => $this->list_type), "document.theform.btnOnChange.value='listtypechange';document.theform.submit();return false;",false, '','', 'selectmenu');
 $html = '';
-$html .= DBTableRowWhatsNewUser::fetchWhatsNew('ACTIVITY_TAB', 'By changing the "Showing" selector, you can view all system activity, or just the activity on your personal watchlist.  Create your watchlist by visiting Parts and Procedure pages and clicking the "Watch" button.  Manage your watchlist by returning to this page and clicking "Manage My Watchlist"','6/16/2016');
 $html .= $this->paginated_report_page->fetch_form_body_html('<div style="display:flex; align-items: center;"><span style="font-size:13px; margin-right:5px;">Showing: </span><span>'.$list_type_select.'</span><span style="margin-left:10px;">'.$manage_watchlist_btn.'</span></div>');
 echo fetch_form_tag($html);
 ?>

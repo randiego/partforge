@@ -251,16 +251,18 @@ class DBTableRowItemObject extends DBTableRow {
     public static function refreshAndGetValidationErrorCounts($itemobject_ids)
     {
         $out = array();
-        $query = "SELECT itemobject_id, validation_cache_is_valid, cached_has_validation_errors
+        $query = "SELECT itemobject_id, validation_cache_is_valid, validated_on, cached_has_validation_errors
             FROM itemobject
             WHERE itemobject_id IN (".implode(',', $itemobject_ids).")";
         $records = DbSchema::getInstance()->getRecords('itemobject_id', $query);
+        $expiration_date = script_time() - self::maxValidationCacheAgeDays()*24*3600;
         foreach ($records as $itemobject_id => $record) {
-            if ($record['validation_cache_is_valid']) {
+            if ($record['validation_cache_is_valid'] && $record['validated_on'] && (strtotime($record['validated_on']) > $expiration_date)) {
                 $out[$itemobject_id] = $record['cached_has_validation_errors'];
             } else {
                 $errorcount = DBTableRowItemObject::countKeys(DBTableRowItemObject::getItemObjectFullNestedArray($itemobject_id), 'field_validation_errors');
-                $query = "UPDATE itemobject SET validation_cache_is_valid=1, cached_has_validation_errors='{$errorcount}' WHERE itemobject_id='{$itemobject_id}'";
+                $query = "UPDATE itemobject SET validation_cache_is_valid=1, cached_has_validation_errors='{$errorcount}',
+                            validated_on='".time_to_mysqldatetime(script_time())."' WHERE itemobject_id='{$itemobject_id}'";
                 DbSchema::getInstance()->mysqlQuery($query);
                 $out[$itemobject_id] = $errorcount;
             }
@@ -268,13 +270,27 @@ class DBTableRowItemObject extends DBTableRow {
         return $out;
     }
 
+    public static function maxValidationCacheAgeDays()
+    {
+        return 7.0;
+    }
+
+    /**
+     * updates the validation cache for old and for invalidated cache entries.
+     *
+     * @param int $count The number of items to do at a time.
+     *
+     * @return void
+     */
     public static function refreshValidationCache($count)
     {
+        $expiration_date = time_to_mysqldatetime(script_time() - self::maxValidationCacheAgeDays()*24*3600);
         $query = "SELECT DISTINCT itemobject.itemobject_id
             FROM itemobject
             LEFT JOIN itemversion AS iv ON iv.itemversion_id=itemobject.cached_current_itemversion_id
             LEFT JOIN typeversion ON typeversion.typeversion_id=iv.typeversion_id
-            WHERE itemobject.validation_cache_is_valid=0 and typeversion.typecategory_id=2
+            WHERE typeversion.typecategory_id=2 and ((itemobject.validation_cache_is_valid=0) or (itemobject.validated_on<='{$expiration_date}'))
+            ORDER BY itemobject.validated_on
             LIMIT {$count}";
         $records = DbSchema::getInstance()->getRecords('itemobject_id', $query);
         $itemobject_ids = array_keys($records);

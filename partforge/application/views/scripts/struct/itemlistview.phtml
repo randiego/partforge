@@ -63,10 +63,6 @@ if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 
 
 $overtablehtml = '';
 
-if (!$this->is_user_procedure) {
-    $overtablehtml .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_SORT_ORDER', 'The sort order has changed on this page.  Now the highest serial numbers appear first in the Item Serial Number column.', '1/7/2015');
-}
-
 if ($minibuttons->count() > 0) {
     $overtablehtml .= '<div class="firstbuttonrow">'.$minibuttons->buttons_html().'</div>';
 }
@@ -135,7 +131,10 @@ if (count($this->report_data->category_array)>0) {
 
     $blocks[] = $selhtml;
 }
-    $overtablehtml .= (count($blocks)>0) ? '<div class="catselectorrow">'.implode("", $blocks).'</div>' : '';
+$overtablehtml .= (count($blocks)>0) ? '<div class="catselectorrow">'.implode("", $blocks).'</div>' : '';
+
+$overtablehtml .= DBTableRowWhatsNewUser::fetchWhatsNew('COMPONENT_ERRORS', "Serial Numbers in this table show with a red background if there are any errors in the corresponding part. These errors include both validation errors and components being used in multiple places (controlled by the component definition's max_uses parameter).", '2/2/2022');
+
 
 /*
  * Build the view preferences checkbox(es) and button that go next to pagination at top of table

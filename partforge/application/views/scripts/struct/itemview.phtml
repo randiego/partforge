@@ -147,7 +147,7 @@ if (count($usedon)==1) {
 if ($this->show_big_page_controls) {
     $history_selector = '<span class="monthsmenu" style="font-size: 12px;">'.format_select_tag(EventStream::monthsOfHistoryOptions($this->dbtable->getTotalMonthsOfHistory()), 'months', $this->queryvars, "", false, 'Select History to Show', ' ID="monthsHistoryId"').'</span>';
     $html .= '<div class="itemview_notice red">Slow Page.     The Current View Shows:  '.$history_selector.'</div>';
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_BIG_PAGE_CONTROL', 'Pages with a lot of history use the above selector to let you choose how much history to show.', '6/16/2016');
+    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_BIG_PAGE_CONTROL', 'Improvements made to the the Slow Page notice. By default less history is shown so pages load faster.', '2/2/2022');
 }
 
 //$html .= '<div class="itemview_notice">ItemObject IDs:'.implode(', ', DBTableRowItemObject::getWhereUsedItemObjectIDs($this->dbtable->itemobject_id)).'</div>';
@@ -168,9 +168,6 @@ if (Zend_Registry::get('config')->config_for_testing) {
 $html .= '<div class="tablewrap">';
 
 $html .= '<div class="buttonrow">'.implode('&nbsp;', $detailslinks).'</div>';
-
-$html .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_WATCH_BUTTON', 'Click the "Watch" button to create a personal watchlist and receive email notifications when something changes on this page.', '6/16/2016');
-$html .= DBTableRowWhatsNewUser::fetchWhatsNew('QR_CODE_IN_LINK_TO_PAGE', 'Click the "Link to Page" button to see a QR code you can scan with your phone camera to take you directly to this page.', '3/28/2019');
 
 $fields_to_remove = array();
 

@@ -1079,9 +1079,12 @@ class EventStream {
 
     static public function monthsOfHistoryOptions($max_months)
     {
-        // return 1, 3, 6, 12, 24, 36, 48, ... to above max.
+        // return 1, 2, 3, 6, 12, 24, 36, 48, ... to above max.
         $out = array(1 => '1 Month');
         if ($max_months > 1) {
+            $out[2] = '2 Months';
+        }
+        if ($max_months > 2) {
             $out[3] = '3 Months';
         }
         if ($max_months > 3) {
@@ -1096,9 +1099,8 @@ class EventStream {
             $out[$years*12] = $years.' Years';
         };
 
-        // the last entry should be 'ALL' instead of the number of months.
-        $last = array_pop($out);
-        $out['ALL'] = $last.' (All)';
+        $last = end($out);
+        $out['ALL'] = '>'.$last.' (All)';
 
         foreach ($out as $key => $text) {
             $out[$key] = $text.' of History';
@@ -1120,13 +1122,13 @@ class EventStream {
 
     static public function tooBigRecordCount()
     {
-        return 800;
+        return 150;
     }
 
     static public function getTooBigStartingNumMonths(DBTableRowItemVersion $ItemVersion, $length_items)
     {
         $length_months = $ItemVersion->getTotalMonthsOfHistory();
-        $target_starter_count = self::tooBigRecordCount() / 2;
+        $target_starter_count = self::tooBigRecordCount() / 4;
         return self::roundToNearestMonthsOfHistory($target_starter_count/$length_items * $length_months, $length_months);
     }
 

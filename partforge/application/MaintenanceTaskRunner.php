@@ -224,7 +224,7 @@ class MaintenanceTaskRunner {
 
     private function refresh_validation_cache(&$messages)
     {
-        DBTableRowItemObject::refreshValidationCache(10);
+        DBTableRowItemObject::refreshValidationCache(500);
     }
 
 }
