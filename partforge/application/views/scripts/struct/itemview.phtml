@@ -146,8 +146,8 @@ if (count($usedon)==1) {
 
 if ($this->show_big_page_controls) {
     $history_selector = '<span class="monthsmenu" style="font-size: 12px;">'.format_select_tag(EventStream::monthsOfHistoryOptions($this->dbtable->getTotalMonthsOfHistory()), 'months', $this->queryvars, "", false, 'Select History to Show', ' ID="monthsHistoryId"').'</span>';
-    $html .= '<div class="itemview_notice red">Slow Page.     The Current View Shows:  '.$history_selector.'</div>';
-    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_BIG_PAGE_CONTROL', 'Improvements made to the the Slow Page notice. By default less history is shown so pages load faster.', '2/2/2022');
+    $html .= '<div class="itemview_notice">The Current View Shows:  '.$history_selector.'</div>';
+    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_BIG_PAGE_CONTROL2', 'Improvements made to the the Slow Page notice. By default less history is shown so pages load faster.', '2/2/2022');
 }
 
 //$html .= '<div class="itemview_notice">ItemObject IDs:'.implode(', ', DBTableRowItemObject::getWhereUsedItemObjectIDs($this->dbtable->itemobject_id)).'</div>';

@@ -889,10 +889,6 @@ input.searchbutton {
 	margin-bottom: 10px;
 }
 
-.itemview_notice.red {
-	background-color:#FCC;
-}
-
 .itemview_notice .changesinbox {
 	font-size: 12px;
 	margin-top: 10px;
@@ -1296,7 +1292,7 @@ li.bd-event-row.bd-event-indented {
 }
 
 .bd-stream-end-notice .bd-event-content {
-	background-color: #FCC;
+	background-color: #FFC;
 	border: 1px solid #99F;
 }
 
