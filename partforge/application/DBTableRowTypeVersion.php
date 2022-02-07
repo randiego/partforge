@@ -1576,7 +1576,7 @@ class DBTableRowTypeVersion extends DBTableRow {
     }
 
     /**
-     * This returns html formatted list of the data dictionary parameters for the the specified $fieldname.
+     * This returns html formatted list of the data dictionary parameters for the specified $fieldname.
      * It is used in the Definition Sheet as documentation of the configuration of a given field.
      * @param string $fieldname the name of the field that you want to definition for.
      * @return string

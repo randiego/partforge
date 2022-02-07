@@ -92,7 +92,7 @@ abstract class SerialNumberType {
 	abstract public function convertSerialNumberToOrdinal($item_serial_number);
 
 	/**
-	 * This returns the the captions and subcaptions that are appropriate for the fields that describe the serial numbers.
+	 * This returns the captions and subcaptions that are appropriate for the fields that describe the serial numbers.
 	 * This is used for the purpose of displaying prompts for entering the values. By default they are all hidden used==false
 	 */
 	public function getParamCaptions() {
