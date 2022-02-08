@@ -61,6 +61,7 @@ $config['login_html_message'] = '';
 
 $config['max_allowed_field_length'] = 80;
 
+$config['pass_disposition_required_error_free'] = true; // If true, it's a fatal error if you specify Pass disposition and there are any errors.
 $config['use_instant_watch_queue'] = true;  // If true then queue up the "instant" watch notification for sending on the cron  (every minute?).  Otherwise they are send immediately.
 $config['fake_cron_service'] = true; // If true, then if the cron task servicer has not been run sufficiently recently, then process the tasks on the next page fetch
 $config['max_file_upload_size'] = 40*1024*1024;  // this is a browser defined maximum bytes one can upload. This should be smaller than the php limit.

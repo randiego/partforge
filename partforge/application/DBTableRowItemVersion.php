@@ -303,6 +303,9 @@ class DBTableRowItemVersion extends DBTableRow {
         $out = array_merge($out, $this->_typeversion_digest['addon_attachment_fields']);
         $out = array_merge($out, $this->_typeversion_digest['addon_component_fields']);
         $out = array_merge($out, $this->_typeversion_digest['addon_component_subfields']);
+        if (!Zend_Registry::get('config')->pass_disposition_required_error_free) {
+            $out[] = 'disposition';
+        }
         return $out;
     }
 
