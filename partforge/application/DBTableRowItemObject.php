@@ -290,7 +290,7 @@ class DBTableRowItemObject extends DBTableRow {
             LEFT JOIN itemversion AS iv ON iv.itemversion_id=itemobject.cached_current_itemversion_id
             LEFT JOIN typeversion ON typeversion.typeversion_id=iv.typeversion_id
             WHERE typeversion.typecategory_id=2 and ((itemobject.validation_cache_is_valid=0) or (itemobject.validated_on<='{$expiration_date}'))
-            ORDER BY itemobject.validated_on
+            ORDER BY itemobject.validated_on, itemobject.itemobject_id
             LIMIT {$count}";
         $records = DbSchema::getInstance()->getRecords('itemobject_id', $query);
         $itemobject_ids = array_keys($records);

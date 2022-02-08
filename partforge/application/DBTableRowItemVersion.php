@@ -1320,12 +1320,18 @@ class DBTableRowItemVersion extends DBTableRow {
             $ft = $this->_fieldtypes[$fieldname];
             if (isset($ft['type'])) {
                 if ($ft['type']=='component') {
-                    $ComponentItemVersion = $this->getComponentAsIVObject($fieldname);
-                    if (!is_null($ComponentItemVersion)) {
-                        if (!in_array($ComponentItemVersion->tv__typeobject_id, $ft['can_have_typeobject_id'])) {
-                            $errormsg[$fieldname] = 'Wrong type for this component!';
-                        } else if (!$this->hasADisposition()) {
-                            $this->checkComponentOverUsedOn($fieldname, $ft, $ComponentItemVersion->itemobject_id, $errormsg);
+                    if (is_numeric($this->{$fieldname})) {
+                        $records = DbSchema::getInstance()->getRecords('', "SELECT tv.typeobject_id FROM itemobject iob
+                            LEFT JOIN itemversion iv ON iv.itemversion_id=iob.cached_current_itemversion_id
+                            LEFT JOIN typeversion tv ON tv.typeversion_id=iv.typeversion_id
+                            WHERE iob.itemobject_id='{$this->{$fieldname}}'");
+                        if (count($records)>0) {
+                            $record=reset($records);
+                            if (!in_array($record['typeobject_id'], $ft['can_have_typeobject_id'])) {
+                                $errormsg[$fieldname] = 'Wrong type for this component!';
+                            } else if (!$this->hasADisposition()) {
+                                $this->checkComponentOverUsedOn($fieldname, $ft, $this->{$fieldname}, $errormsg);
+                            }
                         }
                     }
                 } elseif (($ft['type']=='attachment') && is_numeric($this->{$fieldname})) {
