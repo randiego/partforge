@@ -183,7 +183,7 @@ if (!empty($fieldlayout)) {
     $errormsg = array();
     $this->dbtable->validateFields($this->dbtable->getSaveFieldNames(), $errormsg);
     // the following MUST be called after validateFields because otherwise validate fields will think component errors are real errors
-    $this->dbtable->getComponentValidationErrors($errormsg);
+    $this->dbtable->getComponentValidationErrors($errormsg, true);
 
     $html .= DBTableRowItemVersion::fetchItemVersionEditTableTR($fieldlayout, $this->dbtable, $errormsg, '', false, null, $this->fieldhistory);
     $html .= '</table></div>

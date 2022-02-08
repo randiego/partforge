@@ -1383,7 +1383,7 @@ class DBTableRowItemVersion extends DBTableRow {
         }
     }
 
-    public function getComponentValidationErrors(&$errormsg)
+    public function getComponentValidationErrors(&$errormsg, $always_recheck_errors = false)
     {
         $itemobject_ids = array();
         foreach ($this->getComponentFieldNames() as $fieldname) {
@@ -1392,7 +1392,7 @@ class DBTableRowItemVersion extends DBTableRow {
             }
         }
         if (count($itemobject_ids) > 0) {
-            $error_counts_array = DBTableRowItemObject::refreshAndGetValidationErrorCounts($itemobject_ids);
+            $error_counts_array = DBTableRowItemObject::refreshAndGetValidationErrorCounts($itemobject_ids, $always_recheck_errors);
             foreach ($itemobject_ids as $fieldname => $itemobject_id) {
                 if ($error_counts_array[$itemobject_id] > 0) {
                     $errormsg[$fieldname] = 'Component has errors.';

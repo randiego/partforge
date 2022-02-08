@@ -248,7 +248,7 @@ class DBTableRowItemObject extends DBTableRow {
      *
      * @return array of validation error counts indexed by itemobject ID.
      */
-    public static function refreshAndGetValidationErrorCounts($itemobject_ids)
+    public static function refreshAndGetValidationErrorCounts($itemobject_ids, $always_recheck_errors = false)
     {
         $out = array();
         $query = "SELECT itemobject_id, validation_cache_is_valid, validated_on, cached_has_validation_errors
@@ -257,7 +257,7 @@ class DBTableRowItemObject extends DBTableRow {
         $records = DbSchema::getInstance()->getRecords('itemobject_id', $query);
         $expiration_date = script_time() - self::maxValidationCacheAgeDays()*24*3600;
         foreach ($records as $itemobject_id => $record) {
-            if ($record['validation_cache_is_valid'] && $record['validated_on'] && (strtotime($record['validated_on']) > $expiration_date)) {
+            if ($record['validation_cache_is_valid'] && (!$always_recheck_errors) && $record['validated_on'] && (strtotime($record['validated_on']) > $expiration_date)) {
                 $out[$itemobject_id] = $record['cached_has_validation_errors'];
             } else {
                 $errorcount = DBTableRowItemObject::countKeys(DBTableRowItemObject::getItemObjectFullNestedArray($itemobject_id), 'field_validation_errors');
@@ -295,7 +295,7 @@ class DBTableRowItemObject extends DBTableRow {
         $records = DbSchema::getInstance()->getRecords('itemobject_id', $query);
         $itemobject_ids = array_keys($records);
         if (count($itemobject_ids) > 0) {
-            $error_counts_array = self::refreshAndGetValidationErrorCounts($itemobject_ids);
+            $error_counts_array = self::refreshAndGetValidationErrorCounts($itemobject_ids, false);
         }
     }
 

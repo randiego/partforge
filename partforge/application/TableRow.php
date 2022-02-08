@@ -257,19 +257,19 @@ class TableRow {
         foreach ($fieldnames as $fieldname) {
             if (str_contains($fieldname, 'email')) {
                 if ($this->isRequired($fieldname) || (isset($this->_fields[$fieldname]) && (trim($this->_fields[$fieldname])!=''))) {
-                    if (!preg_match('"'.$EMAIL_REGEX.'"i', trim($this->_fields[$fieldname]))) {
+                    if (!isset($this->_fields[$fieldname]) || !preg_match('"'.$EMAIL_REGEX.'"i', trim($this->_fields[$fieldname]))) {
                         $errormsg[$fieldname] = 'Please make sure '.$this->formatFieldnameNoColon($fieldname).' is entered correctly.';
                     }
                 }
             } elseif (preg_match('/_url$/i', $fieldname)) {
                 if ($this->isRequired($fieldname) || (isset($this->_fields[$fieldname]) && (trim($this->_fields[$fieldname])!=''))) {
-                    if (!preg_match('"^(http://|https://)"i', trim($this->_fields[$fieldname]))) {
+                    if (!isset($this->_fields[$fieldname]) || !preg_match('"^(http://|https://)"i', trim($this->_fields[$fieldname]))) {
                         $errormsg[$fieldname] = 'Please make sure '.$this->formatFieldnameNoColon($fieldname).' starts with http:// or https://.';
                     }
                 }
             } elseif (isset($this->_fieldtypes[$fieldname]['type']) && (($this->_fieldtypes[$fieldname]['type'] == 'datetime') || ($this->_fieldtypes[$fieldname]['type'] == 'date') && str_contains($fieldname, 'date'))) {
                 if ($this->isRequired($fieldname) || (isset($this->_fields[$fieldname]) && (trim($this->_fields[$fieldname])!=''))) {
-                    if (!is_valid_datetime($this->_fields[$fieldname])) {
+                    if (!isset($this->_fields[$fieldname]) || !is_valid_datetime($this->_fields[$fieldname])) {
                         $errormsg[$fieldname] = 'Please make sure '.$this->formatFieldnameNoColon($fieldname).' is a valid date.';
                     }
                 }

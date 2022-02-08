@@ -553,12 +553,12 @@ class ReportDataItemListView extends ReportDataWithCategory {
             $ItemVersion->getRecordById($record['iv__itemversion_id']);
             $ItemVersion->validateFields($ItemVersion->getSaveFieldNames(), $errormsg);
             // the following MUST be called after validateFields because otherwise validate fields will think component errors are real errors
-            $ItemVersion->getComponentValidationErrors($errormsg);
+            $ItemVersion->getComponentValidationErrors($errormsg, false);
         }
 
         // if this is a list of parts, we also want to show a red background for the SN field if there are errors in the part.
         if (!$this->is_user_procedure) {
-            $error_counts_array = DBTableRowItemObject::refreshAndGetValidationErrorCounts(array($record['itemobject_id']));
+            $error_counts_array = DBTableRowItemObject::refreshAndGetValidationErrorCounts(array($record['itemobject_id']), false);
             if ($error_counts_array[$record['itemobject_id']] > 0) {
                 $detail_out['td_class']['iv__item_serial_number'] = 'cell_error';
             }
