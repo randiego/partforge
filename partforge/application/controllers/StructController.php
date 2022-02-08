@@ -754,6 +754,9 @@ class StructController extends DBControllerActionAbstract
         $this->view->show_big_page_controls = isset($this->params['months']) && $is_big_page;
         if ($is_big_page && !isset($this->params['months'])) {
             $params = isset($this->params['itemversion_id']) ? array('itemversion_id' => $this->params['itemversion_id']) : array('itemobject_id' => $this->params['itemobject_id']);
+            if (isset($this->params['resetview'])) {
+                $params['resetview'] = $this->params['resetview'];
+            }
             $params['months'] = EventStream::getTooBigStartingNumMonths($ItemVersion, $length_items);
             $this->navigator->jumpToView(null, null, $params);
         }
