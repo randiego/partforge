@@ -789,10 +789,12 @@ class StructController extends DBControllerActionAbstract
         $earliest_date = null;
         if ($this->view->show_big_page_controls && is_numeric($this->params['months'])) {  // e.g.  months=ALL doesn't come here
             $earliest_date = EventStream::getEarliestDateOfHistory($ItemVersion, $this->params['months']);
+            $this->view->fieldhistory = array();
+        } else {
+            $this->view->fieldhistory = EventStream::changeHistoryforFields($ItemVersion);
         }
         $this->view->earliest_date = $earliest_date;
         $this->view->streamrecords = EventStream::getNestedEventStreamRecords($ItemVersion, $earliest_date);
-        $this->view->fieldhistory = EventStream::changeHistoryforFields($ItemVersion);
 
         $ItemVersion->startSelfTouchedTimer(); // the ideas is that we want to touch anything we view.
         $this->view->queryvars = $this->params;

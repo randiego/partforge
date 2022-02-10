@@ -42,7 +42,7 @@ function scrollRightSideToVersionId(version_id) {
 }
 
 $(document).ready(function() {
-	
+
 	$('#AddAnotherID').effect("highlight", {color:"#3F3"}, 10000);
 
 	$(".jumpmenu").button({
@@ -60,19 +60,19 @@ $(document).ready(function() {
 		});
 		return false;
 	}).next().hide().menu();
-	
+
 	$(".used-on-button").button({icons: {primary: "ui-icon-arrowthick-1-nw"}});
 	$(".used-on-button.jumpmenu").button({icons: {primary: "ui-icon-arrowthick-1-nw", secondary:"ui-icon-triangle-1-s"}});
-	
+
 	function moveFloatMenu() {
 		var menuOffset = menuYloc.top + $(this).scrollTop() + 'px';
 		$('#toc').animate({top:menuOffset},{duration:300,queue:false});
 	}
- 
+
     initPanelScrollSaver();
-    
+
     $('#search_string').watermark('part number, SN, or locator');
-    
+
     var dialogdiv = null;  // this will force only one a time
 	$('.unversioned_pop_link').click(function(link){
 		var contentdiv = $(this).next();
@@ -96,7 +96,7 @@ $(document).ready(function() {
 							html += '<div class="bd-event-content"><div class="bd-event-type"></div>';
 							html += '<div class="bd-event-whowhen"><div class="bd-byline">'+data[i].name+'</div><div class="bd-dateline-edited">'+data[i].date+'</div></div>';
 							html += '<div class="bd-event-message">' + data[i].differences + '</div>';
-							html += '</div></li>';							
+							html += '</div></li>';
 						}
 						html += '</ul></div>';
 						contentdiv.html(html);
@@ -104,9 +104,9 @@ $(document).ready(function() {
 						alert("Did not get back response for itemversion_id = " +itemversion_id);
 					}
 				});
-							
-	}); 
-	
+
+	});
+
 
 	// create the popup PDF printing dialog
 	$('<div />').attr('id','pdfPrintContainer').attr('title',"Save to PDF").hide().appendTo('body');
@@ -116,9 +116,9 @@ $(document).ready(function() {
 	h += '<label><input type="checkbox" name="show_event_stream" value="1" checked="checked" />Show Event Stream (right panel)</label><br />';
 	$('#pdfPrintContainer').html(h);
 	$('#pdfPrintContainer input[name="show_form_fields"]').click(function(){
-		$('#pdfPrintContainer input[name="show_text_fields"]').prop("disabled", !$('#pdfPrintContainer input[name="show_form_fields"]:checked').val());  
+		$('#pdfPrintContainer input[name="show_text_fields"]').prop("disabled", !$('#pdfPrintContainer input[name="show_form_fields"]:checked').val());
 	});
-	
+
 	// now connect the on click handler that will override the normal link
 	$('#pdfButton').click(function(link) {
 		var contentdiv = $('#pdfPrintContainer');
@@ -138,15 +138,15 @@ $(document).ready(function() {
 				Cancel: function() {
 					$( this ).dialog( "close" );
 				}
-			},			
+			},
 			close: function(event,ui) {$(this).dialog('destroy');}
 		});
 		return false; // prevents the default link
 	});
-	
+
 	activatefollowButton(followUrl,"If you want to watch all items of this type, click Watch from the definition page.",false);
 	activateLinkToPageButton('#linkToPageButton',linkToPageUrl);
-	
+
 	$("#monthsHistoryId").selectmenu({
 	      change: function( event, data ) {
 	  		document.theform.btnOnChange.value='monthschange';
@@ -154,6 +154,12 @@ $(document).ready(function() {
 			return false;
 	      }
 	 });
-    
+	 $(".showAllHistoryButton").on("click", function() {
+		document.theform.btnOnChange.value='monthschange';
+		$("#monthsHistoryId").val("ALL");
+		document.theform.submit();
+		return false;
+	 });
+
 });
 

@@ -9,7 +9,7 @@ var followNotifyEmailMsg =  "<?php echo implode('  ', $_SESSION['account']->reas
 var linkToPageUrl = "<?php echo $this->dbtable->absoluteUrl();?>";
 </script>
 <?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
-<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemview.js?v=11" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemview.js?v=12" type="TEXT/JAVASCRIPT"></script>
 <?php
 
 $title = $this->dbtable->getPageTypeTitleHtml().($this->dbtable->item_serial_number ? ' - '.TextToHtml($this->dbtable->item_serial_number) : '');
@@ -125,7 +125,7 @@ if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 
 $records = $this->streamrecords;
 list($lines,$references_by_typeobject_id) = EventStream::eventStreamRecordsToLines($records, $this->dbtable, $this->navigator);
 $layout_rows = EventStream::eventStreamLinesToHtml($this->dbtable, $lines, $this->navigator);
-$more_results = $not_all_records_showing ? '<div class="dashboard-show-more">There may be more results.  Use selector to view more than '.$big_page_length.' of history.</div>' : '';
+$more_results = $not_all_records_showing ? '<div class="dashboard-show-more">There may be more results.  Use selector to view more than '.$big_page_length.' of history. <a class="showAllHistoryButton" href="#">Show all.</a></div>' : '';
 $html_dashboard = EventStream::renderDashboardView($this->dbtable, $procedure_records, $references_by_typeobject_id, $more_results);
 
 
@@ -145,7 +145,8 @@ if (count($usedon)==1) {
 }
 
 if ($this->show_big_page_controls) {
-    $history_selector = '<span class="monthsmenu" style="font-size: 12px;">'.format_select_tag(EventStream::monthsOfHistoryOptions($this->dbtable->getTotalMonthsOfHistory()), 'months', $this->queryvars, "", false, 'Select History to Show', ' ID="monthsHistoryId"').'</span>';
+    $all_button = $this->queryvars['months']!='ALL' ? '<button class="showAllHistoryButton bd-button" style="float: left;">All</button>' : '';
+    $history_selector = '<span class="monthsmenu" style="font-size: 12px;">'.$all_button.format_select_tag(EventStream::monthsOfHistoryOptions($this->dbtable->getTotalMonthsOfHistory()), 'months', $this->queryvars, "", false, 'Select History to Show', ' ID="monthsHistoryId"').'</span>';
     $html .= '<div class="itemview_notice">The Current View Shows:  '.$history_selector.'</div>';
     $html .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_BIG_PAGE_CONTROL2', 'Improvements made to the Slow Page notice. By default less history is shown so pages load faster.', '2/2/2022');
 }
@@ -210,7 +211,7 @@ $html_right .= '<li class="bd-event-row" style="position: relative; z-index: 10;
 $html_right .= implode('', array_reverse($layout_rows));
 
 if ($not_all_records_showing) {
-    $html_right .= '<li class="bd-event-row bd-stream-end-notice"><div class="bd-event-content more-records">THERE IS MORE<br /><span class="paren">Use selector at top of page to view more than '.$big_page_length.' of history.</span></div></li>';
+    $html_right .= '<li class="bd-event-row bd-stream-end-notice"><div class="bd-event-content more-records">THERE IS MORE<br /><span class="paren">Use selector at top of page to view more than '.$big_page_length.' of history. <a class="showAllHistoryButton" href="#">Show all.</a></span></div></li>';
 }
 
 $html_right .= '</ul></div>';

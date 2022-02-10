@@ -1312,9 +1312,12 @@ li.bd-event-row.bd-event-indented {
 }
 
 .dashboard-show-more {
-	margin-left:10px;
-	color:#f00;
+	border: 1px solid #999999;
 	font-style:italic;
+	padding: 2px;
+	max-width: 714px;
+	width: 100%;
+	background-color: #FFC;
 }
 
 .bd-type-change .bd-event-content {
@@ -1917,6 +1920,11 @@ span.monthsmenu {
 	float: right;
 	margin-top: -7px;
 	margin-right: -7px;
+}
+
+span.monthsmenu button.bd-button {
+	height: 31px;
+	margin-right: 3px;
 }
 
 .buttonrow a.bd-button, .buttonrow a.used-on-button, .buttonrow button.jumpmenu {
