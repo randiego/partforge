@@ -283,6 +283,7 @@ class ImportStrategyObjects {
                     }
                 }
 
+                $ItemVersion->autoSelectDisposition($ItemVersion->getSaveFieldNames());
                 $ItemVersion->validateForFatalFields($ItemVersion->getSaveFieldNames(), $errormsg);
             } else {
                 $errormsg[] = 'TypeVersion ID missing.  You must select what type of record you are importing.';
@@ -340,6 +341,7 @@ class ImportStrategyObjects {
                     }
                     $fields_to_check = $ItemVersion->getSaveFieldNames();
                     $fields_to_check = array_diff($fields_to_check, array('effective_date'));
+                    $ItemVersion->autoSelectDisposition($fields_to_check);
                     $ItemVersion->validateForFatalFields($fields_to_check, $errormsg);
                     if ((count($errormsg) == 0) && !$simulate_only) {
                         $ItemVersion->save(array(), true, $ItemVersion->user_id);
@@ -436,6 +438,7 @@ class ImportStrategyObjects {
                         $ItemVersion->{$fieldname} = $record[$columnname];
                     }
                 }
+                $ItemVersion->autoSelectDisposition($ItemVersion->getSaveFieldNames());
                 $ItemVersion->validateForFatalFields($ItemVersion->getSaveFieldNames(), $errormsg);
                 $PreviousItemVersion = new DBTableRowItemVersion();
                 $PreviousItemVersion->assign($base_version_array);

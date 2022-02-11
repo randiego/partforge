@@ -1253,6 +1253,24 @@ class DBTableRowItemVersion extends DBTableRow {
     }
 
     /**
+     * If the disposition is currently something like Pass|Fail, we will validate the results, then if it passes, the disposition is
+     * set to Pass, otherwise it is set to Fail.
+     *
+     * @return void
+     */
+    public function autoSelectDisposition($fields_to_check)
+    {
+        if ($this->hasADisposition()) {
+            if ( in_array($this->disposition, array('Pass|Fail', 'Pass|Review', 'Pass|Invalid', 'Pass|InProcess', 'Pass|SignedOff')) ) {
+                $disposition_if_errors = explode('|', $this->disposition)[1];
+                $testmsgs = array();
+                $this->validateFields($fields_to_check, $testmsgs);
+                $this->disposition = count($testmsgs) > 0 ? $disposition_if_errors : 'Pass';
+            }
+        }
+    }
+
+    /**
      * overrides standard field input validation to catch duplicate serial numbers, and bad effective dates.
      * The messages are indexed by fieldname so the errors can later be placed in the right edit boxes.
      * @see TableRow::validateFields()
@@ -1346,7 +1364,6 @@ class DBTableRowItemVersion extends DBTableRow {
                 }
             }
         }
-
 
         parent::validateFields($fieldnames, $errormsg);
         if ($this->hasADisposition() && ((count($errormsg)>0) || $this->hasDictionaryOverrideErrors())) {
