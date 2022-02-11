@@ -1421,7 +1421,8 @@ class DBTableRowItemVersion extends DBTableRow {
             $error_counts_array = DBTableRowItemObject::refreshAndGetValidationErrorCounts($itemobject_ids, $always_recheck_errors);
             foreach ($itemobject_ids as $fieldname => $itemobject_id) {
                 if ($error_counts_array[$itemobject_id] > 0) {
-                    $errormsg[$fieldname] = 'Component has errors.';
+                    // don't step on existing errors.
+                    $errormsg[$fieldname] = isset($errormsg[$fieldname]) ? $errormsg[$fieldname] : 'Component has errors.';
                 }
             }
         }
