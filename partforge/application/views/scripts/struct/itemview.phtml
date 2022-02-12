@@ -186,6 +186,11 @@ if (!empty($fieldlayout)) {
     // the following MUST be called after validateFields because otherwise validate fields will think component errors are real errors
     $this->dbtable->getComponentValidationErrors($errormsg, true);
 
+    // while we're here, lets refresh ourselves too. We've got the data already, so it's free!
+    if (!$this->dbtable->hasADisposition()) {
+        DBTableRowItemObject::setValidationErrorCount($this->dbtable->itemobject_id, count($errormsg));
+    }
+
     $html .= DBTableRowItemVersion::fetchItemVersionEditTableTR($fieldlayout, $this->dbtable, $errormsg, '', false, null, $this->fieldhistory);
     $html .= '</table></div>
 		';
