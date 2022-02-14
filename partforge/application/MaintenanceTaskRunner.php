@@ -224,7 +224,7 @@ class MaintenanceTaskRunner {
 
     private function refresh_validation_cache(&$messages)
     {
-        DBTableRowItemObject::refreshValidationCache(100);
+        DBTableRowItemObject::refreshValidationCache(Zend_Registry::get('config')->validation_cache_revalidations_per_minute);
     }
 
 }

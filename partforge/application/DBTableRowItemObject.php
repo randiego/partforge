@@ -255,7 +255,7 @@ class DBTableRowItemObject extends DBTableRow {
             FROM itemobject
             WHERE itemobject_id IN (".implode(',', $itemobject_ids).")";
         $records = DbSchema::getInstance()->getRecords('itemobject_id', $query);
-        $expiration_date = script_time() - self::maxValidationCacheAgeDays()*24*3600;
+        $expiration_date = script_time() - Zend_Registry::get('config')->validation_cache_max_age*24*3600;
         foreach ($records as $itemobject_id => $record) {
             if ($record['validation_cache_is_valid'] && (!$always_recheck_errors) && $record['validated_on'] && (strtotime($record['validated_on']) > $expiration_date)) {
                 $out[$itemobject_id] = $record['cached_has_validation_errors'];
@@ -273,11 +273,6 @@ class DBTableRowItemObject extends DBTableRow {
         $query = "UPDATE itemobject SET validation_cache_is_valid=1, cached_has_validation_errors='{$errorcount}',
                     validated_on='".time_to_mysqldatetime(script_time())."' WHERE itemobject_id='{$itemobject_id}'";
         DbSchema::getInstance()->mysqlQuery($query);
-    }
-
-    public static function maxValidationCacheAgeDays()
-    {
-        return 7.0;
     }
 
     /**
@@ -306,33 +301,25 @@ class DBTableRowItemObject extends DBTableRow {
         setGlobal('validation_cache_records_validated', count($itemobject_ids));
 
         // Now we deal with ones that are already validated but could be refreshed. We adjust the age to achieve $count_target
-        $limit = $count_target*$catch_up_factor;  // max number we shoot for
-        $validation_cache_current_age_days = getGlobal('validation_cache_current_age_days');
-        if (is_null($validation_cache_current_age_days)) {
-            $validation_cache_current_age_days = self::maxValidationCacheAgeDays();
-        }
-        $expiration_date = time_to_mysqldatetime(script_time() - $validation_cache_current_age_days*24*3600);
-        $query = "SELECT DISTINCT itemobject.itemobject_id
+        $query = "SELECT DISTINCT itemobject.itemobject_id, itemobject.validated_on
             FROM itemobject
             LEFT JOIN itemversion AS iv ON iv.itemversion_id=itemobject.cached_current_itemversion_id
             LEFT JOIN typeversion ON typeversion.typeversion_id=iv.typeversion_id
-            WHERE typeversion.typecategory_id=2 and (itemobject.validation_cache_is_valid=1) and (itemobject.validated_on<='{$expiration_date}')
+            WHERE typeversion.typecategory_id=2 and (itemobject.validation_cache_is_valid=1)
             ORDER BY itemobject.validated_on, itemobject.itemobject_id
-            LIMIT {$limit}";
+            LIMIT {$count_target}";
         $records = DbSchema::getInstance()->getRecords('itemobject_id', $query);
-        // if we got too many results, then increase the allowed age, otherwise decrease the age.
-        $actual_count = count($records);
-        $ratio = min(max(0.5, $actual_count / $count_target), 2.0);
-        $new_cache_age = min(self::maxValidationCacheAgeDays(), max(1.0/24, $validation_cache_current_age_days * $ratio));   // range: 1 hour to X days
-        setGlobal('validation_cache_current_age_days', $new_cache_age);
-        setGlobal('validation_cache_records_revalidated', $actual_count);
+        setGlobal('validation_cache_records_revalidated', count($records));
+        if (count($records) > 0) {
+            $last_record = end($records);
+            $cache_age = (script_time() - strtotime($last_record['validated_on']))/24/3600;
+            setGlobal('validation_cache_age_days', $cache_age);
+        }
         $itemobject_ids = array_keys($records);
         if (count($itemobject_ids) > 0) {
             $error_counts_array = self::refreshAndGetValidationErrorCounts($itemobject_ids, true);
         }
     }
-
-
 
     /**
      * returns a nested dictionary of fields given a specific itemversion_id.  Unlike getItemObjectFullNestedArray this starts with the

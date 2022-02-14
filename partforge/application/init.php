@@ -83,6 +83,8 @@ $config['allow_self_register'] = true;     // show the "register for account" li
 $config['self_register_user_type'] = 'Guest'; // The user type 'Guest, Admin, Tech, Eng'
 $config['self_register_require_approval'] = true;  // if false, the registree can log in right away. If true, they have to wait for the approver.
 $config['allow_username_search'] = true; // if true allows a user who has forgotten their login ID to view all login IDs.
+$config['validation_cache_max_age'] = 7.0; // for a refresh of the validation cache if you are accessing it and it's older than this (in days)
+$config['validation_cache_revalidations_per_minute'] = 100; // how often old validation cache entries are revalidated. missing validations are done at 10x this rate
 
 define( 'LOGGED_IN_USER_IS_CREATOR', '-1'); // used for db field user.proxy_user_id when there is no proxy user
 
