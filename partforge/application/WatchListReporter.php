@@ -176,7 +176,7 @@ class WatchListReporter {
     {
         $html = '';
         $duration_hours = number_format(($end_time - $start_time)/3600, 0);
-        $url = Zend_Controller_Front::getInstance()->getRequest()->getScheme().'://'.Zend_Controller_Front::getInstance()->getRequest()->getHttpHost().Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl()."/struct/changelistview";
+        $url = getAbsoluteBaseUrl()."/struct/changelistview";
         $html .= "<p>This is ".linkify($url, "Your Daily Watchlist Report")." for ".date('D, M j, Y @ G:i', $end_time).".</p>";
 
         if (count($records)>0) {
@@ -185,7 +185,7 @@ class WatchListReporter {
         } else {
             $html .= "<p>There has been no activity on Your Watchlist for the past {$duration_hours} hours:</p>";
         }
-        $urlmylist = Zend_Controller_Front::getInstance()->getRequest()->getScheme().'://'.Zend_Controller_Front::getInstance()->getRequest()->getHttpHost().Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/struct/watchlistview?resetview=1';
+        $urlmylist = getAbsoluteBaseUrl().'/struct/watchlistview?resetview=1';
         $html .= '<p>Click '.linkify($urlmylist, 'here').' to manage your Watchlist.</p>';
         return $html;
     }
@@ -196,7 +196,7 @@ class WatchListReporter {
         $html = '';
         $html .= "<p>The following has changed on your Instant Watchlist:</p>";
         $html .= self::formatWatchHtmlTable($records);
-        $url = Zend_Controller_Front::getInstance()->getRequest()->getScheme().'://'.Zend_Controller_Front::getInstance()->getRequest()->getHttpHost().Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/struct/watchlistview?resetview=1';
+        $url = getAbsoluteBaseUrl().'/struct/watchlistview?resetview=1';
         $html .= '<p>Click '.linkify($url, 'here').' to manage your Watchlist.</p>';
         return $html;
     }

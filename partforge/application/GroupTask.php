@@ -269,7 +269,7 @@ class GroupTask {
         $Assigned = new DBTableRow('assigned_to_task');
         if ($Assigned->getRecordById($assigned_to_task_id)) {
             $locator = '/dotask/'.$assigned_to_task_id.'/'.$Assigned->link_password;
-            return Zend_Controller_Front::getInstance()->getRequest()->getScheme().'://'.Zend_Controller_Front::getInstance()->getRequest()->getHttpHost().Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().$locator;
+            return getAbsoluteBaseUrl().$locator;
         } else {
             return false;
         }

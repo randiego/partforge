@@ -783,6 +783,11 @@ function itemTableRowExists($table, $id)
     return false;
 }
 
+function getAbsoluteBaseUrl()
+{
+    return Zend_Controller_Front::getInstance()->getRequest()->getScheme().'://'.Zend_Controller_Front::getInstance()->getRequest()->getHttpHost().Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();
+}
+
 /**
  *
  * @param str $prefix 'io' or 'iv' or 'tv' or 'to'
@@ -792,7 +797,7 @@ function itemTableRowExists($table, $id)
 function formatAbsoluteLocatorUrl($prefix, $id)
 {
     $locator = '/struct/'.$prefix.'/'.$id;
-    return Zend_Controller_Front::getInstance()->getRequest()->getScheme().'://'.Zend_Controller_Front::getInstance()->getRequest()->getHttpHost().Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().$locator;
+    return getAbsoluteBaseUrl().$locator;
 }
 
 function specialSearchKeyToUrl($search_string, $strict = true)

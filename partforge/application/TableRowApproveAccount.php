@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -25,33 +25,36 @@
 
 class TableRowApproveAccount extends TableRow {
 
-	public function __construct() {
-		parent::__construct();
-		$User = new DBTableRowUser();
-		$this->setFieldTypeParams('user_type','enum','',true,'User Type');
-		$this->setFieldAttribute('user_type', 'options', $User->getFieldAttribute('user_type', 'options'));
-		$this->setFieldTypeParams('send_welcome_email','boolean','',false,'Send Welcome Email');		
-		$this->setFieldTypeParams('user_id','varchar','',false,'User ID');
-		$this->setFieldTypeParams('email','varchar','',false,'Send Email To Address');
-		$this->setFieldAttribute('email', 'input_cols', '80');
-		$this->setFieldTypeParams('message','text','',false,'Message');
-	}
-	
-	public function getMessageText($message) {
-		$User = new DBTableRowUser();
-		$User->getRecordById($this->user_id);
-		$url = 	Zend_Controller_Front::getInstance()->getRequest()->getScheme().'://'.Zend_Controller_Front::getInstance()->getRequest()->getHttpHost().Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/user/login';
-		return "{$message}\n\nYour account has been set up and is ready for you to login.\n\nUsername: {$User->login_id}\n\nYou can login here:\n".$url;
-	}
+    public function __construct()
+    {
+        parent::__construct();
+        $User = new DBTableRowUser();
+        $this->setFieldTypeParams('user_type', 'enum', '', true, 'User Type');
+        $this->setFieldAttribute('user_type', 'options', $User->getFieldAttribute('user_type', 'options'));
+        $this->setFieldTypeParams('send_welcome_email', 'boolean', '', false, 'Send Welcome Email');
+        $this->setFieldTypeParams('user_id', 'varchar', '', false, 'User ID');
+        $this->setFieldTypeParams('email', 'varchar', '', false, 'Send Email To Address');
+        $this->setFieldAttribute('email', 'input_cols', '80');
+        $this->setFieldTypeParams('message', 'text', '', false, 'Message');
+    }
 
-	public function formatInputTag($fieldname, $display_options=array()) {
-		switch($fieldname) {
-			case 'message' :
-				return parent::formatInputTag($fieldname, $display_options).'<br />'.text_to_unwrappedhtml($this->getMessageText(''));
-				break;
-		}
-		return parent::formatInputTag($fieldname, $display_options);
-	}
-	
-	
+    public function getMessageText($message)
+    {
+        $User = new DBTableRowUser();
+        $User->getRecordById($this->user_id);
+        $url = getAbsoluteBaseUrl().'/user/login';
+        return "{$message}\n\nYour account has been set up and is ready for you to login.\n\nUsername: {$User->login_id}\n\nYou can login here:\n".$url;
+    }
+
+    public function formatInputTag($fieldname, $display_options = array())
+    {
+        switch ($fieldname) {
+            case 'message' :
+                return parent::formatInputTag($fieldname, $display_options).'<br />'.text_to_unwrappedhtml($this->getMessageText(''));
+                break;
+        }
+        return parent::formatInputTag($fieldname, $display_options);
+    }
+
+
 }

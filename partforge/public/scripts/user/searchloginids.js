@@ -15,5 +15,5 @@ $(document).ready(function() {
 				 formSubmit();
 			}
 		}
-	}).watermark('start typing Last Name...');	
+	}).watermark('start typing name...');
 });

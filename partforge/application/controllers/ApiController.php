@@ -111,7 +111,7 @@ class ApiController extends Zend_Controller_Action
      */
     public function getusersAction()
     {
-        $records = $login_id_by_user_id = DbSchema::getInstance()->getRecords('user_id', "SELECT user_id,login_id FROM user where (user_type not in ('DataTerminal','Guest')) and (user_enabled=1) order by login_id");
+        $records = DbSchema::getInstance()->getRecords('user_id', "SELECT user_id,login_id FROM user where (user_type not in ('DataTerminal','Guest')) and (user_enabled=1) order by login_id");
         $simple_out = array();
         foreach ($records as $record) {
             $simple_out[] = $record['login_id'];

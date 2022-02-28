@@ -6,7 +6,7 @@ require_once(dirname(__FILE__).'/../library/phpmailer/class.smtp.php');
 class Email {
     var $PHPMailer;
 
-    public function __construct($to, $toname, $from, $fromname, $cc, $bcc, $subject, $message)
+    public function __construct($to, $toname, $from, $fromname, $cc, $bcc, $subject, $message, $auto_set_reply_to = true)
     {
 
         $this->PHPMailer = new PHPMailer();
@@ -38,7 +38,9 @@ class Email {
         if ($bcc) {
             $this->PHPMailer->AddBCC(trim($bcc));
         }
-        $this->PHPMailer->AddReplyTo(trim($from), trim(str_replace(",", "", $fromname)));
+        if ($auto_set_reply_to) {
+            $this->PHPMailer->AddReplyTo(trim($from), trim(str_replace(",", "", $fromname)));
+        }
         $this->PHPMailer->WordWrap = 76;
         $this->PHPMailer->Subject = trim($subject);
         $this->PHPMailer->Body = $message;

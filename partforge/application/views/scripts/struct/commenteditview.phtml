@@ -1,11 +1,12 @@
 <script type="text/javascript">
 <?php
 $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();
-$qrUploadUrl = $this->dbtable->qruploadkey_value ? Zend_Controller_Front::getInstance()->getRequest()->getScheme().'://'.Zend_Controller_Front::getInstance()->getRequest()->getHttpHost().$baseUrl.'/utils/qrupload/'.$this->dbtable->qruploadkey_value : ""
+$qrUploadUrl = $this->dbtable->qruploadkey_value ? Zend_Controller_Front::getInstance()->getRequest()->getScheme().'://'.Zend_Controller_Front::getInstance()->getRequest()->getHttpHost().$baseUrl.'/utils/qrupload/'.$this->dbtable->qruploadkey_value : "";
 ?>
 var fileUploadLimit = '<?php echo Zend_Registry::get('config')->max_file_upload_size;?>';
 var numAttachedDocs = <?php echo count($this->dbtable->document_ids);?>;
 var qrUploadUrl = "<?php echo $qrUploadUrl;?>";
+var lookupUrl = '<?php echo $this->navigator->getCurrentViewUrl('jsonsearchloginids', 'user');?>';
 $(document).ready(function () {
     $("textarea[name='comment_text']").focus();
 });
@@ -81,7 +82,15 @@ if ($this->dbtable->is_fieldcomment) {
 }
 
 $fieldlayout[] = array(array('dbfield' => 'comment_text', 'field_attributes' => array('input_cols' => 70, 'input_rows' => $input_rows, 'subcaption' => $subcaption)));
+
 $html .= fetchEditTableTR($fieldlayout, $this->dbtable, '', $editable);
+
+if (($_SESSION['account']->getRole()!='Guest') && !$this->dbtable->is_fieldcomment) {
+    $html .= '<INPUT TYPE="hidden" NAME="login_ids" VALUE="">';
+    $html .= '<tr><th>Send To:<br><span class="paren">Send this comment to recipients</span></th>
+                            <td colspan="3"><div class="name_search_box"><input class="inputboxclass" name="send_to_login_ids" id="send_to_names" value="'.$this->dbtable->send_to_login_ids.'"></div></td>
+								</tr>';
+}
 $html .= '</table></p>
             ';
 
@@ -207,7 +216,7 @@ echo '  <div class="dialogbody">
 <script src="<?php echo $baseUrl;?>/jqueryextras/jquery-file-upload/js/jquery.fileupload-ui.js"></script>
 <!-- The File Upload jQuery UI plugin -->
 <script src="<?php echo $baseUrl;?>/jqueryextras/jquery-file-upload/js/jquery.fileupload-jui.js"></script>
-<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/commenteditview.js?v=15" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/commenteditview.js?v=18" type="TEXT/JAVASCRIPT"></script>
 
 
 <!-- The XDomainRequest Transport is included for cross-domain file deletion for IE8+ -->

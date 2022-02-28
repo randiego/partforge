@@ -526,6 +526,44 @@ return false;
         return $records;
     }
 
+    public static function getPossibleValidEmailUsersByLogin()
+    {
+        return DbSchema::getInstance()->getRecords('login_id', "SELECT * FROM user where (user_type not in ('DataTerminal','Guest')) and (user_enabled=1) and (IFNULL(email,'')<>'') order by login_id");
+    }
+
+    /**
+     * Takes an imput line like from the commenteditview page Send To field and checks for valid login_ids.
+     * errors are return as appropriate in $errormsg. The value return is an array of user records for the
+     * parsed list.
+     *
+     * @param string $send_to_login_ids
+     * @param array $errormsg
+     *
+     * @return array
+     */
+    public static function parseAndCheckSendToAddresses($send_to_login_ids, &$errormsg)
+    {
+        $user_records = self::getPossibleValidEmailUsersByLogin();
+        $out_records = array();
+        foreach (explode(',', $send_to_login_ids) as $raw_login_id) {
+            $raw_login_id = trim($raw_login_id);
+            if ($raw_login_id!='') {
+                $login_id = '';
+                $s = explode('(', $raw_login_id);
+                if (count($s)>=2) {
+                    $s = explode(')', $s[1]);
+                }
+                $login_id = $s[0];
+                if (in_array($login_id, array_keys($user_records))) {
+                    $out_records[$login_id] = $user_records[$login_id];
+                } else {
+                    $errormsg[] = "The Login Id '{$login_id}' is not a valid user (active, and with an email address).";
+                }
+            }
+        }
+        return $out_records;
+    }
+
     public function formatPrintField($fieldname, $is_html = true, $nowrap = true, $show_float_units = false)
     {
         $fieldtype = $this->getFieldType($fieldname);

@@ -78,4 +78,60 @@ $(function () {
         $('#qrcode').qrcode(qrUploadUrl);
     }
 
+    function split( val ) {
+      return val.split( /,\s*/ );
+    }
+    function extractLast( term ) {
+      return split( term ).pop();
+    }
+
+    $("#send_to_names")
+        // don't navigate away from the field on tab when selecting an item
+        .on("keydown", function (event) {
+            if (event.keyCode === $.ui.keyCode.TAB &&
+                $(this).autocomplete("instance").menu.active) {
+                event.preventDefault();
+            }
+        })
+        .autocomplete({
+            minLength: 0,
+            source: function (request, response) {
+                $.getJSON(lookupUrl, {
+                    term: extractLast(request.term)
+                }, response);
+            },
+            focus: function () {
+                // prevent value inserted on focus
+                return false;
+            },
+            select: function (event, ui) {
+                var terms = split(this.value);
+                // remove the current input
+                terms.pop();
+                // add the selected item
+                terms.push(ui.item.label);
+                // add placeholder to get the comma-and-space at the end
+                terms.push("");
+                this.value = terms.join(", ");
+                return false;
+            }
+        }).watermark('start typing name(s)...');
+
+    // for most input fields, this makes the Enter key move to the next field.
+    $('body').on('keydown', 'input, select', function (e) {
+        if (e.which == 13) {
+            // if this is a submit button, then do the normal behavior (submit the form)
+            if ($(this).filter('input[type="submit"').length) {
+                return true;
+            }
+
+            var form = $('form[name=theform]');
+            var focusable = form.find('input,select,button,textarea').filter(':visible');
+            var next = focusable.eq(focusable.index(this) + 1);
+            if (next.length) {
+                next.focus();
+            }
+            return false;
+        }
+    });
 });

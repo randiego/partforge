@@ -124,8 +124,10 @@ class UserController extends DBCustomControllerAction
     {
         $out = array();
         if (Zend_Registry::get('config')->allow_username_search) {
-            $and_where = isset($this->params['term']) ? " and last_name ".fetch_like_query($this->params['term'], '', '%') : '';
-            $records = DBSchema::getInstance()->getRecords('login_id', "SELECT login_id, concat(last_name,', ',first_name) as full_name FROM user WHERE user_enabled=1 {$and_where} ORDER BY last_name, first_name");
+            $and_where = isset($this->params['term']) ? " and ((last_name ".fetch_like_query($this->params['term'], '', '%').")
+                    or (first_name ".fetch_like_query($this->params['term'], '', '%').")
+                    or (login_id ".fetch_like_query($this->params['term'], '', '%')."))" : '';
+            $records = DBSchema::getInstance()->getRecords('login_id', "SELECT login_id, concat(first_name,' ',last_name) as full_name FROM user WHERE user_enabled=1 {$and_where} ORDER BY last_name, first_name");
             foreach ($records as $record) {
                 $out[] = array('label' => $record['full_name'].' ('.$record['login_id'].')', 'value' => $record['login_id']);
             }
@@ -154,7 +156,7 @@ class UserController extends DBCustomControllerAction
                             $tmp = array();
                             $tmp['FULLNAME'] = $User->fullName();
                             $tmp['LOGINID'] = $User->login_id;
-                            $tmp['URL'] = Zend_Controller_Front::getInstance()->getRequest()->getScheme().'://'.Zend_Controller_Front::getInstance()->getRequest()->getHttpHost().Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/';
+                            $tmp['URL'] = getAbsoluteBaseUrl().'/';
                             $toemail = $User->email;
                             $toname = $User->fullName();
                             $fromemail = Zend_Registry::get('config')->notices_from_email;
@@ -520,7 +522,7 @@ class UserController extends DBCustomControllerAction
     {
         $User = new DBTableRowUser();
         if (isset($this->params['login_id']) && $User->getRecordByLoginID($this->params['login_id'])) {
-        } else if (isset($this->params['user_id']) && is_numeric($this->params['user_id']) && $User->getRecordByID($this->params['user_id'])) {
+        } else if (isset($this->params['user_id']) && is_numeric($this->params['user_id']) && $User->getRecordById($this->params['user_id'])) {
         } else {
             showdialog('Invalid User ID', 'User ID not valid.  Please double check the link format.', array('OK' => $this->navigator->getCurrentViewUrl('listview')));
         }

@@ -848,7 +848,7 @@ class DBTableRowTypeVersion extends DBTableRow {
         if (!is_null($show_matrix)) {
             $locator .= '/mat/'.($show_matrix ? '1' : '0');
         }
-        return Zend_Controller_Front::getInstance()->getRequest()->getScheme().'://'.Zend_Controller_Front::getInstance()->getRequest()->getHttpHost().Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().$locator;
+        return getAbsoluteBaseUrl().$locator;
     }
 
     public function getFieldnameAllowedForLayout()

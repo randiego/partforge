@@ -123,12 +123,32 @@ class DBTableRowComment extends DBTableRow {
      */
     public function delete()
     {
+        DBTableRowSendMessage::deleteItemsForCommentId($this->comment_id);
         $itemobject_id = $this->itemobject_id;
         $text = $this->comment_text;
         parent::delete();
         DBTableRowChangeLog::deletedItemComment($itemobject_id, $text);
         DBTableRowItemObject::updateCachedLastCommentFields($itemobject_id);
     }
+
+    public function assignFromFormSubmission($in_params, &$merge_params)
+    {
+        if (isset($in_params['send_to_login_ids'])) {
+            $merge_params['send_to_login_ids'] = $in_params['send_to_login_ids'];
+        }
+
+        return parent::assignFromFormSubmission($in_params, $merge_params);
+    }
+
+    public function validateFields($fieldnames, &$errormsg)
+    {
+        if (isset($this->send_to_login_ids) && $this->send_to_login_ids) {
+            DBTableRowUser::parseAndCheckSendToAddresses($this->send_to_login_ids, $errormsg);
+        }
+
+        parent::validateFields($fieldnames, $errormsg);
+    }
+
 
     /**
      * Overridden to make sure some cached comment fields get updated
@@ -181,6 +201,12 @@ class DBTableRowComment extends DBTableRow {
                 $QRUploadKey->delete();
             }
         }
+
+        // queue up an email if send_to_login_ids is set.
+        if (isset($this->send_to_login_ids) && $this->send_to_login_ids) {
+            DBTableRowSendMessage::queueUpCommentForSending($this->comment_id, $this->itemobject_id, $this->send_to_login_ids);
+        }
+
 
         return true;
     }

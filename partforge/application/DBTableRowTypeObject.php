@@ -28,7 +28,6 @@
         public function __construct($ignore_joins=false,$parent_index=null) {
             parent::__construct('typeobject',$ignore_joins,$parent_index);
 
-      //      $this->user_id = $_SESSION['account']->user_id;
         }
 
 

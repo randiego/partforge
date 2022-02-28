@@ -271,6 +271,31 @@ class UtilsController extends DBControllerActionAbstract
                         $databaseversion = '14';
                         setGlobal('databaseversion', $databaseversion);
                     }
+                    if ($databaseversion=='14') {
+                        $msgs[] = 'Upgrading to version 15: New ability to email someoone a comment.';
+                        DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS `sendmessage` (
+							  `sendmessage_id` int(11) NOT NULL AUTO_INCREMENT,
+							  `comment_id` int(11) NOT NULL COMMENT 'This can be -1 if not associated with a comment',
+                              `url` varchar(128) COMMENT 'This is the part of the target url that looks like /struct/io/12345',
+                              `message_text` text DEFAULT NULL COMMENT 'contains a message to send. Normally this is set if comment_id is -1',
+                              `from_user_id` int(11) NOT NULL,
+                              `sent_on` datetime COMMENT 'null if this message has not been send yet',
+							  PRIMARY KEY (`sendmessage_id`),
+                              KEY `from_user_id` (`from_user_id`),
+                              KEY `url` (`url`),
+                              KEY `comment_id` (`comment_id`)
+							) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
+                        DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS `messagerecipient` (
+							  `messagerecipient_id` int(11) NOT NULL AUTO_INCREMENT,
+							  `sendmessage_id` int(11) NOT NULL,
+                              `to_user_id` int(11) NOT NULL,
+							  PRIMARY KEY (`messagerecipient_id`),
+                              KEY `sendmessage_id` (`sendmessage_id`),
+                              KEY `to_user_id` (`to_user_id`)
+							) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
+                        $databaseversion = '15';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
             }
         }
         $this->view->currentversion = getGlobal('databaseversion');
