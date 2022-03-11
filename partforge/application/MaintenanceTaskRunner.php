@@ -214,7 +214,10 @@ class MaintenanceTaskRunner {
         WatchListReporter::processCurrentDailyWatchNotifications();
         WatchListReporter::processCurrentInstantNotifications();
         if (Zend_Registry::get('config')->use_send_message_queue) {
-            DBTableRowSendMessage::processUnsentMessages();
+            $send_error_messages = DBTableRowSendMessage::processUnsentMessages();
+            if (count($send_error_messages)>0) {
+                $messages[] = array('message' => "Error in DBTableRowSendMessage::processUnsentMessages(): ".implode(', ', $send_error_messages), 'notify' => true);
+            }
         }
     }
 

@@ -22,7 +22,7 @@
  *
  * @license GPL-3.0+ <http://spdx.org/licenses/GPL-3.0+>
  */
-  
+
   $onload = array();
   if (!$this->layout()->show_in_any_window) {
     $onload[] = "verifyCorrectWindow('PopupWin',false);";
@@ -33,11 +33,11 @@
   } elseif (!$this->layout()->no_set_form_focus) {  // note: in IE 8, then two things are mutually exclusive
     $onload[] = "set_default_focus();";
   }
-  
+
   $config = Zend_Registry::get('config');
   $fake_date_warning = isset($config->fake_date) ? '<span class="fakedatestyle">FAKE DATE SET: '.$config->fake_date.'</span>&nbsp;' : '';
-  
-  $baseurl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();  
+
+  $baseurl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();
   $ver = Zend_Registry::get('config')->cached_code_version;
 
 function addLink($controller, $action, $linkname, $linkdesc, &$links, $onclick='', $extra_params=array()) {
@@ -45,8 +45,8 @@ function addLink($controller, $action, $linkname, $linkdesc, &$links, $onclick='
 	$id = (($request->getControllerName()==$controller) && ($request->getActionName()==$action)) ? 'navcurrent' : '';
 	$extra_params['resetview'] = '1';
 	$links[] = linkify( UrlCallRegistry::formatViewUrl($action,$controller,$extra_params),$linkname,$linkdesc,'',$onclick,'',$id);
-}  
- 
+}
+
 function addLinkIfIsAllowed(Zend_Acl $acl, $controller, $action, $linkname, $linkdesc, &$links) {
 	if ($acl->isAllowed($_SESSION['account']->getRole(),$controller,$action)) {
 		addLink($controller, $action, $linkname, $linkdesc, $links);
@@ -63,9 +63,9 @@ function fetchMenuLinks() {
 	if (Zend_Registry::get('config')->show_analyze_page) {
 		addLinkIfIsAllowed($acl, 'struct', 'joinedexport', 'Analyze', 'Export and Correlate Data', $links);
 	}
-	
+
 	addLinkIfIsAllowed($acl, 'struct', 'changelistview', 'Activity', 'view your Watchlist and other system activity', $links);
-	
+
 	addLinkIfIsAllowed($acl, 'user', 'listview', 'Users', 'manage all users', $links);
 	addLinkIfIsAllowed($acl, 'settings', 'listview', 'Settings', 'View / Edit system settings', $links);
 	addLinkIfIsAllowed($acl, 'user', 'manageaccount', 'My Account', 'change names, email, and password', $links);
@@ -91,6 +91,7 @@ function fetchMenuLinks() {
 
 <script type="text/javascript">
 var baseUrl = '<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>';
+var layoutTitle = '<?php echo $this->layout()->title;?>';
 $(document).ready(function () {
 	$( ".bd-button, .listrowlink, .minibutton2, .searchbutton" ).button();
 	$('#headmessages').append('<?php echo str_replace("\n","",str_replace("\r","", addslashes(fetchPageBannerDiv())));?>');
@@ -118,7 +119,7 @@ $(document).ready(function () {
 
 <div class="textArea" id="pageTextAreaDiv">
 <?php echo $this->layout()->content ?>
-</div> 
+</div>
 
 </div>
 </body>

@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -179,6 +179,27 @@ class UserController extends DBCustomControllerAction
 
         $this->view->params = $this->params;
     }
+
+    public function sendpagelinkAction()
+    {
+        $out = array();
+        $out['error'] = '';
+
+        if (isset($this->params['send_to_names']) && $this->params['send_to_names']) {
+            $errormsg = array();
+            $login_ids = DBTableRowUser::parseAndCheckSendToAddresses($this->params['send_to_names'], $errormsg);
+            if (count($errormsg) == 0) {
+                $errormsg = DBTableRowSendMessage::queueUpLinkForSending($this->params['abs_page_url'], $this->params['send_to_names'], $this->params['send_to_message'], $this->params['page_title']);
+            }
+            $out['error'] = implode(";", $errormsg);
+        } else {
+            $out['error'] = 'The field send_to_names is empty.';
+        }
+        echo json_encode($out);
+        die();
+    }
+
+
 
     /**
      * come here if you need to recover you Password.  This just asks for a login ID.

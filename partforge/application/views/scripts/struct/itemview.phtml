@@ -7,9 +7,10 @@ var followDaily =  "<?php echo $_SESSION['account']->getPreference('followDaily'
 var followNotifyTimeHHMM =  "<?php echo $_SESSION['account']->getPreference('followNotifyTimeHHMM');?>";
 var followNotifyEmailMsg =  "<?php echo implode('  ', $_SESSION['account']->reasonsWhyCantRecieveWatchNotices());?>";
 var linkToPageUrl = "<?php echo $this->dbtable->absoluteUrl();?>";
+var lookupUrl = '<?php echo $this->navigator->getCurrentViewUrl('jsonsearchloginids', 'user');?>';
 </script>
 <?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
-<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemview.js?v=12" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemview.js?v=13" type="TEXT/JAVASCRIPT"></script>
 <?php
 
 $title = $this->dbtable->getPageTypeTitleHtml().($this->dbtable->item_serial_number ? ' - '.TextToHtml($this->dbtable->item_serial_number) : '');
@@ -71,7 +72,7 @@ $html_head .= '<div id="itemviewSearchBlock">
 
 if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'ui:nonterminalbling')) {
     // let user copy a link to this page
-    $detailslinks[] = linkify('#', 'Link to Page', 'Copy of link to this page', 'bd-button', "", '', 'linkToPageButton');
+    $detailslinks[] = linkify('#', 'Link to Page', 'Copy or Send link to this page', 'bd-button', "", '', 'linkToPageButton');
     // this is sneaky, but this link will actually work if the JS is not executed, but is normally overridden by the JS.
     $pdf_url = $this->navigator->getCurrentViewUrl('itemviewpdf', null, array('itemversion_id' => $this->dbtable->itemversion_id));
     $detailslinks[] = linkify($pdf_url, 'PDF', 'Open a printable PDF view of this page', 'bd-button', '', '', 'pdfButton');

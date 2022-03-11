@@ -87,16 +87,20 @@ function activatefollowButton(followUrl,footnote_text,ask_all_items) {
 /**
  * Used to configure a popup dialog for showing the link to the current page
  */
-function activateLinkToPageButton(element,linkToPageUrl) {
+function activateLinkToPageButton(element, lookupUrl, linkToPageUrl, layoutTitle) {
 	if ($(element).length) {
 		// create the popup link-to-page dialog
 		$('<div />').attr('id','linkToPageDialogContainer').attr('title',"Link to This Page").hide().appendTo('body');
 		var h = '';
-		h += '<div style="margin-top:10px;">Copy to clipboard: Ctrl+C</div>';
-		h += '<div style="margin-top:10px;"><input style="width:100%;" name="urlbox" type="text" value="'+linkToPageUrl+'"></div>';
-		h += '<div style="margin-top:10px;" id="qrcode"></div>';
+		h += '<div style="margin-top:10px;">Copy to Clipboard with Ctrl+C:</div>';
+		h += '<div style="margin-top:5px;"><input style="width:100%;" id="linktourlbox" name="urlbox" type="text" value="'+linkToPageUrl+'"></div>';
+		h += '<div style="margin-top:10px; width: 50%; display: block; margin-left: auto; margin-right: auto;" id="qrcode"></div>';
+		h += '<div style="margin-top:10px;">Or, Send Page Link To:</div>';
+		h += '<div style="margin-top:5px;"><input style="width:100%;" name="send_to_names" type="text" value="" id="send_to_names"></div>';
+		h += '<div style="margin-top:10px;">Message:</div>';
+		h += '<div style="margin-top:5px;"><textarea id="send_to_message" name="message" style="width:100%;"></textarea></div>';
 		$('#linkToPageDialogContainer').html(h);
-		$('#qrcode').qrcode(linkToPageUrl);
+		$('#qrcode').qrcode({width: 128, height: 128, text: linkToPageUrl});
 		// now connect the on click handler that will override the normal link
 		$(element).click(function(link) {
 			var contentdiv = $('#linkToPageDialogContainer');
@@ -105,19 +109,89 @@ function activateLinkToPageButton(element,linkToPageUrl) {
 				width: 300,
 				height: 'auto',
 				buttons: {
+					"Send": function() {
+						$.getJSON(baseUrl+'/user/sendpagelink',
+							{send_to_names : $('#send_to_names').val(),
+							 send_to_message : $('#send_to_message').val(),
+							 abs_page_url : linkToPageUrl,
+							 page_title : layoutTitle},
+							function(data) {
+								if (data['error']) {
+									alert('Error: ' + data['error']);
+								} else {
+									$('#send_to_message').val('');
+									$('#send_to_names').val('');
+									$( dialogdiv ).dialog( "close" );
+								}
+							});
+					},
 					"Close": function() {
 						$( this ).dialog( "close" );
 					}
 				},
-				close: function(event,ui) {$(this).dialog('destroy');}
+				close: function(event,ui) {
+					$("#send_to_names").autocomplete("destroy");
+					$(this).dialog('destroy');
+				}
 			});
 			$('input[name="urlbox"]').select();  // preselects the text for easy copy
+			attachNameSearchAutoComplete("#send_to_names", lookupUrl);
 			return false; // prevents the default link
 		});
+
+
 	}
 }
 
 var jsonfetchdata = {};
+
+
+function attachNameSearchAutoComplete(element, autocomplete_lookupUrl)
+{
+
+	function split(val) {
+		return val.split(/,\s*/);
+	}
+	function extractLast(term) {
+		return split(term).pop();
+	}
+
+
+	$(element)
+		// don't navigate away from the field on tab when selecting an item
+		.on("keydown", function (event) {
+			if (event.keyCode === $.ui.keyCode.TAB &&
+				$(this).autocomplete("instance").menu.active) {
+				event.preventDefault();
+			}
+		})
+		.autocomplete({
+			minLength: 0,
+			source: function (request, response) {
+				$.getJSON(autocomplete_lookupUrl, {
+					term: extractLast(request.term)
+				}, response);
+			},
+			focus: function () {
+				// prevent value inserted on focus
+				return false;
+			},
+			select: function (event, ui) {
+				var terms = split(this.value);
+				// remove the current input
+				terms.pop();
+				// add the selected item
+				terms.push(ui.item.label);
+				// add placeholder to get the comma-and-space at the end
+				terms.push("");
+				this.value = terms.join(", ");
+				return false;
+			}
+		}).watermark('start typing name(s)...');
+
+
+}
+
 
 /** Open dialog and contact the indicated server to fetch key-value data in JSON format to populate form fields
  *

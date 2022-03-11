@@ -10,8 +10,9 @@ var followItemsToo =  "<?php echo $_SESSION['account']->getPreference('followIte
 var followNotifyTimeHHMM =  "<?php echo $_SESSION['account']->getPreference('followNotifyTimeHHMM');?>";
 var followNotifyEmailMsg =  "<?php echo implode('  ', $_SESSION['account']->reasonsWhyCantRecieveWatchNotices());?>";
 var linkToPageUrl = "<?php echo $this->dbtable->absoluteUrl();?>";
+var lookupUrl = '<?php echo $this->navigator->getCurrentViewUrl('jsonsearchloginids', 'user');?>';
 </script>
-<script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/struct/itemdefinitionview.js?v=5" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/struct/itemdefinitionview.js?v=6" type="TEXT/JAVASCRIPT"></script>
 
 <?php
 global $itemcounts, $typerefs;
@@ -192,7 +193,7 @@ if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 
 
 
     // let user copy a link to this page
-    $detailslinks->add_link(linkify('#', 'Link to Page', 'Copy of link to this page', 'bd-button', "", "", 'linkToPageButton'));
+    $detailslinks->add_link(linkify('#', 'Send Page', 'Copy or Send link to this page', 'bd-button', "", "", 'linkToPageButton'));
 
 
     // this is sneaky, but this link will actually work if the JS is not executed, but is normally overridden by the JS.

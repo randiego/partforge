@@ -145,7 +145,7 @@ $(document).ready(function() {
 	});
 
 	activatefollowButton(followUrl,"If you want to watch all items of this type, click Watch from the definition page.",false);
-	activateLinkToPageButton('#linkToPageButton',linkToPageUrl);
+	activateLinkToPageButton('#linkToPageButton', lookupUrl, linkToPageUrl, layoutTitle);
 
 	$("#monthsHistoryId").selectmenu({
 	      change: function( event, data ) {

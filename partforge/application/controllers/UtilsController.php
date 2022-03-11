@@ -277,6 +277,7 @@ class UtilsController extends DBControllerActionAbstract
 							  `sendmessage_id` int(11) NOT NULL AUTO_INCREMENT,
 							  `comment_id` int(11) NOT NULL COMMENT 'This can be -1 if not associated with a comment',
                               `url` varchar(128) COMMENT 'This is the part of the target url that looks like /struct/io/12345',
+                              `object_name` varchar(128) COMMENT 'This is something like Demo Part - DEM011',
                               `message_text` text DEFAULT NULL COMMENT 'contains a message to send. Normally this is set if comment_id is -1',
                               `from_user_id` int(11) NOT NULL,
                               `sent_on` datetime COMMENT 'null if this message has not been send yet',

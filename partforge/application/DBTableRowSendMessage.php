@@ -46,19 +46,54 @@ class DBTableRowSendMessage extends DBTableRow {
     public static function queueUpCommentForSending($comment_id, $itemobject_id, $send_to_login_ids)
     {
         $errormsg = array();
+        $send_error_messages = array();
         $login_ids = DBTableRowUser::parseAndCheckSendToAddresses($send_to_login_ids, $errormsg);
         if (count($errormsg) == 0) {
             $SendMessage = new self();
             $SendMessage->comment_id = $comment_id;
             $SendMessage->url = '/struct/io/'.$itemobject_id;
             $SendMessage->from_user_id = $_SESSION['account']->user_id;
+            $ItemVersion = new DBTableRowItemVersion();
+            // now build the description of the Part or Procedure
+            if ($ItemVersion->getCurrentRecordByObjectId($itemobject_id)) {
+                $title_short = $ItemVersion->getPageTypeTitleHtml(true).($ItemVersion->item_serial_number ? ' - '.TextToHtml($ItemVersion->item_serial_number) : '');
+                $item_disposition = $ItemVersion->hasADisposition() ? ' ('.DBTableRowItemVersion::renderDisposition($ItemVersion->getFieldType('disposition'), $ItemVersion->disposition, false, '').')' : '';
+                $SendMessage->object_name = $title_short.$item_disposition;
+            }
             $SendMessage->save();
             $SendMessage->saveRecipientList(array_keys($login_ids));
             if (!Zend_Registry::get('config')->use_send_message_queue) {
                 // we try to send this message now.
-                self::processUnsentMessages($SendMessage->sendmessage_id);
+                $send_error_messages = self::processUnsentMessages($SendMessage->sendmessage_id);
             }
         }
+        return $send_error_messages;
+    }
+
+    public static function queueUpLinkForSending($abs_url, $send_to_login_ids, $message, $page_title)
+    {
+        $errormsg = array();
+        $send_error_messages = array();
+        $login_ids = DBTableRowUser::parseAndCheckSendToAddresses($send_to_login_ids, $errormsg);
+        if (count($errormsg) == 0) {
+            $SendMessage = new self();
+            $SendMessage->comment_id = -1;
+            // try to strip the absolute part. If we can't leave it blank because something is wrong.
+            $pos = strpos($abs_url, getAbsoluteBaseUrl());
+            if ($pos !== false) {
+                $SendMessage->url = substr_replace($abs_url, '', $pos, strlen(getAbsoluteBaseUrl()));  // will be something like  '/struct/io/'.$itemobject_id
+            }
+            $SendMessage->from_user_id = $_SESSION['account']->user_id;
+            $SendMessage->object_name = $page_title;
+            $SendMessage->message_text = $message;
+            $SendMessage->save();
+            $SendMessage->saveRecipientList(array_keys($login_ids));
+            if (!Zend_Registry::get('config')->use_send_message_queue) {
+                // we try to send this message now.
+                $send_error_messages = self::processUnsentMessages($SendMessage->sendmessage_id);
+            }
+        }
+        return $send_error_messages;
     }
 
     public static function deleteItemsForCommentId($comment_id) {
@@ -104,33 +139,28 @@ class DBTableRowSendMessage extends DBTableRow {
 
     public function formatHtmlEmailAndSend($recipient_user_id)
     {
+        require_once('functions.email.php');
         $User = new DBTableRowUser();
         $User->getRecordById($recipient_user_id);
         $toemail = $User->email;
         $toname = $User->fullName();
         $fromemail = Zend_Registry::get('config')->notices_from_email;
         $subject = '';
+        $Sender = new DBTableRowUser();
+        $Sender->getRecordById($this->from_user_id);
+        $sender_name =  $Sender->fullName(false);
+        $sender_email = $Sender->email;
+
         if (is_numeric($this->comment_id) && $this->comment_id!=-1) {
             // we prepare a comment-based message
+            $subject = $sender_name." Sent You a Comment About ".$this->object_name;
+            $linkifiedsubject = $sender_name." Sent You a Comment About ".linkify(getAbsoluteBaseUrl().$this->url, $this->object_name);
+            $Emailer = new Email($toemail, $toname, $fromemail, Zend_Registry::get('config')->application_title, '', '', $subject, '', false);
+            $Emailer->setContentType('text/html; charset=utf8');
             $Comment = new DBTableRowComment();
-            $ItemVersion = new DBTableRowItemVersion();
-            if ($Comment->getRecordById($this->comment_id) && $ItemVersion->getCurrentRecordByObjectId($Comment->itemobject_id)) {
-                $title_short = $ItemVersion->getPageTypeTitleHtml(true).($ItemVersion->item_serial_number ? ' - '.TextToHtml($ItemVersion->item_serial_number) : '');
-                $item_disposition = $ItemVersion->hasADisposition() ? ' ('.DBTableRowItemVersion::renderDisposition($ItemVersion->getFieldType('disposition'), $ItemVersion->disposition, false, '').')' : '';
-                $Sender = new DBTableRowUser();
-                $Sender->getRecordById($this->from_user_id);
-                $sender_name =  $Sender->fullName(false);
-                $sender_email = $Sender->email;
-                $subject = $sender_name." Sent You a Comment About ".$title_short.$item_disposition;
-                $linkifiedsubject = $sender_name." Sent You a Comment About ".linkify(getAbsoluteBaseUrl().$this->url, $title_short.$item_disposition);
+            if ($Comment->getRecordById($this->comment_id)) {
                 list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($Comment->comment_text, null, 'ET_COM');
-
-                require_once('functions.email.php');
-                $Emailer = new Email($toemail, $toname, $fromemail, Zend_Registry::get('config')->application_title, '', '', $subject, '', false);
-                $Emailer->setContentType('text/html; charset=utf8');
-
                 $documents_block_html = self::formatDocumentsBlock($Comment->document_ids, $Emailer);
-
                 $html = '';
                 $html .= "<p>{$linkifiedsubject}</p>";
 
@@ -153,19 +183,30 @@ class DBTableRowSendMessage extends DBTableRow {
                         </div>
                     </td></tr></table>
 				';
+                $Emailer->PHPMailer->addEmbeddedImage(dirname(__FILE__) . '/../public/images/'."chat_baloon.png", 'chatballoon');
 
                 //file_put_contents('C:\wamp64\www\qdforms2\htmlemail.html', $html."\r\n\r\n", FILE_APPEND);
-                $Emailer->PHPMailer->Body = $html;
-                $Emailer->PHPMailer->addEmbeddedImage(dirname(__FILE__) . '/../public/images/'."chat_baloon.png", 'chatballoon');
-                if ($sender_email) {
-                    $Emailer->PHPMailer->addReplyTo($sender_email, $sender_name);
-                }
-                if (!$Emailer->Send()) {
-                    logerror("Email($to, $toname, $fromemail, Zend_Registry::get('config')->application_title, '', '', $subject, $html)->Send() in formatHtmlEmailAndSend()");
-                }
             }
         } else {
             // we are sending just a message without an associated comment
+            $subject = $sender_name." Sent a Link to ".$this->object_name;
+            $linkifiedsubject = $sender_name." Sent a Link to ".linkify(getAbsoluteBaseUrl().$this->url, $this->object_name);
+            $Emailer = new Email($toemail, $toname, $fromemail, Zend_Registry::get('config')->application_title, '', '', $subject, '', false);
+            $Emailer->setContentType('text/html; charset=utf8');
+            $html = '';
+            $html .= '<p style="max-width: 600px;">'.$linkifiedsubject.'</p>';
+            $html .= '<p style="max-width: 600px;">'.TextToHtml($this->message_text).'</p>';
+            //file_put_contents('C:\wamp64\www\qdforms2\htmlemail.html', $html."\r\n\r\n", FILE_APPEND);
+        }
+        $Emailer->PHPMailer->Body = $html;
+        if ($sender_email) {
+            $Emailer->PHPMailer->addReplyTo($sender_email, $sender_name);
+        }
+        if (!$Emailer->Send()) {
+            logerror("Email($toemail, $toname, $fromemail, Zend_Registry::get('config')->application_title, '', '', $subject, $html)->Send() in formatHtmlEmailAndSend()");
+            return $Emailer->ErrorInfo();
+        } else {
+            return '';
         }
     }
 
@@ -178,15 +219,20 @@ class DBTableRowSendMessage extends DBTableRow {
             $records = DbSchema::getInstance()->getRecords('sendmessage_id', "SELECT DISTINCT sendmessage_id FROM sendmessage where sent_on IS NULL");
         }
         foreach ($records as $sendmessage_id => $record) {
+            $send_error_messages = array();
             $SendMessage = new self();
             $SendMessage->getRecordById($sendmessage_id);
             $recipients = DbSchema::getInstance()->getRecords('to_user_id', "SELECT DISTINCT to_user_id FROM messagerecipient where sendmessage_id='{$sendmessage_id}'");
             foreach ($recipients as $recipient_user_id => $record) {
-                $SendMessage->formatHtmlEmailAndSend($recipient_user_id);
+                $send_error_message = $SendMessage->formatHtmlEmailAndSend($recipient_user_id);
+                if ($send_error_message) {
+                    $send_error_messages[] = $send_error_message;
+                }
             }
             $SendMessage->sent_on = time_to_mysqldatetime(script_time());
             $SendMessage->save(array('sent_on'));
         }
+        return $send_error_messages;
     }
 
 }

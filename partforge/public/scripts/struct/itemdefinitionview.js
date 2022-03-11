@@ -6,14 +6,14 @@ $(document).ready(function() {
 
         $(this).fadeTo("fast", .5).unbind('click');
 	    $.getJSON(baseUrl + '/struct/addcommentitem',
-		{"typeobject_id" : typeObjectId, 
+		{"typeobject_id" : typeObjectId,
 		 "comment_text" : $("#commentTextId").val()},
 		function(data) {
 			window.location = thisDefinitionViewUrl;
 		});
 		return false;
-	}); 	
-    
+	});
+
     // we only offer the options dialog if this is a part with linked procedures (ID=linkedProcedureUL exists)
     if (isAPart && ($('#linkedProcedureUL').length>0)) {
 		// create the popup PDF printing dialog
@@ -21,7 +21,7 @@ $(document).ready(function() {
 		var h = '';
 		h += '<label><input type="checkbox" name="show_linked_procs" value="1" checked="checked" />Include Linked Procedures</label><br />';
 		$('#pdfPrintContainer').html(h);
-		
+
 		// now connect the on click handler that will override the normal link
 		$('#pdfButton').click(function(link) {
 			var contentdiv = $('#pdfPrintContainer');
@@ -39,16 +39,16 @@ $(document).ready(function() {
 					Cancel: function() {
 						$( this ).dialog( "close" );
 					}
-				},			
+				},
 				close: function(event,ui) {$(this).dialog('destroy');}
 			});
 			return false; // prevents the default link
 		});
     }
-    	
+
 	activatefollowButton(followUrl,"",true);
-	activateLinkToPageButton('#linkToPageButton',linkToPageUrl);
-    
+	activateLinkToPageButton('#linkToPageButton', lookupUrl, linkToPageUrl, layoutTitle);
+
 	/*
     $('#followButton').button( "option", "icons", { primary: "ui-icon-signal-diag"} );
     $('#previewButton').button( "option", "icons", { primary: "ui-icon-zoomin"} );
@@ -56,6 +56,6 @@ $(document).ready(function() {
     $('#makeActiveButton').button( "option", "icons", { primary: "ui-icon-play"} );
     $('#makeObsoleteButton').button( "option", "icons", { primary: "ui-icon-cancel"} );
     */
-    
-    
+
+
 });

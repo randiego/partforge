@@ -1,8 +1,10 @@
 <script type="text/javascript">
 var linkToPageUrl = "<?php echo DBTableRowTypeVersion::getListViewAbsoluteUrl($this->report_data->getViewCategory(), $this->is_user_procedure ? null : $_SESSION['account']->getPreference('chkShowProcMatrix'));?>";
+var lookupUrl = '<?php echo $this->navigator->getCurrentViewUrl('jsonsearchloginids', 'user');?>';
+var pageTitleDetail = '<?php echo isset($this->report_data->category_array[$this->report_data->getViewCategory()]) ? ': '.$this->report_data->category_array[$this->report_data->getViewCategory()].'' : ''?>';
 </script>
 <?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
-<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemlistview.js?v=5" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemlistview.js?v=6" type="TEXT/JAVASCRIPT"></script>
 <?php
 $this->layout()->title = $this->is_user_procedure ? 'List of Procedures' : 'List of Parts';
 $this->layout()->setLayout('layout');
@@ -57,7 +59,7 @@ if (($_SESSION['account']->getRole() == 'Admin')) {
 if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'ui:nonterminalbling')) {
     if (is_numeric($this->report_data->getViewCategory())) {
         $minibuttons->add_item( $this->navigator->getCurrentHandlerUrl('btnSavetoCSV'), "Save to Spreadsheet", 'Save all data for current search results into spreadsheet-readable (.csv) file');
-        $minibuttons->add_link( linkify('#', 'Link to Page', 'Copy of link to this page with current filter settings', 'bd-button', "", '', 'linkToPageButton'));
+        $minibuttons->add_link( linkify('#', 'Link to Page', 'Copy or send link to this page with current filter settings', 'bd-button', "", '', 'linkToPageButton'));
     }
 }
 
