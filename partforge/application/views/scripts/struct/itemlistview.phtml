@@ -1,6 +1,7 @@
 <script type="text/javascript">
 var linkToPageUrl = "<?php echo DBTableRowTypeVersion::getListViewAbsoluteUrl($this->report_data->getViewCategory(), $this->is_user_procedure ? null : $_SESSION['account']->getPreference('chkShowProcMatrix'));?>";
 var lookupUrl = '<?php echo $this->navigator->getCurrentViewUrl('jsonsearchloginids', 'user');?>';
+var canSendLink = <?php echo in_array($_SESSION['account'] ->getRole(), array('Guest','DataTerminal')) ? 'false' : 'true';?>;
 var pageTitleDetail = '<?php echo isset($this->report_data->category_array[$this->report_data->getViewCategory()]) ? ': '.$this->report_data->category_array[$this->report_data->getViewCategory()].'' : ''?>';
 </script>
 <?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>

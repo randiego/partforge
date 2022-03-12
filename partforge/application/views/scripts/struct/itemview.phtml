@@ -8,6 +8,7 @@ var followNotifyTimeHHMM =  "<?php echo $_SESSION['account']->getPreference('fol
 var followNotifyEmailMsg =  "<?php echo implode('  ', $_SESSION['account']->reasonsWhyCantRecieveWatchNotices());?>";
 var linkToPageUrl = "<?php echo $this->dbtable->absoluteUrl();?>";
 var lookupUrl = '<?php echo $this->navigator->getCurrentViewUrl('jsonsearchloginids', 'user');?>';
+var canSendLink = <?php echo in_array($_SESSION['account'] ->getRole(), array('Guest','DataTerminal')) ? 'false' : 'true';?>;
 </script>
 <?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
 <script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemview.js?v=13" type="TEXT/JAVASCRIPT"></script>

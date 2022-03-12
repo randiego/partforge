@@ -87,7 +87,7 @@ function activatefollowButton(followUrl,footnote_text,ask_all_items) {
 /**
  * Used to configure a popup dialog for showing the link to the current page
  */
-function activateLinkToPageButton(element, lookupUrl, linkToPageUrl, layoutTitle) {
+function activateLinkToPageButton(element, lookupUrl, linkToPageUrl, layoutTitle, canSendLink) {
 	if ($(element).length) {
 		// create the popup link-to-page dialog
 		$('<div />').attr('id','linkToPageDialogContainer').attr('title',"Link to This Page").hide().appendTo('body');
@@ -95,21 +95,20 @@ function activateLinkToPageButton(element, lookupUrl, linkToPageUrl, layoutTitle
 		h += '<div style="margin-top:10px;">Copy to Clipboard with Ctrl+C:</div>';
 		h += '<div style="margin-top:5px;"><input style="width:100%;" id="linktourlbox" name="urlbox" type="text" value="'+linkToPageUrl+'"></div>';
 		h += '<div style="margin-top:10px; width: 50%; display: block; margin-left: auto; margin-right: auto;" id="qrcode"></div>';
-		h += '<div style="margin-top:10px;">Or, Send Page Link To:</div>';
-		h += '<div style="margin-top:5px;"><input style="width:100%;" name="send_to_names" type="text" value="" id="send_to_names"></div>';
-		h += '<div style="margin-top:10px;">Message:</div>';
-		h += '<div style="margin-top:5px;"><textarea id="send_to_message" name="message" style="width:100%;"></textarea></div>';
+		if (canSendLink) {
+			h += '<div style="margin-top:10px;">Or, Send Page Link To:</div>';
+			h += '<div style="margin-top:5px;"><input style="width:100%;" name="send_to_names" type="text" value="" id="send_to_names"></div>';
+			h += '<div style="margin-top:10px;">Message:</div>';
+			h += '<div style="margin-top:5px;"><textarea id="send_to_message" name="message" style="width:100%;"></textarea></div>';
+		}
 		$('#linkToPageDialogContainer').html(h);
 		$('#qrcode').qrcode({width: 128, height: 128, text: linkToPageUrl});
 		// now connect the on click handler that will override the normal link
 		$(element).click(function(link) {
 			var contentdiv = $('#linkToPageDialogContainer');
-			dialogdiv = contentdiv.dialog({
-				position: { my: "left top", at: "right bottom", of: link },
-				width: 300,
-				height: 'auto',
-				buttons: {
-					"Send": function() {
+			var buttonslist = {};
+			if (canSendLink) {
+				buttonslist["Send"] = function() {
 						$.getJSON(baseUrl+'/user/sendpagelink',
 							{send_to_names : $('#send_to_names').val(),
 							 send_to_message : $('#send_to_message').val(),
@@ -124,11 +123,17 @@ function activateLinkToPageButton(element, lookupUrl, linkToPageUrl, layoutTitle
 									$( dialogdiv ).dialog( "close" );
 								}
 							});
-					},
-					"Close": function() {
-						$( this ).dialog( "close" );
-					}
-				},
+					};
+			}
+			buttonslist["Close"] = function(event,ui) {
+					$("#send_to_names").autocomplete("destroy");
+					$(this).dialog('destroy');
+				};
+			dialogdiv = contentdiv.dialog({
+				position: { my: "left top", at: "right bottom", of: link },
+				width: 300,
+				height: 'auto',
+				buttons: buttonslist,
 				close: function(event,ui) {
 					$("#send_to_names").autocomplete("destroy");
 					$(this).dialog('destroy');
