@@ -170,6 +170,8 @@ $html .= '<div class="tablewrap">';
 
 $html .= '<div class="buttonrow">'.implode('&nbsp;', $detailslinks).'</div>';
 
+$html .= DBTableRowWhatsNewUser::fetchWhatsNew('SEND_LINK_2022_03', "You can now use the Link to Page button to email a link and a short message to other users.", '3/12/2022');
+
 $fields_to_remove = array();
 
 $fieldlayout = $this->dbtable->getEditViewFieldLayout($this->dbtable->getEditFieldNames(array('')), $fields_to_remove, 'itemview');

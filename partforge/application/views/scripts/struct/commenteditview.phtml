@@ -93,6 +93,7 @@ if (($_SESSION['account']->getRole()!='Guest') && !$this->dbtable->is_fieldcomme
 }
 $html .= '</table></p>
             ';
+$html .= DBTableRowWhatsNewUser::fetchWhatsNew('SEND_COMMENT_2022_03', "By adding a recipient to the Send To box you can email a copy of this comment to a user.", '3/12/2022');
 
 $html .= '<p>'.implode('&nbsp;', $buttons).'</p>';
 $html .= '<h2 class="bd-edit-page-headers">Documents / Photos</h2>';
