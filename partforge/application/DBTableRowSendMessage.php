@@ -235,4 +235,28 @@ class DBTableRowSendMessage extends DBTableRow {
         return $send_error_messages;
     }
 
+    public static function getMessageForComment($comment_id)
+    {
+        $out = array();
+        $records = DbSchema::getInstance()->getRecords('sendmessage_id', "SELECT sendmessage.*, user.*
+                FROM sendmessage
+                LEFT JOIN user on user.user_id=sendmessage.from_user_id
+                WHERE comment_id='{$comment_id}' ORDER BY sent_on");
+        foreach ($records as $sendmessage_id => $record) {
+            $recipient_names = array();
+            $recipients = DbSchema::getInstance()->getRecords('', "SELECT user.*
+                    FROM messagerecipient
+                    LEFT JOIN user on user.user_id=to_user_id
+                    WHERE sendmessage_id='{$sendmessage_id}'
+                    ORDER BY user.last_name, user.first_name");
+            foreach ($recipients as $recipient) {
+                $recipient_names[] = TextToHtml(DBTableRowUser::concatNames($recipient).' ('.$recipient['login_id'].')');
+            }
+            $row = array('sent_on' => time_to_bulletdate(strtotime($record['sent_on']), false), 'from' => TextToHtml(strtoupper(DBTableRowUser::concatNames($record))), 'to' => $recipient_names);
+
+            $out[] = $row;
+        }
+        return $out;
+    }
+
 }

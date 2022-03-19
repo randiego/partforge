@@ -1205,7 +1205,7 @@ li.bd-event-row {
 	position: relative;
 }
 
-.unversioned_pop_div li.bd-event-row {
+.unversioned_pop_div li.bd-event-row, .comment_sent_pop_div li.bd-event-row {
 	padding: 0px 0px 8px 10px;
 }
 
@@ -1213,7 +1213,11 @@ li.bd-event-row {
 	margin-bottom: 0px;
 }
 
-.unversioned_pop_div .bd-list-container {
+.comment_sent_pop_div li.bd-event-row.bd-type-change {
+	margin-bottom: 0px;
+}
+
+.unversioned_pop_div .bd-list-container, .comment_sent_pop_div .bd-list-container {
 	 color: #000;
  }
 
@@ -1261,8 +1265,13 @@ li.bd-event-row.bd-event-indented {
 .bd-event-row.bd-type-change .bd-event-content.bd-with-edit-date,
 	.bd-event-row.bd-type-link-proc .bd-event-content.bd-with-edit-date,
 	.bd-event-row.bd-type-def-change .bd-event-content.bd-with-edit-date,
-	.bd-event-row.bd-type-comment .bd-event-content.bd-with-edit-date {
+	.bd-event-row.bd-type-comment .bd-event-content.bd-with-edit-date,
+	.bd-event-row.bd-type-comment .bd-event-content.bd-with-comment-sent {
 	min-height: 44px;
+}
+
+.bd-event-row.bd-type-comment .bd-event-content.bd-with-edit-date.bd-with-comment-sent {
+	min-height: 54px;
 }
 
 .bd-comment-input .bd-event-content {
@@ -1388,6 +1397,10 @@ div.bd-event-document a .size {
 
 .bd-type-change .bd-event-type {
 	background-image: url(images/open_wrench.png);
+}
+
+.bd-type-message-sent .bd-event-type {
+	background-image: url(images/email_sent.png);
 }
 
 .bd-type-def-change .bd-event-type {

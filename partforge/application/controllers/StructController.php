@@ -1131,6 +1131,13 @@ class StructController extends DBControllerActionAbstract
         die();
     }
 
+    public function commentsentlistAction()
+    {
+        $out = DBTableRowSendMessage::getMessageForComment($this->params['comment_id']);
+        echo json_encode($out);
+        die();
+    }
+
     /**
      * Returns a json formated array of type descriptions keyed by typeobject_id.
      * It returns the description from the current version of the type.

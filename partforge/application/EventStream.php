@@ -383,7 +383,9 @@ class EventStream {
 
 				SELECT comment.*, (SELECT GROUP_CONCAT(
 				CONCAT(document.document_id,',',document.document_filesize,',',CONVERT(HEX(document.document_displayed_filename),CHAR),',',CONVERT(HEX(document.document_stored_filename),CHAR),',',document.document_stored_path,',',document.document_file_type,',',document.document_thumb_exists)
-				ORDER BY document.document_date_added SEPARATOR ';') FROM document WHERE (document.comment_id = comment.comment_id) and (document.document_path_db_key='{$config->document_path_db_key}')) as documents_packed FROM comment
+				ORDER BY document.document_date_added SEPARATOR ';') FROM document WHERE (document.comment_id = comment.comment_id) and (document.document_path_db_key='{$config->document_path_db_key}')) as documents_packed,
+                (SELECT COUNT(*) FROM sendmessage WHERE sendmessage.comment_id=comment.comment_id) as sent_count
+                FROM comment
 				WHERE is_fieldcomment=0 and itemobject_id='{$this->_itemobject_id}' {$end_date_and_where}
 			";
         $records = DbSchema::getInstance()->getRecords('comment_id', $query);
@@ -403,6 +405,7 @@ class EventStream {
             if ($record['documents_packed']) {
                 $itemevent['documents_packed'] = $record['documents_packed'];
             }
+            $itemevent['sent_count'] = $record['sent_count'];
             $itemevent['comment_id'] = $comment_id;
 
             $out[] = $itemevent;
@@ -675,6 +678,7 @@ class EventStream {
             $edit_buttons_html = '';
             $documents_html = '';
             $alt_edit_date_html = '';
+            $comment_sent_to_html = '';
 
             if ($line['event_type_id']=='ET_CHG') {
                 $this_itemversion_id = $line['this_itemversion_id'];
@@ -706,6 +710,11 @@ class EventStream {
                     $alt_edit_date_html = '<div class="bd-dateline-edited">(Added: '.time_to_bulletdate(strtotime($line['record_created']), false).')</div>';
                 }
                 $edit_buttons_html = '<div class="bd-edit">'.implode('', $line['edit_links']).'</div>';
+
+                if ($line['sent_count'] > 0) {
+                    $comment_sent_to_message = '<IMG style="vertical-align:bottom;" src="'.Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/images/mailicon.gif" width="14" height="14" border="0" alt="sent"> Sent '.linkify('#', $line['sent_count']==1 ? 'Once' : $line['sent_count'].' Times', 'show comment send history...', 'comment_sent_pop_link').'<div class="comment_sent_pop_div" id="comment_sent_pop_'.$line['comment_id'].'" title="Comment Send History" style="display: none;"></div>';
+                    $comment_sent_to_html = '<div class="bd-dateline">'.$comment_sent_to_message.'</div>';
+                }
             }
 
             $subcomments_html = '';
@@ -756,6 +765,7 @@ class EventStream {
                 $indented_target_link = '<div class="bd-indent-component-link">'.$dbtable->formatPrintField($line['indented_component_name']).'</div>';
                 $select_radio_html = '';
                 $edit_buttons_html = '';
+                $comment_sent_to_html = '';
             } else if ($has_indents) {
                 $indent_class = ' bd-event-outdented';
             }
@@ -767,9 +777,9 @@ class EventStream {
                             : strtoupper($line['user_name_html']);
             $layout_rows[] = '<li class="bd-event-row '.$event_type_to_class[$line['event_type_id']].$dimmed_class.$highlight_class.$indent_class.'">
 				'.$select_radio_html.''.$indented_target_link.'
-				<div class="bd-event-content'.($alt_edit_date_html ? ' bd-with-edit-date' : '').'">
+				<div class="bd-event-content'.($alt_edit_date_html ? ' bd-with-edit-date' : '').($comment_sent_to_html ? ' bd-with-comment-sent' : '').'">
 				<div class="bd-event-type"></div>
-				<div class="bd-event-whowhen"><div class="bd-byline">'.$user_name_html.'</div><div class="bd-dateline">'.$datetime.'</div>'.$alt_edit_date_html.'</div>
+				<div class="bd-event-whowhen"><div class="bd-byline">'.$user_name_html.'</div><div class="bd-dateline">'.$datetime.'</div>'.$alt_edit_date_html.$comment_sent_to_html.'</div>
 				<div class="bd-event-message">
 				'.$edit_buttons_html.$documents_html.$procedure_disposition_html.'
 				'.$line['event_html'].'
@@ -970,6 +980,8 @@ class EventStream {
                     $line['recently_edited'] = true;
                 }
                 $line['is_fieldcomment'] = $record['is_fieldcomment'];
+                $line['sent_count'] = $record['sent_count'];
+                $line['comment_id'] = $record['comment_id'];
             }
 
 

@@ -107,6 +107,39 @@ $(document).ready(function() {
 
 	});
 
+	$('.comment_sent_pop_link').click(function(link){
+		var contentdiv = $(this).next();
+		if (dialogdiv!==null) return false;
+		dialogdiv = contentdiv.dialog({
+			position: { my: "right top", at: "left bottom", of: link },
+			width: 600,
+			height: 'auto',
+			close: function(event,ui) {$(this).dialog('destroy'); dialogdiv = null;}
+		});
+		var parts = contentdiv.attr('id').match(/comment_sent_pop_([0-9]+)/);
+		var comment_id = parts[1];
+		$.getJSON(baseUrl + '/struct/commentsentlist',
+				{"comment_id" : comment_id},
+				function(data) {
+					if (typeof data != "undefined") {
+						var html = '';
+						html += '<div class="bd-list-container"><ul class="bd-stream-list">';
+						for(var i=0; i < data.length; i++) {
+							html += '<li class="bd-event-row bd-type-message-sent">';
+							html += '<div class="bd-event-content"><div class="bd-event-type"></div>';
+							html += '<div class="bd-event-whowhen"><div class="bd-byline">'+data[i].from+'</div><div class="bd-dateline">'+data[i].sent_on+'</div></div>';
+							html += '<div class="bd-event-message"><span style="font-weight: bold; margin-right: 1em;">Comment Sent To:</span>' + data[i].to.join(', ') + '</div>';
+							html += '</div></li>';
+						}
+						html += '</ul></div>';
+						contentdiv.html(html);
+					} else {
+						alert("Did not get back response for comment_id = " +comment_id);
+					}
+				});
+
+	});
+
 
 	// create the popup PDF printing dialog
 	$('<div />').attr('id','pdfPrintContainer').attr('title',"Save to PDF").hide().appendTo('body');
