@@ -1,43 +1,44 @@
 <?php
-	$this->layout()->title = 'My Account Preferences';
-	$BreadCrumbs = new BreadCrumbsManager();
-	$BreadCrumbs->newAnchor($this->navigator->getCurrentViewUrl(),$this->layout()->title);
-	$this->layout()->setLayout('layout');
-	
-        
-	$html = '';
-	
-	$detailslinks = new EditLinks();
+    $this->layout()->title = 'My Account Preferences';
+    $BreadCrumbs = new BreadCrumbsManager();
+    $BreadCrumbs->newAnchor($this->navigator->getCurrentViewUrl(), $this->layout()->title);
+    $this->layout()->setLayout('layout');
 
-	if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'user','changeprofile')) {
-		$detailslinks->add_item( $this->navigator->getCurrentHandlerUrl('btnEditProfile') ,"Edit", 'edit name, login, and email');
-	}
-	
-	if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'user','managewatchlist')) {
-		$detailslinks->add_item($this->navigator->getCurrentViewUrl('watchlistview','struct',array('resetview' => 1,'search_string' => '')), 'Manage My Watchlist', 'View and manage your currently set watchlist');
-	}
-	
-	$html .= '
+
+    $html = '';
+
+    $detailslinks = new EditLinks();
+
+if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'changeprofile')) {
+    $detailslinks->add_item( $this->navigator->getCurrentHandlerUrl('btnEditProfile'), "Edit", 'edit name, login, and email');
+}
+
+if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'managemylists')) {
+    $detailslinks->add_item($this->navigator->getCurrentViewUrl('watchlistview', 'struct', array('resetview' => 1,'search_string' => '')), 'Manage My Watchlist', 'View and manage your currently set watchlist');
+    $detailslinks->add_item($this->navigator->getCurrentViewUrl('mymessagesview', 'struct', array('resetview' => 1,'search_string' => '')), 'My Messages', 'My Sent and Received Comments');
+}
+
+    $html .= '
 	 <h1>'.$this->layout()->title.'</h1>
          <p>'.$detailslinks->buttons_html().'</p>
           <table class="edittable">';
-          
-	$html .= fetchPrintTableTR( array('first_name','last_name','login_id'), $this->dbtable );
-	
-	$pwlink = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'user','changepassword') 
-			? '&nbsp;'.linkify($this->navigator->getCurrentHandlerUrl('btnEditPassword') ,"Change Password", 'change password for this account','minibutton2')
-			: '';
-	$html .= '<TR>
+
+    $html .= fetchPrintTableTR( array('first_name','last_name','login_id'), $this->dbtable );
+
+    $pwlink = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'changepassword')
+            ? '&nbsp;'.linkify($this->navigator->getCurrentHandlerUrl('btnEditPassword'), "Change Password", 'change password for this account', 'minibutton2')
+            : '';
+    $html .= '<TR>
 		<TH>Password:</TH>
 		<TD>(not shown)'.$pwlink.'</TD>
 		</TR>
 		';
-	$html .= fetchPrintTableTR( array('email'), $this->dbtable );
-	
-	$html .= '
+    $html .= fetchPrintTableTR( array('email'), $this->dbtable );
+
+    $html .= '
           </table>
 	';
-	
-	echo $html;
+
+    echo $html;
 ?>
 

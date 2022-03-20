@@ -1,0 +1,14 @@
+<?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
+<?php
+$this->layout()->title = 'My Messages';
+
+$BreadCrumbs = new BreadCrumbsManager();
+$BreadCrumbs->addCurrentUrl($this->navigator->getCurrentViewUrl(null, null, array('resetview' => 1)), $this->layout()->title, true);
+$this->paginated_report_page->overrideReportTitle($BreadCrumbs->render($this->navigator->getCurrentViewUrl(null, null, array('resetview' => 1)), $this->layout()->title, 3));
+$this->layout()->setLayout('layout');
+$this->layout()->scrollhold = true;
+
+$select_array = ReportDataMyMessages::viewSelectOptions();
+$list_type_select = format_select_tag($select_array, 'list_type', array('list_type' => $this->list_type), "document.theform.btnOnChange.value='listtypechange';document.theform.submit();return false;",false, '','', 'selectmenu');
+$html = $this->paginated_report_page->fetch_form_body_html('<div style="display:flex; align-items: center;"><span style="font-size:13px; margin-right:5px;">Showing: </span><span>'.$list_type_select.'</span></div>');
+echo fetch_form_tag($html);

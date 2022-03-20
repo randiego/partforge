@@ -166,7 +166,7 @@ if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 
     $preview_url = $this->navigator->getCurrentHandlerUrl('btnPreview', '', '', array('typeversion_id' => $this->dbtable->typeversion_id));
     $detailslinks->add_link(linkify($preview_url, 'Preview', 'Preview this form', 'bd-button', '', '', 'previewButton'));
 
-    if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'managewatchlist')) {
+    if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'managemylists')) {
         $Subscription = new DBTableRowChangeSubscription();
         $is_following = $Subscription->getRecordByIds($_SESSION['account']->user_id, null, $this->dbtable->typeobject_id);
         if ($is_following) {

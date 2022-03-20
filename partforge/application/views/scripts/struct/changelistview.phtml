@@ -12,14 +12,15 @@ if (isset($this->queryvars['resetview']) && $this->queryvars['resetview']) {
 }
 
 
-$manage_watchlist_btn = '';
-if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'managewatchlist')) {
-    $manage_watchlist_btn = linkify($this->navigator->getCurrentViewUrl('watchlistview', 'struct', array('resetview' => 1,'search_string' => '')), 'Manage My Watchlist', 'View and manage your currently set watchlist', 'bd-button');
+$mylistbuttons = array();
+if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'managemylists')) {
+    $mylistbuttons[] = linkify($this->navigator->getCurrentViewUrl('watchlistview', 'struct', array('resetview' => 1,'search_string' => '')), 'Manage My Watchlist', 'View and manage your currently set watchlist', 'bd-button');
+    $mylistbuttons[] = linkify($this->navigator->getCurrentViewUrl('mymessagesview', 'struct', array('resetview' => 1,'search_string' => '')), 'My Messages', 'View My Sent and Received Comments', 'bd-button');
 }
 
 $select_array = extract_column(ReportDataChangeLog::activityTypeOptions(), 'name');
 $list_type_select = format_select_tag($select_array, 'list_type',array('list_type' => $this->list_type), "document.theform.btnOnChange.value='listtypechange';document.theform.submit();return false;",false, '','', 'selectmenu');
 $html = '';
-$html .= $this->paginated_report_page->fetch_form_body_html('<div style="display:flex; align-items: center;"><span style="font-size:13px; margin-right:5px;">Showing: </span><span>'.$list_type_select.'</span><span style="margin-left:10px;">'.$manage_watchlist_btn.'</span></div>');
+$html .= $this->paginated_report_page->fetch_form_body_html('<div style="display:flex; align-items: center;"><span style="font-size:13px; margin-right:5px;">Showing: </span><span>'.$list_type_select.'</span><span style="margin-left:10px;">'.implode('</span><span style="margin-left:10px;">', $mylistbuttons).'</span></div>');
 echo fetch_form_tag($html);
 ?>

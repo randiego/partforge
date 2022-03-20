@@ -140,7 +140,7 @@ class CustomAcl extends Zend_Acl
 
         $this->deny('Guest', 'settings');
         $this->deny($this->_defaultRole, 'settings');
-        $this->deny('Guest', 'user', array('manageaccount','changeprofile','changepassword','managewatchlist'));
+        $this->deny('Guest', 'user', array('manageaccount','changeprofile','changepassword','managemylists'));
         $this->deny('DataTerminal', 'user', array('manageaccount','changeprofile','changepassword','listview'));
         if ($global_readonly) {
             $this->deny($this->_defaultRole, 'user', array('manageaccount','changeprofile','changepassword'));

@@ -31,7 +31,7 @@ class ReportDataChangeLog extends ReportDataWithCategory {
 
     static public function activityTypeOptions()
     {
-        if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'managewatchlist')) {
+        if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'managemylists')) {
             $out = array('WATCHING' => array('name' => 'My Watchlist'),'WATCHING7D' => array('name' => 'My Watchlist (past 7 days)'),
                 'MINE' => array('name' => 'My Changes Only'), 'MINE7D' => array('name' => 'My Changes Only (past 7 days)'),
                 'ALL' => array('name' => 'All Changes'), 'ALL7D' => array('name' => 'All Changes (past 7 days)'));
@@ -50,7 +50,7 @@ class ReportDataChangeLog extends ReportDataWithCategory {
 
     static public function activityTypeDefault()
     {
-        return Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'managewatchlist') ? 'WATCHING7D' : 'ALL';
+        return Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'managemylists') ? 'WATCHING7D' : 'ALL';
     }
 
     /**

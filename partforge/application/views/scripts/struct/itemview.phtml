@@ -78,7 +78,7 @@ if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 
     $pdf_url = $this->navigator->getCurrentViewUrl('itemviewpdf', null, array('itemversion_id' => $this->dbtable->itemversion_id));
     $detailslinks[] = linkify($pdf_url, 'PDF', 'Open a printable PDF view of this page', 'bd-button', '', '', 'pdfButton');
 
-    if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'managewatchlist')) {
+    if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'managemylists')) {
         $Subscription = new DBTableRowChangeSubscription();
         $is_following = $Subscription->getRecordByIds($_SESSION['account']->user_id, $this->dbtable->itemobject_id, null);
         $cat_name = $is_a_procedure ? 'Procedure' : 'Part';

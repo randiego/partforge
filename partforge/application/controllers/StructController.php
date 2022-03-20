@@ -469,6 +469,30 @@ class StructController extends DBControllerActionAbstract
         $this->view->paginated_report_page = $PaginatedReportPage;
     }
 
+    public function mymessagesviewAction()
+    {
+        $list_type = !isset($this->params['list_type']) || !in_array($this->params['list_type'], array_keys(ReportDataMyMessages::viewSelectOptions())) ? 'BOTH' : $this->params['list_type'];
+        $ReportData = new ReportDataMyMessages($list_type);
+        $PaginatedReportPage = new PaginatedReportPage($this->params, $ReportData, $this->navigator);
+        if (isset($this->params['form'])) {
+            switch (true) {
+            }
+            $PaginatedReportPage->sort_and_search_handler();
+        }
+
+        if (isset($this->params['search_string']) && $this->params['search_string']) {
+            $altSearchTargetUrl = $this->getAlternateSearchUrl($ReportData, '', '');
+            if ($altSearchTargetUrl) {
+                spawnurl($altSearchTargetUrl);
+            }
+        }
+
+        $this->view->list_type = $list_type;
+        $this->view->queryvars = $this->params;
+        $this->view->paginated_report_page = $PaginatedReportPage;
+        $this->view->rawtitle = $ReportData->title;
+    }
+
     /*
      * input: changesubscription_id, notify_instantly, notify_daily
     * output: json object['notify_instantly'] or ['notify_daily']
@@ -692,6 +716,12 @@ class StructController extends DBControllerActionAbstract
     public function ioAction()
     {
         if (isset($this->params['io'])) {
+            if (isset($this->params['highlight'])) {
+                $arr = explode(',', $this->params['highlight']);
+                if (count($arr)==2) {
+                    DBTableRow::startATouchedTimer($arr[0], $arr[1]);
+                }
+            }
             $this->navigator->jumpToView('itemview', 'struct', array('itemobject_id' => $this->params['io'],'resetview' => 1));
         } else {
             throw new Exception('parameter io missing in StructController::ioAction()');
