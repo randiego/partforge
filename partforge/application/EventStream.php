@@ -1075,28 +1075,40 @@ class EventStream {
     }
 
     /**
-     * This builds a set of arrays that are useful for building link to Where Used.  As input it uses the output of EventStream::eventStreamRecordsToLines()
-     * @param array $references_by_typeobject_id see eventStreamRecordsToLines
+     * This builds a set of arrays that are useful for building link to Where Used.
+     * @param int $itemobject_id
+     * @param object $navigator
      * @return array of structures of the form  array('url' => , 'name' => , 'title' => );
      */
-    static public function getUsedOnEntries($references_by_typeobject_id)
+    static public function getUsedOnEntries($itemobject_id, $navigator)
     {
+
+        $records = DbSchema::getInstance()->getRecords('', "SELECT
+                iv_them.itemversion_id, iv_them.itemobject_id, iv_them.item_serial_number,
+                IF(iv_them.itemversion_id=io_them.cached_current_itemversion_id,1,0) as is_current_version,
+                partnumbercache.part_description
+                FROM itemcomponent
+                LEFT JOIN itemversion AS iv_them ON iv_them.itemversion_id=itemcomponent.belongs_to_itemversion_id
+                LEFT JOIN itemobject AS io_them on iv_them.itemobject_id=io_them.itemobject_id
+                LEFT JOIN typeversion on typeversion.typeversion_id=iv_them.typeversion_id
+                LEFT JOIN typecategory ON typecategory.typecategory_id=typeversion.typecategory_id
+                LEFT JOIN partnumbercache ON partnumbercache.typeversion_id=iv_them.typeversion_id AND partnumbercache.partnumber_alias=iv_them.partnumber_alias
+                WHERE itemcomponent.has_an_itemobject_id='{$itemobject_id}' AND (typecategory.is_user_procedure=0)
+                ORDER BY iv_them.effective_date");
+
         $usedon = array();
         // I want to group where used buttons by typeobject ID but then only show one per itemobject_id
-        foreach ($references_by_typeobject_id as $typeobject_id => $lines) {
-            foreach ($lines as $line) {
-                if (($line['event_type_id']=='ET_PARTREF')) {
-                    // the order is such that the last assignment will be the most recent (and relevant?)
-                    foreach ($line['event_description_array'] as $arr) {
-                        $sn = $arr['fields']['item_serial_number'];
-                        $desc = $arr['fields']['part_description'];
-                        if ($line['is_current_version']) {
-                            $usedon[$line['this_itemobject_id']] = array('url' => $arr['url'], 'name' => 'Used On '.$sn, 'title' => 'Used on '.$desc.': '.$sn);
-                        } else {
-                            $usedon[$line['this_itemobject_id']] = array('url' => $arr['url'], 'name' => 'Was Used On '.$sn, 'title' => 'Was used on an old version of '.$desc.': '.$sn);
-                        }
-                    }
-                }
+        foreach ($records as $record) {
+            $sn = $record['item_serial_number'];
+            $desc = $record['part_description'];
+            $query_params = array();
+            $query_params['itemversion_id'] = $record['itemversion_id'];
+            $query_params['resetview'] = 1;
+            $url = $navigator->getCurrentViewUrl('itemview', '', $query_params);
+            if ($record['is_current_version']) {
+                $usedon[$record['itemobject_id']] = array('url' => $url, 'name' => 'Used On '.$sn, 'title' => 'Used on '.$desc.': '.$sn);
+            } else {
+                $usedon[$record['itemobject_id']] = array('url' => $url, 'name' => 'Was Used On '.$sn, 'title' => 'Was used on an old version of '.$desc.': '.$sn);
             }
         }
         return $usedon;

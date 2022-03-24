@@ -134,7 +134,7 @@ $html_dashboard = EventStream::renderDashboardView($this->dbtable, $procedure_re
 /*
  * Create the Used On links
 */
-$usedon = EventStream::getUsedOnEntries($references_by_typeobject_id);
+$usedon = EventStream::getUsedOnEntries($this->dbtable->itemobject_id, $this->navigator);
 if (count($usedon)==1) {
     $linkfields = reset($usedon);
     $detailslinks[] = linkify($linkfields['url'], $linkfields['name'], $linkfields['title'], 'used-on-button');
