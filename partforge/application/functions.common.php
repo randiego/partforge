@@ -1006,10 +1006,11 @@ function fetch_form_tag($html, $attributes = '', $form_id = 'theform')
 function send_download_headers($file_type, $file_name, $attachment = 'attachment; ', $cachecontrol = 'max-age=0')
 {
     // one problem is that filenames with spaces don't seem to work properly.  Must remove spaces.
+    // Added double quotes around filename. Seems to handle commas now in the filename.
     header( "Pragma: ");
     header( "Cache-Control: {$cachecontrol}");
     header( "Content-Type: $file_type" );
-    header( "Content-Disposition: {$attachment}filename=".str_replace(' ', '', $file_name) );
+    header( 'Content-Disposition: {$attachment}filename="'.str_replace(' ', '', $file_name).'"' );
 }
 
 function TextToHtml($text)
