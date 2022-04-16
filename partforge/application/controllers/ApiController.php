@@ -137,19 +137,37 @@ class ApiController extends Zend_Controller_Action
         $from_time = isset($this->params['from']) ? strtotime($this->params['from']) : 0;
         $to_time = isset($this->params['to']) ? strtotime($this->params['to']) : 0;
         $limit = isset($this->params['limit']) ? (is_numeric($this->params['limit']) ? addslashes($this->params['limit']) : null) : null;
+        $change_code_set = null;
+        if (isset($this->params['change_code'])) {
+            $change_codes = explode(',', addslashes($this->params['change_code']));
+            $change_code_set = "('".implode("','", $change_codes)."')";
+        }
 
         $errormsg = array();
-        if ($user_id_set) {
+        if (!is_null($user_id_set)) {
             $records = DbSchema::getInstance()->getRecords('user_id', "SELECT user_id,login_id FROM user where user_id IN {$user_id_set}");
             if (count($records)==0) {
                 $errormsg[] = "user_ids = '{$user_id_set}' do not exist.";
             }
         }
 
-        if ($login_id_set) {
+        if (!is_null($login_id_set)) {
             $records = DbSchema::getInstance()->getRecords('user_id', "SELECT user_id,login_id FROM user where login_id IN {$login_id_set}");
             if (count($records)==0) {
                 $errormsg[] = "login_ids = '{$login_id_set}' do not exist.";
+            }
+        }
+
+        if (!is_null($change_code_set)) {
+            $records = DbSchema::getInstance()->getRecords('change_code', "SELECT * FROM changecode");
+            foreach ($change_codes as $change_code) {
+                if (!isset($records[$change_code])) {
+                    $codes = array();
+                    foreach ($records as $coderecord) {
+                        $codes[] = $coderecord['change_code'].'='.$coderecord['change_code_name'];
+                    }
+                    $errormsg[] = "change_code = '{$change_code}' is not valid. Chose from one of these: ".implode(', ', $codes);
+                }
             }
         }
 
@@ -171,6 +189,9 @@ class ApiController extends Zend_Controller_Action
         }
         if (!is_null($login_id_set)) {
             $DBTableRowQuery->addAndWhere(" and (user.login_id IN {$login_id_set})");
+        }
+        if (!is_null($change_code_set)) {
+            $DBTableRowQuery->addAndWhere(" and (changelog.change_code IN {$change_code_set})");
         }
         if ($from_time) {
             $DBTableRowQuery->addAndWhere(" and (changelog.changed_on>='".time_to_mysqldatetime($from_time)."')");

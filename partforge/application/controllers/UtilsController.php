@@ -297,6 +297,31 @@ class UtilsController extends DBControllerActionAbstract
                         $databaseversion = '15';
                         setGlobal('databaseversion', $databaseversion);
                     }
+                    if ($databaseversion=='15') {
+                        $msgs[] = 'Upgrading to version 16: New ability to sort the Procedure order.';
+                        DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS `proceduresortorder` (
+							  `proceduresortorder_id` int(11) NOT NULL AUTO_INCREMENT,
+							  `sort_order` int(11) NOT NULL COMMENT 'an integer to be sorted on',
+                              `of_typeobject_id` int(11) NOT NULL,
+                              `when_viewed_by_typeobject_id` int(11) NOT NULL,
+                              `section_break` int(1) DEFAULT 0 COMMENT 'if 1, then this is the start of section so maybe add hr displays',
+							  PRIMARY KEY (`proceduresortorder_id`),
+                              KEY `of_typeobject_id` (`of_typeobject_id`),
+                              KEY `when_viewed_by_typeobject_id` (`when_viewed_by_typeobject_id`)
+							) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
+                        DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS `proceduresorthistory` (
+							  `proceduresorthistory_id` int(11) NOT NULL AUTO_INCREMENT,
+							  `when_viewed_by_typeobject_id` int(11) NOT NULL,
+                              `to_user_id` int(11) NOT NULL,
+                              `record_created` datetime NOT NULL,
+                              `sort_order_typeobject_ids` text DEFAULT NULL COMMENT 'archived comma sep list of typeobject_ids--not live.',
+							  PRIMARY KEY (`proceduresorthistory_id`),
+                              KEY `when_viewed_by_typeobject_id` (`when_viewed_by_typeobject_id`),
+                              KEY `to_user_id` (`to_user_id`)
+							) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
+                        $databaseversion = '16';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
             }
         }
         $this->view->currentversion = getGlobal('databaseversion');

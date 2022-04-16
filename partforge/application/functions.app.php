@@ -312,16 +312,18 @@ function getTypesThatReferenceThisType($typeversion_id, $is_user_procedure = 1)
     $is_user_procedure_and = ($is_user_procedure===1) ? 'AND (typecategory.is_user_procedure=1)' : (($is_user_procedure===0) ? 'AND (typecategory.is_user_procedure=0)' : '');
 
     $procedure_records = DbSchema::getInstance()->getRecords('', "
-			SELECT DISTINCT typeversiontarg.*, typecomponent.component_name, typeobjecttarg.typedisposition
-			FROM typeobject as typeobjecttarg, typeversion as typeversiontarg, typecomponent, typecomponent_typeobject, typecategory, typeversion as typeversionself
+			SELECT DISTINCT typeversiontarg.*, typecomponent.component_name, typeobjecttarg.typedisposition, pso.section_break
+            FROM typeobject as typeobjecttarg
+            JOIN typeversion as typeversiontarg ON (typeversiontarg.typeversion_id=typeobjecttarg.cached_current_typeversion_id)
+            JOIN typecomponent ON (typecomponent.belongs_to_typeversion_id=typeversiontarg.typeversion_id)
+            JOIN typecomponent_typeobject ON (typecomponent_typeobject.typecomponent_id=typecomponent.typecomponent_id)
+            JOIN typeversion as typeversionself ON typeversionself.typeobject_id=typecomponent_typeobject.can_have_typeobject_id
+            JOIN typecategory ON (typeversiontarg.typecategory_id=typecategory.typecategory_id)
+            LEFT JOIN proceduresortorder pso ON (pso.when_viewed_by_typeobject_id=typeversionself.typeobject_id)
+                AND (pso.of_typeobject_id=typeversiontarg.typeobject_id)
 			WHERE (typeversionself.typeversion_id='{$typeversion_id}')
-			AND (typeversionself.typeobject_id=typecomponent_typeobject.can_have_typeobject_id)
-			AND (typecomponent_typeobject.typecomponent_id=typecomponent.typecomponent_id)
-			AND (typecomponent.belongs_to_typeversion_id=typeversiontarg.typeversion_id)
-			AND (typeversiontarg.typeversion_id=typeobjecttarg.cached_current_typeversion_id)
-			AND (typeversiontarg.typecategory_id=typecategory.typecategory_id)
 			{$is_user_procedure_and}
-			ORDER BY typeversiontarg.type_description
+			ORDER BY IFNULL(pso.sort_order,0), typeversiontarg.type_description
 			");
     return $procedure_records;
 }

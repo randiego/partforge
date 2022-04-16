@@ -113,9 +113,12 @@ if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 
     // make sure we have only 1 add button per type
     $out = array();
     foreach ($procedure_records as $record) {
-        $out[$record['add_url']] = 'Add '.$record['type_description'];
+        $out[$record['add_url']] = array('Add '.$record['type_description'], $record['section_break']) ;
     }
-    foreach ($out as $url => $link_caption) {
+    foreach ($out as $url => list($link_caption, $section_break)) {
+        if ($section_break) {
+            $menulinks[] = '<hr>';
+        }
         $menulinks[] = linkify($url, $link_caption, $link_caption);
     }
 }
