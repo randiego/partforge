@@ -1106,6 +1106,23 @@ class StructController extends DBControllerActionAbstract
         die();
     }
 
+    public function reorderproceduresAction()
+    {
+        $out = array();
+        $out['error'] = '';
+
+        if (isset($this->params['of_typeobject_ids']) && isset($this->params['when_viewed_by_typeobject_id']) && $this->params['when_viewed_by_typeobject_id']) {
+            $errormsg = array();
+            $of_typeobject_ids = $this->params['of_typeobject_ids'] ? explode(',', $this->params['of_typeobject_ids']) : array();
+            DBTableRowProcedureSortOrder::sortProcedures($this->params['when_viewed_by_typeobject_id'], $of_typeobject_ids);
+            $out['error'] = implode(";", $errormsg);
+        } else {
+            $out['error'] = 'The field of_typeobject_ids or when_viewed_by_typeobject_id is empty.';
+        }
+        echo json_encode($out);
+        die();
+    }
+
     /*
      * Note: This will add a comment to the specified itemobject_id or typeobject_id
      */

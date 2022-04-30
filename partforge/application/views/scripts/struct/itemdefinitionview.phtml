@@ -1,4 +1,6 @@
 <script type="text/javascript">
+var scrollPosKeyRight = "<?php echo 'defViewRightPanelPos'.$this->dbtable->typeversion_id;?>";
+var scrollPosKeyLeft = "<?php echo 'defViewLeftPanelPos'.$this->dbtable->typeversion_id;?>";
 var typeObjectId = <?php echo $this->dbtable->typeobject_id;?>;
 var pdfViewUrl = "<?php echo $this->navigator->getCurrentViewUrl('itemdefinitionviewpdf', null, array('typeversion_id' => $this->dbtable->typeversion_id, 'show_linked_procedures' => '_LINKEDPROCS_'));?>";
 var isAPart = <?php echo $this->dbtable->typecategory_id==2 ? 1 : 0;?>;
@@ -13,7 +15,7 @@ var linkToPageUrl = "<?php echo $this->dbtable->absoluteUrl();?>";
 var lookupUrl = '<?php echo $this->navigator->getCurrentViewUrl('jsonsearchloginids', 'user');?>';
 var canSendLink = <?php echo in_array($_SESSION['account'] ->getRole(), array('Guest','DataTerminal')) ? 'false' : 'true';?>;
 </script>
-<script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/struct/itemdefinitionview.js?v=6" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/struct/itemdefinitionview.js?v=8" type="TEXT/JAVASCRIPT"></script>
 
 <?php
 global $itemcounts, $typerefs;
@@ -78,6 +80,10 @@ function getLinkedDefinitionsHtml(DBTableRowTypeVersion $dbtable, UrlCallRegistr
         $init['typecategory_id'] = $is_procedure_flag ? 1 : 2;
         $init['effective_date'] = time_to_mysqldatetime(script_time());
         $html .= linkify($navigator->getCurrentHandlerUrl('btnNewLinked', null, null, array('typeversion_id' => $dbtable->typeversion_id, 'initialize' => $init)), 'Add '.$section_heading.' Definition', 'Start a new '.$section_heading.' Definition and add the current definition as a component', 'minibutton2');
+        if ((count($procedure_records_by_typeobject_id) > 1) && $is_procedure_flag) {
+            $html .= DBTableRowWhatsNewUser::fetchWhatsNew('SORTING_PROCEDURES', 'Using the following button, you can now change the order of procedures as presented on the Part page (dashboard and Add New Procedure menu).', '5/1/2022');
+            $html .= '&nbsp;<a href="#" class="minibutton2 startSortLink" title="rearrange the procedures by draging and dropping">Change Procedure Order</a>';
+        }
     }
 
     if ($non_zero_count) {
@@ -91,7 +97,7 @@ function getLinkedDefinitionsHtml(DBTableRowTypeVersion $dbtable, UrlCallRegistr
                 $statusbadge = ' <span class="disposition '.$statusclass.'">'.$statustext.'</span>';
             }
             $comp_name = TextToHtml(DBTableRowTypeVersion::formatPartNumberDescription($record['type_part_number'], $record['type_description']));
-            $items_html .= '<li>'.linkify($SubTypeVersion->absoluteUrl(), $comp_name, 'view definition for '.$comp_name).', Type Object ID: '.$record['typeobject_id'].$statusbadge.'</li>';
+            $items_html .= '<li id="typeobjectli_'.$record['typeobject_id'].'">'.linkify($SubTypeVersion->absoluteUrl(), $comp_name, 'view definition for '.$comp_name).', Type Object ID: '.$record['typeobject_id'].$statusbadge.'</li>';
         }
 
         $html .= '<ul id="'.($is_procedure_flag ? 'linkedProcedureUL' : 'linkedPartUL').'">'.$items_html.'</ul>';
@@ -354,7 +360,7 @@ foreach ($records as $record) {
     $html_page = '
 		'.$html_head.'
     <div class="twocolleft twocolcol">
-      <div class="twocolbody twocolrow twocolscroll-y">
+      <div id="leftpanel" class="twocolbody twocolrow twocolscroll-y">
 			'.$html.'
 	  </div>
 	</div>

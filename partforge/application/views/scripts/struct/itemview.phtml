@@ -1,5 +1,6 @@
 <script type="text/javascript">
-var scrollPosKey = "<?php echo 'itemViewPanelPos'.$this->dbtable->itemversion_id;?>";
+var scrollPosKeyRight = "<?php echo 'itemViewRightPanelPos'.$this->dbtable->itemversion_id;?>";
+var scrollPosKeyLeft = "<?php echo 'itemViewLeftPanelPos'.$this->dbtable->itemversion_id;?>";
 var pdfViewUrl = "<?php echo $this->navigator->getCurrentViewUrl('itemviewpdf', null, array('itemversion_id' => $this->dbtable->itemversion_id, 'show_form_fields' => '_SHOWFORM_', 'show_text_fields' => '_SHOWTEXT_', 'show_event_stream' => '_SHOWEVENTS_'));?>";
 var followUrl = "<?php echo $this->navigator->getCurrentHandlerUrl('btnFollow', null, null, array('itemobject_id' => $this->dbtable->itemobject_id, 'followNotifyTimeHHMM' => '_FOLLOWNOTIFYTIMEHHMM_', 'notify_instantly' => '_NOTIFYINSTANTLY_', 'notify_daily' => '_NOTIFYDAILY_'));?>";
 var followInstantly =  "<?php echo $_SESSION['account']->getPreference('followInstantly');?>";
@@ -11,7 +12,7 @@ var lookupUrl = '<?php echo $this->navigator->getCurrentViewUrl('jsonsearchlogin
 var canSendLink = <?php echo in_array($_SESSION['account'] ->getRole(), array('Guest','DataTerminal')) ? 'false' : 'true';?>;
 </script>
 <?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
-<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemview.js?v=14" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemview.js?v=15" type="TEXT/JAVASCRIPT"></script>
 <?php
 
 $title = $this->dbtable->getPageTypeTitleHtml().($this->dbtable->item_serial_number ? ' - '.TextToHtml($this->dbtable->item_serial_number) : '');
@@ -230,7 +231,7 @@ $html_right .= '</ul></div>';
 $html_page = '
 		'.$html_head.'
     <div class="twocolleft twocolcol">
-      <div class="twocolbody twocolrow twocolscroll-y">
+      <div  id="leftpanel" class="twocolbody twocolrow twocolscroll-y">
 			'.$html.$html_dashboard.'
 	  </div>
 	</div>

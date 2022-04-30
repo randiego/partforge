@@ -1600,6 +1600,21 @@ ul.bd-event-subcomments li.bd-event-subcomment {
     margin-left: 10px;
 }
 
+.sortNoticeButtons {
+	margin-top: 10px;
+	margin-bottom: 10px;
+	margin-left: 10px;
+}
+
+.sortNoticeButtons span {
+	margin-right: 8px;
+}
+
+.sortNoticeButtons span a.bd-linkbtn {
+	font-size: 11px;
+	padding: 2px;
+}
+
 .bd-instruction-text {
 	width: 600px;
 	color: #01317E;
@@ -1636,6 +1651,13 @@ ul.bd-event-subcomments li.bd-event-subcomment {
 .bd-layout-frame .bd-sorting li {
 	border-color: #000;
 	background-color: #FEE;
+}
+
+#linkedProcedureUL.bd-sorting li {
+	border: 1px solid #555;
+	background-color: #FEE;
+	margin: 2px;
+	padding: 3px 0 3px 0;
 }
 
 .bd-layout-frame li div.db-sizer-control {

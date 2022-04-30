@@ -662,13 +662,13 @@ class UploadHandler
                 if (!preg_match($this->options['inline_file_types'], $file_name)) {
                     $this->header('Content-Description: File Transfer');
                     $this->header('Content-Type: application/octet-stream');
-                    $this->header('Content-Disposition: attachment; filename="'.$file_name.'"');
+                    $this->header('Content-Disposition: attachment; filename='.rawurlencode($file_name));
                     $this->header('Content-Transfer-Encoding: binary');
                 } else {
                     // Prevent Internet Explorer from MIME-sniffing the content-type:
                     $this->header('X-Content-Type-Options: nosniff');
                     $this->header('Content-Type: '.$this->get_file_type($file_path));
-                    $this->header('Content-Disposition: inline; filename="'.$file_name.'"');
+                    $this->header('Content-Disposition: inline; filename='.rawurlencode($file_name));
                 }
                 $this->header('Content-Length: '.$this->get_file_size($file_path));
                 $this->header('Last-Modified: '.gmdate('D, d M Y H:i:s T', filemtime($file_path)));
@@ -703,7 +703,7 @@ class UploadHandler
     {
         $this->header('Pragma: no-cache');
         $this->header('Cache-Control: no-store, no-cache, must-revalidate');
-        $this->header('Content-Disposition: inline; filename="files.json"');
+        $this->header('Content-Disposition: inline; filename=files.json');
         // Prevent Internet Explorer from MIME-sniffing the content-type:
         $this->header('X-Content-Type-Options: nosniff');
         if ($this->options['access_control_allow_origin']) {

@@ -7,27 +7,21 @@ function getScrollKeyName() {
 	return "itemviewrightpanelscrolly" + getParameterByName('itemversion_id');
 }
 
-// from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values
-function getParameterByName(name) {
-    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
-    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-        results = regex.exec(location.search);
-    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-}
-
 function myScrollToCookiePosition() {
-	$('#rightpanel').scrollTop($.cookie(scrollPosKey));
+	$('#rightpanel').scrollTop($.cookie(scrollPosKeyRight));
+	$('#leftpanel').scrollTop($.cookie(scrollPosKeyLeft));
 }
 
 function myScrollStartScrollKeeper() {
-	setInterval("$.cookie(scrollPosKey,$('#rightpanel').scrollTop())",500);
+	setInterval("$.cookie(scrollPosKeyRight,$('#rightpanel').scrollTop())",500);
+	setInterval("$.cookie(scrollPosKeyLeft,$('#leftpanel').scrollTop())",500);
 }
 
 function initPanelScrollSaver() {
 	if ((getParameterByName('resetview')!="1")) {
 	    window.setTimeout("myScrollToCookiePosition(); myScrollStartScrollKeeper();",1); // needed to do this so the setfocus message didn't come after this.
 	} else {
-		window.setTimeout("$('#rightpanel').scrollTop(0); myScrollStartScrollKeeper();",1);  // sometimes the setfocus scrolls the top out of view.  This beings it back
+		window.setTimeout("$('#rightpanel').scrollTop(0); $('#leftpanel').scrollTop(0); myScrollStartScrollKeeper();",1);  // sometimes the setfocus scrolls the top out of view.  This beings it back
 	}
 }
 

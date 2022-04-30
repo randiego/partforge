@@ -217,15 +217,15 @@ function renderListOfDictItems() {
 
 
 	$("#dictionaryEditorDiv").html(html);
-	$("#addDictEntryLink").click(function(event) {
-		$("#dictionaryEditorDiv a").unbind('click');
+	$("#addDictEntryLink").on("click", function(event) {
+		$("#dictionaryEditorDiv a").off('click');
 		var key = -1; // nothing
 		dictEditBuff = {"name" : "", "type" : "varchar", "len" : 32};
 		renderDictItemEditor($('#dictEditorContainer'), true, key);
 		return false;
 	});
 
-	$("a.dictlinedeletelink").click(function() {
+	$("a.dictlinedeletelink").on("click", function() {
 		if (confirm("Are you sure?")) {
 			var key = $(this).attr('data-key');
 			typeDictionaryArray.splice(key,1);
@@ -234,8 +234,8 @@ function renderListOfDictItems() {
 		return false;
 	});
 
-	$("a.dictlineeditlink").click(function(event) {
-		$("#dictionaryEditorDiv a").unbind('click');
+	$("a.dictlineeditlink").on("click", function(event) {
+		$("#dictionaryEditorDiv a").off('click');
 		var key = $(this).attr('data-key');
 		dictEditBuff = $.extend({},typeDictionaryArray[key]);    // global
 		if (typeof dictEditBuff['type'] == 'undefined') dictEditBuff['type'] = 'varchar'; // set something, anything
@@ -245,8 +245,8 @@ function renderListOfDictItems() {
 		return false;
 	});
 
-	$("a.dictlinecopylink").click(function(event) {
-		$("#dictionaryEditorDiv a").unbind('click');
+	$("a.dictlinecopylink").on("click", function(event) {
+		$("#dictionaryEditorDiv a").off('click');
 		var key = $(this).attr('data-key');
 		dictEditBuff = $.extend({},typeDictionaryArray[key]);    // global
 		if (typeof dictEditBuff['type'] == 'undefined') dictEditBuff['type'] = 'varchar'; // set something, anything
@@ -256,8 +256,8 @@ function renderListOfDictItems() {
 		return false;
 	});
 
-	$("a.dictraweditlink").click(function(event) {
-		$("#dictionaryEditorDiv a").unbind('click');
+	$("a.dictraweditlink").on("click", function(event) {
+		$("#dictionaryEditorDiv a").off('click');
 		renderDictRawEditor($(this).parent());
 		return false;
 	});
@@ -469,7 +469,7 @@ function renderDictItemEditor(containerSet, isNew, key) {
 		closeOnEscape: false,
 		close: function( event, ui ) {containerSet.dialog('destroy'); renderAll();}
 	});
-	$("#dictionaryTypeSelect").change(function() {
+	$("#dictionaryTypeSelect").on("change", function() {
 		saveDictItemEditorToBuff(containerSet,false,isNew,key);
 		renderDictItemEditor(containerSet, isNew, key);
 		return false;
@@ -478,14 +478,14 @@ function renderDictItemEditor(containerSet, isNew, key) {
 	// special handling for component_name if it exists
 	var compSelectorId = 'propparam_component_name';
 	if ($("#"+compSelectorId).length > 0) {  // if it exists
-		$('#propparam_embedded_in_typeobject_id').change(function() {
+		$('#propparam_embedded_in_typeobject_id').on("change", function() {
 			saveDictItemEditorToBuff(containerSet,false,isNew,key);
 			renderDictItemEditor(containerSet, isNew, key);
 			return false;
 		});
 
 		var compFieldSelId = 'propparam_component_subfield';
-		$("#" + compSelectorId).change(function() {
+		$("#" + compSelectorId).on("change", function() {
 			saveDictItemEditorToBuff(containerSet,false,isNew,key);
 			renderDictItemEditor(containerSet, isNew, key)
 			return false;
@@ -495,7 +495,7 @@ function renderDictItemEditor(containerSet, isNew, key) {
 		fillComponentSubFieldSelector($("#propparam_embedded_in_typeobject_id").val(),compFieldSelId, dictEditBuff['component_subfield']);
 	}
 
-	containerSet.find("a.propeditdonelink").click(function(event) {
+	containerSet.find("a.propeditdonelink").on("click", function(event) {
 
 
 		var ok = saveDictItemEditorToBuff(containerSet,true,isNew,key);
@@ -513,7 +513,7 @@ function renderDictItemEditor(containerSet, isNew, key) {
 
 	});
 
-	containerSet.find("a.propeditcancellink").click(function(event) {
+	containerSet.find("a.propeditcancellink").on("click", function(event) {
 		containerSet.dialog('destroy');
 		renderAll();
 		return false;
@@ -538,8 +538,8 @@ function renderDictRawEditor(containerSet) {
 
 
 	// if we click done, then grab input and replace the contents of the buffer var typeDictionaryArray
-	$("#dictraweditdonelink").click(function(event) {
-		$("#dictionaryEditorDiv a").unbind('click');
+	$("#dictraweditdonelink").on("click", function(event) {
+		$("#dictionaryEditorDiv a").off('click');
 		typeDictionaryArray = keyValueListToDictArray($("#dictrawtext").val());
 		containerSet.dialog('destroy');
 		renderAll();
@@ -596,7 +596,7 @@ function componentSelectHtml(selectTagId, component_value) {
 }
 
 
-function checkifDictionaryNameOk(name,showAlerts) {
+function checkifDictionaryNameOk(name, showAlerts) {
 	// make sure the field name looks like "my_field_name"
 	var re = new RegExp("^[a-z_0-9]+$");
 	if (!name.match(re) || (name.length > MaxAllowedFieldLength)) {
@@ -659,13 +659,13 @@ function keyValueListToDictArray(keyValStr) {
 	for(var i=0; i<rowpropvaluesplit.length; i++) {
 		var row = rowpropvaluesplit[i];
 		var rowParts = splitOnce(row,'=');
-		var rowkey = $.trim(rowParts[0]);
+		var rowkey = rowParts[0].trim();
 		if (rowkey!='') {
 			var rowval = rowkey;
 			if ((rowParts.length > 1) && ($.trim(rowParts[1])!='')) {
-				rowval = $.trim(rowParts[1]);
+				rowval = rowParts[1].trim();
 			}
-			propvalue[rowkey] = $.parseJSON(rowval);
+			propvalue[rowkey] = JSON.parse(rowval);
 		}
 	}
 	return dictionaryToArray(propvalue);
@@ -794,14 +794,14 @@ function renderListOfComponents() {
 
 	$("#componentEditorDiv").html(html);
 
-	$("#addComponentLink").click(function(event) {
+	$("#addComponentLink").on("click", function(event) {
 		compEditBuff = {"typecomponent_id" : "new", "component_name" : "", "can_have_typeobject_id" : "", "caption" : "", "subcaption" : "", "featured" : "0", "required" : "", "max_uses" : "1"};
 		var key = -1; // nothing
 		renderCompEditor($('#compEditorContainer'), true, key);
 		return false;
 	});
 
-	$("a.linedeletelink").click(function(event) {
+	$("a.linedeletelink").on("click", function(event) {
 		if (confirm("Are you sure?")) {
 			var key = $(this).attr('data-key');
 			typeComponents.splice(key,1);
@@ -810,8 +810,8 @@ function renderListOfComponents() {
 		return false;
 	});
 
-	$("a.lineeditlink").click(function(event) {
-		$("#componentEditorDiv a").unbind('click');
+	$("a.lineeditlink").on("click", function(event) {
+		$("#componentEditorDiv a").off('click');
 		var key = $(this).attr('data-key');
 		compEditBuff = $.extend({},typeComponents[key]);
 		renderCompEditor($('#compEditorContainer'), false, key);
@@ -884,43 +884,45 @@ function saveCompEditorToBuff(showAlerts,isNew,key) {
 	var component_name = $("#compNameInput").val();
 	compEditBuff['component_name'] = component_name;
 
-	if (!checkifDictionaryNameOk(component_name,showAlerts)) return false;
-
-	// make sure we don't duplicate a fieldname among components
-	var dup = false;
-	for(var i=0; i<typeComponents.length; i++) {
-		if ((isNew || (i!=key)) && (typeComponents[i]['component_name']==component_name)) {
-			dup = true;
-			break;
+	// we only do the checking here if we are really saving this for real
+	if (showAlerts) {
+		if (!checkifDictionaryNameOk(component_name,true)) {
+			return false;
 		}
-	}
 
-	// check for the same names in the field dictionary
-	for(var i=0; i<typeDictionaryArray.length; i++) {
-		if (typeDictionaryArray[i]['name']==component_name) {
-			dup = true;
-			break;
+		// make sure we don't duplicate a fieldname among components
+		var dup = false;
+		for(var i=0; i<typeComponents.length; i++) {
+			if ((isNew || (i!=key)) && (typeComponents[i]['component_name']==component_name)) {
+				dup = true;
+				break;
+			}
 		}
-	}
 
-	if (dup) {
-		if (showAlerts) {
+		// check for the same names in the field dictionary
+		for(var i=0; i<typeDictionaryArray.length; i++) {
+			if (typeDictionaryArray[i]['name']==component_name) {
+				dup = true;
+				break;
+			}
+		}
+
+		if (dup) {
 			alert('please use a unique name for the entry.');
+			return false;
 		}
-		return false;
-	}
 
-	if (isAPart) {
-		var max_uses_val = $("#compMaxUses").val();
-		if (!IsNumeric(max_uses_val) || (IsNumeric(max_uses_val) && (parseFloat(max_uses_val)<-1))) {
-			alert('the Max Uses field must be -1 or greater.');
-			ok = false;
+		if (isAPart) {
+			var max_uses_val = $("#compMaxUses").val();
+			if (!IsNumeric(max_uses_val) || (IsNumeric(max_uses_val) && (parseFloat(max_uses_val)<-1))) {
+				alert('the Max Uses field must be -1 or greater.');
+				ok = false;
+			}
 		}
 	}
-
 	compEditBuff["can_have_typeobject_id"] = getCompEditorTypesToBuff($('#compEditorContainer select.comptypesel'));
-	compEditBuff["caption"] = $.trim($("#compCaption").val());
-	compEditBuff["subcaption"] = $.trim($("#compSubCaption").val());
+	compEditBuff["caption"] = $("#compCaption").val().trim();
+	compEditBuff["subcaption"] = $("#compSubCaption").val().trim();
 	compEditBuff["featured"] = $("#compFeatured").val();
 	compEditBuff["required"] = $("#compRequired").val();
 	compEditBuff["max_uses"] = isAPart ? $("#compMaxUses").val() : '1';
@@ -951,7 +953,7 @@ function renderCompEditor(editorContainer, isNew, key) {
 		closeOnEscape: false,
 		close: function( event, ui ) {editorContainer.dialog('destroy'); renderAll();}
 	});
-	editorContainer.find("a.propeditdonelink").click(function(event) {
+	editorContainer.find("a.propeditdonelink").on("click", function(event) {
 		var ok = saveCompEditorToBuff(true,isNew,key);
 		if (ok || ((UserType=='Admin') && confirm("proceed at your own peril?"))) {
 			if (isNew) {
@@ -965,14 +967,14 @@ function renderCompEditor(editorContainer, isNew, key) {
 		return false;
 	});
 
-	editorContainer.find("a.propeditcancellink").click(function(event) {
+	editorContainer.find("a.propeditcancellink").on("click", function(event) {
 		editorContainer.dialog('destroy');
 		renderAll();
 		return false;
 	});
 
 	typeselectors = editorContainer.find("select.comptypesel");
-	typeselectors.change(function(event) {
+	typeselectors.on("change", function(event) {
 		saveCompEditorToBuff(false,isNew,key);
 		renderCompEditor(editorContainer, isNew, key);
 		return false;
@@ -1119,7 +1121,7 @@ function renderFormLayout() {
 		bringElementIntoView($('#'+scrollToViewID));
 	}
 
-	$("#addLayoutFieldLink").click(function() {
+	$("#addLayoutFieldLink").on("click", function() {
 		var fieldnames = allFieldNames(true);
 		var outitem = {};
 		outitem['type'] = 'columns';
@@ -1136,7 +1138,7 @@ function renderFormLayout() {
 		return false;
 	});
 
-	$(".layoutFieldAddLink").click(function() {
+	$(".layoutFieldAddLink").on("click", function() {
 
 		var fieldnames = allFieldNames(true);
 		var outitem = {};
@@ -1157,7 +1159,7 @@ function renderFormLayout() {
 	});
 
 	// click handle add html field to layout
-	$(".layoutFieldAddTextLink").click(function() {
+	$(".layoutFieldAddTextLink").on("click", function() {
 		var outitem = {};
 		outitem['type'] = 'html';
 		outitem['html'] = '';
@@ -1171,7 +1173,7 @@ function renderFormLayout() {
 	});
 
 	// click handle add html field to layout
-	$("#addLayoutHtmlLink").click(function() {
+	$("#addLayoutHtmlLink").on("click", function() {
 		var outitem = {};
 		outitem['type'] = 'html';
 		outitem['html'] = '';
@@ -1182,7 +1184,7 @@ function renderFormLayout() {
 		return false;
 	});
 
-	$(".db-sizer-control a.layoutWiderLink, .db-sizer-control a.layoutNarrowerLink").click(function() {
+	$(".db-sizer-control a.layoutWiderLink, .db-sizer-control a.layoutNarrowerLink").on("click", function() {
 		var idx = $(this).parent().parent()[0].id.split('_')[1];
 		touchLayoutItem(idx);
 		if ($(this).hasClass('layoutWiderLink')) {
@@ -1199,7 +1201,7 @@ function renderFormLayout() {
 		return false;
 	});
 
-	$(".layoutFieldEditLink").click(function() {
+	$(".layoutFieldEditLink").on("click", function() {
 		var id = $(this).parent().parent()[0].id;
 		var idx = id.split('_')[1];
 		touchLayoutItem(idx);
@@ -1207,7 +1209,7 @@ function renderFormLayout() {
 		html += layoutFieldnameSelectHtml(typeFormLayoutArray[idx]['column']['name'])+' <a href="#" class="bd-linkbtn db-done">done</a>';
 
 		$(this).parent().parent().html(html);
-		$("#"+id+" a.db-done").click(function() {
+		$("#"+id+" a.db-done").on("click", function() {
 			typeFormLayoutArray[idx]['column']['name'] = $("#"+id+" select").val();
 			renderAll();
 			return false;
@@ -1215,7 +1217,7 @@ function renderFormLayout() {
 		return false;
 	});
 
-	$(".layoutFieldDeleteLink").add(".layoutHtmlDeleteLink").click(function() {
+	$(".layoutFieldDeleteLink").add(".layoutHtmlDeleteLink").on("click", function() {
 		var id = $(this).parent().parent()[0].id;
 		var idx = id.split('_')[1];
 		if (confirm("are you sure?")) {
@@ -1228,8 +1230,8 @@ function renderFormLayout() {
 
 
 	// open an html editor for this html type field.
-	$(".layoutHtmlEditLink").click(function() {
-		$("#formLayoutEditorDiv a").unbind('click');
+	$(".layoutHtmlEditLink").on("click", function() {
+		$("#formLayoutEditorDiv a").off('click');
 		var id = $(this).parent().parent()[0].id;
 		var idx = id.split('_')[1];
 		touchLayoutItem(idx);
@@ -1249,7 +1251,6 @@ function renderFormLayout() {
 				height -= 10;
 
 			    $('#htmleditorID_ifr').css("height",height+"px");
-				//alert('height='+height);
 			},
 			open: function () {
                 tinyMCE.init({ mode: 'exact',
@@ -1295,7 +1296,7 @@ function renderFormLayout() {
 		return false;
 	});
 
-	$(".startSortLink").click(function() {
+	$(".startSortLink").on("click", function() {
 		$( "#layout_sortable" ).sortable();
 		$( "#layout_sortable" ).disableSelection();
 		$( ".sortingNoticeBanner").show();
@@ -1305,7 +1306,7 @@ function renderFormLayout() {
 		bringElementIntoView($(this).parent().parent());
 		$(this).parent().parent().addClass('touchlight');
 
-		$(".doneSortLink").click(function(event) {
+		$(".doneSortLink").on("click", function(event) {
 			// reorder the array typeFormLayoutArray per the final id numbers and redraw.
 			newout = [];
 			var idxclicked = $(this).parent().parent()[0].id.split('_')[1];
@@ -1645,7 +1646,7 @@ function checkValidCalculatedTypes() {
  * @returns true if we are OK to submit
  */
 function validate() {
-	$(".doneSortLink").last().click();
+	$(".doneSortLink").last().trigger("click");
 	var layoutOk = checkLayoutFilled();
 	var everthingElseOk = checkUndefinedLayoutFields() && checkValidComponents() && checkValidComponentSubFields() && checkValidCalculatedTypes();
 	if (everthingElseOk) {checkValidComponentSubFields
@@ -1690,25 +1691,25 @@ $(document).ready(function() {
 			});
 
 	// we always want to pack things up.
-	$('form').submit(function(event) {
+	$('form').on("submit", function(event) {
 		packupFormVars();
 	});
 
 	// we are really saving, so do a serious check
-	$('input[name="btnOK"]').click(function() {
+	$('input[name="btnOK"]').on("click", function() {
 		return validate();
 	});
 
-	$('select[name="typecategory_id"]').change(function() {
+	$('select[name="typecategory_id"]').on("change", function() {
 		$('input[name="btnOnChange"]').val('changedtypecategory');
 		packupFormVars();
-		$('form').submit();
+		$('form').trigger("submit");
 	});
 
-	$('select[name="serial_number_type"]').change(function() {
+	$('select[name="serial_number_type"]').on("change", function() {
 		$('input[name="btnOnChange"]').val('changedsernumtype');
 		packupFormVars();
-		$('form').submit();
+		$('form').trigger("submit");
 	});
 
 	startKeepAliveProcess();

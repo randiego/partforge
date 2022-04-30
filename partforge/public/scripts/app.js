@@ -18,6 +18,14 @@ function include(file)
 
 }
 
+// from http://stackoverflow.com/questions/901115/how-can-i-get-query-string-values
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
 function timeSelectHtmlForWatches(selectTagId, classId, timevalueHHMM) {
 	var keyValueArray = [['00:00','00:00'],['01:00','01:00'],['02:00','02:00'],['03:00','03:00'],['04:00','04:00'],['05:00','05:00'],['06:00','06:00'],['07:00','07:00'],['08:00','08:00'],['09:00','09:00'],
 	             ['10:00','10:00'],['11:00','11:00'],['12:00','12:00'],['13:00','13:00'],['14:00','14:00'],['15:00','15:00'],
