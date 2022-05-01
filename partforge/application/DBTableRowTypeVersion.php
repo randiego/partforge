@@ -1321,7 +1321,7 @@ class DBTableRowTypeVersion extends DBTableRow {
     }
 
 
-    public function formatPrintField($fieldname, $is_html = true, $nowrap = true)
+    public function formatPrintField($fieldname, $is_html = true)
     {
         $fieldtype = $this->getFieldType($fieldname);
         $value = $this->$fieldname;
@@ -1341,7 +1341,7 @@ class DBTableRowTypeVersion extends DBTableRow {
                 $values = explode('|', $value);
                 return implode($is_html ? '<br />' : "\r\n", $values);
             default:
-                return parent::formatPrintField($fieldname, $is_html, $nowrap);
+                return parent::formatPrintField($fieldname, $is_html);
         }
     }
 

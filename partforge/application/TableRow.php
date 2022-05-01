@@ -35,7 +35,6 @@ class TableRow {
             input_rows
             required        means this field is required.
             input_cols
-            print_width
             print_function_name    // these function have parameter ($value, is_html)
             disabled
             onchange_js          // js to be put in OnChange handler
@@ -478,7 +477,7 @@ class TableRow {
     /*
          * TODO: some of these types should be moved into DBTableRow (left_join ?)
      */
-    public function formatPrintField($fieldname, $is_html = true, $nowrap = true)
+    public function formatPrintField($fieldname, $is_html = true)
     {
         $fieldtype = $this->getFieldType($fieldname);
         $value = $this->$fieldname;
@@ -515,12 +514,7 @@ class TableRow {
         } else if ($type == 'date') {
             return ($value && (strtotime($value) != -1)) ? date('m/d/Y', strtotime($value)) : $value;
         } else {
-            $width = isset($fieldtype['print_width']) ? $fieldtype['print_width'] : DEFAULT_FIELD_PRINT_WIDTH;
-            if ($is_html) {
-                return $nowrap ? TextToHtml($value) : text_to_wrappedhtml($value, $width);
-            } else {
-                return $nowrap ? $value : wrapemailtext( $value, $width, "\r\n");
-            }
+            return $is_html ? EventStream::embeddedLinksToHtmlTags(TextToHtml($value)) : $value;
         }
     }
 

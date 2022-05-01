@@ -459,7 +459,6 @@ function outputCSVToBrowser($typeobject_id)
 define('ROWS_PER_PAGE', 5);
 define('MAX_INPUT_TAG_WIDTH', 50);
 define('DEFAULT_FLOAT_WIDTH', 20);
-define('DEFAULT_FIELD_PRINT_WIDTH', 50);
 define('PATH_TO_SCRIPTS', '/scripts/');
 define('EMAILSPLITTER', '<!-- #EndEditable -->' );
 define('REQUIRED_SYM', '<span class="req_field">&nbsp;*</span>');

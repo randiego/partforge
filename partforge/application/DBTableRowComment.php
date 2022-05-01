@@ -249,7 +249,7 @@ class DBTableRowComment extends DBTableRow {
         return parent::formatInputTag($fieldname, $display_options);
     }
 
-    public function formatPrintField($fieldname, $is_html = true, $nowrap = true)
+    public function formatPrintField($fieldname, $is_html = true)
     {
         $fieldtype = $this->getFieldType($fieldname);
         $value = $this->$fieldname;
@@ -262,7 +262,7 @@ class DBTableRowComment extends DBTableRow {
                     return $is_html ? TextToHtml($login_id_by_user_id[$this->user_id]) : $login_id_by_user_id[$this->user_id];
                 }
             default:
-                return parent::formatPrintField($fieldname, $is_html, $nowrap);
+                return parent::formatPrintField($fieldname, $is_html);
         }
     }
 

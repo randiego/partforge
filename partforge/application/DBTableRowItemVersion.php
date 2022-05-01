@@ -2502,7 +2502,7 @@ class DBTableRowItemVersion extends DBTableRow {
         return $out;
     }
 
-    public function formatPrintField($fieldname, $is_html = true, $nowrap = true, $show_float_units = false)
+    public function formatPrintField($fieldname, $is_html = true, $show_float_units = false)
     {
         $fieldtype = $this->getFieldType($fieldname);
         $value = $this->$fieldname;
@@ -2520,8 +2520,8 @@ class DBTableRowItemVersion extends DBTableRow {
                 // if float type and there are units, then show them if $show_float_units
                 if (in_array($type, array('float','calculated')) && $show_float_units) {
                     $suffix = !empty($fieldtype['units']) && $is_html ? ' '.$fieldtype['units'] : '';
-                    $valout = parent::formatPrintField($fieldname, $is_html, $nowrap);
-                    return $valout!=='' ? parent::formatPrintField($fieldname, $is_html, $nowrap).$suffix : '';
+                    $valout = parent::formatPrintField($fieldname, $is_html);
+                    return $valout!=='' ? parent::formatPrintField($fieldname, $is_html).$suffix : '';
                 }
                 switch ($fieldname) {
                     case 'disposition':
@@ -2569,7 +2569,7 @@ class DBTableRowItemVersion extends DBTableRow {
                             return $is_html ? TextToHtml($login_id_by_user_id[$this->user_id]) : $login_id_by_user_id[$this->user_id];
                         }
                     default:
-                        return parent::formatPrintField($fieldname, $is_html, $nowrap);
+                        return parent::formatPrintField($fieldname, $is_html);
                 }
         }
     }

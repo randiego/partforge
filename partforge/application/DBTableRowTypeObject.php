@@ -45,7 +45,6 @@
             options       // for enum type, is an array of key value pairs, or the name of a method
             input_rows
             input_cols
-            print_width
             print_function_name    // these function have parameter ($value, is_html)
             disabled
             onchange_js          // js to be put in OnChange handler

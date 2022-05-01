@@ -25,7 +25,6 @@
 
 // note: REQUIRED_SYM must be defined someplace.  E.g., define('REQUIRED_SYM','<span class="req_field">*</span>');
 
-// PARAMETERS: MAX_INPUT_TAG_WIDTH, DEFAULT_FIELD_PRINT_WIDTH
 // for popup calendar: define('PATH_TO_SCRIPTS', 'stdlib/');
 // for required fields: define('REQUIRED_SYM','<span class="req_field">*</span>');
 

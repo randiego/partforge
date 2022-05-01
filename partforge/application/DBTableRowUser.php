@@ -564,7 +564,7 @@ return false;
         return $out_records;
     }
 
-    public function formatPrintField($fieldname, $is_html = true, $nowrap = true, $show_float_units = false)
+    public function formatPrintField($fieldname, $is_html = true, $show_float_units = false)
     {
         $fieldtype = $this->getFieldType($fieldname);
         $value = $this->$fieldname;
@@ -572,7 +572,7 @@ return false;
             case 'email':
                 return mailto_link($value, $value, '', '', '');
             default:
-                return parent::formatPrintField($fieldname, $is_html, $nowrap);
+                return parent::formatPrintField($fieldname, $is_html);
         }
     }
 }

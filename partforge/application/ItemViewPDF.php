@@ -244,9 +244,20 @@ class ItemViewPDF extends TCPDF {
                             $validate_msg[] = $fieldtype['error'];
                         }
                         if ($fieldtype['type']=='attachment') {
-                            list($documents_gallery_html, $comment_html, $record) = DBTableRowItemVersion::getFieldCommentRecord(null, $this->dbtable->{$fieldname}, '');
-                            $documents_html = isset($record['documents_packed']) ? EventStream::renderCommentDocumentsPackedToPdfHtml($record['documents_packed']) : '';
-                            $rhs_html = $documents_html.$comment_html;
+                            $out = '';
+                            $got_a_valid_fieldcomment = false;
+                            if (is_numeric($this->dbtable->{$fieldname})) {
+                                list($documents_gallery_html, $comment_html, $record) = DBTableRowItemVersion::getFieldCommentRecord(null, $this->dbtable->{$fieldname}, '');
+                                if ((count($record) > 0) && $record['is_fieldcomment']) {
+                                    $got_a_valid_fieldcomment = true;
+                                }
+                            }
+                            if ($got_a_valid_fieldcomment) {
+                                $documents_html = isset($record['documents_packed']) ? EventStream::renderCommentDocumentsPackedToPdfHtml($record['documents_packed']) : '';
+                                $rhs_html = $documents_html.$comment_html;
+                            } else {
+                                $rhs_html = '';
+                            }
                         } else {
                             $rhs_html = $this->dbtable->formatPrintField($fieldname);
                         }

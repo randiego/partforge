@@ -539,8 +539,8 @@ class EventStream {
             if (in_array($event_type, array('ET_PROCREF','ET_PARTREF'))) {
                 foreach ($ItemVersion->getFeaturedFieldTypes() as $fieldname => $fieldtype) {
                     if (trim($ItemVersion->{$fieldname})!=='') {
-                        $features[] = '<span class="label">'.$ItemVersion->formatFieldnameNoColon($fieldname).':</span> <span class="value">'.$ItemVersion->formatPrintField($fieldname, true, true, true).'</span>';
-                        $features_structured[] = array('name' => $ItemVersion->formatFieldnameNoColon($fieldname), 'value' => $ItemVersion->formatPrintField($fieldname, true, true, true));
+                        $features[] = '<span class="label">'.$ItemVersion->formatFieldnameNoColon($fieldname).':</span> <span class="value">'.$ItemVersion->formatPrintField($fieldname, true, true).'</span>';
+                        $features_structured[] = array('name' => $ItemVersion->formatFieldnameNoColon($fieldname), 'value' => $ItemVersion->formatPrintField($fieldname, true, true));
                     }
                 }
                 // if event type  is procedure, then show the errors $ItemVersion->getArrayOfAllFieldErrors()
