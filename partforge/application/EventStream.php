@@ -1019,7 +1019,7 @@ class EventStream {
             $references = isset($references_by_typeobject_id[$typeobject_id]) ? $references_by_typeobject_id[$typeobject_id] : array();
             $link = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'table:itemversion', 'add')
             ? ' '.linkify($procedure_record['add_url'], 'add', '', 'minibutton2').' ' : '';
-            $html_dashboard .= '<h3 class="itemview-proc-head">'.$procedure_record['type_description'].$link.'</h3>';
+            $html_dashboard .= '<div id="dashboard_to_'.$typeobject_id.'" class="dashboard_item_div"><h3 class="itemview-proc-head">'.$procedure_record['type_description'].$link.'</h3>';
 
             if (count($references)>0) {
                 $html_dashboard .= '<table class="sublisttable"><colgroup><col class="col1"><col class="col2"><col class="col3"></colgroup>';
@@ -1069,6 +1069,7 @@ class EventStream {
                     $html_dashboard .= '<p>No Results.</p>';
                 }
             }
+            $html_dashboard .= '</div>';
         }
 
         return $html_dashboard;

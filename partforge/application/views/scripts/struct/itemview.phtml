@@ -136,18 +136,20 @@ $html_dashboard = EventStream::renderDashboardView($this->dbtable, $procedure_re
 
 
 /*
- * Create the Used On links
+ * Create the Used On links if we are a part
 */
-$usedon = EventStream::getUsedOnEntries($this->dbtable->itemobject_id, $this->navigator);
-if (count($usedon)==1) {
-    $linkfields = reset($usedon);
-    $detailslinks[] = linkify($linkfields['url'], $linkfields['name'], $linkfields['title'], 'used-on-button');
-} else if (count($usedon)>1) {
-    $used_on_links = array();
-    foreach ($usedon as $itemobject_id => $linkfields) {
-        $used_on_links[] = linkify($linkfields['url'], $linkfields['name'], $linkfields['title'], '');
+if (!$is_a_procedure) {
+    $usedon = EventStream::getUsedOnEntries($this->dbtable->itemobject_id, $this->navigator);
+    if (count($usedon)==1) {
+        $linkfields = reset($usedon);
+        $detailslinks[] = linkify($linkfields['url'], $linkfields['name'], $linkfields['title'], 'used-on-button');
+    } else if (count($usedon)>1) {
+        $used_on_links = array();
+        foreach ($usedon as $itemobject_id => $linkfields) {
+            $used_on_links[] = linkify($linkfields['url'], $linkfields['name'], $linkfields['title'], '');
+        }
+        $detailslinks[] = '<button class="used-on-button jumpmenu">Used On...</button><ul><li>'.implode('</li><li>', $used_on_links).'</li></ul>';
     }
-    $detailslinks[] = '<button class="used-on-button jumpmenu">Used On...</button><ul><li>'.implode('</li><li>', $used_on_links).'</li></ul>';
 }
 
 if ($this->show_big_page_controls) {

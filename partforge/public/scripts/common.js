@@ -24,10 +24,10 @@ function currentViewName() {
 }
 
 function OnScrollPosSave() {
-	document.cookie = "docscrollx" + docscrollkeyname + "=" + getScrollX();
-	document.cookie = "docscrolly" + docscrollkeyname + "=" + getScrollY();
-	document.cookie = "docscrollview" + docscrollkeyname + "=" + currentViewName(); 
-	document.cookie = "docscrollpageno" + docscrollkeyname + "=" + formDataPageNo(); 
+	document.cookie = "docscrollx" + docscrollkeyname + "=" + getScrollX() + "; SameSite=Lax";
+	document.cookie = "docscrolly" + docscrollkeyname + "=" + getScrollY() + "; SameSite=Lax";
+	document.cookie = "docscrollview" + docscrollkeyname + "=" + currentViewName() + "; SameSite=Lax";
+	document.cookie = "docscrollpageno" + docscrollkeyname + "=" + formDataPageNo() + "; SameSite=Lax";
 }
 
 function scrollToCookiePositon() {
@@ -40,7 +40,7 @@ function scrollToTopPosition() {
 
 function initScrollSaver(keyname) {
 	docscrollkeyname = keyname;
-	document.cookie = "arecookiesenabled=yes";
+	document.cookie = "arecookiesenabled=yes; SameSite=Lax";
 	extractCookies();
 	if ((cookies['docscrollview'+docscrollkeyname] == currentViewName()) && (FORM_DATA['resetview']!="1") && (cookies['docscrollpageno'+docscrollkeyname] == formDataPageNo())) {
 	    window.setTimeout("scrollToCookiePositon()",1); // needed to do this so the setfocus message didn't come after this.
@@ -92,7 +92,7 @@ function MM_jumpMenu(targ,selObj,restore){ //v3.0
   if (restore) selObj.selectedIndex=0;
 }
 
-function jumpToValueInBox(targ,formObject){ 
+function jumpToValueInBox(targ,formObject){
   eval(targ+".location='"+formObject.value+"'");
 }
 
@@ -159,7 +159,7 @@ var focused_textbox = new Array;
 
 /** Copied directly from phpMyAdmin.  This file is subject to the license terms and conditions of phpMyAdmin distribution.
  * enables highlight and marking of rows in data tables
- * 
+ *
  * each tr should be of class odd or even.  In IE, must also define "hover" and "marked" second classes.
  *
  */
@@ -261,15 +261,15 @@ function markRowsInit( elementname ) {
 				    // opera does not recognize return false;
 				    this.checked = ! this.checked;
 			    }
-			    
+
 			    // set marked_row array if items are checked already
-			    if (inputtags[j].checked) {	
+			    if (inputtags[j].checked) {
 				    unique_id = inputtags[j].name + inputtags[j].value;
 				    marked_row[unique_id] = true;
 				    rows[i].className += ' marked';
 			    }
 		    }
-		    
+
 		    if ( inputtags[j] && inputtags[j].type == 'text' ) {
 			    inputtags[j].onmousedown = function() {
 				    focused_textbox[this.name] = true;
@@ -279,7 +279,7 @@ function markRowsInit( elementname ) {
 			    }
 		    }
 	    }
-	    
+
 	    // find all <a> tags and insert extra row click if button is pressed so it will cancel the other click.
 	    var atags = rows[i].getElementsByTagName('a');
 	    for (var j = 0; j <atags.length; j++) {
@@ -325,7 +325,7 @@ function clickParentTR(thisElement) {
 	}
 }
 
-function open_win_named(what_link,win_name,xsize,ysize){ 
+function open_win_named(what_link,win_name,xsize,ysize){
     var the_url = "http://localhost"
     var the_x = 500;
     var the_y = 600;

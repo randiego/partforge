@@ -400,7 +400,7 @@ table.listtable td.na {
 }
 
 table.listtable td.cell_error, table.sublisttable td.cell_error {
-	background-color: #fcc;
+	background-color: #fcc !important;
 }
 
 table.listtable td.sn_caption_cell {
@@ -1069,10 +1069,11 @@ table.sublisttable tr.tr_header th {
 	padding-top: 20px;
 }
 
-table.sublisttable td {
+table.sublisttable td, table.edittable tr.editview_text td .editview_text_div .embedded_proc_list table.sublisttable td {
 	padding: 5px;
 	border:1px solid #999;
 	vertical-align:top;
+	font-size: 12px;
 }
 
 table.sublisttable th {

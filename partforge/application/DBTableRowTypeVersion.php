@@ -565,6 +565,7 @@ class DBTableRowTypeVersion extends DBTableRow {
 
         $out = array();
         $out['typeversion_id'] = isset($all_typeversion_fields['typeversion_id']) ? $all_typeversion_fields['typeversion_id'] : null;
+        $out['typeobject_id'] = isset($all_typeversion_fields['typeobject_id']) ? $all_typeversion_fields['typeobject_id'] : null;
         $out['effective_date'] = isset($all_typeversion_fields['effective_date']) ? $all_typeversion_fields['effective_date'] : null;
         $out['partnumber_count'] = isset($all_typeversion_fields['partnumber_count']) ? $all_typeversion_fields['partnumber_count'] : null;
         $out['has_a_serial_number'] = $has_a_serial_number;

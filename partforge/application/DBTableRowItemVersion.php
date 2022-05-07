@@ -2102,8 +2102,14 @@ class DBTableRowItemVersion extends DBTableRow {
                 $initialize_params = '';
                 foreach (DBTableRowTypeVersion::groupConcatComponentsToFieldTypes($TV->list_of_typecomponents) as $targfieldname => $component_type) {
                     foreach ($component_type['can_have_typeobject_id'] as $targ_typeobject_id) {
-                        if ( $targ_typeobject_id==$this->tv__typeobject_id) {
-                            $initialize_params .= "&initialize[{$targfieldname}]={$this->itemobject_id}";
+                        if (($targ_typeobject_id==$this->tv__typeobject_id) || ($targ_typeobject_id==$this->_typeversion_digest['typeobject_id'])) {
+                            if (is_numeric($this->itemobject_id)) {
+                                $initialize_params .= "&initialize[{$targfieldname}]={$this->itemobject_id}";
+                            } else {
+                                // this probably means this is a new item that hasn't been saved yet.
+                                // the literal '$itemobject_id' should get changed into a number after the save.
+                                $initialize_params .= "&initialize[{$targfieldname}]=".'$itemobject_id';
+                            }
                         }
                     }
                 }

@@ -166,13 +166,17 @@ class DBTableRowItemObject extends DBTableRow {
         if ($ItemVersion->getCurrentRecordByObjectId($itemobject_id, $effective_date)) {
             $errormsg=array();
             $ItemVersion->validateFields($ItemVersion->getSaveFieldNames(), $errormsg);
-            if (count($errormsg)>0) {
+            if ($ItemVersion->hasADisposition()) {
+                if (isset($errormsg['disposition'])) {
+                    $out['field_validation_errors'] = $errormsg;
+                }
+            } elseif (count($errormsg)>0) {
                 $out['field_validation_errors'] = $errormsg;
             }
             foreach ($ItemVersion->getExportFieldTypes() as $fieldname => $fieldtype) {
                 if (isset($ItemVersion->{$fieldname})) {
                     if (isset($fieldtype['type']) && ($fieldtype['type']=='component')) {
-                        if ((is_null($max_depth) || ($max_depth >$level)) && !in_array($ItemVersion->{$fieldname}, $parents)) {
+                        if ((is_null($max_depth) || ($max_depth >$level)) && !in_array($ItemVersion->{$fieldname}, $parents) && !$ItemVersion->hasADisposition()) {
                             $new_parents = array_merge($parents, array($itemobject_id));
                             $out[$fieldname] = self::getItemObjectFullNestedArray($ItemVersion->{$fieldname}, $effective_date, $max_depth, $level+1, $new_parents);
                         } else {
