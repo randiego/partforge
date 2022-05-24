@@ -514,7 +514,7 @@ class TableRow {
         } else if ($type == 'date') {
             return ($value && (strtotime($value) != -1)) ? date('m/d/Y', strtotime($value)) : $value;
         } else {
-            return $is_html ? EventStream::embeddedLinksToHtmlTags(TextToHtml($value)) : $value;
+            return $is_html ? EventStream::embeddedLinksToHtmlTags(nl2br(TextToHtml($value))) : $value;
         }
     }
 
