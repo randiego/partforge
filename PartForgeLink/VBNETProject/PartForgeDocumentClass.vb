@@ -23,6 +23,7 @@ Public Class PartForgeDocument
     Private _typeobject_id As String = ""
     Private _xmldoc As XPathDocument = Nothing
     Public FileName As String = "Untitled"
+    Private _inDir As String = ""
 
     Private _data_items As Dictionary(Of String, String)
     Private _comment_items As Dictionary(Of String, String)
@@ -35,8 +36,9 @@ Public Class PartForgeDocument
     Public SavedComment_id As String
     Public SavedDocument_ids As List(Of String)
 
-    Public Sub New(ByVal LogFileName As String, fileExtension As String)
+    Public Sub New(ByVal LogFileName As String, fileExtension As String, inDir As String)
         Me.logfilePath = LogFileName
+        Me._inDir = inDir
         Me._fileExtension = fileExtension
         Me._data_items = New Dictionary(Of String, String)
         Me._comment_items = New Dictionary(Of String, String)
@@ -490,12 +492,17 @@ Public Class PartForgeDocument
 
 
     ' Sends a file and then gets the response that should be json with
-    Public Function HttpSendFileToPartForge(ByVal Url As String, ByVal FileName As String) As Boolean
+    Public Function HttpSendFileToPartForge(ByVal Url As String, ByVal RawFileName As String) As Boolean
         Dim request As HttpWebRequest = DirectCast(WebRequest.Create(Url), HttpWebRequest)
         Dim boundary As String = "----MyAppBoundary" & DateTime.Now.Ticks.ToString("x")
 
         request.ContentType = "multipart/form-data; boundary=" & boundary
         request.Method = "POST"
+
+        Dim HoldCurrentDir = Directory.GetCurrentDirectory()
+        Directory.SetCurrentDirectory(Me._inDir)
+        Dim Filename As String = Path.GetFullPath(RawFileName)
+        Directory.SetCurrentDirectory(HoldCurrentDir)
 
         Dim inData As Byte() = My.Computer.FileSystem.ReadAllBytes(FileName)
 
@@ -678,6 +685,5 @@ Public Class PartForgeDocument
         WriteLog(IIf(Success, "Successful", "Unsuccessful").ToString & " end of Upload procedure for " & Me.FileName)
         SavePendingToDataBase = Success
     End Function
-
 
 End Class

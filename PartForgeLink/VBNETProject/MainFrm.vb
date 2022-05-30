@@ -81,7 +81,7 @@ Public Class MainFrm
         Me.Text = "PartForge Link (" & Me.PartForgeBaseUrl & ")"
         ListView1.Items.Clear()
         For Each dra In diar1
-            inDoc = New PartForgeDocument(Me.logFileName, Me.fileExtension)
+            inDoc = New PartForgeDocument(Me.logFileName, Me.fileExtension, Me.inDir)
             Try
                 inDoc.LoadFromXmlFile(dra.FullName)
                 ' check to see if an identical file has already been uploaded.
@@ -115,7 +115,7 @@ Public Class MainFrm
     Private Function UploadCheckedItems() As String
         Dim GotSomethingUploaded As Boolean
         UploadCheckedItems = ""
-        Dim doc As PartForgeDocument = New PartForgeDocument(Me.logFileName, Me.fileExtension)
+        Dim doc As PartForgeDocument = New PartForgeDocument(Me.logFileName, Me.fileExtension, Me.inDir)
         If (ListView1.CheckedItems.Count > 0) Then
             For Each idx As Integer In ListView1.CheckedIndices
                 ' Dim idx As Integer = ListView1.CheckedIndices(0)
