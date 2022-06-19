@@ -1271,6 +1271,40 @@ class DBTableRowItemVersion extends DBTableRow {
     }
 
     /**
+     * This does validation checking on the procedure list blocks and returns errors in the array $errormsg indexed
+     * by blocknames.
+     *
+     * @param array $blocknames procedure identifier (kinda like fieldname but of the form procedure_list_1234 where 1234 is the typeobject_id)
+     * @param array reference $errormsg the error messages array. We will add to it.
+     *
+     * @return void
+     */
+    public function validateLayoutProcedures($blocknames, &$errormsg)
+    {
+        $rows = $this->getLayoutProcedureRows();
+        $procedure_counts = EventStream::getAttachedProcedureCounts($this->itemobject_id);
+        foreach ($blocknames as $blockname) {
+            if (isset($rows[$blockname]) && isset($rows[$blockname]['procedure_required']) && $rows[$blockname]['procedure_required']) {
+                $typeobject_id = $rows[$blockname]['procedure_to'];
+                if (!isset($procedure_counts[$typeobject_id]) || !$procedure_counts[$typeobject_id]) {
+                    $errormsg[$blockname] = "Must have at least one procedure.";
+                }
+            }
+        }
+    }
+
+    public function getLayoutProcedureRows()
+    {
+        $fieldlayout = $this->getEditViewFieldLayout($this->getEditFieldNames(array('')), array(), 'itemview');
+        return DBTableRowTypeVersion::extractLayoutProcedureRows($fieldlayout);
+    }
+
+    public function getLayoutProcedureBlockNames()
+    {
+        return array_keys($this->getLayoutProcedureRows());
+    }
+
+    /**
      * overrides standard field input validation to catch duplicate serial numbers, and bad effective dates.
      * The messages are indexed by fieldname so the errors can later be placed in the right edit boxes.
      * @see TableRow::validateFields()
@@ -2074,6 +2108,46 @@ class DBTableRowItemVersion extends DBTableRow {
         return $fieldlayout;
     }
 
+    /**
+     * Returns link data for the button in a form for adding a new component or procedure.
+     * It handles the case of when the current part hasn't been saved yet.
+     *
+     * @param int $typeobject_id
+     * @param string $fieldname
+     *
+     * @return null or array with link components like js, desc, pn
+     */
+    public function getLinkInfoForAddComponent($typeobject_id, $fieldname)
+    {
+        // need to determine typeversion_id in case we want to create a new item here:
+        $TV = new DBTableRowTypeVersion(false, null);
+        $TV->getCurrentRecordByObjectId($typeobject_id);
+        $typeversion_id = $TV->typeversion_id;
+        //this line not needed, but I feel better checking
+        if (!$typeversion_id) {
+            throw new Exception("formatInputTag(): typeversion_id not found");
+        }
+        $return_param = 'editsubcomponent,'.$fieldname.',itemversion'.$typeversion_id;
+
+        // This is for the special case of creating a new item (procedure) from the New button where where we will be referencing ourself.
+        $initialize_params = '';
+        foreach (DBTableRowTypeVersion::groupConcatComponentsToFieldTypes($TV->list_of_typecomponents) as $targfieldname => $component_type) {
+            foreach ($component_type['can_have_typeobject_id'] as $targ_typeobject_id) {
+                if (($targ_typeobject_id==$this->tv__typeobject_id) || ($targ_typeobject_id==$this->_typeversion_digest['typeobject_id'])) {
+                    if (is_numeric($this->itemobject_id)) {
+                        $initialize_params .= "&initialize[{$targfieldname}]={$this->itemobject_id}";
+                    } else {
+                        // this probably means this is a new item that hasn't been saved yet.
+                        // the literal '$itemobject_id' should get changed into a number after the save.
+                        $initialize_params .= "&initialize[{$targfieldname}]=".'$itemobject_id';
+                    }
+                }
+            }
+        }
+        return !$TV->isObsolete() ? array('js' => "document.theform.btnSubEditParams.value='action=editview&controller=struct&table=itemversion&itemversion_id=new&initialize[typeversion_id]={$typeversion_id}{$initialize_params}&subedit_return_value={$return_param}';document.theform.submit(); return false;",
+                            'desc' => $TV->type_description, 'pn' => $TV->type_part_number) : null;
+    }
+
     protected function formatInputTagComponent($fieldname)
     {
         $fieldtype = $this->getFieldType($fieldname);
@@ -2088,34 +2162,9 @@ class DBTableRowItemVersion extends DBTableRow {
 
         if (!$this->previewDefinition()) {
             foreach ($fieldtype['can_have_typeobject_id'] as $typeobject_id) {
-                // need to determine typeversion_id in case we want to create a new item here:
-                $TV = new DBTableRowTypeVersion(false, null);
-                $TV->getCurrentRecordByObjectId($typeobject_id);
-                $typeversion_id = $TV->typeversion_id;
-                //this line not needed, but I feel better checking
-                if (!$typeversion_id) {
-                    throw new Exception("formatInputTag(): typeversion_id not found");
-                }
-                $return_param = 'editsubcomponent,'.$fieldname.',itemversion'.$typeversion_id;
-
-                // This is for the special case of creating a new item (procedure) from the New button where where we will be referencing ourself.
-                $initialize_params = '';
-                foreach (DBTableRowTypeVersion::groupConcatComponentsToFieldTypes($TV->list_of_typecomponents) as $targfieldname => $component_type) {
-                    foreach ($component_type['can_have_typeobject_id'] as $targ_typeobject_id) {
-                        if (($targ_typeobject_id==$this->tv__typeobject_id) || ($targ_typeobject_id==$this->_typeversion_digest['typeobject_id'])) {
-                            if (is_numeric($this->itemobject_id)) {
-                                $initialize_params .= "&initialize[{$targfieldname}]={$this->itemobject_id}";
-                            } else {
-                                // this probably means this is a new item that hasn't been saved yet.
-                                // the literal '$itemobject_id' should get changed into a number after the save.
-                                $initialize_params .= "&initialize[{$targfieldname}]=".'$itemobject_id';
-                            }
-                        }
-                    }
-                }
-                if (!$TV->isObsolete()) {
-                    $link_info[] = array('js' => "document.theform.btnSubEditParams.value='action=editview&controller=struct&table=itemversion&itemversion_id=new&initialize[typeversion_id]={$typeversion_id}{$initialize_params}&subedit_return_value={$return_param}';document.theform.submit(); return false;",
-                                     'desc' => $TV->type_description, 'pn' => $TV->type_part_number);
+                $linkinfo = $this->getLinkInfoForAddComponent($typeobject_id, $fieldname);
+                if (!is_null($linkinfo)) {
+                    $link_info[] = $linkinfo;
                 }
             }
         }
@@ -2773,8 +2822,16 @@ class DBTableRowItemVersion extends DBTableRow {
      * @throws Exception
      * @return string
      */
-    static function fetchItemVersionEditTableTR($fieldlayout, DBTableRowItemVersion $dbtable, $errormsg = array(), $optionss = '', $editable = true, $callBackFunction = null, $fieldhistory = array())
-    {
+    static public function fetchItemVersionEditTableTR(
+        $fieldlayout,
+        DBTableRowItemVersion $dbtable,
+        $errormsg = array(),
+        $optionss = '',
+        $editable = true,
+        $callBackFunction = null,
+        $fieldhistory = array(),
+        $procedure_blocks_html = array()
+    ) {
         $html = '';
         $editfields = $dbtable->getEditFieldNames();
         $dbtable->applyDictionaryOverridesToFieldTypes();
@@ -2855,9 +2912,64 @@ class DBTableRowItemVersion extends DBTableRow {
                 $html .= '<TR'.($row_class ? ' class="'.$row_class.'"' : '').'>';
                 $html .= '<td colspan="4"><div class="editview_text_div">'.$row['html'].'<div></td>';
                 $html .= '</tr>';
+            } else if ($row['type']=='procedure_list') {
+                $blockname = "procedure_list_".$row['procedure_to'];
+                $row_class = 'editview_text';
+                $cell_class = array($blockname.'_cell');
+                $validate_msg = '';
+                if (isset($errormsg[$blockname])) {
+                    $validate_msg .= '<div class="errorred">'.$errormsg[$blockname].'</div>';
+                    $cell_class[] = 'cell_error';
+                }
+                $html .= '<TR'.($row_class ? ' class="'.$row_class.'"' : '').'>';
+                $procedure_html = isset($procedure_blocks_html[$row['procedure_to']]) ? $procedure_blocks_html[$row['procedure_to']] : '';
+
+
+                $html .= '<td class="'.implode(' ', $cell_class).'" colspan="4"><div class="editview_text_div">'.$procedure_html.$validate_msg.'</div></td>';
+                $html .= '</tr>';
             }
         }
         return $html;
+    }
+
+    /**
+     * Create the version of the dashboard/procedure list html that appears when editing a form that
+     * has procedure lists in it.
+     *
+     * @param boolean $showlinks - create clickable links in the datatime column
+     * @param string $end_date - if set, this will only get procedures that are new
+     *
+     * @return array of html with typeobject_id as key
+     */
+    public function getProcedureEditBlockHtmlByTypeObjectId($showlinks, $end_date = null)
+    {
+        $streamrecord = EventStream::getTopLevelEventStreamRecords($this, $end_date);
+        list($lines,$references_by_typeobject_id) = EventStream::eventStreamRecordsToLines($streamrecord, $this, null);
+
+        $procedure_records = getTypesThatReferenceThisType($this->typeversion_id);
+        // remove any obsolete ones
+        foreach ($procedure_records as $key => $record) {
+            if ($record['typedisposition']=='B') {
+                unset($procedure_records[$key]);
+            }
+        }
+
+        if (!$this->previewDefinition()) {
+            foreach ($procedure_records as $key => $record) {
+                $linkinfo = $this->getLinkInfoForAddComponent($record['typeobject_id'], '');
+                if (!is_null($linkinfo)) {
+                    unset($procedure_records[$key]['add_url']);
+                    $procedure_records[$key]['add_link'] = linkify('#', 'Add', 'Add a procedure', 'minibutton2', $linkinfo['js']);
+                }
+            }
+        }
+
+        $procedure_blocks = array();
+        foreach ($procedure_records as $record) {
+            $more_results = '';
+            $procedure_blocks[$record['typeobject_id']] = EventStream::renderDashboardView($this, array($record), $references_by_typeobject_id, $more_results, $showlinks);
+        }
+        return $procedure_blocks;
     }
 
     /** Override of standard touchtimers

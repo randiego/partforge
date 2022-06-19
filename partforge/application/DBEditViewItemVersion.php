@@ -33,10 +33,9 @@ class DBEditViewItemVersion extends DBEditView {
             return parent::fetchTableHtml($join_name, $target, $fields_to_remove);
         }
 
-        $html = '';
         $fieldlayout = $this->dbtable->getEditViewFieldLayout($this->dbtable->getEditFieldNames(array('')), $fields_to_remove, 'editview');
         if (!empty($fieldlayout)) {
-            $html .= ($join_name!='') ? $this->fetchJoinHeaderHtml($join_name, $target) : '';
+            $html = ($join_name!='') ? $this->fetchJoinHeaderHtml($join_name, $target) : '';
             $html .= '<table class="edittable"><colgroup>
 					 <col class="table_label_width">
 					 <col class="table_value_width">
@@ -48,11 +47,13 @@ class DBEditViewItemVersion extends DBEditView {
                 && !$this->dbtable->isEditOperationBlocked('save', $this->dbtable->getTableName());
 
             $options = 'vem_new_version'==$this->version_edit_mode ? 'AlwaysAllowFieldAttachmentDelete' : '';
-            $html .= DBTableRowItemVersion::fetchItemVersionEditTableTR($fieldlayout, $this->dbtable, $this->error_msg_array, $options, $editable, null, array());
+            $procedure_blocks_html = $this->dbtable->getProcedureEditBlockHtmlByTypeObjectId(false);
+            $html .= DBTableRowItemVersion::fetchItemVersionEditTableTR($fieldlayout, $this->dbtable, $this->error_msg_array, $options, $editable, null, array(), $procedure_blocks_html);
             $html .= '</table>
 			';
+            return $html;
         }
-        return $html;
+        return '';
     }
 
     protected function fetchDependentBlocksHtml($can_edit, $can_add, $dependent)

@@ -131,9 +131,6 @@ if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 
 $records = $this->streamrecords;
 list($lines,$references_by_typeobject_id) = EventStream::eventStreamRecordsToLines($records, $this->dbtable, $this->navigator);
 $layout_rows = EventStream::eventStreamLinesToHtml($this->dbtable, $lines, $this->navigator);
-$more_results = $not_all_records_showing ? '<div class="dashboard-show-more">There may be more results.  Use selector to view more than '.$big_page_length.' of history. <a class="showAllHistoryButton" href="#">Show all.</a></div>' : '';
-$html_dashboard = EventStream::renderDashboardView($this->dbtable, $procedure_records, $references_by_typeobject_id, $more_results);
-
 
 /*
  * Create the Used On links if we are a part
@@ -182,6 +179,7 @@ $fields_to_remove = array();
 
 $fieldlayout = $this->dbtable->getEditViewFieldLayout($this->dbtable->getEditFieldNames(array('')), $fields_to_remove, 'itemview');
 
+$more_results = $not_all_records_showing ? '<div class="dashboard-show-more">There may be more results.  Use selector to view more than '.$big_page_length.' of history. <a class="showAllHistoryButton" href="#">Show all.</a></div>' : '';
 if (!empty($fieldlayout)) {
     $html .= '<div class="edittablewrapper"><table class="edittable"><colgroup>
 				 <col class="table_label_width">
@@ -195,18 +193,28 @@ if (!empty($fieldlayout)) {
     $this->dbtable->validateFields($this->dbtable->getSaveFieldNames(), $errormsg);
     // the following MUST be called after validateFields because otherwise validate fields will think component errors are real errors
     $this->dbtable->getComponentValidationErrors($errormsg, true);
+    $this->dbtable->validateLayoutProcedures($this->dbtable->getLayoutProcedureBlockNames(), $errormsg);
 
     // while we're here, lets refresh ourselves too. We've got the data already, so it's free!
     if (!$this->dbtable->hasADisposition()) {
         DBTableRowItemObject::setValidationErrorCount($this->dbtable->itemobject_id, count($errormsg));
     }
 
-    $html .= DBTableRowItemVersion::fetchItemVersionEditTableTR($fieldlayout, $this->dbtable, $errormsg, '', false, null, $this->fieldhistory);
-    $html .= '</table></div>
-		';
+    $procedure_blocks = array();
+    $in_form_procedures = $this->dbtable->getLayoutProcedureBlockNames();
+    foreach ($procedure_records as $key => $record) {
+        $procedure_blocks[$record['typeobject_id']] = EventStream::renderDashboardView($this->dbtable, array($record), $references_by_typeobject_id, $more_results, true);
+        // remove this procedure type from the dashboard since it will appear in the form
+        if ( in_array('procedure_list_'.$record['typeobject_id'], $in_form_procedures) ) {
+            unset($procedure_records[$key]);
+        }
+    }
+    $html .= DBTableRowItemVersion::fetchItemVersionEditTableTR($fieldlayout, $this->dbtable, $errormsg, '', false, null, $this->fieldhistory, $procedure_blocks);
+    $html .= '</table></div>';
 }
 $html .= '</div>';
 
+$html_dashboard = EventStream::renderDashboardView($this->dbtable, $procedure_records, $references_by_typeobject_id, $more_results, true);
 
 $add_links = array();
 if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'table:comment', 'add')) {

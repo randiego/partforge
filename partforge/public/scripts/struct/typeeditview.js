@@ -1,6 +1,6 @@
 
 var typeComponents = [];  // array of components
-var typeDescriptions = []; // this is an array of array pairs (typeobject_id, description).
+var typeDescriptions = []; // this is an array of array pairs (typeobject_id, description) for parts.
 var typeDictionaryArray = [];
 var typeFormLayoutArray = [];
 var dictEditBuff = {};
@@ -52,6 +52,10 @@ function touchLayoutItem(idx) {
 function wasLayoutItemTouched(idx) {
 	return layoutItemTouched==idx;
 }
+function clearTouchLayoutItem() {
+	layoutItemTouched = -1;
+}
+
 
 /**
  * refreshes the componentSubFieldsList with subfields for edit checking purposes.  The flag subFieldListFetched
@@ -130,7 +134,7 @@ function blankIfUndefined(val) {
 	return (typeof val == 'undefined') ? '' : val;
 }
 
-function capitaliseFirstLetter(string)
+function capitalizeFirstLetter(string)
 {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
@@ -150,7 +154,7 @@ function renderCaption(name,caption_field) {
 	if (caption_field=='') {
 		var words = name.split('_');
 		for (var i = 0; i < words.length; i++) {
-			words[i] = capitaliseFirstLetter(words[i]);
+			words[i] = capitalizeFirstLetter(words[i]);
 		}
 		caption_field = words.join(' ');
 	}
@@ -469,6 +473,7 @@ function renderDictItemEditor(containerSet, isNew, key) {
 		closeOnEscape: false,
 		close: function( event, ui ) {containerSet.dialog('destroy'); renderAll();}
 	});
+	clearTouchLayoutItem();
 	$("#dictionaryTypeSelect").on("change", function() {
 		saveDictItemEditorToBuff(containerSet,false,isNew,key);
 		renderDictItemEditor(containerSet, isNew, key);
@@ -599,9 +604,9 @@ function componentSelectHtml(selectTagId, component_value) {
 function checkifDictionaryNameOk(name, showAlerts) {
 	// make sure the field name looks like "my_field_name"
 	var re = new RegExp("^[a-z_0-9]+$");
-	if (!name.match(re) || (name.length > MaxAllowedFieldLength)) {
+	if (!name.match(re) || (name.length > MaxAllowedFieldLength) || IsNumeric(name)) {
 		if (showAlerts) {
-			alert('the name of the field must only contain lowercase characters, numbers and underscores and must be < '+MaxAllowedFieldLength.toString()+' characters.');
+			alert('the name of the field must only contain lowercase characters, numbers and underscores and must be < '+MaxAllowedFieldLength.toString()+' characters and not a number.');
 		}
 		return false;
 	}
@@ -953,6 +958,7 @@ function renderCompEditor(editorContainer, isNew, key) {
 		closeOnEscape: false,
 		close: function( event, ui ) {editorContainer.dialog('destroy'); renderAll();}
 	});
+	clearTouchLayoutItem();
 	editorContainer.find("a.propeditdonelink").on("click", function(event) {
 		var ok = saveCompEditorToBuff(true,isNew,key);
 		if (ok || ((UserType=='Admin') && confirm("proceed at your own peril?"))) {
@@ -1062,10 +1068,38 @@ function layoutFieldnameSelectHtml(curr_value) {
 	return html;
 }
 
+function allLayoutProcLists() {
+	var out = [];
+	for(var i=0; i<typeFormLayoutArray.length; i++) {
+		var row = typeFormLayoutArray[i];
+		if (row["type"]=='procedure_list') {
+			out.push(row["procedure_to"]);
+		}
+	}
+	return out;
+}
+
+function unusedTypeProcDescriptions(alwaysIncludeTypeObjectId) {
+	var out = [];
+	currentProcs = allLayoutProcLists();
+	for (var tdi = 0; tdi < typeProcDescriptions.length; tdi++) {
+		if ((currentProcs.indexOf(typeProcDescriptions[tdi][0]) == -1) || (alwaysIncludeTypeObjectId == typeProcDescriptions[tdi][0])) {
+			out.push([typeProcDescriptions[tdi][0], typeProcDescriptions[tdi][1]]);
+		}
+	}
+	return out;
+}
+
 
 function renderFormLayout() {
 	var html = "";
 	var scrollToViewID = "";
+	var procDescByTypeObject = {};
+	for (var tdi=0; tdi<typeProcDescriptions.length; tdi++) {
+		procDescByTypeObject[typeProcDescriptions[tdi][0]] = typeProcDescriptions[tdi][1];
+	}
+	var show_proc_list_controls = (typeProcDescriptions.length > 0);
+
 
 	// build list of fields that are allowed to show up in the layout.
 	var validFields = '|typeversion_id|item_serial_number|effective_date|'+allFieldNames(false).join('|')+'|'; // get all the fields that are possible
@@ -1091,29 +1125,47 @@ function renderFormLayout() {
 			html += '<li id="'+blockid+'" class="'+classnm+' db-field-item"><div class="db-edit-control">' +
 					'<a href="#" class="bd-linkbtn layoutFieldEditLink" title="change field name">edit</a> '+
 					'<a href="#" class="bd-linkbtn layoutFieldAddLink" title="insert a new field here">ins field</a> '+
-					'<a href="#" class="bd-linkbtn layoutFieldAddTextLink" title="insert a text block or photo here">ins text</a> '+
-					'<a href="#" class="bd-linkbtn startSortLink" title="rearrange the layout by draging and dropping">move</a> ' +
+					'<a href="#" class="bd-linkbtn layoutFieldAddTextLink" title="insert a text block or photo here">ins text</a> ';
+			html += show_proc_list_controls ? '<a href="#" class="bd-linkbtn pf-inserting layoutProcListEditLink" title="insert a list of procedures here">ins proc</a> ' : '';
+			html += '<a href="#" class="bd-linkbtn startSortLink" title="rearrange the layout by draging and dropping">move</a> ' +
 					'<a href="#" class="bd-linkbtn layoutFieldDeleteLink" title="delete this block">delete</a> ' +
 					'</div><div class="db-sizer-control"> <a href="#" class="bd-linkbtn layoutWiderLink" title="make two columns wide">wide</a> ' +
 					'<a href="#" class="bd-linkbtn layoutNarrowerLink" title="make one column wide">narrow</a> ' +
 					'<a href="#" class="bd-linkbtn doneSortLink" title="finish moving/arranging and return to editing">done moving</a></div>'+row["column"]["name"]+warnstr+'</li>';
 
 		} else if (row["type"]=='html') {
-			classnm += 'bd-layout-item-double db-html-item';
+			classnm += 'bd-layout-item-double pf-html-item';
 			var texthtml = row["html"];
 			if (texthtml=='') texthtml = '<div class="empty_space_notice">(click "edit" to add some text or photos)</div>';
 			html += '<li id="'+blockid+'" class="'+classnm+'"><div class="db-edit-control">'+
 					'<a href="#" class="bd-linkbtn layoutHtmlEditLink">edit</a> ' +
 					'<a href="#" class="bd-linkbtn layoutFieldAddLink" title="insert a new field here">ins field</a> '+
-					'<a href="#" class="bd-linkbtn layoutFieldAddTextLink" title="insert a text block or photo here">ins text</a> '+
-					'<a href="#" class="bd-linkbtn startSortLink" title="rearrange the layout by draging and dropping">move</a> ' +
+					'<a href="#" class="bd-linkbtn layoutFieldAddTextLink" title="insert a text block or photo here">ins text</a> ';
+			html += show_proc_list_controls ? '<a href="#" class="bd-linkbtn pf-inserting layoutProcListEditLink" title="insert a list of procedures here">ins proc</a> ' : '';
+			html += '<a href="#" class="bd-linkbtn startSortLink" title="rearrange the layout by draging and dropping">move</a> ' +
+					'<a href="#" class="bd-linkbtn layoutHtmlDeleteLink">delete</a> ' +
+					'</div><div class="db-sizer-control"> <a href="#" class="bd-linkbtn doneSortLink" title="finish moving/arranging and return to editing">done moving</a></div>'+texthtml+'</li>';
+
+		} else if (row["type"]=='procedure_list') {
+			classnm += 'bd-layout-item-double bd-layout-proc-list';
+			var texthtml = '<div style="font-weight: bold">Procedure List:</div>';
+			texthtml += "<div>"+procDescByTypeObject[row["procedure_to"]]+"</div>";
+			texthtml += '<span class="paren">Required: '+row["procedure_required"]+'</span>';
+			html += '<li id="'+blockid+'" class="'+classnm+'"><div class="db-edit-control">'+
+					'<a href="#" class="bd-linkbtn pf-editing layoutProcListEditLink">edit</a> ' +
+					'<a href="#" class="bd-linkbtn layoutFieldAddLink" title="insert a new field here">ins field</a> '+
+					'<a href="#" class="bd-linkbtn layoutFieldAddTextLink" title="insert a text block or photo here">ins text</a> ';
+			html += show_proc_list_controls ? '<a href="#" class="bd-linkbtn pf-inserting layoutProcListEditLink" title="insert a list of procedures here">ins proc</a> ' : '';
+			html += '<a href="#" class="bd-linkbtn startSortLink" title="rearrange the layout by draging and dropping">move</a> ' +
 					'<a href="#" class="bd-linkbtn layoutHtmlDeleteLink">delete</a> ' +
 					'</div><div class="db-sizer-control"> <a href="#" class="bd-linkbtn doneSortLink" title="finish moving/arranging and return to editing">done moving</a></div>'+texthtml+'</li>';
 		}
 	}
 	html += '</ul>';
 	html += '</div></div><div class="sortingNoticeBanner" style="display:none; margin-top:5px; margin-bottom:15px;">'+sortingNoticeBannerTxt+'</div>';
-	html += '<a class="bd-linkbtn" href="#" id="addLayoutFieldLink">add field</a> <a class="bd-linkbtn" href="#" id="addLayoutHtmlLink">add text & photos block</a>';
+	html += '<a class="bd-linkbtn" href="#" id="addLayoutFieldLink">add field</a>';
+	html += ' <a class="bd-linkbtn pf-appending layoutFieldAddTextLink" href="#">add text & photos block</a>';
+	html += show_proc_list_controls ? ' <a class="bd-linkbtn pf-appending layoutProcListEditLink" href="#">add list of procedures</a>' : '';
 
 
 	$("#formLayoutEditorDiv").html(html);
@@ -1158,28 +1210,21 @@ function renderFormLayout() {
 		return false;
 	});
 
-	// click handle add html field to layout
+	// click handle insert html field to layout
 	$(".layoutFieldAddTextLink").on("click", function() {
 		var outitem = {};
 		outitem['type'] = 'html';
 		outitem['html'] = '';
 		outitem['layout-width'] = 2;
-		var id = $(this).parent().parent()[0].id;
-		var idx = id.split('_')[1];
-		typeFormLayoutArray.splice(idx,0,outitem);
+		if ($(this).hasClass("pf-appending")) {
+			typeFormLayoutArray.push(outitem);
+			var idx = typeFormLayoutArray.length - 1;
+		} else {
+			var id = $(this).parent().parent()[0].id;
+			var idx = id.split('_')[1];
+			typeFormLayoutArray.splice(idx,0,outitem);
+		}
 		touchLayoutItem(idx);
-		renderAll();
-		return false;
-	});
-
-	// click handle add html field to layout
-	$("#addLayoutHtmlLink").on("click", function() {
-		var outitem = {};
-		outitem['type'] = 'html';
-		outitem['html'] = '';
-		outitem['layout-width'] = 2;
-		typeFormLayoutArray.push(outitem);
-		touchLayoutItem(typeFormLayoutArray.length - 1);
 		renderAll();
 		return false;
 	});
@@ -1211,6 +1256,51 @@ function renderFormLayout() {
 		$(this).parent().parent().html(html);
 		$("#"+id+" a.db-done").on("click", function() {
 			typeFormLayoutArray[idx]['column']['name'] = $("#"+id+" select").val();
+			renderAll();
+			return false;
+		});
+		return false;
+	});
+
+	$(".layoutProcListEditLink").on("click", function() {
+		var outitem = {};
+		outitem['type'] = 'procedure_list';
+		outitem['procedure_required'] = '0';
+		outitem['layout-width'] = 2;
+		if ($(this).hasClass("pf-appending")) {
+			typeFormLayoutArray.push(outitem); // place at end of array
+			var idx = typeFormLayoutArray.length - 1;
+			var id = "layoutitem_new_item";
+			// add a container for editing and keep a reference to it
+			$('<li id="'+id+'" class="bd-layout-proc-list bd-layout-item-double"></li>').appendTo('#layout_sortable');
+			var targel = $('#'+id);
+		} else if ($(this).hasClass("pf-inserting")) {
+			var curr_el_id = $(this).parent().parent()[0].id;
+			var idx = curr_el_id.split('_')[1];
+			typeFormLayoutArray.splice(idx,0,outitem);
+			var id = "layoutitem_new_item";
+			$('<li id="'+id+'" class="bd-layout-proc-list bd-layout-item-double"></li>').insertBefore('#'+curr_el_id);
+			var targel = $('#'+id);
+		} else { // pf-editing
+			var targel = $(this).parent().parent();
+			var id = targel[0].id;
+			var idx = id.split('_')[1];
+		}
+
+		touchLayoutItem(idx);
+		var html = '';
+		// build embedded editor and insert
+		html += '<table class="bd-propeditor">';
+		var valueinput = selectHtml2('ProcListTypeObjectId_'+idx,'de-propval', unusedTypeProcDescriptions(typeFormLayoutArray[idx]["procedure_to"]), typeFormLayoutArray[idx]["procedure_to"]);
+		html += '<tr><th>Procedure Type:</th><td> '+valueinput+'</td></tr>';
+		var valueinput = selectHtml('ProcListRequired_'+idx,'de-propval', {"0":"0","1":"1"}, typeFormLayoutArray[idx]["procedure_required"]);
+		html += '<tr><th>Is Required:</th><td> '+valueinput+'</td></tr>';
+		html += '<tr><td></td><td><a href="#" class="bd-linkbtn db-done">done</a></td></tr>';
+		html += '</table>';
+		targel.html(html);
+		$("#"+id+" a.db-done").on("click", function() {
+			typeFormLayoutArray[idx]["procedure_to"] = $("#"+id+" select").val();
+			typeFormLayoutArray[idx]["procedure_required"] = $("#ProcListRequired_"+idx).val();
 			renderAll();
 			return false;
 		});
@@ -1349,8 +1439,6 @@ function renderFormLayout() {
 
 		return false;
 	});
-
-
 }
 
 function forceOneOrTwo(invar) {
@@ -1393,6 +1481,27 @@ function layoutToFlatArray(layoutIn) {
 	return out;
 }
 
+function startOutRowFromInLayoutRow(inrow, outrow) {
+	outrow['type'] = inrow['type'];
+	if (inrow['type']=='columns') {
+		outrow['columns'] = [];
+		outrow['columns'].push(inrow['column']);
+	} else if (inrow['type']=='html') {
+		outrow['html'] = inrow['html'];
+	} else if (inrow['type']=='procedure_list') {
+		outrow['procedure_required'] = inrow['procedure_required'];
+		outrow['procedure_to'] = inrow['procedure_to'];
+	}
+}
+
+function completeOutRowFromInLayoutRow(inrow, outrow) {
+	if (inrow['type']=='columns') {
+		outrow['columns'].push(inrow['column']);
+	} else if (inrow['type']=='html') {
+	} else if (inrow['type']=='procedure_list') {
+	}
+}
+
 /*
  * This converts from local JS array back to JSON format for submitting in post.
  */
@@ -1404,54 +1513,30 @@ function flatArrayToGroupedJSON(layoutArray) {
 	for(var i=0; i<layoutArray.length; i++) {
 		var item = layoutArray[i];
 		var width = item['layout-width'];
-		if (item['type']=='columns') {
-			if (nextcol==0) { // we have a
-				therow['type'] = item['type'];
-				therow['columns'] = [];
-				therow['columns'].push(item['column']);
-				nextcol += width;
-				if (nextcol>1) {
-					out.push(therow);
-					therow = {};
-					nextcol = 0;
-				}
-			} else { // nextcol=1
-				if (width==1) {
-					therow['columns'].push(item['column']);
-					out.push(therow);
-					therow = {};
-					nextcol = 0;
-				} else { // width = 2
-					out.push(therow);
-					therow = {};
-					therow['type'] = item['type'];
-					therow['columns'] = [];
-					therow['columns'].push(item['column']);
-					out.push(therow);
-					therow = {};
-					nextcol = 0;
-				}
-			}
-		} else if (item['type']=='html') {
-			if (nextcol==0) { // we have a
-				therow['type'] = item['type'];
-				therow['html'] = item['html'];
-				nextcol += width;
-				if (nextcol>1) {
-					out.push(therow);
-					therow = {};
-					nextcol = 0;
-				}
-			} else { // nextcol=1  && width=2
-				out.push(therow);
-				therow = {};
-				therow['type'] = item['type'];
-				therow['html'] = item['html'];
+		if (nextcol==0) { // we have a
+			// fill preinitialized row for pushing out.
+			startOutRowFromInLayoutRow(item, therow);
+			nextcol += width;
+			if (nextcol>1) {
 				out.push(therow);
 				therow = {};
 				nextcol = 0;
 			}
-
+		} else { // nextcol=1
+			if (width==1) {
+				// complete an already started row then push out
+				completeOutRowFromInLayoutRow(item, therow);
+				out.push(therow);
+				therow = {};
+				nextcol = 0;
+			} else { // width = 2. we will be too large, so push out already started single, then build and push out the new wide one
+				out.push(therow);
+				therow = {};
+				startOutRowFromInLayoutRow(item, therow);
+				out.push(therow);
+				therow = {};
+				nextcol = 0;
+			}
 		}
 	}
 	if (nextcol==1) {
@@ -1647,9 +1732,10 @@ function checkValidCalculatedTypes() {
  */
 function validate() {
 	$(".doneSortLink").last().trigger("click");
+	$("a.db-done").trigger("click"); // makes sure any in-place edit dialogs are submitted.
 	var layoutOk = checkLayoutFilled();
 	var everthingElseOk = checkUndefinedLayoutFields() && checkValidComponents() && checkValidComponentSubFields() && checkValidCalculatedTypes();
-	if (everthingElseOk) {checkValidComponentSubFields
+	if (everthingElseOk) {
 		if (!layoutOk) {
 			return confirm("save anyway?");
 		} else {
@@ -1696,7 +1782,7 @@ $(document).ready(function() {
 	});
 
 	// we are really saving, so do a serious check
-	$('input[name="btnOK"]').on("click", function() {
+	$('input[name="btnOK"], input[name="btnChangePart"]').on("click", function() {
 		return validate();
 	});
 

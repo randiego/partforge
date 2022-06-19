@@ -21,6 +21,7 @@ if (isset($this->params['resetview'])) {
 if (!empty($_SESSION['user_tried_to_save_bad_data'])) {
     $errormsg = array();
     $this->dbtable->validateFields($this->dbtable->getSaveFieldNames(), $errormsg);
+    $this->dbtable->validateLayoutProcedures($this->dbtable->getLayoutProcedureBlockNames(), $errormsg);
     $DBEditView->error_msg_array = $errormsg;
 }
 

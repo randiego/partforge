@@ -37,6 +37,7 @@ class ItemViewPDF extends TCPDF {
     public $show_procedure_tables = false;
     public $show_event_stream = true;
     public $show_procedures_in_event_stream = true;
+    public $max_number_of_procedures_to_show = 100;
 
     public $config;
     protected $_w1; // left column width
@@ -99,7 +100,7 @@ class ItemViewPDF extends TCPDF {
         }
     }
 
-    protected function tableOutput($header, $data, $w)
+    protected function tableOutputToHtml($header, $data, $w)
     {
         $html = '';
         $html .= '<table border="0.5" cellpadding="4" cellspacing="0"><thead><tr style="background-color:#EEE; font-weight:bold;">';
@@ -118,7 +119,7 @@ class ItemViewPDF extends TCPDF {
         $html .= '</table>';
         $this->SetFont($this->_myfont, '', 10);
         $html = $this->clean_html($html);
-        $this->writeHTML($html);
+        return $html;
     }
 
     function Header()
@@ -196,8 +197,13 @@ class ItemViewPDF extends TCPDF {
         return $html;
     }
 
-    protected function itemViewFieldOutput($fieldlayout, $optionss = '', $definitionCallBackFunction = null)
-    {
+    protected function itemViewFieldOutput(
+        $fieldlayout,
+        $optionss = '',
+        $definitionCallBackFunction = null,
+        $procedure_records_by_to = array(),
+        $references_by_typeobject_id = array()
+    ) {
         $errormsg = array();
         $this->dbtable->validateFields($this->dbtable->getSaveFieldNames(), $errormsg);
         $this->dbtable->applyCategoryDependentHeaderCaptions(false);
@@ -233,7 +239,7 @@ class ItemViewPDF extends TCPDF {
                     $can_edit = false;
                     $validate_msg = array();
                     if ($definitionCallBackFunction!==null) {
-                        $rhs_html = call_user_func_array(array($this, $definitionCallBackFunction), array($fieldname));
+                        $rhs_html = call_user_func_array(array($this, $definitionCallBackFunction), array($fieldname, false));
                     } else {
                         if (isset($errormsg[$fieldname])) {
                             $validate_msg[] = $errormsg[$fieldname];
@@ -292,6 +298,19 @@ class ItemViewPDF extends TCPDF {
                 $html .= '<tr>';
                 $html .= '<td colspan="4" style="border-left:0.5px solid #fff;border-right:0.5px solid #fff;"><div>'.$user_html_clean.'</div></td>';
                 $html .= '</tr>';
+            } else if ($row['type']=='procedure_list') {
+                if ($definitionCallBackFunction!==null) {
+                    $blockname = "procedure_list_".$row['procedure_to'];
+                    $html .= call_user_func_array(array($this, $definitionCallBackFunction), array($blockname, true));
+                } else {
+                    $html .= '<tr>';
+                    $procedure_html = '';
+                    if (isset($procedure_records_by_to[$row['procedure_to']])) {
+                        $procedure_html = $this->renderDashboardView(array($procedure_records_by_to[$row['procedure_to']]), $references_by_typeobject_id);
+                    }
+                    $html .= '<td colspan="4"><div>'.$procedure_html.'</div></td>';
+                    $html .= '</tr>';
+                }
             }
         }
         $html .= '</table>';
@@ -303,37 +322,44 @@ class ItemViewPDF extends TCPDF {
         }
     }
 
-    public function renderDashboardView($procedure_records_by_typeobject_id, $references_by_typeobject_id)
+    public function renderDashboardView($procedure_records, $references_by_typeobject_id)
     {
-        foreach ($procedure_records_by_typeobject_id as $typeobject_id => $procedure_record) {
-            $references = isset($references_by_typeobject_id[$typeobject_id]) ? $references_by_typeobject_id[$typeobject_id] : array();
-            $this->sectionHeader($procedure_record['type_description']);
-
+        $html = '';
+        foreach ($procedure_records as $procedure_record) {
+            $references = isset($references_by_typeobject_id[$procedure_record['typeobject_id']]) ? $references_by_typeobject_id[$procedure_record['typeobject_id']] : array();
+            $html .= '<h3>'.TextToHtml($procedure_record['type_description']).'</h3>';
             if (count($references)>0) {
                 $w=array(40,136,20);
                 $header = array("Date", "Details", "Result");
                 $lines = array();
-
+                $references = array_slice($references, -$this->max_number_of_procedures_to_show); // returns the latest N rows
                 foreach ($references as $reference) {
                     $feat = array();
                     foreach ($reference['event_description_array'] as $iv => $item) {
-                        $user_time = '<b>'.strtoupper($reference['user_name_html']).'</b><br /><i>'.time_to_bulletdate(strtotime($reference['effective_date']), false).'</i>';
+                        $user_time = '<b>'.time_to_bulletdate(strtotime($reference['effective_date']), false).'</b>';
                         foreach ($item['features'] as $feature) {
                             $feat[] = "&bull; ".$feature['name'].': <b>'.$feature['value'].'</b>';
                         }
                     }
+                    if (count($reference['validation_errors'])>EventStream::MAX_ERRORS_TO_SHOW) {
+                        $feat[] = '<font color="red">&bull;'.count($reference['validation_errors']).' Errors</font>';
+                    } elseif (count($reference['validation_errors'])>0) {
+                        foreach ($reference['validation_errors'] as $err) {
+                            $feat[] = '<font color="red">&bull;Error: '.$err['name'].'</font>';
+                        }
+                    }
+
                     if (!$reference['is_future_version']) {
                         $lines[] = array($user_time,implode("<br />", $feat),'<b>'.DBTableRowItemVersion::renderDisposition($this->dbtable->getFieldType('disposition'), $reference['disposition'], false).'</b>');
                     }
                 }
-                $this->tableOutput($header, $lines, $w);
+                $html .= $this->tableOutputToHtml($header, $lines, $w);
             } else {
-                $this->SetFont($this->_myfont, 'I', 10);
-                $this->SetX($this->GetX() + 10);
-                $this->MyCell(0, 4, 'No Results.', 0, 1, 'L');
+                // col span does a decent indent
+                $html .= '<table><tr><td></td><td colspan="15">No Results.</td></tr></table>';
             }
         }
-
+        return $html;
     }
 
     protected function renderCommentsChangesTable($lines)
@@ -446,27 +472,33 @@ class ItemViewPDF extends TCPDF {
 
         $this->SetXY(10, 50);
 
+        $procedure_records = getTypesThatReferenceThisType($this->dbtable->typeversion_id);
+        $EventStream = new EventStream($this->dbtable->itemobject_id);
+        list($lines,$references_by_typeobject_id) = EventStream::eventStreamRecordsToLines($EventStream->assembleStreamArray(), $this->dbtable);
+
         if ($this->show_form_fields) {
             // get the layout for the itemview
             $fields_to_remove = array();
             $fieldlayout = $this->dbtable->getEditViewFieldLayout($this->dbtable->getEditFieldNames(array('')), $fields_to_remove, 'itemview');
-            $this->itemViewFieldOutput($fieldlayout, '');
+
+            $procedure_records_by_to = array();
+            $in_form_procedures = $this->dbtable->getLayoutProcedureBlockNames();
+            foreach ($procedure_records as $key => $record) {
+                 $procedure_records_by_to[$record['typeobject_id']] = $record;
+                // remove this procedure type from the dashboard since it will appear in the form
+                if ( in_array('procedure_list_'.$record['typeobject_id'], $in_form_procedures) ) {
+                    unset($procedure_records[$key]);
+                }
+            }
+            $this->itemViewFieldOutput($fieldlayout, '', null, $procedure_records_by_to, $references_by_typeobject_id);
         } else {
             $this->WriteHTML('<p><i>(form output suppressed)</i></p>');
         }
 
-        $procedure_records = getTypesThatReferenceThisType($this->dbtable->typeversion_id);
-        $procedure_records_by_typeobject_id = array();
-        foreach ($procedure_records as $record) {
-            $procedure_records_by_typeobject_id[$record['typeobject_id']] = $record;
-        }
-
-        $EventStream = new EventStream($this->dbtable->itemobject_id);
-        list($lines,$references_by_typeobject_id) = EventStream::eventStreamRecordsToLines($EventStream->assembleStreamArray(), $this->dbtable);
         $this->Ln(5);
 
         if ($this->show_procedure_tables) {
-            $this->renderDashboardView($procedure_records_by_typeobject_id, $references_by_typeobject_id);
+            $this->WriteHTML($this->renderDashboardView($procedure_records, $references_by_typeobject_id));
         }
 
         // comments and changes

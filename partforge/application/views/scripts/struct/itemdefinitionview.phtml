@@ -4,7 +4,7 @@ var scrollPosKeyLeft = "<?php echo 'defViewLeftPanelPos'.$this->dbtable->typever
 var typeObjectId = <?php echo $this->dbtable->typeobject_id;?>;
 var pdfViewUrl = "<?php echo $this->navigator->getCurrentViewUrl('itemdefinitionviewpdf', null, array('typeversion_id' => $this->dbtable->typeversion_id, 'show_linked_procedures' => '_LINKEDPROCS_'));?>";
 var isAPart = <?php echo $this->dbtable->typecategory_id==2 ? 1 : 0;?>;
-var thisDefinitionViewUrl = "<?php echo $this->navigator->getCurrentViewUrl('itemdefinitionview', 'struct', array('typeobject_id' => $this->dbtable->typeobject_id));?>";
+var thisDefinitionViewUrl = "<?php echo $this->navigator->getCurrentViewUrl('itemdefinitionview', 'struct', array('typeversion_id' => $this->dbtable->typeversion_id));?>";
 var followUrl = "<?php echo $this->navigator->getCurrentHandlerUrl('btnFollow', null, null, array('typeobject_id' => $this->dbtable->typeobject_id, 'followNotifyTimeHHMM' => '_FOLLOWNOTIFYTIMEHHMM_', 'notify_instantly' => '_NOTIFYINSTANTLY_', 'notify_daily' => '_NOTIFYDAILY_', 'follow_items_too' => '_ALLITEMS_'));?>";
 var followInstantly =  "<?php echo $_SESSION['account']->getPreference('followInstantly');?>";
 var followDaily =  "<?php echo $_SESSION['account']->getPreference('followDaily');?>";
@@ -47,13 +47,38 @@ function formatMockField($fieldname, TableRow $dbtable)
     return '<div class="table_value_width">'.$floatdiv.$TypeVersion->fetchLayoutFieldParamsHtml($fieldname, true).'</div>';
 }
 
-    /**
-     * outputs the list of linked procedure defintions
-     * @param DBTableRowTypeVersion $dbtable
-     * @param UrlCallRegistry $dbtable
-     * @param int $is_procedure_flag is 1 show only procedures, or 0 show only Parts
-     * @param string $section_heading
-     */
+/**
+ * Format the html block showing the definition of the Procedure List embedded in the form
+ *
+ * @param int $typeversion_id
+ * @param array $fieldlayout
+ *
+ * @return array of html keyed by the typeobject_id of the procedures
+ */
+function getFormattedProcedureBlocks($typeversion_id, $fieldlayout)
+{
+    $procedure_blocks_html = array();
+    $in_form_procedures = DBTableRowTypeVersion::extractLayoutProcedureRows($fieldlayout);
+    foreach ($in_form_procedures as $block_name => $rowdata ) {
+        $block_data = DBTableRowTypeVersion::getLayoutTypeGroomedForShow($in_form_procedures, $block_name, true);
+        $html = '<div style="width:720px;"><h3 class="itemview-proc-head">'.TextToHtml($block_data['type_description']).'</h3><div style="width:688px; padding:8px 0px 5px 30px; border:1px solid #999;" class="table_value_width">';
+        unset($block_data['type_description']);  // we just showed this so don't do it again
+        foreach ($block_data as $name => $value) {
+            $html .= '<b>'.$name.':</b> <i>'.$value.'</i><br />'."\r\n";
+        }
+        $html .= '</div></div>';
+        $procedure_blocks_html[$rowdata['procedure_to']] = $html;
+    }
+    return $procedure_blocks_html;
+}
+
+/**
+ * outputs the list of linked procedure defintions
+ * @param DBTableRowTypeVersion $dbtable
+ * @param UrlCallRegistry $dbtable
+ * @param int $is_procedure_flag is 1 show only procedures, or 0 show only Parts
+ * @param string $section_heading
+ */
 function getLinkedDefinitionsHtml(DBTableRowTypeVersion $dbtable, UrlCallRegistry $navigator, $is_procedure_flag = 1, $section_heading = 'Linked Procedure')
 {
     $procedure_records = getTypesThatReferenceThisType($dbtable->typeversion_id, $is_procedure_flag);
@@ -105,19 +130,19 @@ function getLinkedDefinitionsHtml(DBTableRowTypeVersion $dbtable, UrlCallRegistr
     return $html;
 }
 
-    $title_short = 'Definition: '.DBTableRowTypeVersion::formatPartNumberDescription($this->dbtable->type_part_number, $this->dbtable->type_description);
-    $this->layout()->title = $title_short;
-    $this->layout()->setLayout('layout');
-    $this->layout()->scrollhold = true;
+$title_short = 'Definition: '.DBTableRowTypeVersion::formatPartNumberDescription($this->dbtable->type_part_number, $this->dbtable->type_description);
+$this->layout()->title = $title_short;
+$this->layout()->setLayout('layout');
+$this->layout()->scrollhold = true;
 
 
-    $html = '';
-    $html_right = '';
-    $html_head = '';
+$html = '';
+$html_right = '';
+$html_head = '';
 
-    $detailslinks = new EditLinks();
+$detailslinks = new EditLinks();
 
-    $return_url = $this->navigator->getCurrentViewUrl(null, null, array('typeversion_id' => $this->dbtable->typeversion_id));
+$return_url = $this->navigator->getCurrentViewUrl(null, null, array('typeversion_id' => $this->dbtable->typeversion_id));
 if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'ui:caneditdefinitions')) {
     if ($this->dbtable->isCurrentVersion() && $this->dbtable->versionstatus=='A') {
         $detailslinks->add_item( $this->navigator->getCurrentHandlerUrl('btnNewVersion', null, null, array('typeversion_id' => $this->dbtable->typeversion_id)), 'Edit', 'Create a new draft version of this definition.');
@@ -186,31 +211,31 @@ if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 
 }
 
 
-    $BreadCrumbs = new BreadCrumbsManager();
-    $BreadCrumbs->addCurrentUrl($return_url, $title_short);
+$BreadCrumbs = new BreadCrumbsManager();
+$BreadCrumbs->addCurrentUrl($return_url, $title_short);
 
-    $html_head .= $BreadCrumbs->render($return_url, $title_short, 3, 'breadcrumbdiv fixed');
+$html_head .= $BreadCrumbs->render($return_url, $title_short, 3, 'breadcrumbdiv fixed');
 
-    $html_head .= '<div id="itemviewSearchBlock">
-					<input name="typeversion_id" TYPE="hidden" VALUE="'.$this->dbtable->typeversion_id.'">
-					<input id="search_string" class="inputboxclass" type="text" name="search_string">
-					<INPUT class="searchbutton" TYPE="submit" VALUE="Search" NAME="btnSearch">
-				</div>';
-
-
-
-    // let user copy a link to this page
-    $detailslinks->add_link(linkify('#', 'Link to Page', 'Copy or Send link to this page', 'bd-button', "", "", 'linkToPageButton'));
+$html_head .= '<div id="itemviewSearchBlock">
+                <input name="typeversion_id" TYPE="hidden" VALUE="'.$this->dbtable->typeversion_id.'">
+                <input id="search_string" class="inputboxclass" type="text" name="search_string">
+                <INPUT class="searchbutton" TYPE="submit" VALUE="Search" NAME="btnSearch">
+            </div>';
 
 
-    // this is sneaky, but this link will actually work if the JS is not executed, but is normally overridden by the JS.
-    $pdf_url = $this->navigator->getCurrentViewUrl('itemdefinitionviewpdf', null, array('typeversion_id' => $this->dbtable->typeversion_id));
-    $detailslinks->add_link(linkify($pdf_url, 'PDF', 'Open a printable PDF view of this definition', 'bd-button', '', '', 'pdfButton'));
 
-    $list_url =  DBTableRowTypeVersion::getListViewAbsoluteUrl($this->dbtable->typeobject_id, $_SESSION['account']->getPreference('chkShowProcMatrix'));
-    $detailslinks->add_link(linkify($list_url, 'List All Items', 'List all items of this type', 'bd-button'));
+// let user copy a link to this page
+$detailslinks->add_link(linkify('#', 'Link to Page', 'Copy or Send link to this page', 'bd-button', "", "", 'linkToPageButton'));
 
-    $html .= '<div class="edittablewrapper">';
+
+// this is sneaky, but this link will actually work if the JS is not executed, but is normally overridden by the JS.
+$pdf_url = $this->navigator->getCurrentViewUrl('itemdefinitionviewpdf', null, array('typeversion_id' => $this->dbtable->typeversion_id));
+$detailslinks->add_link(linkify($pdf_url, 'PDF', 'Open a printable PDF view of this definition', 'bd-button', '', '', 'pdfButton'));
+
+$list_url =  DBTableRowTypeVersion::getListViewAbsoluteUrl($this->dbtable->typeobject_id, $_SESSION['account']->getPreference('chkShowProcMatrix'));
+$detailslinks->add_link(linkify($list_url, 'List All Items', 'List all items of this type', 'bd-button'));
+
+$html .= '<div class="edittablewrapper">';
 
 if (!$this->dbtable->isCurrentVersion()) {
     $query_params = array();
@@ -261,11 +286,11 @@ if (!$this->dbtable->isCurrentVersion()) {
     $html .= '<div class="itemview_notice">'.$definitiondescription.'</div>';
 }
 
-    // get list of available version of this type
-    $query = "SELECT * FROM typeversion WHERE typeobject_id='{$this->dbtable->typeobject_id}' ORDER BY effective_date";
-    $records = DbSchema::getInstance()->getRecords('typeversion_id', $query);
-    $current_url = '';
-    $out = array();
+// get list of available version of this type
+$query = "SELECT * FROM typeversion WHERE typeobject_id='{$this->dbtable->typeobject_id}' ORDER BY effective_date";
+$records = DbSchema::getInstance()->getRecords('typeversion_id', $query);
+$current_url = '';
+$out = array();
 foreach ($records as $record) {
     $txt = '';
     if ($record['typeversion_id']==$this->dbtable->to__cached_current_typeversion_id) {
@@ -285,90 +310,92 @@ foreach ($records as $record) {
     }
     $out[$jump_url] = 'Version: '.$datetime;
 }
-    $html .= '<div style="margin-bottom:15px;">'.format_select_tag($out, 'url', array('url' => $current_url), "MM_jumpMenu('parent',this,0)", false, '-- New Procedure --').'</div>';
+$html .= '<div style="margin-bottom:15px;">'.format_select_tag($out, 'url', array('url' => $current_url), "MM_jumpMenu('parent',this,0)", false, '-- New Procedure --').'</div>';
 
-    $html .= '<div class="buttonrow">'.$detailslinks->buttons_html().'</div>';
+$html .= '<div class="buttonrow">'.$detailslinks->buttons_html().'</div>';
 
-    $html .= '<div class="defsheetheaderwrapper">'.$this->dbtable->fetchFullDefinitionSheetHeader(false).'</div>';
+$html .= '<div class="defsheetheaderwrapper">'.$this->dbtable->fetchFullDefinitionSheetHeader(false).'</div>';
 
-    $html .= '<h2 class="bd-edit-page-headers">Field Layout</h2>';
+$html .= '<h2 class="bd-edit-page-headers">Field Layout</h2>';
 
-    $fieldwarnings = array();
-    if (Zend_Registry::get('config')->warn_of_hidden_fields) {
-        $hidden = $this->dbtable->getHiddenFieldnames();
-        if (count($hidden)>0) {
-            $enum = count($hidden)==1 ? 'is one defined field' : 'are '.count($hidden).' defined fields';
-            $fieldwarnings[] = '! There '.$enum.' not in the layout (<i>'.implode(', ', $hidden).'</i>).  Such fields should be removed from the definition or added to the layout.';
-        }
+$fieldwarnings = array();
+if (Zend_Registry::get('config')->warn_of_hidden_fields) {
+    $hidden = $this->dbtable->getHiddenFieldnames();
+    if (count($hidden)>0) {
+        $enum = count($hidden)==1 ? 'is one defined field' : 'are '.count($hidden).' defined fields';
+        $fieldwarnings[] = '! There '.$enum.' not in the layout (<i>'.implode(', ', $hidden).'</i>).  Such fields should be removed from the definition or added to the layout.';
     }
-    if (count($fieldwarnings)>0) {
-        $html .= '<div class="layout_width"><div class="itemview_notice red">'.implode('<br /><br />', $fieldwarnings).'</div></div>';
-    }
+}
+if (count($fieldwarnings)>0) {
+    $html .= '<div class="layout_width"><div class="itemview_notice red">'.implode('<br /><br />', $fieldwarnings).'</div></div>';
+}
 
 
 
-    $EmptyItemVersion = new DBTableRowItemVersion();
-    $EmptyItemVersion->typeversion_id = $this->dbtable->typeversion_id;
-    $EmptyItemVersion->setFieldTypeForRecordLocator();
-    $fields_to_remove = array();
-    $layout_key = $this->dbtable->getTableName();
-    $fieldlayout = $EmptyItemVersion->getEditViewFieldLayout($EmptyItemVersion->getEditFieldNames(array('')), $fields_to_remove, $layout_key);
-    if (!empty($fieldlayout)) {
-        $html .= '<div class="edittablewrapper"><table class="edittable"><colgroup>
-				 <col class="table_label_width">
-				 <col class="table_value_width">
-				 <col class="table_label_width">
-				 <col class="table_value_width"></colgroup>';
+$EmptyItemVersion = new DBTableRowItemVersion();
+$EmptyItemVersion->typeversion_id = $this->dbtable->typeversion_id;
+$EmptyItemVersion->setFieldTypeForRecordLocator();
+$fields_to_remove = array();
+$layout_key = $this->dbtable->getTableName();
+$fieldlayout = $EmptyItemVersion->getEditViewFieldLayout($EmptyItemVersion->getEditFieldNames(array('')), $fields_to_remove, $layout_key);
+if (!empty($fieldlayout)) {
+    $html .= '<div class="edittablewrapper"><table class="edittable"><colgroup>
+                <col class="table_label_width">
+                <col class="table_value_width">
+                <col class="table_label_width">
+                <col class="table_value_width"></colgroup>';
 
-        $this->dbtable->_navigator = $this->navigator; // need this for generating print view.
-
-        $html .= DBTableRowItemVersion::fetchItemVersionEditTableTR($fieldlayout, $EmptyItemVersion, array(), '', false, 'formatMockField', array());
-        $html .= '</table></div>
-		';
-    }
-
-    // only parts can be components of another object
-    if ($is_a_part) {
-        $html .= getLinkedDefinitionsHtml($this->dbtable, $this->navigator, 1, 'Linked Procedure');
-        $html .= getLinkedDefinitionsHtml($this->dbtable, $this->navigator, 0, 'Linked Part');
-    }
-
-    $DefinitionEventStream = new DefinitionEventStream($this->dbtable->typeobject_id);
-    $records = $DefinitionEventStream->assembleStreamArray();
-    $lines = DefinitionEventStream::eventStreamRecordsToLines($records, $this->dbtable, $this->navigator);
-    $layout_rows = DefinitionEventStream::eventStreamLinesToHtml($this->dbtable, $lines, $this->navigator);
-
-    $html .= '</div>';
+    $this->dbtable->_navigator = $this->navigator; // need this for generating print view.
 
 
-    $add_links = array();
-    if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'ui:caneditdefinitions')) {
-        $add_links[] = linkify($this->navigator->getCurrentViewUrl('editview', 'db', array('table' => 'typecomment', 'comment_id' => 'new', 'return_url' => $return_url, 'initialize' => array('typeobject_id' => $this->dbtable->typeobject_id))), 'Add Comment', 'add a new comment', 'bd-button');
-    }
+    $procedure_blocks_html = getFormattedProcedureBlocks($this->dbtable->typeversion_id, $fieldlayout);
+    $html .= DBTableRowItemVersion::fetchItemVersionEditTableTR($fieldlayout, $EmptyItemVersion, array(), '', false, 'formatMockField', array(), $procedure_blocks_html);
+    $html .= '</table></div>
+    ';
+}
+
+// only parts can be components of another object
+if ($is_a_part) {
+    $html .= getLinkedDefinitionsHtml($this->dbtable, $this->navigator, 1, 'Linked Procedure');
+    $html .= getLinkedDefinitionsHtml($this->dbtable, $this->navigator, 0, 'Linked Part');
+}
+
+$DefinitionEventStream = new DefinitionEventStream($this->dbtable->typeobject_id);
+$records = $DefinitionEventStream->assembleStreamArray();
+$lines = DefinitionEventStream::eventStreamRecordsToLines($records, $this->dbtable, $this->navigator);
+$layout_rows = DefinitionEventStream::eventStreamLinesToHtml($this->dbtable, $lines, $this->navigator);
+
+$html .= '</div>';
 
 
-    $html_right .= '<div class="bd-list-container"><ul class="bd-stream-list">';
-    // in the following: style="position: relative; z-index: 10" seems to be absolutely necessary to get the menu to be on top in IE7
-    // see http://www.brenelz.com/blog/squish-the-internet-explorer-z-index-bug/
-    $html_right .= '<li class="bd-event-row" style="position: relative; z-index: 10; padding-bottom:0px;">
-		<div class="buttonrow">'.implode('&nbsp;', $add_links).'
-	   </div></li>';
+$add_links = array();
+if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'ui:caneditdefinitions')) {
+    $add_links[] = linkify($this->navigator->getCurrentViewUrl('editview', 'db', array('table' => 'typecomment', 'comment_id' => 'new', 'return_url' => $return_url, 'initialize' => array('typeobject_id' => $this->dbtable->typeobject_id))), 'Add Comment', 'add a new comment', 'bd-button');
+}
 
-    $html_right .= implode('', array_reverse($layout_rows));
 
-    $html_right .= '</ul></div>';
-    $html_page = '
-		'.$html_head.'
-    <div class="twocolleft twocolcol">
-      <div id="leftpanel" class="twocolbody twocolrow twocolscroll-y">
-			'.$html.'
-	  </div>
-	</div>
-	<div class="twocolright twocolcol">
-      <div id="rightpanel" class="twocolbody twocolrow twocolscroll-y">
-			'.$html_right.'
-	  </div>
-	</div>
-	';
+$html_right .= '<div class="bd-list-container"><ul class="bd-stream-list">';
+// in the following: style="position: relative; z-index: 10" seems to be absolutely necessary to get the menu to be on top in IE7
+// see http://www.brenelz.com/blog/squish-the-internet-explorer-z-index-bug/
+$html_right .= '<li class="bd-event-row" style="position: relative; z-index: 10; padding-bottom:0px;">
+    <div class="buttonrow">'.implode('&nbsp;', $add_links).'
+    </div></li>';
 
-    echo fetch_form_tag($html_page);
+$html_right .= implode('', array_reverse($layout_rows));
+
+$html_right .= '</ul></div>';
+$html_page = '
+    '.$html_head.'
+<div class="twocolleft twocolcol">
+    <div id="leftpanel" class="twocolbody twocolrow twocolscroll-y">
+        '.$html.'
+    </div>
+</div>
+<div class="twocolright twocolcol">
+    <div id="rightpanel" class="twocolbody twocolrow twocolscroll-y">
+        '.$html_right.'
+    </div>
+</div>
+';
+
+echo fetch_form_tag($html_page);

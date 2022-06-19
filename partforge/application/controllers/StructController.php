@@ -923,6 +923,23 @@ class StructController extends DBControllerActionAbstract
                     $TypeVersion->save(array('versionstatus'));
                     $this->navigator->jumpToView(null, null, array('typeversion_id' => $this->params['typeversion_id']));
                 case isset($this->params['btnReleaseVersion']):
+                    if (!isset($this->params['keep_sort_order']) && !$TypeVersion->isProcedureOrderConsistent()) {
+                        if (!isset($this->params['update_sort_order'])) {
+                            showdialog('Update Procedure Type Order?',
+                                "<p>Procedure Lists in your form layout do not appear in the same order as the normal procedure sort order.</p>
+                                <p>The normal sort order is set in the Linked Procedure Definitions section at the bottom of the Definition page.<br />
+                                It sets the order of items in the Add New Procedure menu and elsewhere.</p>
+                                <p>By chosing Update Sort Order, the normal sort order will have a one-time adjustment made to match the order<br />
+                                of any Procedure Lists in the layout.</p>",
+                                array('Update Sort Order' => $this->navigator->getCurrentHandlerUrl('btnReleaseVersion', null, null, array('update_sort_order' => 1, 'typeversion_id' => $this->params['typeversion_id'])),
+                                    'Keep Existing Order' => $this->navigator->getCurrentHandlerUrl('btnReleaseVersion', null, null, array('keep_sort_order' => 1, 'typeversion_id' => $this->params['typeversion_id'])),
+                                    'Cancel' => $this->navigator->getCurrentViewUrl(null, null, array('typeversion_id' => $this->params['typeversion_id']))
+                                )
+                            );
+                        } else {
+                            DBTableRowProcedureSortOrder::sortProcedures($TypeVersion->typeobject_id, $TypeVersion->getApparentProcedureOrderConsideringLayout());
+                        }
+                    }
                     $TypeVersion->versionstatus = 'A';
                     $TypeVersion->save(array('versionstatus'));
                     DBTableRowChangeLog::releasedTypeVersion($TypeVersion->typeobject_id, $TypeVersion->typeversion_id);
@@ -1110,12 +1127,9 @@ class StructController extends DBControllerActionAbstract
     {
         $out = array();
         $out['error'] = '';
-
         if (isset($this->params['of_typeobject_ids']) && isset($this->params['when_viewed_by_typeobject_id']) && $this->params['when_viewed_by_typeobject_id']) {
-            $errormsg = array();
             $of_typeobject_ids = $this->params['of_typeobject_ids'] ? explode(',', $this->params['of_typeobject_ids']) : array();
             DBTableRowProcedureSortOrder::sortProcedures($this->params['when_viewed_by_typeobject_id'], $of_typeobject_ids);
-            $out['error'] = implode(";", $errormsg);
         } else {
             $out['error'] = 'The field of_typeobject_ids or when_viewed_by_typeobject_id is empty.';
         }
@@ -1196,7 +1210,7 @@ class StructController extends DBControllerActionAbstract
         $out = array();
         foreach ($typerecords as $typeobject_id => $typerecord) {
             if ($typeobject_id) {
-                $out[] = array($typeobject_id,DBTableRowTypeVersion::formatPartNumberDescription($typerecord['type_part_number'], $typerecord['type_description']));
+                $out[] = array($typeobject_id, DBTableRowTypeVersion::formatPartNumberDescription($typerecord['type_part_number'], $typerecord['type_description']));
             }
         }
         echo json_encode($out);

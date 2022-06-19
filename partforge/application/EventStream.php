@@ -133,6 +133,14 @@ class EventStream {
         return $streamlines;
     }
 
+    static public function getTopLevelEventStreamRecords(DBTableRowItemVersion $ItemVersion, $end_date = null)
+    {
+        $streamlines = array();
+        $EventStream = new self($ItemVersion->itemobject_id);
+        $streamlines = $EventStream->assembleStreamArray('', $end_date);
+        return $streamlines;
+    }
+
     public function getVersionRecords($end_date)
     {
         $end_date_and_where = is_null($end_date) ? '' : " and (effective_date >= '".time_to_mysqldatetime(strtotime($end_date))."')";
@@ -277,7 +285,8 @@ class EventStream {
                     $ComponentItemVersion->getCurrentRecordByObjectId($comp_value_itemobject_id, $ItemVersion->effective_date);
                     $comps[] = "Associated with <itemversion>{$ComponentItemVersion->itemversion_id}</itemversion>.";
                 }
-                $created_title = $indented_component_name ? 'Created '.$ItemVersion->part_description.'.' : 'Created.';
+                $created_verb = is_null($end_date) ? 'Created' : 'New Version';
+                $created_title = $indented_component_name ? $created_verb.' '.$ItemVersion->part_description.'.' : $created_verb.'.';
                 $itemevent['event_description'] = $created_title."\r\n".implode("\r\n", $comps);
 
                 $itemevent['referenced_itemversion_id'] = null;
@@ -425,6 +434,25 @@ class EventStream {
 
         return $out;
 
+    }
+
+    /**
+     * get the number of procedures (by typeobject_id) that are associated with the part $itemobject_id
+     *
+     * @param integer $itemobject_id
+     *
+     * @return array of out[typeobject_id] => count of procedures
+     */
+    public static function getAttachedProcedureCounts($itemobject_id)
+    {
+        $query = "SELECT
+					count(*) as procedure_count, tv_them.typeobject_id
+				FROM itemcomponent
+				LEFT JOIN itemversion AS iv_them ON iv_them.itemversion_id=itemcomponent.belongs_to_itemversion_id
+				LEFT JOIN typeversion AS tv_them ON tv_them.typeversion_id=iv_them.typeversion_id
+				WHERE tv_them.typecategory_id=1 and itemcomponent.has_an_itemobject_id='{$itemobject_id}' GROUP BY tv_them.typeobject_id";
+        $records = DbSchema::getInstance()->getRecords('typeobject_id', $query);
+        return extract_column($records, 'procedure_count');
     }
 
     /**
@@ -1005,7 +1033,7 @@ class EventStream {
      * @param array $references_by_typeobject_id  This is a list of all the procedures that actually exist for this item
      * @return string
      */
-    static public function renderDashboardView($dbtable, $procedure_records, $references_by_typeobject_id, $more_to_show_msg_html = '')
+    static public function renderDashboardView($dbtable, $procedure_records, $references_by_typeobject_id, $more_to_show_msg_html, $showlinks)
     {
         $html_dashboard = '';
 
@@ -1017,8 +1045,15 @@ class EventStream {
 
         foreach ($procedure_records_by_typeobject_id as $typeobject_id => $procedure_record) {
             $references = isset($references_by_typeobject_id[$typeobject_id]) ? $references_by_typeobject_id[$typeobject_id] : array();
-            $link = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'table:itemversion', 'add')
-            ? ' '.linkify($procedure_record['add_url'], 'add', '', 'minibutton2').' ' : '';
+            // start with a dummy button
+            $link = ' '.linkify('#', 'add', '', 'minibutton2');
+            if (isset($procedure_record['add_url'])) {
+                $link = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'table:itemversion', 'add')
+                    ? ' '.linkify($procedure_record['add_url'], 'add', '', 'minibutton2').' ' : '';
+            } elseif (isset($procedure_record['add_link'])) {
+                $link = ' '.$procedure_record['add_link'];
+            }
+
             $html_dashboard .= '<div id="dashboard_to_'.$typeobject_id.'" class="dashboard_item_div"><h3 class="itemview-proc-head">'.$procedure_record['type_description'].$link.'</h3>';
 
             if (count($references)>0) {
@@ -1032,8 +1067,11 @@ class EventStream {
                         if (isset($reference['actual_effective_date'])) {
                             $alt_edit_date_html = '<div class="bd-dateline-edited">(Edit: '.time_to_bulletdate(strtotime($reference['actual_effective_date']), false).')</div>';
                         }
-
-                        $row['Date'] = linkify($item['url'], time_to_bulletdate(strtotime($reference['effective_date']), false)).$alt_edit_date_html;
+                        if ($showlinks) {
+                            $row['Date'] = linkify($item['url'], time_to_bulletdate(strtotime($reference['effective_date']), false)).$alt_edit_date_html;
+                        } else {
+                            $row['Date'] = time_to_bulletdate(strtotime($reference['effective_date']), false).$alt_edit_date_html;
+                        }
                         foreach ($item['features'] as $feature) {
                             $feat[] = $feature['name'].':&nbsp;<b>'.$feature['value'].'</b>';
                         }

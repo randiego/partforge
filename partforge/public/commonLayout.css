@@ -399,7 +399,7 @@ table.listtable td.na {
 	background-color:#888;
 }
 
-table.listtable td.cell_error, table.sublisttable td.cell_error {
+table.listtable td.cell_error, table.sublisttable td.cell_error, td.cell_error .editview_text_div .dashboard_item_div h3.itemview-proc-head {
 	background-color: #fcc !important;
 }
 
@@ -567,7 +567,7 @@ table.edittable tr.editview_caption td h2 {
 	background-color:#FFF;
 }
 
-table.edittable tr.editview_text td .editview_text_div td, table.edittable tr.editview_text td .editview_text_div th {
+table.edittable tr.editview_text td .editview_text_div td:not(table.sublisttable td), table.edittable tr.editview_text td .editview_text_div th {
 	padding: 3px;
 	width: auto;
 	background-color:#fff;
@@ -1054,12 +1054,11 @@ p.req_field_para {
 
 /* list table style */
 
-table.sublisttable {
+table.sublisttable, .editview_text_div .dashboard_item_div table.sublisttable {
 	font-size:12px;
 	border-collapse:collapse;
 	margin-bottom: 10px;
-	max-width:720px;
-	width: 100%;
+	width:720px;
 }
 
 table.sublisttable tr.tr_header th {
@@ -1069,11 +1068,13 @@ table.sublisttable tr.tr_header th {
 	padding-top: 20px;
 }
 
-table.sublisttable td, table.edittable tr.editview_text td .editview_text_div .embedded_proc_list table.sublisttable td {
+table.sublisttable td, table.edittable tr.editview_text td .editview_text_div .embedded_proc_list table.sublisttable td,
+.editview_text_div .dashboard_item_div table.sublisttable td {
 	padding: 5px;
 	border:1px solid #999;
 	vertical-align:top;
 	font-size: 12px;
+	background-color: #fff;
 }
 
 table.sublisttable th {
@@ -1549,7 +1550,7 @@ ul.bd-event-subcomments li.bd-event-subcomment {
 }
 
 .bd-layout-outer-div {
-	width: 550px;
+	width: 650px;
 }
 
 .bd-layout-frame {
@@ -1582,6 +1583,14 @@ ul.bd-event-subcomments li.bd-event-subcomment {
     position: relative;
 }
 
+.bd-layout-list .bd-layout-item-double.bd-layout-proc-list {
+	background-color: #FEF;
+}
+
+.bd-layout-list .bd-layout-item-double.pf-html-item {
+	background-color: #FFF;
+}
+
 .bd-layout-list .empty_space_notice {
 	font-weight: bold;
 	color: #777;
@@ -1590,7 +1599,7 @@ ul.bd-event-subcomments li.bd-event-subcomment {
     text-align: center;
 }
 
-.bd-layout-list .db-field-item.touchlight, .bd-layout-list .db-html-item.touchlight  {
+.bd-layout-list .db-field-item.touchlight, .bd-layout-list .pf-html-item.touchlight  {
 	background-color: #FFA;
 }
 
@@ -1623,7 +1632,7 @@ ul.bd-event-subcomments li.bd-event-subcomment {
 	font-style:italic;
 }
 
-.db-html-item {
+.pf-html-item {
 	height: auto;
 }
 
@@ -1635,18 +1644,18 @@ ul.bd-event-subcomments li.bd-event-subcomment {
 	color:#F00;
 }
 
-.bd-sorting .db-html-item, .bd-sorting .db-field-item {
+.bd-sorting .pf-html-item, .bd-sorting .db-field-item {
 	height:40px;
 	overflow: hidden;
 }
 
 
 .bd-layout-list .bd-layout-item-single {
-	width: 230px;
+	width: 280px;
 }
 
 .bd-layout-list .bd-layout-item-double {
-	width: 474px;
+	width: 574px;
 }
 
 .bd-layout-frame .bd-sorting li {
@@ -1697,7 +1706,7 @@ table.table-striped td {
 }
 
 table.table-striped .row {
-  zoom: 1;
+  transform: scale(1);
 }
 .row:before, .row:after {
   display: table;

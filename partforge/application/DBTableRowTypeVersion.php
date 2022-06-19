@@ -381,10 +381,26 @@ class DBTableRowTypeVersion extends DBTableRow {
                 $out[$header_field] = $EmptyItemVersion->getFieldType($header_field);
             }
         }
+
+        // order the output like the layout
+        $unordered_fieldtypes = $digest['fieldtypes'];
+        $ft_out_ordered = array();
+
+/*ticket108
+        foreach ( $this->allLayoutColumnNames() as $fieldname) {
+            if (isset($unordered_fieldtypes[$fieldname])) {
+                $ft_out_ordered[$fieldname] = $unordered_fieldtypes[$fieldname];
+                unset($unordered_fieldtypes[$fieldname]);
+            }
+        }
+*/
+
+        $ft_out_ordered = array_merge($ft_out_ordered, $unordered_fieldtypes); // get the left-overs
+
         if ($include_nonfeatured_fields) {
-            $out  = array_merge($out, $digest['fieldtypes']);
+            $out  = array_merge($out, $ft_out_ordered);
         } else {
-            $out = array_merge($out, self::filterFeaturedFieldTypes($digest['fieldtypes'], $force_include_components));
+            $out = array_merge($out, self::filterFeaturedFieldTypes($ft_out_ordered, $force_include_components));
         }
         return $out;
     }
@@ -732,6 +748,50 @@ class DBTableRowTypeVersion extends DBTableRow {
         return $out;
     }
 
+    public static function extractLayoutProcedureRows($fieldlayout)
+    {
+        $blocknames = array();
+        foreach ($fieldlayout as $row) {
+            if ($row['type']=='procedure_list') {
+                $blockname = "procedure_list_".$row['procedure_to'];
+                $blocknames[$blockname] = $row;
+            }
+        }
+        return $blocknames;
+    }
+
+    public function getApparentProcedureOrderConsideringLayout()
+    {
+        // get current aparent procedure sort order
+        $apparent_sort_order_to = array();
+        foreach ($this->allLayoutProcListBlocks() as $block) {
+            if ( !in_array($block['procedure_to'], $apparent_sort_order_to) ) {
+                $apparent_sort_order_to[] = $block['procedure_to'];
+            }
+        }
+        foreach (getTypesThatReferenceThisType($this->typeversion_id) as $record) {
+            if ( !in_array($record['typeobject_id'], $apparent_sort_order_to) ) {
+                $apparent_sort_order_to[] = $record['typeobject_id'];
+            }
+        }
+        return $apparent_sort_order_to;
+
+    }
+
+    public function isProcedureOrderConsistent()
+    {
+        $apparent_sort_order_to = $this->getApparentProcedureOrderConsideringLayout();
+
+        // get actual procedure sort order
+        $current_sort_order_to =  array();
+        foreach (getTypesThatReferenceThisType($this->typeversion_id) as $record) {
+            if ( !in_array($record['typeobject_id'], $current_sort_order_to) ) {
+                $current_sort_order_to[] = $record['typeobject_id'];
+            }
+        }
+        // true if the same values and order
+        return ($apparent_sort_order_to == $current_sort_order_to);
+    }
 
     /**
      * returns only fields that can be used by referencing types as component subfields
@@ -1210,7 +1270,7 @@ class DBTableRowTypeVersion extends DBTableRow {
 
         if ($this->numberOfTypesDefined()<2) {
             // we will not allow deleting if there are others referencing us and we are the last of our kind.
-            if ((count(getTypesThatReferenceThisType($this->typeversion_id, null))>0)) {
+            if (count(getTypesThatReferenceThisType($this->typeversion_id, null)) > 0) {
                 $result = false;
             }
 
@@ -1222,6 +1282,15 @@ class DBTableRowTypeVersion extends DBTableRow {
 
 
         return $result;
+    }
+
+    public function getReferencedProcedureDescriptions()
+    {
+        $out = array();
+        foreach (getTypesThatReferenceThisType($this->typeversion_id) as $record) {
+            $out[] = array($record['typeobject_id'], DBTableRowTypeVersion::formatPartNumberDescription($record['type_part_number'], $record['type_description']));
+        }
+        return $out;
     }
 
     public function allowedToRevertToDraft()
@@ -1515,6 +1584,34 @@ class DBTableRowTypeVersion extends DBTableRow {
         return $header_html;
     }
 
+    public static function getLayoutTypeGroomedForShow($in_form_procedures, $block_name, $procedure_as_links = false)
+    {
+        $block_row = $in_form_procedures[$block_name];
+        $defaults = array();
+        $defaults['procedure_required'] = 0;
+
+        if (isset($block_row['procedure_to'])) {
+            $id = $block_row['procedure_to'];
+            unset($block_row['procedure_to']);
+            $block_row['Procedure Type Object ID'] = array();
+            $SubTypeVersion = new DBTableRowTypeVersion();
+            $SubTypeVersion->getCurrentRecordByObjectId($id);
+            $comp_name = TextToHtml(DBTableRowTypeVersion::formatPartNumberDescription($SubTypeVersion->type_part_number, $SubTypeVersion->type_description));
+            $block_row['Procedure Type Object ID'] = ($procedure_as_links ? linkify($SubTypeVersion->absoluteUrl(), $comp_name, 'view definition for '.$comp_name) : $comp_name);
+            $block_row['type_description'] = $SubTypeVersion->type_description;
+        }
+
+        // prune the params that are not defaults to remove clutter
+        foreach ($defaults as $defname => $defval) {
+            if (!is_string($defval) && isset($block_row[$defname]) && ($block_row[$defname]==$defval) ||
+                is_string($defval) && isset($block_row[$defname]) && ($block_row[$defname]===$defval)) {
+                unset($block_row[$defname]);
+            }
+        }
+
+        return $block_row;
+
+    }
 
     public function getFieldTypeGroomedForShow($fieldname, $components_as_links = false, $show_subcaption = false, $show_caption = false)
     {
@@ -1730,6 +1827,17 @@ class DBTableRowTypeVersion extends DBTableRow {
         return $out;
     }
 
+    public function allLayoutProcListBlocks()
+    {
+        $out = array();
+        foreach ($this->layoutToFlatArray() as $row) {
+            if ($row['type']=='procedure_list') {
+                $out[] = $row;
+            }
+        }
+        return $out;
+    }
+
     /**
      * Use <del> and <ins> tags to annotate the difference between two blocks of text.
      * @param text $was
@@ -1841,6 +1949,44 @@ class DBTableRowTypeVersion extends DBTableRow {
         foreach ($layoutblocks_deleted as $j => $del_block) {
             // show as delete
             $list[] = '<b>Text</b> deleted: <del>'.TextToHtml($del_block).'</del>';
+        }
+
+        // now look at the procedure lists
+
+        $proc_descr_by_typeobject_id = array();
+        foreach (array_merge($this->getReferencedProcedureDescriptions(), $CompareItem->getReferencedProcedureDescriptions()) as $desc_array) {
+            $proc_descr_by_typeobject_id[$desc_array[0]] = $desc_array[1];
+        }
+
+        $this_layoutblocks = $this->allLayoutProcListBlocks();
+        $compare_layoutblocks = $CompareItem->allLayoutProcListBlocks();
+        // create output list of $layoutblocks_added and $layoutblocks_deleted but I can't just use array_diff since these are arrays
+        foreach ($this_layoutblocks as $idx => $row) {
+            foreach ($compare_layoutblocks as $oldidx => $oldrow) {
+                if ($row == $oldrow) {
+                    unset($this_layoutblocks[$idx]);
+                    unset($compare_layoutblocks[$oldidx]);
+                }
+            }
+        }
+        $layoutblocks_added = $this_layoutblocks;
+        // now take what's left in the compare list and do the reverse to get deleted items
+        foreach ($compare_layoutblocks as $oldidx => $oldrow) {
+            foreach ($this_layoutblocks as $idx => $row) {
+                if ($row == $oldrow) {
+                    unset($this_layoutblocks[$idx]);
+                    unset($compare_layoutblocks[$oldidx]);
+                }
+            }
+        }
+        $layoutblocks_deleted = $compare_layoutblocks;
+        foreach ($layoutblocks_deleted as $row) {
+            $desc = TextToHtml($proc_descr_by_typeobject_id[$row['procedure_to']]).', required = '.$row['procedure_required'];
+            $list[] = '<b>Procedure List</b> deleted: <del>'.$desc.'</del>';
+        }
+        foreach ($layoutblocks_added as $row) {
+            $desc = TextToHtml($proc_descr_by_typeobject_id[$row['procedure_to']]).', required = '.$row['procedure_required'];
+            $list[] = '<b>Procedure List</b> added: <ins>'.$desc.'</ins>';
         }
 
         return count($list)>1 ? '<ul class="changelist"><li>'.implode('</li><li>', $list).'</li></ul>' : implode(',', $list);

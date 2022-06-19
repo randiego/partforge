@@ -27,10 +27,33 @@ class ItemDefinitionViewPDF extends ItemViewPDF {
 
     public $TypeVersion;
     protected $_linked_to_part_number_text = '';
+    protected $_procedure_blocks_html = array();
 
-    protected function formatDictionaryData($fieldname)
+    protected function generateProcedureTRBlocksForCallbacks($fieldlayout)
     {
-        return $this->TypeVersion->fetchLayoutFieldParamsHtml($fieldname, true);
+        $this->_procedure_blocks_html = array();
+        $in_form_procedures = DBTableRowTypeVersion::extractLayoutProcedureRows($fieldlayout);
+        foreach ($in_form_procedures as $block_name => $rowdata ) {
+            $html = '';
+            $block_data = DBTableRowTypeVersion::getLayoutTypeGroomedForShow($in_form_procedures, $block_name, true);
+            $html .= '<tr><td colspan="4"><b>'.TextToHtml($block_data['type_description']).'</b></td></tr>';
+            $html .= '<tr><td colspan="4" style="border-color:#000 #000 #000 #000">';
+            unset($block_data['type_description']);  // we just showed this so don't do it again
+            foreach ($block_data as $name => $value) {
+                $html .= '<b>'.$name.':</b> <i>'.$value.'</i><br />'."\r\n";
+            }
+            $html .= '</td></tr>';
+            $this->_procedure_blocks_html[$block_name] = $html;
+        }
+    }
+
+    protected function formatDictionaryData($fieldname, $is_procedure_list_block)
+    {
+        if (!$is_procedure_list_block) {
+            return $this->TypeVersion->fetchLayoutFieldParamsHtml($fieldname, true);
+        } else {
+            return isset($this->_procedure_blocks_html[$fieldname]) ? $this->_procedure_blocks_html[$fieldname] : "";
+        }
     }
 
     protected function getLinkedTypeRecordsByObjectId($is_procedure_flag)
@@ -167,6 +190,7 @@ class ItemDefinitionViewPDF extends ItemViewPDF {
             }
         }
 
+        $this->generateProcedureTRBlocksForCallbacks($fieldlayout);
         $this->itemViewFieldOutput($fieldlayout, '', 'formatDictionaryData');
 
         $this->outputLinkedDefinitions(1, 'Linked Procedure Definitions');

@@ -166,6 +166,7 @@ class DBTableRowItemObject extends DBTableRow {
         if ($ItemVersion->getCurrentRecordByObjectId($itemobject_id, $effective_date)) {
             $errormsg=array();
             $ItemVersion->validateFields($ItemVersion->getSaveFieldNames(), $errormsg);
+            $ItemVersion->validateLayoutProcedures($ItemVersion->getLayoutProcedureBlockNames(), $errormsg);
             if ($ItemVersion->hasADisposition()) {
                 if (isset($errormsg['disposition'])) {
                     $out['field_validation_errors'] = $errormsg;
@@ -343,7 +344,12 @@ class DBTableRowItemObject extends DBTableRow {
         if ($ItemVersion->getRecordById($itemversion_id)) {
             $errormsg=array();
             $ItemVersion->validateFields($ItemVersion->getSaveFieldNames(), $errormsg);
-            if (count($errormsg)>0) {
+            $ItemVersion->validateLayoutProcedures($ItemVersion->getLayoutProcedureBlockNames(), $errormsg);
+            if ($ItemVersion->hasADisposition()) {
+                if (isset($errormsg['disposition'])) {
+                    $out['field_validation_errors'] = $errormsg;
+                }
+            } elseif (count($errormsg)>0) {
                 $out['field_validation_errors'] = $errormsg;
             }
             foreach ($ItemVersion->getExportFieldTypes() as $fieldname => $fieldtype) {
