@@ -66,7 +66,7 @@ Public Class MainFrm
 
         Else
             ProcessIniFile = False
-            MsgBox("The file " & Me.iniFileName & " could not be found or openned in the location " & Directory.GetCurrentDirectory())
+            MsgBox("The file " & Me.iniFileName & " could not be found or opened in the location " & Directory.GetCurrentDirectory())
         End If
 
     End Function
