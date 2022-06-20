@@ -1282,20 +1282,25 @@ class DBTableRowItemVersion extends DBTableRow {
     public function validateLayoutProcedures($blocknames, &$errormsg)
     {
         $rows = $this->getLayoutProcedureRows();
-        $procedure_counts = EventStream::getAttachedProcedureCounts($this->itemobject_id);
+
+        $required_blocknames_by_typeobject_id = array();
         foreach ($blocknames as $blockname) {
             if (isset($rows[$blockname]) && isset($rows[$blockname]['procedure_required']) && $rows[$blockname]['procedure_required']) {
                 $typeobject_id = $rows[$blockname]['procedure_to'];
-                if (!isset($procedure_counts[$typeobject_id]) || !$procedure_counts[$typeobject_id]) {
-                    $errormsg[$blockname] = "Must have at least one procedure.";
-                }
+                $required_blocknames_by_typeobject_id[$typeobject_id] = $blockname;
+            }
+        }
+        $procedure_counts = EventStream::getAttachedProcedureCounts($this->itemobject_id, array_keys($required_blocknames_by_typeobject_id));
+        foreach ($required_blocknames_by_typeobject_id as $typeobject_id => $blockname) {
+            if (!isset($procedure_counts[$typeobject_id]) || !$procedure_counts[$typeobject_id]) {
+                $errormsg[$blockname] = "Must have at least one procedure.";
             }
         }
     }
 
     public function getLayoutProcedureRows()
     {
-        $fieldlayout = $this->getEditViewFieldLayout($this->getEditFieldNames(array('')), array(), 'itemview');
+        $fieldlayout = $this->getEditViewFieldLayout($this->getEditFieldNames(array('')), array(), 'itemview', false);
         return DBTableRowTypeVersion::extractLayoutProcedureRows($fieldlayout);
     }
 
@@ -2038,7 +2043,7 @@ class DBTableRowItemVersion extends DBTableRow {
      * item.
      * @see DBTableRow::getEditViewFieldLayout()
      */
-    public function getEditViewFieldLayout($default_fieldnames, $parent_fields_to_remove, $layout_key = null)
+    public function getEditViewFieldLayout($default_fieldnames, $parent_fields_to_remove, $layout_key, $include_orphans)
     {
         $holyheaderfields = array('typeversion_id','partnumber_alias','record_locator','effective_date','item_serial_number','disposition');
         if ($_SESSION['account']->getRole()=='DataTerminal') {
@@ -2084,25 +2089,27 @@ class DBTableRowItemVersion extends DBTableRow {
         );
 
         // prepare the orphan field descriptions if needed.
-        $orphan_layout = array();
-        list($this->hidden_properties_array,$this->hidden_components_array, $this->hidden_attachments_array) = $this->loadOrphanFieldsIntoHiddenArrays();
-        if (count($this->hidden_properties_array)>0) {
-            $this->setFieldAttribute('hidden_properties_array', 'caption', 'Orphaned Fields');
-            $this->setFieldAttribute('hidden_properties_array', 'subcaption', 'These fields were entered using a different version of this form.   Editing will erase these.');
-            $orphan_layout[] = array('name' => 'hidden_properties_array');
-        }
-        if (count($this->hidden_components_array)>0) {
-            $this->setFieldAttribute('hidden_components_array', 'caption', 'Orphaned Components');
-            $this->setFieldAttribute('hidden_components_array', 'subcaption', 'These components were entered using a different version of this form.   Editing will erase these.');
-            $orphan_layout[] = array('name' => 'hidden_components_array');
-        }
-        if (count($this->hidden_attachments_array)>0) {
-            $this->setFieldAttribute('hidden_attachments_array', 'caption', 'Orphaned Attachments');
-            $this->setFieldAttribute('hidden_attachments_array', 'subcaption', 'These attachments were entered using a different version of this form.   Editing will erase these.');
-            $orphan_layout[] = array('name' => 'hidden_attachments_array');
-        }
-        if (count($orphan_layout)>0) {
-            $fieldlayout[] = array('type' => 'columns', 'columns' => $orphan_layout);
+        if ($include_orphans) {
+            $orphan_layout = array();
+            list($this->hidden_properties_array,$this->hidden_components_array, $this->hidden_attachments_array) = $this->loadOrphanFieldsIntoHiddenArrays();
+            if (count($this->hidden_properties_array)>0) {
+                $this->setFieldAttribute('hidden_properties_array', 'caption', 'Orphaned Fields');
+                $this->setFieldAttribute('hidden_properties_array', 'subcaption', 'These fields were entered using a different version of this form.   Editing will erase these.');
+                $orphan_layout[] = array('name' => 'hidden_properties_array');
+            }
+            if (count($this->hidden_components_array)>0) {
+                $this->setFieldAttribute('hidden_components_array', 'caption', 'Orphaned Components');
+                $this->setFieldAttribute('hidden_components_array', 'subcaption', 'These components were entered using a different version of this form.   Editing will erase these.');
+                $orphan_layout[] = array('name' => 'hidden_components_array');
+            }
+            if (count($this->hidden_attachments_array)>0) {
+                $this->setFieldAttribute('hidden_attachments_array', 'caption', 'Orphaned Attachments');
+                $this->setFieldAttribute('hidden_attachments_array', 'subcaption', 'These attachments were entered using a different version of this form.   Editing will erase these.');
+                $orphan_layout[] = array('name' => 'hidden_attachments_array');
+            }
+            if (count($orphan_layout)>0) {
+                $fieldlayout[] = array('type' => 'columns', 'columns' => $orphan_layout);
+            }
         }
 
         return $fieldlayout;

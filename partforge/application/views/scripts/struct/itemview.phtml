@@ -177,7 +177,7 @@ $html .= DBTableRowWhatsNewUser::fetchWhatsNew('SEND_LINK_2022_03', "You can now
 
 $fields_to_remove = array();
 
-$fieldlayout = $this->dbtable->getEditViewFieldLayout($this->dbtable->getEditFieldNames(array('')), $fields_to_remove, 'itemview');
+$fieldlayout = $this->dbtable->getEditViewFieldLayout($this->dbtable->getEditFieldNames(array('')), $fields_to_remove, 'itemview', true);
 
 $more_results = $not_all_records_showing ? '<div class="dashboard-show-more">There may be more results.  Use selector to view more than '.$big_page_length.' of history. <a class="showAllHistoryButton" href="#">Show all.</a></div>' : '';
 if (!empty($fieldlayout)) {

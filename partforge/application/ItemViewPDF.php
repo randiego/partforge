@@ -479,7 +479,7 @@ class ItemViewPDF extends TCPDF {
         if ($this->show_form_fields) {
             // get the layout for the itemview
             $fields_to_remove = array();
-            $fieldlayout = $this->dbtable->getEditViewFieldLayout($this->dbtable->getEditFieldNames(array('')), $fields_to_remove, 'itemview');
+            $fieldlayout = $this->dbtable->getEditViewFieldLayout($this->dbtable->getEditFieldNames(array('')), $fields_to_remove, 'itemview', true);
 
             $procedure_records_by_to = array();
             $in_form_procedures = $this->dbtable->getLayoutProcedureBlockNames();

@@ -33,7 +33,7 @@ class DBEditViewItemVersion extends DBEditView {
             return parent::fetchTableHtml($join_name, $target, $fields_to_remove);
         }
 
-        $fieldlayout = $this->dbtable->getEditViewFieldLayout($this->dbtable->getEditFieldNames(array('')), $fields_to_remove, 'editview');
+        $fieldlayout = $this->dbtable->getEditViewFieldLayout($this->dbtable->getEditFieldNames(array('')), $fields_to_remove, 'editview', true);
         if (!empty($fieldlayout)) {
             $html = ($join_name!='') ? $this->fetchJoinHeaderHtml($join_name, $target) : '';
             $html .= '<table class="edittable"><colgroup>

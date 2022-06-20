@@ -827,7 +827,7 @@ class DBTableRow extends TableRow {
           Get field layout for this table.  Use default list of fields if necessary.
           Also, remove any parent pointing field from the list.
     */
-    function getEditViewFieldLayout($default_fieldnames, $parent_fields_to_remove, $layout_key = null)
+    public function getEditViewFieldLayout($default_fieldnames, $parent_fields_to_remove, $layout_key, $include_orphans)
     {
 
         if (!is_array($parent_fields_to_remove)) {

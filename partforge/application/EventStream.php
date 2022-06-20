@@ -443,14 +443,22 @@ class EventStream {
      *
      * @return array of out[typeobject_id] => count of procedures
      */
-    public static function getAttachedProcedureCounts($itemobject_id)
+    public static function getAttachedProcedureCounts($itemobject_id, $only_types = null)
     {
+        $and_where_filter = '';
+        if (is_array($only_types)) {
+            if (empty($only_types)) {
+                return array(); // the filter exists and doesn't have any entries in it
+            } else {
+                $and_where_filter = ' and (tv_them.typeobject_id in ("'.implode('","', $only_types).'"))';
+            }
+        }
         $query = "SELECT
 					count(*) as procedure_count, tv_them.typeobject_id
 				FROM itemcomponent
 				LEFT JOIN itemversion AS iv_them ON iv_them.itemversion_id=itemcomponent.belongs_to_itemversion_id
 				LEFT JOIN typeversion AS tv_them ON tv_them.typeversion_id=iv_them.typeversion_id
-				WHERE tv_them.typecategory_id=1 and itemcomponent.has_an_itemobject_id='{$itemobject_id}' GROUP BY tv_them.typeobject_id";
+				WHERE tv_them.typecategory_id=1 and itemcomponent.has_an_itemobject_id='{$itemobject_id}'{$and_where_filter} GROUP BY tv_them.typeobject_id";
         $records = DbSchema::getInstance()->getRecords('typeobject_id', $query);
         return extract_column($records, 'procedure_count');
     }

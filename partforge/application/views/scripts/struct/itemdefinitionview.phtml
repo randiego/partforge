@@ -337,7 +337,7 @@ $EmptyItemVersion->typeversion_id = $this->dbtable->typeversion_id;
 $EmptyItemVersion->setFieldTypeForRecordLocator();
 $fields_to_remove = array();
 $layout_key = $this->dbtable->getTableName();
-$fieldlayout = $EmptyItemVersion->getEditViewFieldLayout($EmptyItemVersion->getEditFieldNames(array('')), $fields_to_remove, $layout_key);
+$fieldlayout = $EmptyItemVersion->getEditViewFieldLayout($EmptyItemVersion->getEditFieldNames(array('')), $fields_to_remove, $layout_key, true);
 if (!empty($fieldlayout)) {
     $html .= '<div class="edittablewrapper"><table class="edittable"><colgroup>
                 <col class="table_label_width">

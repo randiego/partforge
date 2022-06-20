@@ -62,7 +62,7 @@ if (!$this->dbtable->user_cryptpassword) {
 $html .= '<p>'.implode('&nbsp;', $buttons).'</p>';
 
 
-$fieldlayout = $this->dbtable->getEditViewFieldLayout($this->dbtable->getEditFieldNames(array()), array(), 'user');
+$fieldlayout = $this->dbtable->getEditViewFieldLayout($this->dbtable->getEditFieldNames(array()), array(), 'user', true);
 if (!empty($fieldlayout)) {
     $html .= '<table class="edittable"><colgroup>
 					 <col class="table_label_width">

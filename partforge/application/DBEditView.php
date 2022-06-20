@@ -151,9 +151,8 @@ class DBEditView {
         if ($join_name=='') {
             $fields_to_remove[] = $this->dbtable->getParentPointerIndexName();
         }
-//      $field_to_remove = ($join_name=='') ? $this->dbtable->getParentPointerIndexName() : '';
         $layout_key = $this->dbtable->getTableName().(($join_name!='') ? '.'.$target['rhs_table'] : '');
-        $fieldlayout = $this->dbtable->getEditViewFieldLayout($this->dbtable->getEditFieldNames(array($join_name)), $fields_to_remove, $layout_key);
+        $fieldlayout = $this->dbtable->getEditViewFieldLayout($this->dbtable->getEditFieldNames(array($join_name)), $fields_to_remove, $layout_key, true);
         if (!empty($fieldlayout)) {
             $html .= ($join_name!='') ? $this->fetchJoinHeaderHtml($join_name, $target) : '';
             $html .= '<table class="edittable"><colgroup>

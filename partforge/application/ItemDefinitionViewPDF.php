@@ -177,7 +177,7 @@ class ItemDefinitionViewPDF extends ItemViewPDF {
         // start the form layout
 
         $fields_to_remove = array();
-        $fieldlayout = $this->dbtable->getEditViewFieldLayout($this->dbtable->getEditFieldNames(array('')), $fields_to_remove, 'itemview');
+        $fieldlayout = $this->dbtable->getEditViewFieldLayout($this->dbtable->getEditFieldNames(array('')), $fields_to_remove, 'itemview', true);
 
         $this->WriteHTML('<h2><i>Form Layout</i></h2><br />', true, false, true, true);
 
