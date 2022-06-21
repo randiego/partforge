@@ -116,9 +116,10 @@ if ($this->edit_buffer_key) {
     $html .= '<p class="bd-instruction-text">This is the form layout designer.
 	    	The layout is structured into two columns where fields can span both columns or
     		only one.  If you click the "add field" button, it will add
-    		the next unused field from the dictionary.  The "edit" button lets you select a different field.
+    		the next unused field from the dictionary or list of components.
     		Click "move" to relocate (drag and drop) or resize (wide or narrow) each field.  Free form text (HTML) and photos can be
-    		with the "add text & photos block" button.</p>';
+    		added with the "add text & photos block" button. For Parts, you can embed a list of procedures into the form layout
+            using "add list of procedures".</p>';
     $html .= '<div id="formLayoutEditorDiv" class="bd-edit-block"></div>';
 
     $html .= '<div id="HtmlEditorContainer"></div>';
