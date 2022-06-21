@@ -385,16 +385,12 @@ class DBTableRowTypeVersion extends DBTableRow {
         // order the output like the layout
         $unordered_fieldtypes = $digest['fieldtypes'];
         $ft_out_ordered = array();
-
-/*ticket108
         foreach ( $this->allLayoutColumnNames() as $fieldname) {
             if (isset($unordered_fieldtypes[$fieldname])) {
                 $ft_out_ordered[$fieldname] = $unordered_fieldtypes[$fieldname];
                 unset($unordered_fieldtypes[$fieldname]);
             }
         }
-*/
-
         $ft_out_ordered = array_merge($ft_out_ordered, $unordered_fieldtypes); // get the left-overs
 
         if ($include_nonfeatured_fields) {

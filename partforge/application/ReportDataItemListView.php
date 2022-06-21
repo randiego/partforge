@@ -231,7 +231,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
         $TypeObject = new DBTableRowTypeVersion(false, null);
         $DBTableRowQuery = new DBTableRowQuery($TypeObject);
         $DBTableRowQuery->addAndWhere("and typeversion.typeobject_id='".$typeobject_id."'");
-        // ticket108: $DBTableRowQuery->setOrderByClause("order by typeversion.effective_date desc");
+        $DBTableRowQuery->setOrderByClause("order by typeversion.effective_date desc");
         $typerecords = DbSchema::getInstance()->getRecords('', $DBTableRowQuery->getQuery());
         $has_aliases = false;
         $out = array();
@@ -247,7 +247,6 @@ class ReportDataItemListView extends ReportDataWithCategory {
                 $out = array_merge($out, DBTableRowTypeVersion::getAllPossibleComponentExtendedFieldNames($typerecord['typeobject_id']));
             }
         }
-        //ksort($out);
         return array($out,$has_aliases);
     }
 
