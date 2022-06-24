@@ -24,7 +24,6 @@ $this->layout()->title = 'Item View: '.$title;
 $this->layout()->setLayout('layout');
 $this->layout()->scrollhold = true;
 
-$is_current_version = $this->dbtable->io__cached_current_itemversion_id==$this->dbtable->itemversion_id;
 $is_a_procedure = DBTableRowTypeVersion::isTypeCategoryAProcedure($this->dbtable->tv__typecategory_id);
 $big_page_length = isset($this->queryvars['months']) ? (($this->queryvars['months']==1) ? '1 month' : $this->queryvars['months'].' months') : '';
 $not_all_records_showing = EventStream::getNestedEventStreamRecordCount($this->dbtable) != EventStream::getNestedEventStreamRecordCount($this->dbtable, $this->earliest_date);
@@ -49,7 +48,7 @@ if (isset($this->queryvars['offer_more_url'])) {
 if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'ui:itemlistview', 'show_addedit_item_button')) {
     $allow_new_version = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'ui:itemedit', $is_a_procedure ? 'new_proc_version' : 'new_part_version');
     $allow_edit_version = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'ui:itemedit', $is_a_procedure ? 'edit_proc_version' : 'edit_part_version');
-    $show_new_version_button = $is_current_version && $allow_new_version;
+    $show_new_version_button = $this->dbtable->isCurrentVersion() && $allow_new_version;
 
     if ($show_new_version_button) {
         // if this is the only operation we are allowed to do, then use the generic verb 'Edit'
@@ -156,7 +155,7 @@ if ($this->show_big_page_controls) {
     $html .= DBTableRowWhatsNewUser::fetchWhatsNew('NEW_BIG_PAGE_CONTROL2', 'Improvements made to the Slow Page notice. By default less history is shown so pages load faster.', '2/2/2022');
 }
 
-if (!$is_current_version) {
+if (!$this->dbtable->isCurrentVersion()) {
     $query_params = array();
     $query_params['itemversion_id'] = $this->dbtable->io__cached_current_itemversion_id;
     $view_url = $this->navigator->getCurrentViewUrl('itemview', '', $query_params);

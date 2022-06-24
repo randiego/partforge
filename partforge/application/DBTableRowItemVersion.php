@@ -1630,7 +1630,7 @@ class DBTableRowItemVersion extends DBTableRow {
      * TODO: might be a problem here because what if effective_date is too early?  Might be
      * bad not to have anything loaded.
      */
-    public function loadComponentValuesFromItemComponentsList($list_of_itemcomponents, $effective_date = null)
+    public function loadComponentValuesFromItemComponentsList($list_of_itemcomponents, $effective_date, $is_current_version_of_part)
     {
 
         // extract the component values (just the value of itemcomponent_id) from the just processed record
@@ -1642,7 +1642,9 @@ class DBTableRowItemVersion extends DBTableRow {
                 $this->{$component_name} = $has_an_itemobject_id;
                 if (in_array($component_name, $this->_typeversion_digest['components_in_defined_subfields'])) {
                     $this->_last_loaded_component_objects[$component_name] = new DBTableRowItemVersion(false, null);
-                    $this->_last_loaded_component_objects[$component_name]->getCurrentRecordByObjectId($has_an_itemobject_id, $effective_date);
+                    $this->_last_loaded_component_objects[$component_name]->getCurrentRecordByObjectId($has_an_itemobject_id, $is_current_version_of_part ? null : $effective_date);
+                    // note that at this point, if $is_current_version_of_part and $effective_date < $this->_last_loaded_component_objects[$component_name]->effective_date
+                    // then the referenced component was changed after this object was last edited and that we are loading these latest values.
                 }
             }
         }
@@ -1690,7 +1692,9 @@ class DBTableRowItemVersion extends DBTableRow {
             }
         }
 
-        $this->loadComponentValuesFromItemComponentsList($record_vars['list_of_itemcomponents'], $record_vars['effective_date']);
+        // if this is the current version and we are a Part, then fetch the current versions of the components
+        $is_current_version_of_part = ($record_vars['io__cached_current_itemversion_id']==$record_vars['itemversion_id']) && !$record_vars['is_user_procedure'];
+        $this->loadComponentValuesFromItemComponentsList($record_vars['list_of_itemcomponents'], $record_vars['effective_date'], $is_current_version_of_part);
 
         foreach (explode(';', $record_vars['list_of_itemcomments']) as $itemcomment) {
             $comment_params = explode(',', $itemcomment);

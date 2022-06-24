@@ -258,6 +258,7 @@ class EventStream {
 				FROM itemversion WHERE itemobject_id='{$this->_itemobject_id}' {$end_date_and_where} ORDER BY effective_date";
         $records = DbSchema::getInstance()->getRecords('itemversion_id', $query);
         $is_first = true;
+        $PreviousItemVersion = null;
         foreach ($records as $itemversion_id => $record) {
             // get itemversion record
             $ItemVersion = DbSchema::getInstance()->getItemVersionCachedRecordById($itemversion_id);
