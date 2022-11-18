@@ -36,6 +36,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
     private $_override_itemversion_id = null;
     private $_recent_row_age = null;
     private $_has_aliases = false;
+    private $_show_used_on = false;
 
     /**
      * If $output_all_versions is true, then there is 1 output row per itemversion_id.  If false, then 1 output row per itemobject_id.
@@ -57,6 +58,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
         $this->output_all_versions = $output_all_versions;
         $this->_override_itemversion_id = $override_itemversion_id;
         $this->_recent_row_age = Zend_Registry::get('config')->recent_row_age;
+        $this->_show_used_on = !$is_user_procedure && !$this->output_all_versions;
 
         // this little dance is to make sure that we get a valid view_category.
         $this->view_category = is_null($override_view_category) ? $_SESSION['account']->getPreference($this->pref_view_category_name) : $override_view_category;
@@ -114,6 +116,10 @@ class ReportDataItemListView extends ReportDataWithCategory {
                 $this->default_sort_key = 'iv__item_serial_number desc';
             }
             $this->fields['iv__item_serial_number'] = array('display'=> 'Item Serial Number', 'key_asc'=>'iv__item_serial_number', 'key_desc'=>'iv__item_serial_number desc');
+        }
+
+        if ($this->_show_used_on) {
+            $this->fields['used_on']   = array('display'=> 'Used On');
         }
 
         if ($show_late_part_numbers_column) {
@@ -459,7 +465,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
 
             $DBTableRowQuery->addAndWhere($this->getSearchAndWhere($searchstr, $DBTableRowQuery));
             /*
-             * for the current itemversion, stich together serial numbers.  Tje
+             * for the current itemversion, stich together serial numbers.
              */
             $DBTableRowQuery->addSelectFields("
 						(SELECT GROUP_CONCAT(iv_them.item_serial_number)
@@ -499,6 +505,17 @@ class ReportDataItemListView extends ReportDataWithCategory {
                 );
             }
 
+            if ($this->_show_used_on) {
+                $DBTableRowQuery->addSelectFields("
+						(SELECT GROUP_CONCAT(CONCAT(iv_used_on.itemobject_id,',',CONVERT(HEX(iv_used_on.item_serial_number),CHAR),',',iv_used_on.partnumber_alias,',',CONVERT(HEX(tv_used_on.type_description),CHAR)) ORDER BY iv_used_on.itemobject_id SEPARATOR ';')
+						FROM itemcomponent
+						LEFT JOIN itemversion AS iv_used_on ON iv_used_on.itemversion_id=itemcomponent.belongs_to_itemversion_id
+						LEFT JOIN typeversion AS tv_used_on ON tv_used_on.typeversion_id=iv_used_on.typeversion_id
+						LEFT JOIN itemobject AS io_used_on ON io_used_on.itemobject_id=iv_used_on.itemobject_id
+						WHERE (itemcomponent.has_an_itemobject_id=itemobject.itemobject_id and tv_used_on.typecategory_id='2') && (iv_used_on.itemversion_id=io_used_on.cached_current_itemversion_id)) as used_on_packed"
+                );
+            }
+
             $this->addExtraJoins($DBTableRowQuery);
         }
         return DbSchema::getInstance()->getRecords('', $DBTableRowQuery->getQuery());
@@ -532,6 +549,27 @@ class ReportDataItemListView extends ReportDataWithCategory {
 
         $detail_out['iv__item_serial_number'] = linkify( $edit_url, $record['iv__item_serial_number'], 'View');
         $detail_out['type_part_number'] = TextToHtml(DBTableRowTypeVersion::formatPartNumberDescription($record['type_part_number']));
+
+        if ($this->_show_used_on) {
+            $wu_links = array();
+            foreach (explode(';', $record['used_on_packed']) as $wu) {
+                $fields = explode(',', $wu);
+                if (count($fields)==4) {
+                    list($wu_itemobject_id, $wu_hex_item_serial_number, $wu_partnumber_alias, $wu_hex_type_description) = $fields;
+                    $type_desc = explode('|', hextobin($wu_hex_type_description))[$wu_partnumber_alias];
+                    $wu_query_params = $query_params;
+                    unset($wu_query_params['itemversion_id']);
+                    $wu_query_params['itemobject_id'] = $wu_itemobject_id;
+                    $wu_url = $navigator->getCurrentViewUrl('itemview', '', $wu_query_params);
+                    $error_counts_array = DBTableRowItemObject::refreshAndGetValidationErrorCounts(array($wu_itemobject_id), false);
+                    if ($error_counts_array[$wu_itemobject_id]>0) {
+                        $detail_out['td_class']['used_on'] = 'cell_error';
+                    }
+                    $wu_links[] = linkify($wu_url, hextobin($wu_hex_item_serial_number), 'View '.$type_desc.': '.hextobin($wu_hex_item_serial_number));
+                }
+            }
+            $detail_out['used_on'] = implode(', ', $wu_links);
+        }
 
         $last_change_date_str = date('M j, Y G:i', strtotime($record['last_change_date']));
         $first_ref_date_str = date('M j, Y G:i', strtotime($record['first_ref_date']));
@@ -657,6 +695,18 @@ class ReportDataItemListView extends ReportDataWithCategory {
                     }
                 }
             }
+        }
+
+        if ($this->_show_used_on) {
+            $wu_links = array();
+            foreach (explode(';', $record['used_on_packed']) as $wu) {
+                $fields = explode(',', $wu);
+                if (count($fields)==4) {
+                    list($wu_itemobject_id, $wu_hex_item_serial_number, $wu_partnumber_alias, $wu_hex_type_description) = $fields;
+                    $wu_links[] = hextobin($wu_hex_item_serial_number);
+                }
+            }
+            $detail_out['used_on'] = implode(', ', $wu_links);
         }
 
         if (count($this->_proc_matrix_column_keys)>0) {
