@@ -156,6 +156,36 @@ function activateLinkToPageButton(element, lookupUrl, linkToPageUrl, layoutTitle
 	}
 }
 
+var treedialogdiv = null;  // this will force only one a time
+function activeTreeViewLinks()
+{
+	$('.tree_pop_link').click(function(link){
+		if (treedialogdiv!==null) {treedialogdiv.dialog('destroy'); treedialogdiv = null;}; // remove and show the new dialog. But only one at a time.
+		var contentdiv = $(this).next();
+		treedialogdiv = contentdiv.dialog({
+			position: { my: "left+20 top-21", at: "left bottom", of: link },
+			width: 400,
+			height: 'auto',
+			close: function(event,ui) {$(this).dialog('destroy'); treedialogdiv = null;}
+		});
+		var parts = contentdiv.attr('id').match(/tree_pop_([0-9]+)/);
+		var itemobject_id = parts[1];
+		$.getJSON(baseUrl + '/struct/jsontreeoflinks',
+				{"itemobject_id" : itemobject_id},
+				function(data) {
+					if (typeof data != "undefined") {
+						var html = data["html"];
+						contentdiv.prev().children("span.ui-dialog-title").html(data["title"]);
+						contentdiv.html(html);
+					} else {
+						alert("Did not get back response for itemobject_id = " +itemobject_id);
+					}
+				});
+		return false;
+
+	});
+}
+
 var jsonfetchdata = {};
 
 

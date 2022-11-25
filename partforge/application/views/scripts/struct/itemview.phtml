@@ -12,7 +12,7 @@ var lookupUrl = '<?php echo $this->navigator->getCurrentViewUrl('jsonsearchlogin
 var canSendLink = <?php echo in_array($_SESSION['account'] ->getRole(), array('Guest','DataTerminal')) ? 'false' : 'true';?>;
 </script>
 <?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
-<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemview.js?v=15" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemview.js?v=16" type="TEXT/JAVASCRIPT"></script>
 <?php
 
 $title = $this->dbtable->getPageTypeTitleHtml().($this->dbtable->item_serial_number ? ' - '.TextToHtml($this->dbtable->item_serial_number) : '');
@@ -191,12 +191,12 @@ if (!empty($fieldlayout)) {
     $errormsg = array();
     $this->dbtable->validateFields($this->dbtable->getSaveFieldNames(), $errormsg);
     // the following MUST be called after validateFields because otherwise validate fields will think component errors are real errors
-    $this->dbtable->getComponentValidationErrors($errormsg, true);
+    $component_depths_array = $this->dbtable->getComponentValidationErrorsAndDepths($errormsg, true);
     $this->dbtable->validateLayoutProcedures($this->dbtable->getLayoutProcedureBlockNames(), $errormsg);
 
     // while we're here, lets refresh ourselves too. We've got the data already, so it's free!
     if (!$this->dbtable->hasADisposition()) {
-        DBTableRowItemObject::setValidationErrorCount($this->dbtable->itemobject_id, count($errormsg));
+        DBTableRowItemObject::setValidationErrorCount($this->dbtable->itemobject_id, count($errormsg), count($component_depths_array)>0 ? max($component_depths_array)+1 : 0);
     }
 
     $procedure_blocks = array();
@@ -208,7 +208,7 @@ if (!empty($fieldlayout)) {
             unset($procedure_records[$key]);
         }
     }
-    $html .= DBTableRowItemVersion::fetchItemVersionEditTableTR($fieldlayout, $this->dbtable, $errormsg, '', false, null, $this->fieldhistory, $procedure_blocks);
+    $html .= DBTableRowItemVersion::fetchItemVersionEditTableTR($fieldlayout, $this->dbtable, $errormsg, '', false, null, $this->fieldhistory, $procedure_blocks, $component_depths_array);
     $html .= '</table></div>';
 }
 $html .= '</div>';

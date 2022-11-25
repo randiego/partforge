@@ -37,6 +37,8 @@ function scrollRightSideToVersionId(version_id) {
 
 $(document).ready(function() {
 
+	activeTreeViewLinks();
+
 	$('#AddAnotherID').effect("highlight", {color:"#3F3"}, 10000);
 
 	$(".jumpmenu").button({

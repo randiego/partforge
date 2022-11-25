@@ -561,11 +561,13 @@ class ReportDataItemListView extends ReportDataWithCategory {
                     unset($wu_query_params['itemversion_id']);
                     $wu_query_params['itemobject_id'] = $wu_itemobject_id;
                     $wu_url = $navigator->getCurrentViewUrl('itemview', '', $wu_query_params);
-                    $error_counts_array = DBTableRowItemObject::refreshAndGetValidationErrorCounts(array($wu_itemobject_id), false);
+                    list($error_counts_array, $depths_array) = DBTableRowItemObject::refreshAndGetValidationErrorCountsAndDepths(array($wu_itemobject_id), false);
                     if ($error_counts_array[$wu_itemobject_id]>0) {
                         $detail_out['td_class']['used_on'] = 'cell_error';
                     }
-                    $wu_links[] = linkify($wu_url, hextobin($wu_hex_item_serial_number), 'View '.$type_desc.': '.hextobin($wu_hex_item_serial_number));
+                    $tree_link = $depths_array[$wu_itemobject_id] > 0 ? popupTreeViewLink($wu_itemobject_id) : '';
+
+                    $wu_links[] = linkify($wu_url, hextobin($wu_hex_item_serial_number), 'View '.$type_desc.': '.hextobin($wu_hex_item_serial_number)).$tree_link;
                 }
             }
             $detail_out['used_on'] = implode(', ', $wu_links);
@@ -592,21 +594,29 @@ class ReportDataItemListView extends ReportDataWithCategory {
             $ItemVersion->getRecordById($record['iv__itemversion_id']);
             $ItemVersion->validateFields($ItemVersion->getSaveFieldNames(), $errormsg);
             // the following MUST be called after validateFields because otherwise validate fields will think component errors are real errors
-            $ItemVersion->getComponentValidationErrors($errormsg, false);
+            $component_depths_array = $ItemVersion->getComponentValidationErrorsAndDepths($errormsg, false);
         }
 
         // if this is a list of parts, we also want to show a red background for the SN field if there are errors in the part.
         if (!$this->is_user_procedure) {
-            $error_counts_array = DBTableRowItemObject::refreshAndGetValidationErrorCounts(array($record['itemobject_id']), false);
+            list($error_counts_array, $depths_array) = DBTableRowItemObject::refreshAndGetValidationErrorCountsAndDepths(array($record['itemobject_id']), false);
             if ($error_counts_array[$record['itemobject_id']] > 0) {
                 $detail_out['td_class']['iv__item_serial_number'] = 'cell_error';
+            }
+            if (isset($depths_array[$record['itemobject_id']]) && ($depths_array[$record['itemobject_id']] > 0)) {
+                $detail_out['iv__item_serial_number'] .= popupTreeViewLink($record['itemobject_id']);
             }
         }
 
         if ($need_to_load_ItemVersion && (count($this->addon_fields_list)>0)) {
             foreach ($this->addon_fields_list as $fieldname => $fieldtype) {
                 if (isset($ItemVersion->{$fieldname})) {
-                    $detail_out[$fieldname] = $ItemVersion->formatPrintField($fieldname, true, true);
+                    $editing_msg = '';
+
+                    if (($fieldtype['type']=='component') && isset($component_depths_array[$ItemVersion->{$fieldname}]) && ($component_depths_array[$ItemVersion->{$fieldname}] > 0)) {
+                        $editing_msg = popupTreeViewLink($ItemVersion->{$fieldname});
+                    }
+                    $detail_out[$fieldname] = $ItemVersion->formatPrintField($fieldname, true, true).$editing_msg;
                 }
                 $fieldtype2 = $ItemVersion->getFieldType($fieldname);
                 if (isset($fieldtype2['error']) || isset($errormsg[$fieldname])) {

@@ -1016,3 +1016,9 @@ function log_message($message)
     $file =  dirname(__FILE__) . '/../debug_log.txt';
     file_put_contents($file, $message, FILE_APPEND);
 }
+
+function popupTreeViewLink($itemobject_id)
+{
+    $icon = '<IMG style="vertical-align:middle;" src="'.Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/images/tree-structure.png" width="16" height="16" border="0" alt="subcomponent tree">';
+    return linkify('#', $icon, 'subcomponent tree', 'tree_pop_link').'<div class="tree_pop_div" id="tree_pop_'.$itemobject_id.'" title="..." style="display: none;"></div>';
+}

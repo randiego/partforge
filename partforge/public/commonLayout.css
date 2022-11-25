@@ -391,6 +391,10 @@ table.listtable tr.error_row, table.listtable tr.rowlight.error_row {
 	background-color: #fcc;
 }
 
+ul.popuptreeview li span.error {
+	background-color: #fcc;
+}
+
 table.listtable tr.definition_subactive {
 	opacity:0.4;
 }
@@ -2119,4 +2123,8 @@ dl.comment_tips dt {
 	padding: 5px;
 	width: auto;
 	display:inline-block;
+}
+
+.ui-widget-content a:link, .ui-widget-content a:visited, .ui-widget-content a:hover, .ui-widget-content a:active {
+	color: #0073EA;
 }

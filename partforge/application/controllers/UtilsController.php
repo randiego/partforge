@@ -322,6 +322,12 @@ class UtilsController extends DBControllerActionAbstract
                         $databaseversion = '16';
                         setGlobal('databaseversion', $databaseversion);
                     }
+                    if ($databaseversion=='16') {
+                        $msgs[] = 'Upgrading to version 17: cache_depth added for supporting tree view.';
+                        DbSchema::getInstance()->mysqlQuery("ALTER TABLE itemobject ADD COLUMN cached_depth INT DEFAULT 0");
+                        $databaseversion = '17';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
             }
         }
         $this->view->currentversion = getGlobal('databaseversion');

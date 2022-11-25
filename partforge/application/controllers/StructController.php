@@ -1192,6 +1192,16 @@ class StructController extends DBControllerActionAbstract
         die();
     }
 
+    public function jsontreeoflinksAction()
+    {
+        $ItemVersion = new DBTableRowItemVersion();
+        $ItemVersion->getCurrentRecordByObjectId($this->params['itemobject_id']);
+        $out = array('html' => DBTableRowItemObject::getItemObjectNestedTreeView($this->params['itemobject_id'], $this->navigator),
+                    'title' => $ItemVersion->getPageTypeTitleHtml(true).': '.$ItemVersion->shortName());
+        echo json_encode($out);
+        die();
+    }
+
     public function commentsentlistAction()
     {
         $out = DBTableRowSendMessage::getMessageForComment($this->params['comment_id']);

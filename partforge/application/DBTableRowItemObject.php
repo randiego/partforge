@@ -195,6 +195,32 @@ class DBTableRowItemObject extends DBTableRow {
         return $out;
     }
 
+    static function getItemObjectNestedTreeView($itemobject_id, $navigator, $effective_date = null, $max_depth = null, $level = 0, $parents = array())
+    {
+        $out = '<ul class="popuptreeview">';
+        $ItemVersion = new DBTableRowItemVersion();
+        if ($ItemVersion->getCurrentRecordByObjectId($itemobject_id, $effective_date)) {
+            $ItemVersion->_navigator = $navigator;
+            foreach ($ItemVersion->getExportFieldTypes(true) as $fieldname => $fieldtype) {
+                if (isset($ItemVersion->{$fieldname})) {
+                    if (isset($fieldtype['type']) && ($fieldtype['type']=='component')) {
+                        list($error_counts_array, $depths_array) = DBTableRowItemObject::refreshAndGetValidationErrorCountsAndDepths(array($ItemVersion->{$fieldname}), false);
+                        $error_class = $error_counts_array[$ItemVersion->{$fieldname}] > 0 ? 'error' : '';
+                        $out .= '<li><span class="'.$error_class.'">'.$ItemVersion->formatFieldnameNoColon($fieldname).': '.$ItemVersion->formatPrintField($fieldname, true, true).'</span>';
+                        if ((is_null($max_depth) || ($max_depth >$level)) && !in_array($ItemVersion->{$fieldname}, $parents) && !$ItemVersion->hasADisposition()) {
+                            $new_parents = array_merge($parents, array($itemobject_id));
+                            $out .= self::getItemObjectNestedTreeView($ItemVersion->{$fieldname}, $navigator, $effective_date, $max_depth, $level+1, $new_parents);
+                        }
+                        $out .= '</li>';
+                    }
+                }
+            }
+        }
+        return $out.'</ul>';
+    }
+
+
+
     public static function getWhereUsedItemObjectIDs($itemobject_id, $parents=array())
     {
         $out = array();
@@ -231,51 +257,58 @@ class DBTableRowItemObject extends DBTableRow {
         DbSchema::getInstance()->mysqlQuery($query);
     }
 
-    public static function countKeys($array, $key_value)
+    public static function countKeys($array, $key_value, &$depth_scanned, $curr_depth = 0)
     {
         $count = 0;
+        if ($curr_depth > $depth_scanned) {
+            $depth_scanned = $curr_depth;
+        };
         foreach ($array as $key => $value) {
             if ($key==$key_value) {
                 $count += count($value);
             } else if (is_array($value)) {
-                $count += self::countKeys($value, $key_value);
+                $count += self::countKeys($value, $key_value, $depth_scanned, $curr_depth + 1);
             }
         }
         return $count;
     }
 
     /**
-     * returns an array of validation error counts for the specified array of itemobject IDs.
+     * returns a arrays of validation error counts and depths of the structure for the specified array of itemobject IDs.
      * This either uses the caches value or, if necessary, updates the cached value and returns that
      *
      * @param array $itemobject_ids
      *
      * @return array of validation error counts indexed by itemobject ID.
      */
-    public static function refreshAndGetValidationErrorCounts($itemobject_ids, $always_recheck_errors = false)
+    public static function refreshAndGetValidationErrorCountsAndDepths($itemobject_ids, $always_recheck_errors = false)
     {
-        $out = array();
-        $query = "SELECT itemobject_id, validation_cache_is_valid, validated_on, cached_has_validation_errors
+        $error_counts = array();
+        $depths = array();
+        $query = "SELECT itemobject_id, validation_cache_is_valid, validated_on, cached_has_validation_errors, cached_depth
             FROM itemobject
             WHERE itemobject_id IN (".implode(',', $itemobject_ids).")";
         $records = DbSchema::getInstance()->getRecords('itemobject_id', $query);
         $expiration_date = script_time() - Zend_Registry::get('config')->validation_cache_max_age*24*3600;
         foreach ($records as $itemobject_id => $record) {
             if ($record['validation_cache_is_valid'] && (!$always_recheck_errors) && $record['validated_on'] && (strtotime($record['validated_on']) > $expiration_date)) {
-                $out[$itemobject_id] = $record['cached_has_validation_errors'];
+                $error_counts[$itemobject_id] = $record['cached_has_validation_errors'];
+                $depths[$itemobject_id] = $record['cached_depth'];
             } else {
-                $errorcount = DBTableRowItemObject::countKeys(DBTableRowItemObject::getItemObjectFullNestedArray($itemobject_id), 'field_validation_errors');
-                self::setValidationErrorCount($itemobject_id, $errorcount);
-                $out[$itemobject_id] = $errorcount;
+                $depth_scanned = -1;
+                $errorcount = DBTableRowItemObject::countKeys(DBTableRowItemObject::getItemObjectFullNestedArray($itemobject_id), 'field_validation_errors', $depth_scanned);
+                self::setValidationErrorCount($itemobject_id, $errorcount, $depth_scanned);
+                $error_counts[$itemobject_id] = $errorcount;
+                $depths[$itemobject_id] = $depth_scanned;
             }
         }
-        return $out;
+        return array($error_counts, $depths);
     }
 
-    public static function setValidationErrorCount($itemobject_id, $errorcount)
+    public static function setValidationErrorCount($itemobject_id, $errorcount, $depth_scanned)
     {
         $query = "UPDATE itemobject SET validation_cache_is_valid=1, cached_has_validation_errors='{$errorcount}',
-                    validated_on='".time_to_mysqldatetime(script_time())."' WHERE itemobject_id='{$itemobject_id}'";
+                    validated_on='".time_to_mysqldatetime(script_time())."', cached_depth='{$depth_scanned}' WHERE itemobject_id='{$itemobject_id}'";
         DbSchema::getInstance()->mysqlQuery($query);
     }
 
@@ -300,7 +333,7 @@ class DBTableRowItemObject extends DBTableRow {
         $records = DbSchema::getInstance()->getRecords('itemobject_id', $query);
         $itemobject_ids = array_keys($records);
         if (count($itemobject_ids) > 0) {
-            $error_counts_array = self::refreshAndGetValidationErrorCounts($itemobject_ids, true);
+            list($error_counts_array, $depths_array) = self::refreshAndGetValidationErrorCountsAndDepths($itemobject_ids, true);
         }
         setGlobal('validation_cache_records_validated', count($itemobject_ids));
 
@@ -321,7 +354,7 @@ class DBTableRowItemObject extends DBTableRow {
         }
         $itemobject_ids = array_keys($records);
         if (count($itemobject_ids) > 0) {
-            $error_counts_array = self::refreshAndGetValidationErrorCounts($itemobject_ids, true);
+            list($error_counts_array, $depths_array) = self::refreshAndGetValidationErrorCountsAndDepths($itemobject_ids, true);
         }
     }
 

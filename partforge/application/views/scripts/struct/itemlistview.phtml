@@ -5,7 +5,7 @@ var canSendLink = <?php echo in_array($_SESSION['account'] ->getRole(), array('G
 var pageTitleDetail = '<?php echo isset($this->report_data->category_array[$this->report_data->getViewCategory()]) ? ': '.$this->report_data->category_array[$this->report_data->getViewCategory()].'' : ''?>';
 </script>
 <?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
-<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemlistview.js?v=6" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemlistview.js?v=7" type="TEXT/JAVASCRIPT"></script>
 <?php
 $this->layout()->title = $this->is_user_procedure ? 'List of Procedures' : 'List of Parts';
 $this->layout()->setLayout('layout');

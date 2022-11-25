@@ -251,7 +251,7 @@ class DBTableRowItemVersion extends DBTableRow {
         return array($item_data,$fieldnames_converted);
     }
 
-    public function getExportFieldTypes()
+    public function getExportFieldTypes($force_layout_sort_order=false)
     {
         $out = array();
         $header_fields = array('typeversion_id','effective_date','record_created','itemobject_id','itemversion_id','user_id','login_id');
@@ -285,6 +285,25 @@ class DBTableRowItemVersion extends DBTableRow {
         foreach ($this->_typeversion_digest['addon_attachment_fields'] as $dictionary_field_name) {
             $out[$dictionary_field_name] = $this->getFieldType($dictionary_field_name);
         }
+
+        if ($force_layout_sort_order) {
+            $DBTableRowTypeVersion = new DBTableRowTypeVersion();
+            if ($DBTableRowTypeVersion->getRecordById($this->typeversion_id)) {
+                // order the output like the layout
+                $unordered_fieldtypes = $out;
+                $ft_out_ordered = array();
+                foreach ( $DBTableRowTypeVersion->allLayoutColumnNames() as $fieldname) {
+                    if (isset($unordered_fieldtypes[$fieldname])) {
+                        $ft_out_ordered[$fieldname] = $unordered_fieldtypes[$fieldname];
+                        unset($unordered_fieldtypes[$fieldname]);
+                    }
+                }
+                $ft_out_ordered = array_merge($ft_out_ordered, $unordered_fieldtypes); // get the left-overs
+                $out = $ft_out_ordered;
+            }
+        }
+
+
         return $out;
     }
 
@@ -1448,16 +1467,17 @@ class DBTableRowItemVersion extends DBTableRow {
         }
     }
 
-    public function getComponentValidationErrors(&$errormsg, $always_recheck_errors = false)
+    public function getComponentValidationErrorsAndDepths(&$errormsg, $always_recheck_errors = false)
     {
         $itemobject_ids = array();
+        $depths_array = array();
         foreach ($this->getComponentFieldNames() as $fieldname) {
             if (is_numeric($this->{$fieldname})) {
                 $itemobject_ids[$fieldname] = $this->{$fieldname};
             }
         }
         if (count($itemobject_ids) > 0) {
-            $error_counts_array = DBTableRowItemObject::refreshAndGetValidationErrorCounts($itemobject_ids, $always_recheck_errors);
+            list($error_counts_array, $depths_array) = DBTableRowItemObject::refreshAndGetValidationErrorCountsAndDepths($itemobject_ids, $always_recheck_errors);
             foreach ($itemobject_ids as $fieldname => $itemobject_id) {
                 if ($error_counts_array[$itemobject_id] > 0) {
                     // don't step on existing errors.
@@ -1465,6 +1485,7 @@ class DBTableRowItemVersion extends DBTableRow {
                 }
             }
         }
+        return $depths_array;
     }
 
     /**
@@ -2841,7 +2862,8 @@ class DBTableRowItemVersion extends DBTableRow {
         $editable = true,
         $callBackFunction = null,
         $fieldhistory = array(),
-        $procedure_blocks_html = array()
+        $procedure_blocks_html = array(),
+        $component_depths = array()
     ) {
         $html = '';
         $editfields = $dbtable->getEditFieldNames();
@@ -2909,6 +2931,9 @@ class DBTableRowItemVersion extends DBTableRow {
                         }
                     } else {
                         $rhs_html = $dbtable->formatPrintField($fieldname);
+                        if (is_numeric($dbtable->{$fieldname}) && isset($component_depths[$dbtable->{$fieldname}]) && ($component_depths[$dbtable->{$fieldname}] > 0)) {
+                            $rhs_html .= popupTreeViewLink($dbtable->{$fieldname});
+                        }
                         if (isset($fieldhistory[$fieldname])) {
                             $rhs_html .= EventStream::changeHistoryToHtmlPrintFieldDecoration($fieldhistory[$fieldname]);
                         }
