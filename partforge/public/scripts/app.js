@@ -171,16 +171,19 @@ function activeTreeViewLinks()
 		var parts = contentdiv.attr('id').match(/tree_pop_([0-9]+)/);
 		var itemobject_id = parts[1];
 		$.getJSON(baseUrl + '/struct/jsontreeoflinks',
-				{"itemobject_id" : itemobject_id},
-				function(data) {
-					if (typeof data != "undefined") {
-						var html = data["html"];
-						contentdiv.prev().children("span.ui-dialog-title").html(data["title"]);
-						contentdiv.html(html);
-					} else {
-						alert("Did not get back response for itemobject_id = " +itemobject_id);
-					}
-				});
+			{"itemobject_id" : itemobject_id},
+			function(data) {
+				if (typeof data != "undefined") {
+					var html = data["html"];
+					contentdiv.prev().children("span.ui-dialog-title").html(data["title"]);
+					contentdiv.html(html);
+				} else {
+					alert("Did not get back response for itemobject_id = " +itemobject_id);
+				}
+			})
+		.fail(function( jqxhr, textStatus, error ) {
+			window.location.reload();
+		});
 		return false;
 
 	});
