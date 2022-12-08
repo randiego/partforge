@@ -3,6 +3,11 @@
 	display: inline-block;
 	margin-right:32px;
 }
+
+td.compsel .custom-combobox {
+	margin-right:20px;
+}
+
 .custom-combobox-toggle {
 	position: absolute;
 	top: 0;
@@ -10,16 +15,27 @@
 	margin-left: -1px;
 	padding: 0;
 }
+
 .custom-combobox-input {
 	margin: 0;
 	padding: 5px 10px;
 	width: 350px;
 }
-	
-.custom-combobox-items a {
-    font-weight: bold;
+td.compsel .custom-combobox-input {
+	margin: 0;
+	padding: 3px 3px;
+	font-size:14px;
+	color:black;
+	width: calc(100% + 20px);
+	font-weight: normal;
 }
-	
+
+.custom-combobox-items a {
+    font-weight: normal;
+	width: calc(100% + 20px);
+	display: inline-block;
+}
+
 .ui-autocomplete {
 	max-height: 400px;
 	overflow-y: auto;

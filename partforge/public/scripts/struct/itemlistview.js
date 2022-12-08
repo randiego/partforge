@@ -1,5 +1,5 @@
 $(document).ready(function() {
-	$('select.changeselectbox').comboboxjumper();
+	$('select.changeselectbox').comboboxjumper({hidecurrentvaluewhenchanging: 1});
 	activateLinkToPageButton('#linkToPageButton', lookupUrl, linkToPageUrl, layoutTitle + pageTitleDetail, canSendLink);
 	activeTreeViewLinks();
 

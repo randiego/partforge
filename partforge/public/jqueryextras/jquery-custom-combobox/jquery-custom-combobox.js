@@ -1,10 +1,12 @@
 (function( $ ) {
 	$.widget( "custom.comboboxjumper", {
-		
+
 		 options: {
-			 skipfav: false
+			 skipfav: false,
+			 hidecurrentvaluewhenchanging: 1,
+			 allowempty: false
 			 },
-			 
+
 		_create: function() {
 			this.wrapper = $( "<span>" )
 				.addClass( "custom-combobox" )
@@ -16,12 +18,12 @@
 
 		_createAutocomplete: function() {
 			var selected = this.element.children( ":selected" ),
-				value = selected.val() ? selected.text() : this.element.children().first().text(),
+				value = selected.val() ? selected.text() : (this.options.allowempty ? "" : this.element.children().first().text()),
 				selectbox = this.element;
 
 			this.input = $( "<input>" )
 				.appendTo( this.wrapper )
-				.val( '' )
+				.val( value )
 				.attr( "title", "" )
 				.addClass( "custom-combobox-input ui-widget ui-widget-content ui-state-default ui-corner-left" )
 				.autocomplete({
@@ -33,15 +35,22 @@
 					},
 					change : function(event, ui) {
 						// return input box to original select of you just loose focus without clicking
-						event.target.value = ''; 
-					}												
-				}) 
-				.watermark(value, {className: 'ui-widget-content', useNative: false});
+						event.target.value = '';
+					}
+				});
+			if (this.options.hidecurrentvaluewhenchanging==1) {
+				this.input.watermark(value, {className: 'ui-widget-content', useNative: false});
+			}
+
 			this.input.autocomplete( "instance" )._renderItem = function( ul, item ) {
+				var text = "--- clear ---";
+				if (item.label!='') {
+					text = item.label;
+				}
 				return $( '<li class="custom-combobox-items"></li>' )
-					.append( '<a>' + item.label + "</a>" )
+					.append( '<a>' + text + "</a>" )
 					.appendTo( ul );
-			};				
+			};
 
 			this._on( this.input, {
 				autocompleteselect: function( event, ui ) {

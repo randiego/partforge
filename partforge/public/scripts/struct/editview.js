@@ -26,6 +26,9 @@ function set_bool_clearer() {
 
 $(document).ready(function() {
 
+	$('td > select.inputboxclass.compsel').parent().addClass('compsel');
+	$('select.inputboxclass.compsel').comboboxjumper({hidecurrentvaluewhenchanging: 0, allowempty : true});
+
 	// refresh the display whenever the effective_date changes. This is
 	// needed because the selection
 	// boxes will have different options depending on the effective_date

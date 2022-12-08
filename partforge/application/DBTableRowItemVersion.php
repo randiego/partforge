@@ -2214,7 +2214,7 @@ class DBTableRowItemVersion extends DBTableRow {
         }
 
         $footer  = !is_valid_datetime($this->effective_date) ? '<span class="paren_red">Select Effective Date for more choices.</span>' : $buttons;
-        return format_select_tag($select_values, $fieldname, $this->getArray(), $fieldtype['onchange_js']).'<br />'.$footer;
+        return format_select_tag($select_values, $fieldname, $this->getArray(), $fieldtype['onchange_js'], null, null, null, 'inputboxclass compsel').'<br />'.$footer;
     }
 
     public static function getFieldCommentRecord($navigator, $comment_id, $gallery_id)
