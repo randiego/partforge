@@ -26,13 +26,13 @@ td.compsel .custom-combobox-input {
 	padding: 3px 3px;
 	font-size:14px;
 	color:black;
-	width: calc(100% + 20px);
+	width: 175px;
 	font-weight: normal;
 }
 
 .custom-combobox-items a {
     font-weight: normal;
-	width: calc(100% + 20px);
+	width: 300px;
 	display: inline-block;
 }
 

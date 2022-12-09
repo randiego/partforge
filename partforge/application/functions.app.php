@@ -825,7 +825,7 @@ function fetchHtmlHeaderIncludes()
 <link type="text/css" href="{$baseurl}/jqueryui11/jquery-ui.min.css" rel="Stylesheet" />
 <link rel="stylesheet" href="{$baseurl}/jqueryextras/gallery-2.15.2/css/blueimp-gallery.min.css">
 <link rel="stylesheet" href="{$baseurl}/jqueryextras/jquery-file-upload/css/jquery.fileupload-ui.css">
-<link rel="stylesheet" href="{$baseurl}/jqueryextras/jquery-custom-combobox/jquery-custom-combobox.css?v=2">
+<link rel="stylesheet" href="{$baseurl}/jqueryextras/jquery-custom-combobox/jquery-custom-combobox.css?v=4">
 <script type="text/javascript" src="{$baseurl}/jqueryui11/external/jquery/jquery.js"></script>
 <script type="text/javascript" src="{$baseurl}/jqueryui11/jquery-ui.min.js"></script>
 <script type="text/javascript" src="{$baseurl}/jqueryextras/js/jquery-ui-timepicker-addon.js"></script>
