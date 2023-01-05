@@ -177,7 +177,7 @@ class DBTableRowItemObject extends DBTableRow {
             foreach ($ItemVersion->getExportFieldTypes() as $fieldname => $fieldtype) {
                 if (isset($ItemVersion->{$fieldname})) {
                     if (isset($fieldtype['type']) && ($fieldtype['type']=='component')) {
-                        if ((is_null($max_depth) || ($max_depth >$level)) && !in_array($ItemVersion->{$fieldname}, $parents) && !$ItemVersion->hasADisposition()) {
+                        if ((is_null($max_depth) || ($max_depth >$level)) && !in_array($ItemVersion->{$fieldname}, $parents)) {
                             $new_parents = array_merge($parents, array($itemobject_id));
                             $out[$fieldname] = self::getItemObjectFullNestedArray($ItemVersion->{$fieldname}, $effective_date, $max_depth, $level+1, $new_parents);
                         } else {
