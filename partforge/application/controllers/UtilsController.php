@@ -328,6 +328,153 @@ class UtilsController extends DBControllerActionAbstract
                         $databaseversion = '17';
                         setGlobal('databaseversion', $databaseversion);
                     }
+                    if ($databaseversion=='17') {
+                        // Problem: until now, database tables have been a mix of latin1 and utf8 but we've
+                        // always been connected to the DB as latin1, but consistently send and expecting utf8
+                        // data. This update attempts to unwind this without loosing anything.
+                        $msgs[] = 'Upgrading to version 18: Converting all tables to self-consistent utf8mb4.';
+                        $finished_work_col_key = 'dbver17_upgrade_finished_columns';
+                        $finished_columns = getGlobal($finished_work_col_key);
+                        $finished_columns = $finished_columns ? explode(',', $finished_columns) : array();
+                        $finished_work_tbl_key = 'dbver17_upgrade_finished_tables';
+                        $finished_tables = getGlobal($finished_work_tbl_key);
+                        $finished_tables = $finished_tables ? explode(',', $finished_tables) : array();
+                        $upgrade_success = true;
+
+                        // get all the character fields and their character sets
+                        $query = "SELECT TABLE_SCHEMA,
+									TABLE_NAME,
+									CCSA.CHARACTER_SET_NAME AS DEFAULT_CHAR_SET,
+									COLUMN_NAME,
+                                    COLUMN_KEY,
+									COLUMN_TYPE,
+                                    COLUMN_COMMENT,
+                                    IS_NULLABLE,
+                                    COLUMN_DEFAULT,
+									C.CHARACTER_SET_NAME
+								FROM information_schema.TABLES AS T
+								JOIN information_schema.COLUMNS AS C USING (TABLE_SCHEMA, TABLE_NAME)
+								JOIN information_schema.COLLATION_CHARACTER_SET_APPLICABILITY AS CCSA
+									ON (T.TABLE_COLLATION = CCSA.COLLATION_NAME)
+								WHERE TABLE_SCHEMA=SCHEMA()
+								AND C.DATA_TYPE IN ('enum', 'varchar', 'char', 'text', 'mediumtext', 'longtext')
+								ORDER BY TABLE_SCHEMA,
+										TABLE_NAME,
+										COLUMN_NAME";
+                        $recs = DbSchema::getInstance()->getRecords('', $query);
+                        // now each record contains a text or character fields that needs to be converted to utf8 after misusing it with a latin1 connection
+                        $tables_to_convert = array();
+                        foreach ($recs as $rec) {
+                            $table = $rec['TABLE_NAME'];
+                            $col = $rec['COLUMN_NAME'];
+                            $coltype = $rec['COLUMN_TYPE'];
+                            $colkey = $rec['COLUMN_KEY'];
+                            $colcomment = $rec['COLUMN_COMMENT'];
+                            $nullable = ($rec['IS_NULLABLE']=='YES');
+                            $default = $rec['COLUMN_DEFAULT'];
+                            $charset = $rec['CHARACTER_SET_NAME'];
+                            if ($charset=='utf8mb3') {
+                                $charset = 'utf8';
+                            }
+                            if (!is_null($default)) {
+                                $default = trim($default, "'");
+                            }
+                            if ($default == 'NULL') {
+                                $default = null;
+                            }
+                            if ($nullable) {
+                                if (is_null($default)) {
+                                    $valtype = " DEFAULT NULL";
+                                } else {
+                                    $valtype = " DEFAULT '{$default}'";
+                                }
+                            } else {
+                                if (is_null($default)) {
+                                    $valtype = " NOT NULL";
+                                } else {
+                                    $valtype = " NOT NULL DEFAULT '{$default}'";
+                                }
+                            }
+                            $colcomment = $colcomment ? " COMMENT '{$colcomment}'" : '';
+                            if (empty($colkey)) { // we only do this for non-key columns
+                                if (in_array($table.'_'.$col, $finished_columns)) {
+                                    $msgs[] = "The table {$table} and column {$col} were already processed. It will be skipped this time.";
+                                } else {
+                                    if ($charset=='utf8') {
+                                        // we convert the column in the way we will do it down below and look for problems.
+                                        $predicted_fail_recs = DbSchema::getInstance()->getRecords('',
+                                                    "SELECT * FROM {$table} where (convert(binary convert({$col} using latin1) using utf8) IS NULL)
+                                                    AND NOT ({$col} IS NULL)");
+                                    } else { // it's latin1 so let's just see what happens if we cast it as utf8.
+                                        $predicted_fail_recs = DbSchema::getInstance()->getRecords('',
+                                                    "SELECT * FROM {$table} where (convert(binary {$col} using utf8) IS NULL)
+                                                    AND NOT ({$col} IS NULL)");
+                                    }
+                                    $failed_rec_numbers = array();
+                                    foreach ($predicted_fail_recs as $failrec) {
+                                        $failrec = array_reverse($failrec);
+                                        $failed_rec_numbers[] = array_pop($failrec); // should return the id column so we can say what record the error happened on
+                                    }
+                                    $warning_recs = DbSchema::getInstance()->getRecords('', "SHOW WARNINGS");
+                                    if (count($failed_rec_numbers)>0) {
+                                        $msgs[] = "Error: The column {$col} in table {$table} has illegal values that cannot be converted. The bad record numbers are ".implode(', ', $failed_rec_numbers).". Please correct these fields and rerun this Upgrade Procedure.";
+                                        $upgrade_success = false;
+                                    } elseif (count($warning_recs)>0) {
+                                        foreach ($warning_recs as $warning_rec) {
+                                            $msgs[] = "Error: A conversion error has been detected at column {$col} in table {$table}.".implode(', ', $warning_rec).".  Please correct this and rerun this Upgrade Procedure.";
+                                            $upgrade_success = false;
+                                        }
+                                    } else {
+                                        if ($charset=='utf8') {
+                                            DbSchema::getInstance()->mysqlQuery("ALTER TABLE {$table} MODIFY {$col} {$coltype} CHARACTER SET latin1 {$valtype}{$colcomment}");
+                                        }
+                                        // ok so now the table looks like how we've been treating it in the past (as latin1) even though actual encoding is utf8
+                                        // we do the following little dance to recast (without converting) to utf8
+                                        DbSchema::getInstance()->mysqlQuery("ALTER TABLE {$table} CHANGE {$col} {$col} LONGBLOB");  // LONGBLOB should cover anything sizewise
+                                        DbSchema::getInstance()->mysqlQuery("ALTER TABLE {$table} CHANGE {$col} {$col} {$coltype} CHARACTER SET utf8 {$valtype}{$colcomment}");
+                                        if (!in_array($table, $tables_to_convert)) {
+                                            $tables_to_convert[] = $table;
+                                        }
+                                        $finished_columns[] = $table.'_'.$col;
+                                        setGlobal($finished_work_col_key, implode(',', $finished_columns));
+                                    }
+                                }
+                            }
+                        }
+                        // finally we will convert the tables that's we've touched so far
+                        foreach ($tables_to_convert as $table) {
+                            if (in_array($table, $finished_tables)) {
+                                $msgs[] = "The table {$table} was already processed. It will be skipped this time.";
+                            } else {
+                                try {
+                                    DbSchema::getInstance()->mysqlQuery("ALTER TABLE {$table} CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci");
+                                    $finished_tables[] = $table;
+                                    setGlobal($finished_work_tbl_key, implode(',', $finished_tables));
+                                } catch (Exception $e) {
+                                    $msgs[] = "Error: An error was encountered with table {$table}: ".$e->getMessage().". Fix the problem and run upgrade process again.";
+                                    $upgrade_success = false;
+                                }
+                            }
+                        }
+
+                        // one final thing is to convert everything to utf8mb4 which should go smoothly since we've already made sure it's in utf8 (a subset)
+                        if ($upgrade_success) {
+                            try {
+                                foreach (DbSchema::getInstance()->getTableNames() as $table) {
+                                    DbSchema::getInstance()->mysqlQuery("ALTER TABLE {$table} CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
+                                }
+                                DbSchema::getInstance()->mysqlQuery("ALTER DATABASE CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci");
+                            } catch (Exception $e) {
+                                $msgs[] = "An error was encountered cleaning up after conversion: ".$e->getMessage().". However, the upgrade is complete.";
+                                $upgrade_success = false;
+                            }
+                        }
+
+                        if ($upgrade_success) {
+                            $databaseversion = '18';
+                            setGlobal('databaseversion', $databaseversion);
+                        }
+                    }
             }
         }
         $this->view->currentversion = getGlobal('databaseversion');

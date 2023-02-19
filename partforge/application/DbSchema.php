@@ -85,6 +85,7 @@ class DbSchema {   // singleton
     protected function connectMySql($host, $username, $password, $dbname)
     {
         self::$_db_link = mysqli_connect($host, $username, $password, $dbname);
+        mysqli_set_charset(self::$_db_link, "utf8mb4");
         if (!self::$_db_link) {
             if (mysqli_errno(self::$_db_link) == 1203) { // too many connections
                 $msg = 'Error connecting to database: '.mysqli_error(self::$_db_link).'; The server is too busy at the moment. You may click refresh in your browser or try again later.';

@@ -407,6 +407,7 @@ function step_3()
         } else {
             $dbok = true;
             $connection = mysqli_connect($_SESSION['globals']['host'], $_SESSION['globals']['username'], $_SESSION['globals']['password']);
+            mysqli_set_charset($connection, "utf8mb4");
             if (!$connection) {
                 $dbok = false;
                 error_message("Cannot connect to host using the specified username and password.");

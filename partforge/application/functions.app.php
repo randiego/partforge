@@ -284,6 +284,7 @@ function logout_if_session_timed_out()
 */
 function hextobin($hexstr)
 {
+    //eventually should be able to replace this with hex2bin() which is available in more modern php versions
     $n = strlen($hexstr);
     $sbin="";
     $i=0;
