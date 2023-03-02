@@ -1,0 +1,736 @@
+10/08/2020 06:20: Starting to upload XML file: C:\wamp\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\FlightTest_2020_10_02.pforgex
+Saving new itemversion...
+Looked up type of object: Procedure
+Return String: {"itemversion_id":"30","itemview_url":"http:\/\/localhost\/partforge\/struct\/io\/30","itemobject_id":"30","errormessages":[]}
+Successful save of itemversion: itemversion_id=30, itemview_url=http://localhost/partforge/struct/io/30
+Saving comment record...
+Return String: {"comment_id":7,"errormessages":[]}
+Successful save of comment record: comment_id=7
+Saving attachement (document_id[0])...
+Return String: {"document_id":"new","errormessages":[]}<br />
+<font size='1'><table class='xdebug-error' dir='ltr' border='1' cellspacing='0' cellpadding='1'>
+<tr><th align='left' bgcolor='#f57900' colspan="5"><span style='background-color: #cc0000; color: #fce94f; font-size: x-large;'>( ! )</span> Warning: mkdir() [<a href='function.mkdir'>function.mkdir</a>]: No error in C:\wamp\www\partforge\partforge\application\UploadHandler.php on line <i>513</i></th></tr>
+<tr><th align='left' bgcolor='#e9b96e' colspan='5'>Call Stack</th></tr>
+<tr><th align='center' bgcolor='#eeeeec'>#</th><th align='left' bgcolor='#eeeeec'>Time</th><th align='left' bgcolor='#eeeeec'>Memory</th><th align='left' bgcolor='#eeeeec'>Function</th><th align='left' bgcolor='#eeeeec'>Location</th></tr>
+<tr><td bgcolor='#eeeeec' align='center'>1</td><td bgcolor='#eeeeec' align='center'>0.0013</td><td bgcolor='#eeeeec' align='right'>140544</td><td bgcolor='#eeeeec'>{main}(  )</td><td title='C:\wamp\www\partforge\partforge\public\index.php' bgcolor='#eeeeec'>..\index.php<b>:</b>0</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>2</td><td bgcolor='#eeeeec' align='center'>0.1920</td><td bgcolor='#eeeeec' align='right'>5598640</td><td bgcolor='#eeeeec'>Zend_Controller_Front->dispatch(  )</td><td title='C:\wamp\www\partforge\partforge\public\index.php' bgcolor='#eeeeec'>..\index.php<b>:</b>77</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>3</td><td bgcolor='#eeeeec' align='center'>0.2147</td><td bgcolor='#eeeeec' align='right'>6243736</td><td bgcolor='#eeeeec'>Zend_Controller_Dispatcher_Standard->dispatch(  )</td><td title='C:\wamp\www\partforge\partforge\library\Zend\Controller\Front.php' bgcolor='#eeeeec'>..\Front.php<b>:</b>946</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>4</td><td bgcolor='#eeeeec' align='center'>0.2725</td><td bgcolor='#eeeeec' align='right'>6942216</td><td bgcolor='#eeeeec'>Zend_Controller_Action->dispatch(  )</td><td title='C:\wamp\www\partforge\partforge\library\Zend\Controller\Dispatcher\Standard.php' bgcolor='#eeeeec'>..\Standard.php<b>:</b>289</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>5</td><td bgcolor='#eeeeec' align='center'>0.2726</td><td bgcolor='#eeeeec' align='right'>6946088</td><td bgcolor='#eeeeec'>Items_DocumentsController->postAction(  )</td><td title='C:\wamp\www\partforge\partforge\library\Zend\Controller\Action.php' bgcolor='#eeeeec'>..\Action.php<b>:</b>513</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>6</td><td bgcolor='#eeeeec' align='center'>0.3407</td><td bgcolor='#eeeeec' align='right'>7501360</td><td bgcolor='#eeeeec'>UploadHandler->post(  )</td><td title='C:\wamp\www\partforge\partforge\application\items\controllers\DocumentsController.php' bgcolor='#eeeeec'>..\DocumentsController.php<b>:</b>122</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>7</td><td bgcolor='#eeeeec' align='center'>0.3407</td><td bgcolor='#eeeeec' align='right'>7503856</td><td bgcolor='#eeeeec'>MyUploadHandler->handle_file_upload(  )</td><td title='C:\wamp\www\partforge\partforge\application\UploadHandler.php' bgcolor='#eeeeec'>..\UploadHandler.php<b>:</b>744</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>8</td><td bgcolor='#eeeeec' align='center'>0.3410</td><td bgcolor='#eeeeec' align='right'>7510744</td><td bgcolor='#eeeeec'>UploadHandler->handle_file_upload(  )</td><td title='C:\wamp\www\partforge\partforge\application\MyUploadHandler.php' bgcolor='#eeeeec'>..\MyUploadHandler.php<b>:</b>103</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>9</td><td bgcolor='#eeeeec' align='center'>0.3414</td><td bgcolor='#eeeeec' align='right'>7513056</td><td bgcolor='#eeeeec'><a href='http://www.php.net/mkdir' target='_new'>mkdir</a>
+(  )</td><td title='C:\wamp\www\partforge\partforge\application\UploadHandler.php' bgcolor='#eeeeec'>..\UploadHandler.php<b>:</b>513</td></tr>
+</table></font>
+<br />
+<font size='1'><table class='xdebug-error' dir='ltr' border='1' cellspacing='0' cellpadding='1'>
+<tr><th align='left' bgcolor='#f57900' colspan="5"><span style='background-color: #cc0000; color: #fce94f; font-size: x-large;'>( ! )</span> Warning: move_uploaded_file(***c:/wamp/www/partforge/public***/documents/2020/10/3/FlightLog_2020-10-02-0732.png) [<a href='function.move-uploaded-file'>function.move-uploaded-file</a>]: failed to open stream: No error in C:\wamp\www\partforge\partforge\application\UploadHandler.php on line <i>527</i></th></tr>
+<tr><th align='left' bgcolor='#e9b96e' colspan='5'>Call Stack</th></tr>
+<tr><th align='center' bgcolor='#eeeeec'>#</th><th align='left' bgcolor='#eeeeec'>Time</th><th align='left' bgcolor='#eeeeec'>Memory</th><th align='left' bgcolor='#eeeeec'>Function</th><th align='left' bgcolor='#eeeeec'>Location</th></tr>
+<tr><td bgcolor='#eeeeec' align='center'>1</td><td bgcolor='#eeeeec' align='center'>0.0013</td><td bgcolor='#eeeeec' align='right'>140544</td><td bgcolor='#eeeeec'>{main}(  )</td><td title='C:\wamp\www\partforge\partforge\public\index.php' bgcolor='#eeeeec'>..\index.php<b>:</b>0</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>2</td><td bgcolor='#eeeeec' align='center'>0.1920</td><td bgcolor='#eeeeec' align='right'>5598640</td><td bgcolor='#eeeeec'>Zend_Controller_Front->dispatch(  )</td><td title='C:\wamp\www\partforge\partforge\public\index.php' bgcolor='#eeeeec'>..\index.php<b>:</b>77</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>3</td><td bgcolor='#eeeeec' align='center'>0.2147</td><td bgcolor='#eeeeec' align='right'>6243736</td><td bgcolor='#eeeeec'>Zend_Controller_Dispatcher_Standard->dispatch(  )</td><td title='C:\wamp\www\partforge\partforge\library\Zend\Controller\Front.php' bgcolor='#eeeeec'>..\Front.php<b>:</b>946</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>4</td><td bgcolor='#eeeeec' align='center'>0.2725</td><td bgcolor='#eeeeec' align='right'>6942216</td><td bgcolor='#eeeeec'>Zend_Controller_Action->dispatch(  )</td><td title='C:\wamp\www\partforge\partforge\library\Zend\Controller\Dispatcher\Standard.php' bgcolor='#eeeeec'>..\Standard.php<b>:</b>289</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>5</td><td bgcolor='#eeeeec' align='center'>0.2726</td><td bgcolor='#eeeeec' align='right'>6946088</td><td bgcolor='#eeeeec'>Items_DocumentsController->postAction(  )</td><td title='C:\wamp\www\partforge\partforge\library\Zend\Controller\Action.php' bgcolor='#eeeeec'>..\Action.php<b>:</b>513</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>6</td><td bgcolor='#eeeeec' align='center'>0.3407</td><td bgcolor='#eeeeec' align='right'>7501360</td><td bgcolor='#eeeeec'>UploadHandler->post(  )</td><td title='C:\wamp\www\partforge\partforge\application\items\controllers\DocumentsController.php' bgcolor='#eeeeec'>..\DocumentsController.php<b>:</b>122</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>7</td><td bgcolor='#eeeeec' align='center'>0.3407</td><td bgcolor='#eeeeec' align='right'>7503856</td><td bgcolor='#eeeeec'>MyUploadHandler->handle_file_upload(  )</td><td title='C:\wamp\www\partforge\partforge\application\UploadHandler.php' bgcolor='#eeeeec'>..\UploadHandler.php<b>:</b>744</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>8</td><td bgcolor='#eeeeec' align='center'>0.3410</td><td bgcolor='#eeeeec' align='right'>7510744</td><td bgcolor='#eeeeec'>UploadHandler->handle_file_upload(  )</td><td title='C:\wamp\www\partforge\partforge\application\MyUploadHandler.php' bgcolor='#eeeeec'>..\MyUploadHandler.php<b>:</b>103</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>9</td><td bgcolor='#eeeeec' align='center'>0.4262</td><td bgcolor='#eeeeec' align='right'>7513144</td><td bgcolor='#eeeeec'><a href='http://www.php.net/move_uploaded_file' target='_new'>move_uploaded_file</a>
+(  )</td><td title='C:\wamp\www\partforge\partforge\application\UploadHandler.php' bgcolor='#eeeeec'>..\UploadHandler.php<b>:</b>527</td></tr>
+</table></font>
+<br />
+<font size='1'><table class='xdebug-error' dir='ltr' border='1' cellspacing='0' cellpadding='1'>
+<tr><th align='left' bgcolor='#f57900' colspan="5"><span style='background-color: #cc0000; color: #fce94f; font-size: x-large;'>( ! )</span> Warning: move_uploaded_file() [<a href='function.move-uploaded-file'>function.move-uploaded-file</a>]: Unable to move 'C:\wamp\tmp\php7711.tmp' to '***c:/wamp/www/partforge/public***/documents/2020/10/3/FlightLog_2020-10-02-0732.png' in C:\wamp\www\partforge\partforge\application\UploadHandler.php on line <i>527</i></th></tr>
+<tr><th align='left' bgcolor='#e9b96e' colspan='5'>Call Stack</th></tr>
+<tr><th align='center' bgcolor='#eeeeec'>#</th><th align='left' bgcolor='#eeeeec'>Time</th><th align='left' bgcolor='#eeeeec'>Memory</th><th align='left' bgcolor='#eeeeec'>Function</th><th align='left' bgcolor='#eeeeec'>Location</th></tr>
+<tr><td bgcolor='#eeeeec' align='center'>1</td><td bgcolor='#eeeeec' align='center'>0.0013</td><td bgcolor='#eeeeec' align='right'>140544</td><td bgcolor='#eeeeec'>{main}(  )</td><td title='C:\wamp\www\partforge\partforge\public\index.php' bgcolor='#eeeeec'>..\index.php<b>:</b>0</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>2</td><td bgcolor='#eeeeec' align='center'>0.1920</td><td bgcolor='#eeeeec' align='right'>5598640</td><td bgcolor='#eeeeec'>Zend_Controller_Front->dispatch(  )</td><td title='C:\wamp\www\partforge\partforge\public\index.php' bgcolor='#eeeeec'>..\index.php<b>:</b>77</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>3</td><td bgcolor='#eeeeec' align='center'>0.2147</td><td bgcolor='#eeeeec' align='right'>6243736</td><td bgcolor='#eeeeec'>Zend_Controller_Dispatcher_Standard->dispatch(  )</td><td title='C:\wamp\www\partforge\partforge\library\Zend\Controller\Front.php' bgcolor='#eeeeec'>..\Front.php<b>:</b>946</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>4</td><td bgcolor='#eeeeec' align='center'>0.2725</td><td bgcolor='#eeeeec' align='right'>6942216</td><td bgcolor='#eeeeec'>Zend_Controller_Action->dispatch(  )</td><td title='C:\wamp\www\partforge\partforge\library\Zend\Controller\Dispatcher\Standard.php' bgcolor='#eeeeec'>..\Standard.php<b>:</b>289</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>5</td><td bgcolor='#eeeeec' align='center'>0.2726</td><td bgcolor='#eeeeec' align='right'>6946088</td><td bgcolor='#eeeeec'>Items_DocumentsController->postAction(  )</td><td title='C:\wamp\www\partforge\partforge\library\Zend\Controller\Action.php' bgcolor='#eeeeec'>..\Action.php<b>:</b>513</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>6</td><td bgcolor='#eeeeec' align='center'>0.3407</td><td bgcolor='#eeeeec' align='right'>7501360</td><td bgcolor='#eeeeec'>UploadHandler->post(  )</td><td title='C:\wamp\www\partforge\partforge\application\items\controllers\DocumentsController.php' bgcolor='#eeeeec'>..\DocumentsController.php<b>:</b>122</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>7</td><td bgcolor='#eeeeec' align='center'>0.3407</td><td bgcolor='#eeeeec' align='right'>7503856</td><td bgcolor='#eeeeec'>MyUploadHandler->handle_file_upload(  )</td><td title='C:\wamp\www\partforge\partforge\application\UploadHandler.php' bgcolor='#eeeeec'>..\UploadHandler.php<b>:</b>744</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>8</td><td bgcolor='#eeeeec' align='center'>0.3410</td><td bgcolor='#eeeeec' align='right'>7510744</td><td bgcolor='#eeeeec'>UploadHandler->handle_file_upload(  )</td><td title='C:\wamp\www\partforge\partforge\application\MyUploadHandler.php' bgcolor='#eeeeec'>..\MyUploadHandler.php<b>:</b>103</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>9</td><td bgcolor='#eeeeec' align='center'>0.4262</td><td bgcolor='#eeeeec' align='right'>7513144</td><td bgcolor='#eeeeec'><a href='http://www.php.net/move_uploaded_file' target='_new'>move_uploaded_file</a>
+(  )</td><td title='C:\wamp\www\partforge\partforge\application\UploadHandler.php' bgcolor='#eeeeec'>..\UploadHandler.php<b>:</b>527</td></tr>
+</table></font>
+<br />
+<font size='1'><table class='xdebug-error' dir='ltr' border='1' cellspacing='0' cellpadding='1'>
+<tr><th align='left' bgcolor='#f57900' colspan="5"><span style='background-color: #cc0000; color: #fce94f; font-size: x-large;'>( ! )</span> Warning: filesize() [<a href='function.filesize'>function.filesize</a>]: stat failed for ***c:/wamp/www/partforge/public***/documents/2020/10/3/FlightLog_2020-10-02-0732.png in C:\wamp\www\partforge\partforge\application\UploadHandler.php on line <i>207</i></th></tr>
+<tr><th align='left' bgcolor='#e9b96e' colspan='5'>Call Stack</th></tr>
+<tr><th align='center' bgcolor='#eeeeec'>#</th><th align='left' bgcolor='#eeeeec'>Time</th><th align='left' bgcolor='#eeeeec'>Memory</th><th align='left' bgcolor='#eeeeec'>Function</th><th align='left' bgcolor='#eeeeec'>Location</th></tr>
+<tr><td bgcolor='#eeeeec' align='center'>1</td><td bgcolor='#eeeeec' align='center'>0.0013</td><td bgcolor='#eeeeec' align='right'>140544</td><td bgcolor='#eeeeec'>{main}(  )</td><td title='C:\wamp\www\partforge\partforge\public\index.php' bgcolor='#eeeeec'>..\index.php<b>:</b>0</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>2</td><td bgcolor='#eeeeec' align='center'>0.1920</td><td bgcolor='#eeeeec' align='right'>5598640</td><td bgcolor='#eeeeec'>Zend_Controller_Front->dispatch(  )</td><td title='C:\wamp\www\partforge\partforge\public\index.php' bgcolor='#eeeeec'>..\index.php<b>:</b>77</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>3</td><td bgcolor='#eeeeec' align='center'>0.2147</td><td bgcolor='#eeeeec' align='right'>6243736</td><td bgcolor='#eeeeec'>Zend_Controller_Dispatcher_Standard->dispatch(  )</td><td title='C:\wamp\www\partforge\partforge\library\Zend\Controller\Front.php' bgcolor='#eeeeec'>..\Front.php<b>:</b>946</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>4</td><td bgcolor='#eeeeec' align='center'>0.2725</td><td bgcolor='#eeeeec' align='right'>6942216</td><td bgcolor='#eeeeec'>Zend_Controller_Action->dispatch(  )</td><td title='C:\wamp\www\partforge\partforge\library\Zend\Controller\Dispatcher\Standard.php' bgcolor='#eeeeec'>..\Standard.php<b>:</b>289</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>5</td><td bgcolor='#eeeeec' align='center'>0.2726</td><td bgcolor='#eeeeec' align='right'>6946088</td><td bgcolor='#eeeeec'>Items_DocumentsController->postAction(  )</td><td title='C:\wamp\www\partforge\partforge\library\Zend\Controller\Action.php' bgcolor='#eeeeec'>..\Action.php<b>:</b>513</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>6</td><td bgcolor='#eeeeec' align='center'>0.3407</td><td bgcolor='#eeeeec' align='right'>7501360</td><td bgcolor='#eeeeec'>UploadHandler->post(  )</td><td title='C:\wamp\www\partforge\partforge\application\items\controllers\DocumentsController.php' bgcolor='#eeeeec'>..\DocumentsController.php<b>:</b>122</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>7</td><td bgcolor='#eeeeec' align='center'>0.3407</td><td bgcolor='#eeeeec' align='right'>7503856</td><td bgcolor='#eeeeec'>MyUploadHandler->handle_file_upload(  )</td><td title='C:\wamp\www\partforge\partforge\application\UploadHandler.php' bgcolor='#eeeeec'>..\UploadHandler.php<b>:</b>744</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>8</td><td bgcolor='#eeeeec' align='center'>0.3410</td><td bgcolor='#eeeeec' align='right'>7510744</td><td bgcolor='#eeeeec'>UploadHandler->handle_file_upload(  )</td><td title='C:\wamp\www\partforge\partforge\application\MyUploadHandler.php' bgcolor='#eeeeec'>..\MyUploadHandler.php<b>:</b>103</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>9</td><td bgcolor='#eeeeec' align='center'>0.5874</td><td bgcolor='#eeeeec' align='right'>7513528</td><td bgcolor='#eeeeec'>UploadHandler->get_file_size(  )</td><td title='C:\wamp\www\partforge\partforge\application\UploadHandler.php' bgcolor='#eeeeec'>..\UploadHandler.php<b>:</b>537</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>10</td><td bgcolor='#eeeeec' align='center'>0.5874</td><td bgcolor='#eeeeec' align='right'>7513528</td><td bgcolor='#eeeeec'><a href='http://www.php.net/filesize' target='_new'>filesize</a>
+(  )</td><td title='C:\wamp\www\partforge\partforge\application\UploadHandler.php' bgcolor='#eeeeec'>..\UploadHandler.php<b>:</b>207</td></tr>
+</table></font>
+<br />
+<font size='1'><table class='xdebug-error' dir='ltr' border='1' cellspacing='0' cellpadding='1'>
+<tr><th align='left' bgcolor='#f57900' colspan="5"><span style='background-color: #cc0000; color: #fce94f; font-size: x-large;'>( ! )</span> Warning: unlink(***c:/wamp/www/partforge/public***/documents/2020/10/3/FlightLog_2020-10-02-0732.png) [<a href='function.unlink'>function.unlink</a>]: No error in C:\wamp\www\partforge\partforge\application\UploadHandler.php on line <i>556</i></th></tr>
+<tr><th align='left' bgcolor='#e9b96e' colspan='5'>Call Stack</th></tr>
+<tr><th align='center' bgcolor='#eeeeec'>#</th><th align='left' bgcolor='#eeeeec'>Time</th><th align='left' bgcolor='#eeeeec'>Memory</th><th align='left' bgcolor='#eeeeec'>Function</th><th align='left' bgcolor='#eeeeec'>Location</th></tr>
+<tr><td bgcolor='#eeeeec' align='center'>1</td><td bgcolor='#eeeeec' align='center'>0.0013</td><td bgcolor='#eeeeec' align='right'>140544</td><td bgcolor='#eeeeec'>{main}(  )</td><td title='C:\wamp\www\partforge\partforge\public\index.php' bgcolor='#eeeeec'>..\index.php<b>:</b>0</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>2</td><td bgcolor='#eeeeec' align='center'>0.1920</td><td bgcolor='#eeeeec' align='right'>5598640</td><td bgcolor='#eeeeec'>Zend_Controller_Front->dispatch(  )</td><td title='C:\wamp\www\partforge\partforge\public\index.php' bgcolor='#eeeeec'>..\index.php<b>:</b>77</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>3</td><td bgcolor='#eeeeec' align='center'>0.2147</td><td bgcolor='#eeeeec' align='right'>6243736</td><td bgcolor='#eeeeec'>Zend_Controller_Dispatcher_Standard->dispatch(  )</td><td title='C:\wamp\www\partforge\partforge\library\Zend\Controller\Front.php' bgcolor='#eeeeec'>..\Front.php<b>:</b>946</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>4</td><td bgcolor='#eeeeec' align='center'>0.2725</td><td bgcolor='#eeeeec' align='right'>6942216</td><td bgcolor='#eeeeec'>Zend_Controller_Action->dispatch(  )</td><td title='C:\wamp\www\partforge\partforge\library\Zend\Controller\Dispatcher\Standard.php' bgcolor='#eeeeec'>..\Standard.php<b>:</b>289</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>5</td><td bgcolor='#eeeeec' align='center'>0.2726</td><td bgcolor='#eeeeec' align='right'>6946088</td><td bgcolor='#eeeeec'>Items_DocumentsController->postAction(  )</td><td title='C:\wamp\www\partforge\partforge\library\Zend\Controller\Action.php' bgcolor='#eeeeec'>..\Action.php<b>:</b>513</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>6</td><td bgcolor='#eeeeec' align='center'>0.3407</td><td bgcolor='#eeeeec' align='right'>7501360</td><td bgcolor='#eeeeec'>UploadHandler->post(  )</td><td title='C:\wamp\www\partforge\partforge\application\items\controllers\DocumentsController.php' bgcolor='#eeeeec'>..\DocumentsController.php<b>:</b>122</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>7</td><td bgcolor='#eeeeec' align='center'>0.3407</td><td bgcolor='#eeeeec' align='right'>7503856</td><td bgcolor='#eeeeec'>MyUploadHandler->handle_file_upload(  )</td><td title='C:\wamp\www\partforge\partforge\application\UploadHandler.php' bgcolor='#eeeeec'>..\UploadHandler.php<b>:</b>744</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>8</td><td bgcolor='#eeeeec' align='center'>0.3410</td><td bgcolor='#eeeeec' align='right'>7510744</td><td bgcolor='#eeeeec'>UploadHandler->handle_file_upload(  )</td><td title='C:\wamp\www\partforge\partforge\application\MyUploadHandler.php' bgcolor='#eeeeec'>..\MyUploadHandler.php<b>:</b>103</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>9</td><td bgcolor='#eeeeec' align='center'>0.6753</td><td bgcolor='#eeeeec' align='right'>7514088</td><td bgcolor='#eeeeec'><a href='http://www.php.net/unlink' target='_new'>unlink</a>
+(  )</td><td title='C:\wamp\www\partforge\partforge\application\UploadHandler.php' bgcolor='#eeeeec'>..\UploadHandler.php<b>:</b>556</td></tr>
+</table></font>
+
+10/08/2020 06:25: Starting to upload XML file: C:\wamp\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\FlightTest_2020_10_02.pforgex
+Saving new itemversion...
+Looked up type of object: Procedure
+Return String: {"itemversion_id":"31","itemview_url":"http:\/\/localhost\/partforge\/struct\/io\/31","itemobject_id":"31","errormessages":[]}
+Successful save of itemversion: itemversion_id=31, itemview_url=http://localhost/partforge/struct/io/31
+Saving comment record...
+Return String: {"comment_id":8,"errormessages":[]}
+Successful save of comment record: comment_id=8
+Saving attachement (document_id[0])...
+Return String: {"document_id":2,"errormessages":[]}
+Successful save of file (C:\MyDataLocation\FlightTest\FlightLog_2020-10-02-0732.png) record: document_id=2
+Saving attachement (document_id[1])...
+Return String: {"document_id":3,"errormessages":[]}
+Successful save of file (C:\MyDataLocation\FlightTest\FlightLog_2020-10-02-0732.csv) record: document_id=3
+Successful end of Upload procedure for C:\wamp\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\FlightTest_2020_10_02.pforgex
+10/29/2021 21:59: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"new","errormessages":{"effective_date":"Please make sure Effective Date is a valid date."}}<br />
+<font size='1'><table class='xdebug-error xe-notice' dir='ltr' border='1' cellspacing='0' cellpadding='1'>
+<tr><th align='left' bgcolor='#f57900' colspan="5"><span style='background-color: #cc0000; color: #fce94f; font-size: x-large;'>( ! )</span> Notice: Undefined variable: simlulate_only in C:\wamp64\www\qdforms2\application\items\controllers\VersionsController.php on line <i>243</i></th></tr>
+<tr><th align='left' bgcolor='#e9b96e' colspan='5'>Call Stack</th></tr>
+<tr><th align='center' bgcolor='#eeeeec'>#</th><th align='left' bgcolor='#eeeeec'>Time</th><th align='left' bgcolor='#eeeeec'>Memory</th><th align='left' bgcolor='#eeeeec'>Function</th><th align='left' bgcolor='#eeeeec'>Location</th></tr>
+<tr><td bgcolor='#eeeeec' align='center'>1</td><td bgcolor='#eeeeec' align='center'>0.0002</td><td bgcolor='#eeeeec' align='right'>365208</td><td bgcolor='#eeeeec'>{main}(  )</td><td title='C:\wamp64\www\qdforms2\public\index.php' bgcolor='#eeeeec'>...\index.php<b>:</b>0</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>2</td><td bgcolor='#eeeeec' align='center'>0.0378</td><td bgcolor='#eeeeec' align='right'>1028960</td><td bgcolor='#eeeeec'>Zend_Controller_Front->dispatch(  )</td><td title='C:\wamp64\www\qdforms2\public\index.php' bgcolor='#eeeeec'>...\index.php<b>:</b>79</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>3</td><td bgcolor='#eeeeec' align='center'>0.0387</td><td bgcolor='#eeeeec' align='right'>1120744</td><td bgcolor='#eeeeec'>Zend_Controller_Dispatcher_Standard->dispatch(  )</td><td title='C:\wamp64\www\qdforms2\library\Zend\Controller\Front.php' bgcolor='#eeeeec'>...\Front.php<b>:</b>946</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>4</td><td bgcolor='#eeeeec' align='center'>0.0563</td><td bgcolor='#eeeeec' align='right'>1189768</td><td bgcolor='#eeeeec'>Items_VersionsController->dispatch(  )</td><td title='C:\wamp64\www\qdforms2\library\Zend\Controller\Dispatcher\Standard.php' bgcolor='#eeeeec'>...\Standard.php<b>:</b>289</td></tr>
+<tr><td bgcolor='#eeeeec' align='center'>5</td><td bgcolor='#eeeeec' align='center'>0.0563</td><td bgcolor='#eeeeec' align='right'>1192384</td><td bgcolor='#eeeeec'>Items_VersionsController->postAction(  )</td><td title='C:\wamp64\www\qdforms2\library\Zend\Controller\Action.php' bgcolor='#eeeeec'>...\Action.php<b>:</b>513</td></tr>
+</table></font>
+
+10/29/2021 22:34: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"new","errormessages":{"effective_date":"Please make sure Effective Date is a valid date."}}
+Failed to save itemversion record: effective_date: Please make sure Effective Date is a valid date.
+Unsuccessful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+10/29/2021 22:35: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"new","errormessages":{"effective_date":"Please make sure Effective Date is a valid date."}}
+Failed to save itemversion record: effective_date: Please make sure Effective Date is a valid date.
+Unsuccessful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+10/29/2021 22:36: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208005","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161053","itemobject_id":"161053","errormessages":[]}
+Successful save of itemversion: itemversion_id=208005, itemview_url=http://192.168.128.150/sandbox/struct/io/161053
+Saving comment record...
+Return String: {"comment_id":105940,"errormessages":[]}
+Successful save of comment record: comment_id=105940
+Saving attachement (document_id[0])...
+10/29/2021 22:42: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208006","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161054","itemobject_id":"161054","errormessages":[]}
+Successful save of itemversion: itemversion_id=208006, itemview_url=http://192.168.128.150/sandbox/struct/io/161054
+Saving comment record...
+Return String: {"comment_id":105941,"errormessages":[]}
+Successful save of comment record: comment_id=105941
+Saving attachement (document_id[0])...
+Return String: {"document_id":264958,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=264958
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+10/29/2021 22:48: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208007","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161055","itemobject_id":"161055","errormessages":[]}
+Successful save of itemversion: itemversion_id=208007, itemview_url=http://192.168.128.150/sandbox/struct/io/161055
+Saving comment record...
+Return String: {"comment_id":105942,"errormessages":[]}
+Successful save of comment record: comment_id=105942
+Saving attachement (document_id[0])...
+Return String: {"document_id":264959,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000069.pdf) record: document_id=264959
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+10/29/2021 22:48: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208008","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161056","itemobject_id":"161056","errormessages":[]}
+Successful save of itemversion: itemversion_id=208008, itemview_url=http://192.168.128.150/sandbox/struct/io/161056
+Saving comment record...
+Return String: {"comment_id":105943,"errormessages":[]}
+Successful save of comment record: comment_id=105943
+Saving attachement (document_id[0])...
+Return String: {"document_id":264960,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=264960
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+10/31/2021 08:35: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208009","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161057","itemobject_id":"161057","errormessages":[]}
+Successful save of itemversion: itemversion_id=208009, itemview_url=http://192.168.128.150/sandbox/struct/io/161057
+Saving comment record...
+Return String: {"comment_id":105944,"errormessages":[]}
+Successful save of comment record: comment_id=105944
+Saving attachement (document_id[0])...
+Return String: {"document_id":264961,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000069.pdf) record: document_id=264961
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+10/31/2021 08:35: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208010","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161058","itemobject_id":"161058","errormessages":[]}
+Successful save of itemversion: itemversion_id=208010, itemview_url=http://192.168.128.150/sandbox/struct/io/161058
+Saving comment record...
+Return String: {"comment_id":105945,"errormessages":[]}
+Successful save of comment record: comment_id=105945
+Saving attachement (document_id[0])...
+Return String: {"document_id":264962,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=264962
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+10/31/2021 09:45: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"new","errormessages":{"effective_date":"Please make sure Effective Date is a valid date."}}
+Failed to save itemversion record: effective_date: Please make sure Effective Date is a valid date.
+Unsuccessful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+10/31/2021 09:45: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+Saving new itemversion...
+Return String: {"itemversion_id":"new","errormessages":{"effective_date":"Please make sure Effective Date is a valid date."}}
+Failed to save itemversion record: effective_date: Please make sure Effective Date is a valid date.
+Unsuccessful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+10/31/2021 09:45: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+Saving new itemversion...
+Return String: {"itemversion_id":"new","errormessages":{"effective_date":"Please make sure Effective Date is a valid date."}}
+Failed to save itemversion record: effective_date: Please make sure Effective Date is a valid date.
+Unsuccessful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+10/31/2021 09:45: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+Saving new itemversion...
+Return String: {"itemversion_id":"new","errormessages":{"effective_date":"Please make sure Effective Date is a valid date."}}
+Failed to save itemversion record: effective_date: Please make sure Effective Date is a valid date.
+Unsuccessful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+10/31/2021 09:45: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"new","errormessages":{"effective_date":"Please make sure Effective Date is a valid date."}}
+Failed to save itemversion record: effective_date: Please make sure Effective Date is a valid date.
+Unsuccessful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+10/31/2021 09:45: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+Saving new itemversion...
+Return String: {"itemversion_id":"new","errormessages":{"effective_date":"Please make sure Effective Date is a valid date."}}
+Failed to save itemversion record: effective_date: Please make sure Effective Date is a valid date.
+Unsuccessful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+10/31/2021 09:54: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+Saving new itemversion...
+Looked up type of object: Procedure
+<item_serial_number> tag removed since this is a procedure
+Return String: {"itemversion_id":"208011","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161059","itemobject_id":"161059","errormessages":[]}
+Successful save of itemversion: itemversion_id=208011, itemview_url=http://192.168.128.150/sandbox/struct/io/161059
+Saving comment record...
+Return String: {"comment_id":105946,"errormessages":[]}
+Successful save of comment record: comment_id=105946
+Saving attachement (document_id[0])...
+Return String: {"document_id":264963,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000069.pdf) record: document_id=264963
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+10/31/2021 09:54: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+Saving new itemversion...
+Looked up type of object: Procedure
+<item_serial_number> tag removed since this is a procedure
+Return String: {"itemversion_id":"208012","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161060","itemobject_id":"161060","errormessages":[]}
+Successful save of itemversion: itemversion_id=208012, itemview_url=http://192.168.128.150/sandbox/struct/io/161060
+Saving comment record...
+Return String: {"comment_id":105947,"errormessages":[]}
+Successful save of comment record: comment_id=105947
+Saving attachement (document_id[0])...
+Return String: {"document_id":264964,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=264964
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+10/31/2021 10:00: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208013","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161061","itemobject_id":"161061","errormessages":[]}
+Successful save of itemversion: itemversion_id=208013, itemview_url=http://192.168.128.150/sandbox/struct/io/161061
+Saving comment record...
+Return String: {"comment_id":105948,"errormessages":[]}
+Successful save of comment record: comment_id=105948
+Saving attachement (document_id[0])...
+Return String: {"document_id":264965,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000069.pdf) record: document_id=264965
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+10/31/2021 10:00: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208014","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":[]}
+Successful save of itemversion: itemversion_id=208014, itemview_url=http://192.168.128.150/sandbox/struct/io/161062
+Saving comment record...
+Return String: {"comment_id":105949,"errormessages":[]}
+Successful save of comment record: comment_id=105949
+Saving attachement (document_id[0])...
+Return String: {"document_id":264966,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=264966
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+10/31/2021 10:01: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208013","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161061","itemobject_id":"161061","errormessages":[]}
+Successful save of itemversion: itemversion_id=208013, itemview_url=http://192.168.128.150/sandbox/struct/io/161061
+Saving comment record...
+Return String: {"comment_id":105950,"errormessages":[]}
+Successful save of comment record: comment_id=105950
+Saving attachement (document_id[0])...
+Return String: {"document_id":264967,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000069.pdf) record: document_id=264967
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+10/31/2021 10:01: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208014","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":[]}
+Successful save of itemversion: itemversion_id=208014, itemview_url=http://192.168.128.150/sandbox/struct/io/161062
+Saving comment record...
+Return String: {"comment_id":105951,"errormessages":[]}
+Successful save of comment record: comment_id=105951
+Saving attachement (document_id[0])...
+Return String: {"document_id":264968,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=264968
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+11/03/2021 22:42: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208013","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161061","itemobject_id":"161061","errormessages":[]}
+Successful save of itemversion: itemversion_id=208013, itemview_url=http://192.168.128.150/sandbox/struct/io/161061
+Saving comment record...
+Return String: {"errormessages":["You must enter either a valid itemversion_id or itemobject_id to create a new comment."]}
+Failed to save comment record: You must enter either a valid itemversion_id or itemobject_id to create a new comment.
+Even though something failed, it appears that at least something was uploaded.
+Unsuccessful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+11/04/2021 06:11: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208015","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/20038","itemobject_id":"20038","errormessages":[]}
+Successful save of itemversion: itemversion_id=208015, itemview_url=http://192.168.128.150/sandbox/struct/io/20038
+Saving comment record...
+Return String: {"comment_id":105952,"errormessages":[]}
+Successful save of comment record: comment_id=105952
+Saving attachement (document_id[0])...
+Return String: {"document_id":264983,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000069.pdf) record: document_id=264983
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+11/04/2021 06:11: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208014","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":[]}
+Successful save of itemversion: itemversion_id=208014, itemview_url=http://192.168.128.150/sandbox/struct/io/161062
+Saving comment record...
+Return String: {"comment_id":105953,"errormessages":[]}
+Successful save of comment record: comment_id=105953
+Saving attachement (document_id[0])...
+Return String: {"document_id":264984,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=264984
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+11/04/2021 06:18: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208016","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161063","itemobject_id":"161063","errormessages":[]}
+Successful save of itemversion: itemversion_id=208016, itemview_url=http://192.168.128.150/sandbox/struct/io/161063
+Saving comment record...
+Return String: {"comment_id":105954,"errormessages":[]}
+Successful save of comment record: comment_id=105954
+Saving attachement (document_id[0])...
+Return String: {"document_id":264985,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000069.pdf) record: document_id=264985
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+11/04/2021 06:30: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+11/04/2021 06:56: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208017","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161064","itemobject_id":"161064","errormessages":[]}
+Successful save of itemversion: itemversion_id=208017, itemview_url=http://192.168.128.150/sandbox/struct/io/161064
+Saving comment record...
+Return String: {"comment_id":105955,"errormessages":[]}
+Successful save of comment record: comment_id=105955
+Saving attachement (document_id[0])...
+Return String: {"document_id":264986,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000069.pdf) record: document_id=264986
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000069.pforgex
+11/04/2021 06:59: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208014","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":[]}
+Successful save of itemversion: itemversion_id=208014, itemview_url=http://192.168.128.150/sandbox/struct/io/161062
+Saving comment record...
+Return String: {"comment_id":105956,"errormessages":[]}
+Successful save of comment record: comment_id=105956
+Saving attachement (document_id[0])...
+Return String: {"document_id":264987,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=264987
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+01/08/2022 14:08: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\2022_01_08_Example_upload_file_to_comments_for_an_existing_part_without_changing_any_fields.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208039","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":{"effective_date":"The effective date (2021-10-29 16:49) is exactly the same as another exsting version.  You must use a different date (even if only 1 minute different)."}}
+Failed to save itemversion record: effective_date: The effective date (2021-10-29 16:49) is exactly the same as another exsting version.  You must use a different date (even if only 1 minute different).
+Unsuccessful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\2022_01_08_Example_upload_file_to_comments_for_an_existing_part_without_changing_any_fields.pforgex
+01/08/2022 14:11: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208039","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":[]}
+Successful save of itemversion: itemversion_id=208039, itemview_url=http://192.168.128.150/sandbox/struct/io/161062
+Saving comment record...
+Return String: {"comment_id":105991,"errormessages":[]}
+Successful save of comment record: comment_id=105991
+Saving attachement (document_id[0])...
+Return String: {"document_id":265044,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=265044
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+01/08/2022 16:54: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachmenttest1.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208046","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":[]}
+Successful save of itemversion: itemversion_id=208046, itemview_url=http://192.168.128.150/sandbox/struct/io/161062
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachmenttest1.pforgex
+01/09/2022 13:39: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\XIA023_Impedance.pforgex
+01/09/2022 13:41: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\XIA023_Impedance.pforgex
+01/09/2022 13:45: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\XIA023_Impedance.pforgex
+01/09/2022 13:46: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\XIA023_Impedance.pforgex
+01/09/2022 13:47: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\XIA023_Impedance.pforgex
+01/09/2022 13:49: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\XIA023_Impedance.pforgex
+01/09/2022 13:50: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\XIA023_Impedance.pforgex
+Saving fieldcomment record...
+Return String: {"errormessages":["itemobject_id (-1) cannot be found.","You must enter either a valid itemversion_id or itemobject_id to create a new comment."]}
+01/09/2022 13:54: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\XIA023_Impedance.pforgex
+Saving fieldcomment record...
+Return String: {"comment_id":105992,"errormessages":[]}
+01/09/2022 13:56: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\XIA023_Impedance.pforgex
+Saving fieldcomment record...
+Return String: {"comment_id":105993,"errormessages":[]}
+Successful save of comment record: attachment comment_id=105993
+Saving attachement (job_number_document_id[0])...
+Return String: {"document_id":265045,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=265045
+Saving attachement (job_number_document_id[1])...
+Return String: {"document_id":265046,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=265046
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208047","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/148284","itemobject_id":"148284","errormessages":[]}
+Successful save of itemversion: itemversion_id=208047, itemview_url=http://192.168.128.150/sandbox/struct/io/148284
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\XIA023_Impedance.pforgex
+01/09/2022 13:59: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\XIA023_Impedance.pforgex
+Saving fieldcomment record...
+Return String: {"comment_id":105994,"errormessages":[]}
+Successful save of comment record: attachment comment_id=105994
+01/09/2022 17:16: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+Saving fieldcomment record...
+Return String: {"comment_id":105995,"errormessages":[]}
+Successful save of comment record: attachment comment_id=105995
+Saving attachement (report_attachment_document_id[0])...
+Return String: {"document_id":265047,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=265047
+Saving attachement (report_attachment_document_id[1])...
+Return String: {"document_id":265048,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=265048
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208048","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":[]}
+Successful save of itemversion: itemversion_id=208048, itemview_url=http://192.168.128.150/sandbox/struct/io/161062
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+01/09/2022 17:34: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+Saving fieldcomment record...
+Return String: {"comment_id":105997,"errormessages":[]}
+Successful save of comment record: attachment comment_id=105997
+Saving attachement (report_attachment_document_id[0])...
+Return String: {"document_id":265050,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=265050
+Saving attachement (report_attachment_document_id[1])...
+Return String: {"document_id":265051,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=265051
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208050","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":[]}
+Successful save of itemversion: itemversion_id=208050, itemview_url=http://192.168.128.150/sandbox/struct/io/161062
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+02/10/2022 07:49: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+Saving new itemversion...
+Looked up type of object: Procedure
+Return String: {"itemversion_id":"208106","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161109","itemobject_id":"161109","errormessages":[]}
+Successful save of itemversion: itemversion_id=208106, itemview_url=http://192.168.128.150/sandbox/struct/io/161109
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+02/10/2022 07:50: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+Saving new itemversion...
+Looked up type of object: Procedure
+Return String: {"itemversion_id":"new","errormessages":{"disposition":"There cannot be errors and a disposition of Pass.  Use Signed Off instead."}}
+Failed to save itemversion record: disposition: There cannot be errors and a disposition of Pass.  Use Signed Off instead.
+Unsuccessful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+02/10/2022 07:51: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+Saving new itemversion...
+Looked up type of object: Procedure
+Return String: {"itemversion_id":"208107","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161110","itemobject_id":"161110","errormessages":[]}
+Successful save of itemversion: itemversion_id=208107, itemview_url=http://192.168.128.150/sandbox/struct/io/161110
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+02/10/2022 07:55: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+Saving new itemversion...
+Looked up type of object: Procedure
+Return String: {"itemversion_id":"208108","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161111","itemobject_id":"161111","errormessages":[]}
+Successful save of itemversion: itemversion_id=208108, itemview_url=http://192.168.128.150/sandbox/struct/io/161111
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+02/10/2022 08:18: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+Saving new itemversion...
+Looked up type of object: Procedure
+Return String: {"itemversion_id":"208109","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161112","itemobject_id":"161112","errormessages":[]}
+Successful save of itemversion: itemversion_id=208109, itemview_url=http://192.168.128.150/sandbox/struct/io/161112
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+02/10/2022 08:19: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+Saving new itemversion...
+Looked up type of object: Procedure
+Return String: {"itemversion_id":"208110","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161113","itemobject_id":"161113","errormessages":[]}
+Successful save of itemversion: itemversion_id=208110, itemview_url=http://192.168.128.150/sandbox/struct/io/161113
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+02/10/2022 21:59: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+Saving new itemversion...
+Looked up type of object: Procedure
+Return String: {"itemversion_id":"208111","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161114","itemobject_id":"161114","errormessages":[]}
+Successful save of itemversion: itemversion_id=208111, itemview_url=http://192.168.128.150/sandbox/struct/io/161114
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+02/10/2022 21:59: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+Saving new itemversion...
+Looked up type of object: Procedure
+Return String: {"itemversion_id":"208112","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161115","itemobject_id":"161115","errormessages":[]}
+Successful save of itemversion: itemversion_id=208112, itemview_url=http://192.168.128.150/sandbox/struct/io/161115
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+02/10/2022 22:04: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+Saving new itemversion...
+Looked up type of object: Procedure
+Return String: {"itemversion_id":"208113","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161116","itemobject_id":"161116","errormessages":[]}
+Successful save of itemversion: itemversion_id=208113, itemview_url=http://192.168.128.150/sandbox/struct/io/161116
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+02/10/2022 22:05: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+Saving new itemversion...
+Looked up type of object: Procedure
+Return String: {"itemversion_id":"208114","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161117","itemobject_id":"161117","errormessages":[]}
+Successful save of itemversion: itemversion_id=208114, itemview_url=http://192.168.128.150/sandbox/struct/io/161117
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+02/10/2022 22:19: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+Saving new itemversion...
+Looked up type of object: Procedure
+Return String: {"itemversion_id":"208115","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161118","itemobject_id":"161118","errormessages":[]}
+Successful save of itemversion: itemversion_id=208115, itemview_url=http://192.168.128.150/sandbox/struct/io/161118
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+02/10/2022 22:20: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+Saving new itemversion...
+Looked up type of object: Procedure
+Return String: {"itemversion_id":"208116","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161119","itemobject_id":"161119","errormessages":[]}
+Successful save of itemversion: itemversion_id=208116, itemview_url=http://192.168.128.150/sandbox/struct/io/161119
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+02/10/2022 22:21: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+Saving new itemversion...
+Looked up type of object: Procedure
+Return String: {"itemversion_id":"208117","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161120","itemobject_id":"161120","errormessages":[]}
+Successful save of itemversion: itemversion_id=208117, itemview_url=http://192.168.128.150/sandbox/struct/io/161120
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+02/10/2022 22:22: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+Saving new itemversion...
+Looked up type of object: Procedure
+Return String: {"itemversion_id":"208118","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161121","itemobject_id":"161121","errormessages":[]}
+Successful save of itemversion: itemversion_id=208118, itemview_url=http://192.168.128.150/sandbox/struct/io/161121
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+02/10/2022 22:22: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+Saving new itemversion...
+Looked up type of object: Procedure
+Return String: {"itemversion_id":"208119","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161122","itemobject_id":"161122","errormessages":[]}
+Successful save of itemversion: itemversion_id=208119, itemview_url=http://192.168.128.150/sandbox/struct/io/161122
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\AddDemoProcToDEM011.pforgex
+05/27/2022 21:43: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+Saving fieldcomment record...
+Return String: {"comment_id":106091,"errormessages":[]}
+Successful save of comment record: attachment comment_id=106091
+Saving attachement (report_attachment_document_id[0])...
+Return String: {"document_id":265194,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=265194
+Saving attachement (report_attachment_document_id[1])...
+Return String: {"document_id":265195,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=265195
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208172","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":[]}
+Successful save of itemversion: itemversion_id=208172, itemview_url=http://192.168.128.150/sandbox/struct/io/161062
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+05/27/2022 21:47: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+Saving fieldcomment record...
+Return String: {"comment_id":106092,"errormessages":[]}
+Successful save of comment record: attachment comment_id=106092
+Saving attachement (report_attachment_document_id[0])...
+Return String: {"document_id":265196,"errormessages":[]}
+Successful save of file (C:/wamp64/www/partforge/PartForgeLink/VBNETProject/bin/Release/PendingUploads/TPA-0340A-00 CofC SN000070.pdf) record: document_id=265196
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208173","itemview_url":"http:\/\/mylocalhost\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":[]}
+Successful save of itemversion: itemversion_id=208173, itemview_url=http://mylocalhost/sandbox/struct/io/161062
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+05/27/2022 21:51: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+Saving fieldcomment record...
+Return String: {"comment_id":106093,"errormessages":[]}
+Successful save of comment record: attachment comment_id=106093
+Saving attachement (report_attachment_document_id[0])...
+Return String: {"document_id":265197,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=265197
+Saving attachement (report_attachment_document_id[1])...
+Return String: {"document_id":265198,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=265198
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208174","itemview_url":"http:\/\/mylocalhost\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":[]}
+Successful save of itemversion: itemversion_id=208174, itemview_url=http://mylocalhost/sandbox/struct/io/161062
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+05/27/2022 22:07: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+Saving fieldcomment record...
+Return String: {"comment_id":106094,"errormessages":[]}
+Successful save of comment record: attachment comment_id=106094
+Saving attachement (report_attachment_document_id[0])...
+Return String: {"document_id":265199,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=265199
+Saving attachement (report_attachment_document_id[1])...
+Return String: {"document_id":265200,"errormessages":[]}
+Successful save of file (C:\wamp64\www\qdforms2\New folder\TPA-0340A-00 CofC SN000070.pdf) record: document_id=265200
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208175","itemview_url":"http:\/\/mylocalhost\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":[]}
+Successful save of itemversion: itemversion_id=208175, itemview_url=http://mylocalhost/sandbox/struct/io/161062
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+05/28/2022 06:33: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+Saving fieldcomment record...
+Return String: {"comment_id":106095,"errormessages":[]}
+Successful save of comment record: attachment comment_id=106095
+Saving attachement (report_attachment_document_id[0])...
+05/28/2022 06:40: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208176","itemview_url":"http:\/\/mylocalhost\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":[]}
+Successful save of itemversion: itemversion_id=208176, itemview_url=http://mylocalhost/sandbox/struct/io/161062
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+05/30/2022 07:16: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+Saving fieldcomment record...
+Return String: {"comment_id":106097,"errormessages":[]}
+Successful save of comment record: attachment comment_id=106097
+Saving attachement (report_attachment_document_id[0])...
+Return String: {"document_id":265201,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=265201
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208177","itemview_url":"http:\/\/mylocalhost\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":[]}
+Successful save of itemversion: itemversion_id=208177, itemview_url=http://mylocalhost/sandbox/struct/io/161062
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+05/30/2022 07:17: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+Saving fieldcomment record...
+Return String: {"comment_id":106098,"errormessages":[]}
+Successful save of comment record: attachment comment_id=106098
+Saving attachement (report_attachment_document_id[0])...
+Return String: {"document_id":265202,"errormessages":[]}
+Successful save of file (TPA-0340A-00 CofC SN000070.pdf) record: document_id=265202
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208178","itemview_url":"http:\/\/mylocalhost\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":[]}
+Successful save of itemversion: itemversion_id=208178, itemview_url=http://mylocalhost/sandbox/struct/io/161062
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+05/30/2022 07:18: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+Saving fieldcomment record...
+Return String: {"comment_id":106099,"errormessages":[]}
+Successful save of comment record: attachment comment_id=106099
+Saving attachement (report_attachment_document_id[0])...
+Return String: {"document_id":265203,"errormessages":[]}
+Successful save of file (.\TPA-0340A-00 CofC SN000070.pdf) record: document_id=265203
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208179","itemview_url":"http:\/\/mylocalhost\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":[]}
+Successful save of itemversion: itemversion_id=208179, itemview_url=http://mylocalhost/sandbox/struct/io/161062
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+05/30/2022 07:19: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+Saving fieldcomment record...
+Return String: {"comment_id":106100,"errormessages":[]}
+Successful save of comment record: attachment comment_id=106100
+Saving attachement (report_attachment_document_id[0])...
+Return String: {"document_id":265204,"errormessages":[]}
+Successful save of file (FileSub\TPA-0340A-00 CofC SN000070.pdf) record: document_id=265204
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208180","itemview_url":"http:\/\/mylocalhost\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":[]}
+Successful save of itemversion: itemversion_id=208180, itemview_url=http://mylocalhost/sandbox/struct/io/161062
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+05/30/2022 07:20: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+Saving fieldcomment record...
+Return String: {"comment_id":106101,"errormessages":[]}
+Successful save of comment record: attachment comment_id=106101
+Saving attachement (report_attachment_document_id[0])...
+05/30/2022 07:22: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_attachment.pforgex
+Saving fieldcomment record...
+Return String: {"comment_id":106102,"errormessages":[]}
+Successful save of comment record: attachment comment_id=106102
+Saving attachement (report_attachment_document_id[0])...
+06/21/2022 06:45: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208180","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":{"effective_date":"The effective date (2021-10-29 16:49) is exactly the same as another exsting version.  You must use a different date (even if only 1 minute different)."}}
+Failed to save itemversion record: effective_date: The effective date (2021-10-29 16:49) is exactly the same as another exsting version.  You must use a different date (even if only 1 minute different).
+Unsuccessful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+06/21/2022 06:50: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208180","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":[]}
+Successful save of itemversion: itemversion_id=208180, itemview_url=http://192.168.128.150/sandbox/struct/io/161062
+Saving comment record...
+Return String: {"comment_id":106103,"errormessages":[]}
+Successful save of comment record: comment_id=106103
+Saving attachement (document_id[0])...
+Return String: {"document_id":265205,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070.pdf) record: document_id=265205
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+06/21/2022 06:54: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208180","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":[]}
+Successful save of itemversion: itemversion_id=208180, itemview_url=http://192.168.128.150/sandbox/struct/io/161062
+Saving comment record...
+Return String: {"comment_id":106104,"errormessages":[]}
+Successful save of comment record: comment_id=106104
+Saving attachement (document_id[0])...
+Return String: {"document_id":265206,"errormessages":[]}
+Successful save of file (\\office\timelapseprojectdata\glenstoneptz\20220620\20220620-000102.jpg) record: document_id=265206
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+06/21/2022 07:03: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208180","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":[]}
+Successful save of itemversion: itemversion_id=208180, itemview_url=http://192.168.128.150/sandbox/struct/io/161062
+Saving comment record...
+Return String: {"comment_id":106105,"errormessages":[]}
+Successful save of comment record: comment_id=106105
+Saving attachement (document_id[0])...
+Return String: {"document_id":265207,"errormessages":[]}
+Successful save of file (\\office\timelapseprojectdata\R&D\TPA-0340A-00 CofC SN000070.pdf) record: document_id=265207
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070.pforgex
+06/21/2022 07:06: Starting to upload XML file: C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_add_just_a_comment_attachment_with_crazy_name.pforgex
+Saving new itemversion...
+Looked up type of object: Part
+Return String: {"itemversion_id":"208180","itemview_url":"http:\/\/192.168.128.150\/sandbox\/struct\/io\/161062","itemobject_id":"161062","errormessages":[]}
+Successful save of itemversion: itemversion_id=208180, itemview_url=http://192.168.128.150/sandbox/struct/io/161062
+Saving comment record...
+Return String: {"comment_id":106106,"errormessages":[]}
+Successful save of comment record: comment_id=106106
+Saving attachement (document_id[0])...
+Return String: {"document_id":265208,"errormessages":[]}
+Successful save of file (C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\TPA-0340A-00 CofC SN000070 &.pdf) record: document_id=265208
+Successful end of Upload procedure for C:\wamp64\www\partforge\PartForgeLink\VBNETProject\bin\Release\PendingUploads\SN000070_add_just_a_comment_attachment_with_crazy_name.pforgex

@@ -1,0 +1,13 @@
+<measurement>
+   <header>
+    <title>Demo Proc Test</title>
+    <effective_date>2/10/2022 07:32</effective_date>
+    <typeobject_id>129</typeobject_id>
+    <disposition>Pass|InProcess</disposition>
+  </header>
+  <data>
+    <field name="demo_part">DEM011</field>
+    <field name="measurement_text_field1">Meas Text</field>
+    <field name="leak_rate">0.01</field>
+  </data>
+</measurement>
