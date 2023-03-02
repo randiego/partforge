@@ -2013,7 +2013,7 @@ class DBTableRowItemVersion extends DBTableRow {
             }
         }
         natcasesort($out);
-        return $out;
+        return array_reverse($out, true);
     }
 
     /**

@@ -475,6 +475,14 @@ class UtilsController extends DBControllerActionAbstract
                             setGlobal('databaseversion', $databaseversion);
                         }
                     }
+
+                    if ($databaseversion=='18') {
+                        $msgs[] = 'Upgrading to version 19: Increase width of serial number caption.';
+                        DbSchema::getInstance()->mysqlQuery("ALTER TABLE typeversion CHANGE COLUMN serial_number_caption serial_number_caption varchar(255) DEFAULT NULL");
+                        $databaseversion = '19';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
+
             }
         }
         $this->view->currentversion = getGlobal('databaseversion');
