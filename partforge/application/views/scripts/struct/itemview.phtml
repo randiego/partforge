@@ -2,17 +2,24 @@
 var scrollPosKeyRight = "<?php echo 'itemViewRightPanelPos'.$this->dbtable->itemversion_id;?>";
 var scrollPosKeyLeft = "<?php echo 'itemViewLeftPanelPos'.$this->dbtable->itemversion_id;?>";
 var pdfViewUrl = "<?php echo $this->navigator->getCurrentViewUrl('itemviewpdf', null, array('itemversion_id' => $this->dbtable->itemversion_id, 'show_form_fields' => '_SHOWFORM_', 'show_text_fields' => '_SHOWTEXT_', 'show_event_stream' => '_SHOWEVENTS_'));?>";
-var followUrl = "<?php echo $this->navigator->getCurrentHandlerUrl('btnFollow', null, null, array('itemobject_id' => $this->dbtable->itemobject_id, 'followNotifyTimeHHMM' => '_FOLLOWNOTIFYTIMEHHMM_', 'notify_instantly' => '_NOTIFYINSTANTLY_', 'notify_daily' => '_NOTIFYDAILY_'));?>";
-var followInstantly =  "<?php echo $_SESSION['account']->getPreference('followInstantly');?>";
-var followDaily =  "<?php echo $_SESSION['account']->getPreference('followDaily');?>";
+<?php
+$Subscription = new DBTableRowChangeSubscription();
+$is_following = $Subscription->getRecordByIds($_SESSION['account']->user_id, $this->dbtable->itemobject_id, null);
+?>
+var followUrl = "<?php echo $this->navigator->getCurrentHandlerUrl('btnFollow', null, null, array('itemobject_id' => $this->dbtable->itemobject_id, 'followNotifyTimeHHMM' => '_FOLLOWNOTIFYTIMEHHMM_', 'notify_instantly' => '_NOTIFYINSTANTLY_', 'notify_daily' => '_NOTIFYDAILY_', 'exclude_change_codes' => '_EXCLUDECHANGECODES_'));?>";
+var unFollowUrl = "<?php echo $is_following ? $this->navigator->getCurrentHandlerUrl('btnUnFollow', null, null, array('itemobject_id' => $this->dbtable->itemobject_id)) : '';?>";
+var followInstantly =  "<?php echo $is_following ? $Subscription->notify_instantly : $_SESSION['account']->getPreference('followInstantly');?>";
+var followDaily =  "<?php echo $is_following ? $Subscription->notify_daily : $_SESSION['account']->getPreference('followDaily');?>";
+var followExcludeChangeCodes =  "<?php echo $is_following ? $Subscription->exclude_change_codes : $_SESSION['account']->getPreference('followExcludeChangeCodes');?>";
 var followNotifyTimeHHMM =  "<?php echo $_SESSION['account']->getPreference('followNotifyTimeHHMM');?>";
 var followNotifyEmailMsg =  "<?php echo implode('  ', $_SESSION['account']->reasonsWhyCantRecieveWatchNotices());?>";
+var changeCodesListing = <?php echo json_encode(DBTableRowChangeLog::getChangeCodes());?>;
 var linkToPageUrl = "<?php echo $this->dbtable->absoluteUrl();?>";
 var lookupUrl = '<?php echo $this->navigator->getCurrentViewUrl('jsonsearchloginids', 'user');?>';
 var canSendLink = <?php echo in_array($_SESSION['account'] ->getRole(), array('Guest','DataTerminal')) ? 'false' : 'true';?>;
 </script>
 <?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
-<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemview.js?v=16" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemview.js?v=17" type="TEXT/JAVASCRIPT"></script>
 <?php
 
 $title = $this->dbtable->getPageTypeTitleHtml().($this->dbtable->item_serial_number ? ' - '.TextToHtml($this->dbtable->item_serial_number) : '');
@@ -79,12 +86,10 @@ if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 
     $detailslinks[] = linkify($pdf_url, 'PDF', 'Open a printable PDF view of this page', 'bd-button', '', '', 'pdfButton');
 
     if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'managemylists')) {
-        $Subscription = new DBTableRowChangeSubscription();
-        $is_following = $Subscription->getRecordByIds($_SESSION['account']->user_id, $this->dbtable->itemobject_id, null);
         $cat_name = $is_a_procedure ? 'Procedure' : 'Part';
         if ($is_following) {
-            $usfollow_url = $this->navigator->getCurrentHandlerUrl('btnUnFollow', null, null, array('itemobject_id' => $this->dbtable->itemobject_id));
-            $detailslinks[] = linkify($usfollow_url, 'Stop Watching', $Subscription->getDescription()."  Click here to remove this item from your Watchlist.", 'bd-button');
+            $follow_url = $this->navigator->getCurrentHandlerUrl('btnFollow', null, null, array('itemobject_id' => $this->dbtable->itemobject_id));
+            $detailslinks[] = linkify($follow_url, 'Watching...', "You are currently following. Click to change how your are following.", 'bd-button', '', '', 'followButton');
         } else {
             $follow_url = $this->navigator->getCurrentHandlerUrl('btnFollow', null, null, array('itemobject_id' => $this->dbtable->itemobject_id));
             $detailslinks[] = linkify($follow_url, 'Watch', "Add to your Watchlist to follow any changes that occur to this {$cat_name}", 'bd-button', '', '', 'followButton');

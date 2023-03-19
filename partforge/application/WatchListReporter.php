@@ -76,7 +76,8 @@ class WatchListReporter {
 						       ( (changesubscription.typeobject_id = changelog.trigger_typeobject_id) and  (changesubscription.follow_items_too=1) )
 						     )
 						  )
-					) and (changesubscription.user_id='{$user_id}')  and (changesubscription.notify_daily=1))");
+					) and (changesubscription.user_id='{$user_id}')  and (changesubscription.notify_daily=1)
+                    and (IFNULL(changesubscription.exclude_change_codes, '') not like CONCAT('%', changelog.change_code, '%')))");
             $records = DbSchema::getInstance()->getRecords('', $DBTableRowQuery->getQuery());
 
             DBTableRowUser::setUserPreference($user_id, 'lastFollowNotifyTimeDateAndHHMM', date('Y-m-d H:i', $end_time));

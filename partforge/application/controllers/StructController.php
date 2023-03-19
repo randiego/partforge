@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2023 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -798,10 +798,11 @@ class StructController extends DBControllerActionAbstract
                     $params['months'] = $this->params['months'];
                     $this->navigator->jumpToView(null, null, $params);
                 case isset($this->params['btnFollow']):
-                    DBTableRowChangeSubscription::setFollowing($_SESSION['account']->user_id, $this->params['itemobject_id'], null, $this->params['notify_instantly'], $this->params['notify_daily']);
+                    DBTableRowChangeSubscription::setFollowing($_SESSION['account']->user_id, $this->params['itemobject_id'], null, $this->params['notify_instantly'], $this->params['notify_daily'], false, $this->params['exclude_change_codes']);
                     $_SESSION['account']->setPreference('followNotifyTimeHHMM', $this->params['followNotifyTimeHHMM']);
                     $_SESSION['account']->setPreference('followInstantly', $this->params['notify_instantly']);
                     $_SESSION['account']->setPreference('followDaily', $this->params['notify_daily']);
+                    $_SESSION['account']->setPreference('followExcludeChangeCodes', $this->params['exclude_change_codes']);
                     $this->navigator->jumpToView(null, null, array('itemobject_id' => $this->params['itemobject_id']));
                 case isset($this->params['btnUnFollow']):
                     DBTableRowChangeSubscription::clearFollowing($_SESSION['account']->user_id, $this->params['itemobject_id'], null);
@@ -942,7 +943,6 @@ class StructController extends DBControllerActionAbstract
                     }
                     $TypeVersion->versionstatus = 'A';
                     $TypeVersion->save(array('versionstatus'));
-                    DBTableRowChangeLog::releasedTypeVersion($TypeVersion->typeobject_id, $TypeVersion->typeversion_id);
                     $this->navigator->jumpToView(null, null, array('typeversion_id' => $this->params['typeversion_id']));
                 case isset($this->params['btnPreview']):
                     $return_url = $this->navigator->getCurrentHandlerUrl('', null, null, array('typeversion_id' => $this->params['typeversion_id']));
@@ -979,6 +979,7 @@ class StructController extends DBControllerActionAbstract
                     if ($TypeObject->getRecordById($this->params['typeobject_id'])) {
                         $TypeObject->typedisposition = 'A';
                         $TypeObject->save(array('typedisposition'));
+                        DBTableRowChangeLog::unObsoletedTypeObject($TypeVersion->typeobject_id, $TypeVersion->typeversion_id);
                     }
                     $this->navigator->jumpToView(null, null, array('resetview' => 1,'typeobject_id' => $this->params['typeobject_id']));
                 case isset($this->params['btnUpgradeVersion']):
@@ -987,11 +988,12 @@ class StructController extends DBControllerActionAbstract
                     $this->navigator->jumpToView('itemdefinitionview', null, array('resetview' => 1,'typeversion_id' => $this->params['to_typeversion_id'],'msgi' => 1));
 
                 case isset($this->params['btnFollow']):
-                    DBTableRowChangeSubscription::setFollowing($_SESSION['account']->user_id, null, $this->params['typeobject_id'], $this->params['notify_instantly'], $this->params['notify_daily'], $this->params['follow_items_too']);
+                    DBTableRowChangeSubscription::setFollowing($_SESSION['account']->user_id, null, $this->params['typeobject_id'], $this->params['notify_instantly'], $this->params['notify_daily'], $this->params['follow_items_too'], $this->params['exclude_change_codes']);
                     $_SESSION['account']->setPreference('followNotifyTimeHHMM', $this->params['followNotifyTimeHHMM']);
                     $_SESSION['account']->setPreference('followInstantly', $this->params['notify_instantly']);
                     $_SESSION['account']->setPreference('followDaily', $this->params['notify_daily']);
                     $_SESSION['account']->setPreference('followItemsToo', $this->params['follow_items_too']);
+                    $_SESSION['account']->setPreference('followExcludeChangeCodesDefs', $this->params['exclude_change_codes']);
                     $this->navigator->jumpToView(null, null, array('typeobject_id' => $this->params['typeobject_id']));
                 case isset($this->params['btnUnFollow']):
                     DBTableRowChangeSubscription::clearFollowing($_SESSION['account']->user_id, null, $this->params['typeobject_id']);

@@ -2128,3 +2128,51 @@ dl.comment_tips dt {
 .ui-widget-content a:link, .ui-widget-content a:visited, .ui-widget-content a:hover, .ui-widget-content a:active {
 	color: #0073EA;
 }
+
+ul.tightlist {
+	margin: 0px;
+	padding-left: 10px;
+}
+
+div.ex-checks-div {
+	margin-left: 1px;
+	margin-top: 5px;
+	padding-left: 4px;
+	padding-top: 5px;
+	border: 1px solid #ddd;
+	border-width: 1px 0 0 0;
+}
+
+div.ex-checks-div .ex-checks-div2 {
+	font-size: 0.9em;
+}
+
+div.ex-checks-div input {
+	margin: 0px 2px 0px 10px;
+}
+
+div.ex-checks-div h1 {
+	margin: 6px 0 5px 0;
+	font-size: 12px;
+	font-weight: bold;
+	margin-top: 6px;
+	margin-bottom:5px;
+	/* color:#0073EA; */
+}
+div.ex-checks-div h2 {
+	color:#0073EA;
+	font-weight:bold;
+	font-size:11px;
+	font-style:italic;
+	margin: 4px 0 2px 0;
+}
+
+#followDialogContainer {
+	padding: 5px 0 5px 0;
+}
+
+#followDialogContainer hr {
+	border: 1px solid #AAA;
+}
+
+

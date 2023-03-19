@@ -1198,9 +1198,14 @@ class DBTableRowTypeVersion extends DBTableRow {
         if ($new_object) {
             DBTableRowChangeLog::addedTypeObject($this->typeobject_id, $this->typeversion_id);
         } else {
-            DBTableRowChangeLog::changedTypeVersion($this->typeobject_id, $this->typeversion_id);
+            if ((count($fieldnames) == 1) && in_array('versionstatus', $fieldnames) && ($this->versionstatus == 'A')) {
+                DBTableRowChangeLog::releasedTypeVersion($this->typeobject_id, $this->typeversion_id);
+            } elseif ((count($fieldnames) == 1) && in_array('versionstatus', $fieldnames) && ($this->versionstatus == 'D')) {
+                DBTableRowChangeLog::revertToDraftTypeVersion($this->typeobject_id, $this->typeversion_id);
+            } else {
+                DBTableRowChangeLog::changedTypeVersion($this->typeobject_id, $this->typeversion_id);
+            }
         }
-
     }
 
 
@@ -1303,6 +1308,7 @@ class DBTableRowTypeVersion extends DBTableRow {
         $typeobject_id = $this->typeobject_id;
         $typeversion_id = $this->typeversion_id;
         $text_desc = $this->type_part_number;
+        $versionstatus = $this->versionstatus;
         parent::delete();
         DbSchema::getInstance()->mysqlQuery("DELETE typecomponent_typeobject FROM typecomponent_typeobject
         			INNER JOIN typecomponent ON typecomponent.typecomponent_id=typecomponent_typeobject.typecomponent_id
@@ -1319,10 +1325,10 @@ class DBTableRowTypeVersion extends DBTableRow {
             */
             DbSchema::getInstance()->mysqlQuery("delete from typecomponent_typeobject where can_have_typeobject_id='{$typeobject_id}'");
             DbSchema::getInstance()->mysqlQuery("delete from typecomment where typeobject_id='{$typeobject_id}'");
-            DBTableRowChangeLog::deletedTypeObject($typeobject_id, $text_desc);
+            DBTableRowChangeLog::deletedTypeObject($typeobject_id, $text_desc, $versionstatus);
         } else {
             self::updateCachedCurrentTypeVersionId($typeobject_id);
-            DBTableRowChangeLog::deletedTypeVersion($typeobject_id);
+            DBTableRowChangeLog::deletedTypeVersion($typeobject_id, $versionstatus);
         }
     }
 

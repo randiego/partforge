@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2023 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -62,11 +62,17 @@ class DBTableRowChangeSubscription extends DBTableRow {
         } else if ($this->typeobject_id && ($this->follow_items_too==1)) {
             $condition = 'if this definition or any items of this type change.';
         }
+        if (!is_null($this->exclude_change_codes)) {
+            $condition .= ' (excludes changes of type: '.$this->exclude_change_codes.')';
+        }
         return count($action)>0 ? "You are currently emailed ".implode(' and ', $action)." ".$condition : "";
     }
 
-    static function setFollowing($user_id, $itemobject_id, $typeobject_id, $notify_instantly, $notify_daily, $follow_items_too = false)
+    static function setFollowing($user_id, $itemobject_id, $typeobject_id, $notify_instantly, $notify_daily, $follow_items_too, $exclude_change_codes)
     {
+        if ($exclude_change_codes == '') {
+            $exclude_change_codes = null;
+        }
         $S = new self();
         if ($S->getRecordByIds($user_id, $itemobject_id, $typeobject_id)) {
             $S->delete();
@@ -78,6 +84,9 @@ class DBTableRowChangeSubscription extends DBTableRow {
         $S->notify_instantly = $notify_instantly;
         $S->notify_daily = $notify_daily;
         $S->follow_items_too = $follow_items_too ? 1 : 0;
+        if (!empty($exclude_change_codes)) {
+            $S->exclude_change_codes = $exclude_change_codes;
+        }
         $S->save();
     }
 
@@ -103,13 +112,15 @@ class DBTableRowChangeSubscription extends DBTableRow {
             $cond[] = "(((itemobject_id IS NOT NULL) and (itemobject_id='{$Rec->trigger_itemobject_id}'))
 														or ((typeobject_id IS NOT NULL) and (typeobject_id='{$Rec->trigger_typeobject_id}') and (follow_items_too=1)))";
         }
-        // if it's a definition (no trigger_itemobject_id defined), we want to include subscriptions for definition, regardless of if follow_items_too is set:
+        // if it's a definition (no trigger_itemobject_id defined), we want to include subscriptions for definition, regardless of if follow_items_too is set
+        // or we want to show changes to definitions in the case where both type and item are null (wildcard) and follow_items_too is NOT set:
         if (!is_null($Rec->trigger_typeobject_id) && is_null($Rec->trigger_itemobject_id)) {
-            $cond[] = "((typeobject_id IS NOT NULL) and (typeobject_id='{$Rec->trigger_typeobject_id}'))";
+            $cond[] = "(( (typeobject_id IS NOT NULL) and (typeobject_id='{$Rec->trigger_typeobject_id}') )
+                        or ( (itemobject_id IS NULL) and (typeobject_id IS NULL) and (follow_items_too=0) ))";
         }
 
         if (count($cond)>0) {
-            $and_where = " and (".implode(' or ', $cond).")";
+            $and_where = " and (".implode(' or ', $cond).") and (IFNULL(exclude_change_codes, '') not like '%".$Rec->change_code."%')";
             $records = DbSchema::getInstance()->getRecords('', "select distinct user_id from changesubscription where notify_instantly=1 {$and_where}");
             foreach ($records as $record) {
                 if (Zend_Registry::get('config')->use_instant_watch_queue) {

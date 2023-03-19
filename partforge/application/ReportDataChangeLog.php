@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2023 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -142,7 +142,8 @@ class ReportDataChangeLog extends ReportDataWithCategory {
                                 ( (changesubscription.typeobject_id = changelog.trigger_typeobject_id) and  (changesubscription.follow_items_too=1) )
                                 )
                             )
-                        ) and (changesubscription.user_id='{$this->_user_id}'))");
+                        ) and (changesubscription.user_id='{$this->_user_id}')
+                        and (IFNULL(changesubscription.exclude_change_codes, '') not like CONCAT('%', changelog.change_code, '%')))");
                     break;
                 case 'MINE7D':
                     $DBTableRowQuery->addAndWhere(" and (changelog.changed_on>'{$timecutoff_mysql}')");

@@ -62,7 +62,7 @@ $(function() {
 		});
     }
 
-	activatefollowButton(followUrl,"",true);
+	activatefollowButton(followUrl,"",true, changeCodesListing);
 	activateLinkToPageButton('#linkToPageButton', lookupUrl, linkToPageUrl, layoutTitle, canSendLink);
 	initPanelScrollSaver();
 

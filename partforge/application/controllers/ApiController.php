@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2023 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -204,6 +204,17 @@ class ApiController extends Zend_Controller_Action
         }
 
         $this->returnOutput( array('data' => DbSchema::getInstance()->getRecords('', $DBTableRowQuery->getQuery())) );
+    }
+
+    /**
+     * This is used as a testing hook. It dumps the contents of a table.  This is really only meant for testing.
+     */
+    public function dumptableAction()
+    {
+        $limit = isset($this->params['limit']) && is_numeric($this->params['limit']) ? $this->params['limit'] : 500;
+        $tablename = isset($this->params['table']) && in_array($this->params['table'], DbSchema::getInstance()->getTableNames()) ? $this->params['table'] : 'user';
+        $records = DbSchema::getInstance()->getRecords('', "SELECT * FROM {$tablename} WHERE 1=1 LIMIT {$limit}");
+        $this->returnOutput($records);
     }
 
 }

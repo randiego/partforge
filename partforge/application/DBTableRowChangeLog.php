@@ -68,6 +68,13 @@ class DBTableRowChangeLog extends DBTableRow {
         return $DBTableRowQuery;
     }
 
+    static function getChangeCodes()
+    {
+        $records = DbSchema::getInstance()->getRecords('',"
+                SELECT change_code, is_for_definitions, affects_released_definitions, change_code_name FROM changecode
+                ORDER BY is_for_definitions desc, affects_released_definitions desc, change_code_name");
+        return $records;
+    }
 
     static private function saveItemEntry($desc_itemobject_id, $desc_itemversion_id, $locator_prefix, $change_code, $comment_id = null, $comment_text = null, $user_id = null)
     {
@@ -229,6 +236,11 @@ class DBTableRowChangeLog extends DBTableRow {
         self::saveTypeEntry($typeobject_id, $typeversion_id, 'tv', 'ATO');
     }
 
+    static public function revertToDraftTypeVersion($typeobject_id, $typeversion_id)
+    {
+        self::saveTypeEntry($typeobject_id, $typeversion_id, 'tv', 'VTV');
+    }
+
     static public function releasedTypeVersion($typeobject_id, $typeversion_id)
     {
         self::saveTypeEntry($typeobject_id, $typeversion_id, 'tv', 'RTV');
@@ -237,6 +249,11 @@ class DBTableRowChangeLog extends DBTableRow {
     static public function obsoletedTypeObject($typeobject_id, $typeversion_id)
     {
         self::saveTypeEntry($typeobject_id, $typeversion_id, 'tv', 'OTO');
+    }
+
+    static public function unObsoletedTypeObject($typeobject_id, $typeversion_id)
+    {
+        self::saveTypeEntry($typeobject_id, $typeversion_id, 'tv', 'UTV');
     }
 
     static public function changedTypeVersion($typeobject_id, $typeversion_id)
@@ -249,11 +266,11 @@ class DBTableRowChangeLog extends DBTableRow {
         self::saveTypeEntry($typeobject_id, $typeversion_id, 'tv', 'ATV');
     }
 
-    static public function deletedTypeVersion($typeobject_id)
+    static public function deletedTypeVersion($typeobject_id, $versionstatus)
     {
         $Rec = new self();
         $Rec->locator_prefix = 'tv';
-        $Rec->change_code = 'DTV';
+        $Rec->change_code = $versionstatus == 'A' ? 'DTV' : 'DDT';
         $TV = new DBTableRowTypeVersion();
         if ($TV->getCurrentRecordByObjectId($typeobject_id)) {
             $Rec->desc_typeversion_id = $TV->typeversion_id;
@@ -267,11 +284,11 @@ class DBTableRowChangeLog extends DBTableRow {
         DBTableRowChangeSubscription::triggerChangeNotice($Rec);
     }
 
-    static public function deletedTypeObject($typeobject_id, $text)
+    static public function deletedTypeObject($typeobject_id, $text, $versionstatus)
     {
         $Rec = new self();
         $Rec->locator_prefix = '';
-        $Rec->change_code = 'DTO';
+        $Rec->change_code = $versionstatus == 'A' ? 'DTO' : 'DDT';
         $Rec->trigger_typeobject_id = $typeobject_id;
         $Rec->desc_text = strlen($text) > 255 ? substr($text, 0, 255) : $text;
         $Rec->save();

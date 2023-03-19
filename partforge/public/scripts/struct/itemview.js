@@ -173,7 +173,7 @@ $(document).ready(function() {
 		return false; // prevents the default link
 	});
 
-	activatefollowButton(followUrl,"If you want to watch all items of this type, click Watch from the definition page.",false);
+	activatefollowButton(followUrl,"If you want to watch all items of this type, click Watch from the definition page.",false, changeCodesListing);
 	activateLinkToPageButton('#linkToPageButton', lookupUrl, linkToPageUrl, layoutTitle, canSendLink);
 
 	$("#monthsHistoryId").selectmenu({

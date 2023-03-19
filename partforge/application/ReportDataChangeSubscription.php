@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2023 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -43,6 +43,7 @@ class ReportDataChangeSubscription extends ReportDataWithCategory {
         $this->fields['procedure_date']     = array('display'=> 'Procedure',        'key_asc'=>'procedure_date', 'key_desc'=>'procedure_date desc', 'start_key' => 'key_desc');
         $this->fields['item_serial_number']     = array('display'=> 'Part',     'key_asc'=>'item_serial_number', 'key_desc'=>'item_serial_number desc');
         $this->fields['watching_changes_to']    = array('display'=> 'Watching Changes To');
+        $this->fields['excluded_change_code_names']    = array('display'=> 'Except For');
         $this->fields['notify_instantly']   = array('display'=> 'Notify<br />Instantly');
         $this->fields['notify_daily']   = array('display'=> 'Notify<br />Daily');
 
@@ -91,6 +92,7 @@ class ReportDataChangeSubscription extends ReportDataWithCategory {
 							    		   IF((io_tc.is_user_procedure IS NULL) and (to_tc.is_user_procedure=0) and (changesubscription.follow_items_too=0) ,"Definition Only",
 					    			       IF((io_tc.is_user_procedure IS NOT NULL) and (io_tc.is_user_procedure=1) ,"Procedure","Part"))))) as watching_changes_to');
 
+        $DBTableRowQuery->addSelectFields("(SELECT GROUP_CONCAT(change_code_name ORDER BY change_code_name ASC SEPARATOR ', ') from changecode WHERE changesubscription.exclude_change_codes LIKE concat('%', change_code, '%')) as excluded_change_code_names");
     }
 
     public function get_records($queryvars, $searchstr, $limitstr)
@@ -147,6 +149,10 @@ class ReportDataChangeSubscription extends ReportDataWithCategory {
         if ($record['locator_prefix']=='tv') {
             $detail_out['part_number'] = linkify( $edit_url, $record['part_number'], 'View');
             $detail_out['part_description'] = linkify( $edit_url, $record['part_description'], 'View');
+        }
+
+        if (!empty($record['excluded_change_code_names'])) {
+            $detail_out['excluded_change_code_names'] = '<ul class="tightlist"><li>'.str_replace(', ', '</li><li>', $record['excluded_change_code_names']).'</li></ul>';
         }
 
 

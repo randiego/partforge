@@ -46,11 +46,73 @@ function timeSelectHtmlForWatches(selectTagId, classId, timevalueHHMM) {
 	return html;
 }
 
+function fetchExcludeCheckHtml(changeCodeListing, followExcludeChangeCodes, is_for_definitions, affects_released_definitions, heading, classnm)
+{
+	var h = '';
+	h += '<h2 class="'+classnm+'">'+heading+'</h2>';
+	h += '<div class="ex-checks-div2 '+classnm+'">';
+	for (var i = 0; i < changeCodeListing.length; i++) {
+		var is_checked = followExcludeChangeCodes.indexOf(changeCodeListing[i]['change_code']) != -1;
+		if (changeCodeListing[i]['is_for_definitions']==is_for_definitions && changeCodeListing[i]['affects_released_definitions']==affects_released_definitions) {
+			h += '<label><input type="checkbox" class="chkexcludecls" id="exclude_'+i+'" value="'+changeCodeListing[i]['change_code']+'" '+(!is_checked ? 'checked="checked"' : '')+' />'+changeCodeListing[i]['change_code_name']+'</label><br />';
+		}
+	}
+	h += '</div>';
+	return h;
+}
+
+function renderExcludeChecks(changeCodeListing, this_is_a_definition)
+{
+	var h = '';
+	var followExcludeChangeCodes = $("input[name='exclude_change_codes']").val();
+	if (this_is_a_definition) {
+		h += fetchExcludeCheckHtml(changeCodeListing, followExcludeChangeCodes, 1, 1, "changes affecting released definitions", '');
+		h += fetchExcludeCheckHtml(changeCodeListing, followExcludeChangeCodes, 1, 0, "other changes to definitions", '');
+	}
+	h += fetchExcludeCheckHtml(changeCodeListing, followExcludeChangeCodes, 0, 0, "changes to items", 'itemsonlycheckcls');
+	$('#ExcludeCodeDiv').html(h);
+	showHideChecks(this_is_a_definition);
+	saveCheckToField(changeCodeListing);
+	$('.chkexcludecls').on("click", function() {
+		saveCheckToField(changeCodeListing);
+	});
+
+}
+
+function showHideChecks(this_is_a_definition)
+{
+	if (this_is_a_definition) {
+		if ($('#followDialogContainer input[name="follow_items_too"]:checked').val()) {
+			$('.itemsonlycheckcls').show();
+		} else {
+			$('.itemsonlycheckcls').hide();
+		}
+	}
+}
+
+function saveCheckToField(changeCodeListing)
+{
+	var val = [];
+	$('.chkexcludecls:checkbox:checked').each(function(i){
+		val[i] = $(this).val();
+	});
+
+	var follow_items_too = $('#followDialogContainer input[name="follow_items_too"]:checked').val();
+	var notval = [];
+	for(var i = 0; i < changeCodeListing.length; i++) {
+		var considerthecheck = (changeCodeListing[i]['is_for_definitions']==1) || ((changeCodeListing[i]['is_for_definitions']==0) && follow_items_too);
+		if (considerthecheck && (val.indexOf(changeCodeListing[i]['change_code']) == -1)) {
+			notval.push(changeCodeListing[i]['change_code']);
+		}
+	}
+	$("input[name='exclude_change_codes']").val(notval.join(', '));
+}
+
 /**
  * Used whereever a followButton id is located to construct dialog and add click handler to.
  * @param followUrl string url with constants _FOLLOWNOTIFYTIMEHHMM_, _NOTIFYINSTANTLY_, _NOTIFYDAILY_ to be substituted with the form results
  */
-function activatefollowButton(followUrl,footnote_text,ask_all_items) {
+function activatefollowButton(followUrl, footnote_text, this_is_a_definition, changeCodeListing) {
 	if ($('#followButton').length) {
 		// create the popup follow dialog
 		$('<div />').attr('id','followDialogContainer').attr('title',"When something changes...").hide().appendTo('body');
@@ -58,33 +120,50 @@ function activatefollowButton(followUrl,footnote_text,ask_all_items) {
 		h += '<label><input type="checkbox" name="notify_instantly" value="1" '+(followInstantly==1 ? 'checked="checked"' : '')+' />Email Me Instantly</label><br />';
 		h += '<label><input type="checkbox" name="notify_daily" value="1" '+(followDaily==1 ? 'checked="checked"' : '')+' />Send Me a Daily Summary at </label>'+timeSelectHtmlForWatches('timevalueHHMM', '', followNotifyTimeHHMM)+'<br /><div style="margin-left: 20px;"><span class="paren">(time is same for all your daily watches.)</span></div>';
 		h += '<label><input type="checkbox" name="no_notify" value="1" checked="checked" disabled="disabled" />Show on my Watchlist (Activity Tab)</label><br />';
-		if (ask_all_items) h += '<label><input type="checkbox" name="follow_items_too" value="1" '+(followItemsToo==1 ? 'checked="checked"' : '')+' />Also Include Any Items of This Type</label><br />';
+		if (this_is_a_definition) h += '<label><input type="checkbox" name="follow_items_too" value="1" '+(followItemsToo==1 ? 'checked="checked"' : '')+' />Also Include Any Items of This Type</label><br />';
+		h += '<input type="hidden" name="exclude_change_codes" value="'+followExcludeChangeCodes+'" />';
+		h += '<div class="ex-checks-div">';
+		h += '<div id="ExcludeCodeDiv" />'
+		h += '</div>';
 		if (footnote_text!='') h += '<div style="margin-top:10px;"><span class="paren">'+footnote_text+'</span></div>';
 		if (followNotifyEmailMsg!='') h += '<div style="margin-top:10px;"><span class="paren_red">Please fix the following problem before you can receive notifications: '+followNotifyEmailMsg+'</span></div>';
 		$('#followDialogContainer').html(h);
+		renderExcludeChecks(changeCodeListing, this_is_a_definition);
+
+		$("input[name='follow_items_too']").on("click", function() {
+			showHideChecks(this_is_a_definition);
+		});
 		// now connect the on click handler that will override the normal link
 		$('#followButton').click(function(link) {
 			var contentdiv = $('#followDialogContainer');
-			pdfdialogdiv = contentdiv.dialog({
-				position: { my: "left top", at: "right bottom", of: link },
-				width: 300,
-				height: 'auto',
-				buttons: {
+			var buttonsarr = {
 					"OK": function() {
 						var filledUrl = followUrl;
 						filledUrl = filledUrl.replace('_FOLLOWNOTIFYTIMEHHMM_',$('#timevalueHHMM').val());
 						filledUrl = filledUrl.replace('_NOTIFYINSTANTLY_',$('#followDialogContainer input[name="notify_instantly"]:checked').val() ? '1' : '0');
 						filledUrl = filledUrl.replace('_NOTIFYDAILY_',$('#followDialogContainer input[name="notify_daily"]:checked').val() ? '1' : '0');
-						if (ask_all_items) {
+						filledUrl = filledUrl.replace('_EXCLUDECHANGECODES_',$('#followDialogContainer input[name="exclude_change_codes"]').val());
+						if (this_is_a_definition) {
 							filledUrl = filledUrl.replace('_ALLITEMS_',$('#followDialogContainer input[name="follow_items_too"]:checked').val() ? '1' : '0');
 						}
 						window.location.href = filledUrl;
 						$( this ).dialog( "close" );
-					},
-					Cancel: function() {
-						$( this ).dialog( "close" );
 					}
-				},
+			};
+			if (unFollowUrl !== '') {
+				buttonsarr['Stop Following'] = function() {
+							window.location.href = unFollowUrl;
+							$( this ).dialog( "close" );
+						};
+			}
+			buttonsarr["Cancel"] = function() {
+						$( this ).dialog( "close" );
+					};
+			pdfdialogdiv = contentdiv.dialog({
+				position: { my: "left top", at: "right bottom", of: link },
+				width: 300,
+				height: 'auto',
+				buttons: buttonsarr,
 				close: function(event,ui) {$(this).dialog('destroy');}
 			});
 			return false; // prevents the default link

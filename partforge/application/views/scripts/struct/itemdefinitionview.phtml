@@ -5,17 +5,24 @@ var typeObjectId = <?php echo $this->dbtable->typeobject_id;?>;
 var pdfViewUrl = "<?php echo $this->navigator->getCurrentViewUrl('itemdefinitionviewpdf', null, array('typeversion_id' => $this->dbtable->typeversion_id, 'show_linked_procedures' => '_LINKEDPROCS_'));?>";
 var isAPart = <?php echo $this->dbtable->typecategory_id==2 ? 1 : 0;?>;
 var thisDefinitionViewUrl = "<?php echo $this->navigator->getCurrentViewUrl('itemdefinitionview', 'struct', array('typeversion_id' => $this->dbtable->typeversion_id));?>";
-var followUrl = "<?php echo $this->navigator->getCurrentHandlerUrl('btnFollow', null, null, array('typeobject_id' => $this->dbtable->typeobject_id, 'followNotifyTimeHHMM' => '_FOLLOWNOTIFYTIMEHHMM_', 'notify_instantly' => '_NOTIFYINSTANTLY_', 'notify_daily' => '_NOTIFYDAILY_', 'follow_items_too' => '_ALLITEMS_'));?>";
-var followInstantly =  "<?php echo $_SESSION['account']->getPreference('followInstantly');?>";
-var followDaily =  "<?php echo $_SESSION['account']->getPreference('followDaily');?>";
-var followItemsToo =  "<?php echo $_SESSION['account']->getPreference('followItemsToo');?>";
+var changeCodesListing = <?php echo json_encode(DBTableRowChangeLog::getChangeCodes());?>;
+<?php
+$Subscription = new DBTableRowChangeSubscription();
+$is_following = $Subscription->getRecordByIds($_SESSION['account']->user_id, null, $this->dbtable->typeobject_id);
+?>
+var followUrl = "<?php echo $this->navigator->getCurrentHandlerUrl('btnFollow', null, null, array('typeobject_id' => $this->dbtable->typeobject_id, 'followNotifyTimeHHMM' => '_FOLLOWNOTIFYTIMEHHMM_', 'notify_instantly' => '_NOTIFYINSTANTLY_', 'notify_daily' => '_NOTIFYDAILY_', 'follow_items_too' => '_ALLITEMS_', 'exclude_change_codes' => '_EXCLUDECHANGECODES_'));?>";
+var unFollowUrl = "<?php echo $is_following ? $this->navigator->getCurrentHandlerUrl('btnUnFollow', null, null, array('typeobject_id' => $this->dbtable->typeobject_id)) : '';?>";
+var followInstantly =  "<?php echo $is_following ? $Subscription->notify_instantly : $_SESSION['account']->getPreference('followInstantly');?>";
+var followDaily =  "<?php echo $is_following ? $Subscription->notify_daily : $_SESSION['account']->getPreference('followDaily');?>";
+var followItemsToo =  "<?php echo $is_following ? $Subscription->follow_items_too : $_SESSION['account']->getPreference('followItemsToo');?>";
+var followExcludeChangeCodes =  "<?php echo $is_following ? $Subscription->exclude_change_codes : $_SESSION['account']->getPreference('followExcludeChangeCodesDefs');?>";
 var followNotifyTimeHHMM =  "<?php echo $_SESSION['account']->getPreference('followNotifyTimeHHMM');?>";
 var followNotifyEmailMsg =  "<?php echo implode('  ', $_SESSION['account']->reasonsWhyCantRecieveWatchNotices());?>";
 var linkToPageUrl = "<?php echo $this->dbtable->absoluteUrl();?>";
 var lookupUrl = '<?php echo $this->navigator->getCurrentViewUrl('jsonsearchloginids', 'user');?>';
 var canSendLink = <?php echo in_array($_SESSION['account'] ->getRole(), array('Guest','DataTerminal')) ? 'false' : 'true';?>;
 </script>
-<script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/struct/itemdefinitionview.js?v=8" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/struct/itemdefinitionview.js?v=9" type="TEXT/JAVASCRIPT"></script>
 
 <?php
 global $itemcounts, $typerefs;
@@ -196,20 +203,17 @@ if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 
 
     $preview_url = $this->navigator->getCurrentHandlerUrl('btnPreview', '', '', array('typeversion_id' => $this->dbtable->typeversion_id));
     $detailslinks->add_link(linkify($preview_url, 'Preview', 'Preview this form', 'bd-button', '', '', 'previewButton'));
-
-    if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'managemylists')) {
-        $Subscription = new DBTableRowChangeSubscription();
-        $is_following = $Subscription->getRecordByIds($_SESSION['account']->user_id, null, $this->dbtable->typeobject_id);
-        if ($is_following) {
-            $unfollow_url = $this->navigator->getCurrentHandlerUrl('btnUnFollow', null, null, array('typeobject_id' => $this->dbtable->typeobject_id));
-            $detailslinks->add_link(linkify($unfollow_url, 'Stop Watching', $Subscription->getDescription()."  Click here to remove this definition from your Watchlist.", 'bd-button', '', '', 'unfollowButton'));
-        } else {
-            $follow_url = $this->navigator->getCurrentHandlerUrl('btnFollow', null, null, array('typeobject_id' => $this->dbtable->typeobject_id));
-            $detailslinks->add_link(linkify($follow_url, 'Watch', "Add this definition to your Watchlist to follow any changes that occur to this Definition", 'bd-button', '', '', 'followButton'));
-        }
-    }
 }
 
+if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'managemylists')) {
+    if ($is_following) {
+        $follow_url = $this->navigator->getCurrentHandlerUrl('btnFollow', null, null, array('typeobject_id' => $this->dbtable->typeobject_id));
+        $detailslinks->add_link(linkify($follow_url, 'Watching...', "You are currently following. Click to change how your are following.", 'bd-button', '', '', 'followButton'));
+    } else {
+        $follow_url = $this->navigator->getCurrentHandlerUrl('btnFollow', null, null, array('typeobject_id' => $this->dbtable->typeobject_id));
+        $detailslinks->add_link(linkify($follow_url, 'Watch', "Add this definition to your Watchlist to follow any changes that occur to this Definition", 'bd-button', '', '', 'followButton'));
+    }
+}
 
 $BreadCrumbs = new BreadCrumbsManager();
 $BreadCrumbs->addCurrentUrl($return_url, $title_short);

@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2023 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -34,6 +34,11 @@ class UtilsController extends DBControllerActionAbstract
         $this->navigator = new UrlCallRegistry($this, $this->getRequest()->getBaseUrl().'/user/login');
         $this->navigator->setPropagatingParamNames(explode(',', AUTOPROPAGATING_QUERY_PARAMS));
         $this->view->navigator = $this->navigator;
+    }
+
+    private function shouldUpgradeFrom($testversion)
+    {
+        return (getGlobal('databaseversion')==$testversion) && (intval(Zend_Registry::get('config')->databaseversion) > intval($testversion));
     }
 
     public function upgradeAction()
@@ -147,7 +152,7 @@ class UtilsController extends DBControllerActionAbstract
 							  KEY `user_id` (`user_id`),
 							  KEY `itemobject_id` (`itemobject_id`),
 							  KEY `typeobject_id` (`typeobject_id`)
-							) ENGINE=InnoDB  DEFAULT CHARSET=utf8");
+							) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4");
                         DbSchema::getInstance()->mysqlQuery("DROP TABLE IF EXISTS changenotifyqueue");
                         DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS `changenotifyqueue` (
 							  `changenotifyqueue_id` int(11) NOT NULL AUTO_INCREMENT,
@@ -482,6 +487,50 @@ class UtilsController extends DBControllerActionAbstract
                         $databaseversion = '19';
                         setGlobal('databaseversion', $databaseversion);
                     }
+
+                    if ($this->shouldUpgradeFrom('19')) {
+                        $msgs[] = 'Upgrading to version 20: Add new change codes.';
+                        DbSchema::getInstance()->mysqlQuery("DROP TABLE IF EXISTS changecode");
+                        DbSchema::getInstance()->mysqlQuery("CREATE TABLE `changecode` (
+						`change_code_id` int(11) NOT NULL AUTO_INCREMENT,
+						`change_code` VARCHAR(4) NOT NULL,
+                        `is_for_definitions` INT(1) NOT NULL,
+                        `affects_released_definitions` INT(1) NOT NULL,
+						`change_code_name` varchar(128) DEFAULT NULL,
+						PRIMARY KEY (`change_code_id`),
+						KEY `change_code` (`change_code`)
+						) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4;");
+                        DbSchema::getInstance()->mysqlQuery("INSERT INTO `changecode` (`change_code_id`, `change_code`, `is_for_definitions`, `affects_released_definitions`, `change_code_name`) VALUES
+						(1, 'DIO', 0, 0, 'Deleted an Item'),
+						(2, 'DIV', 0, 0, 'Deleted Item Version'),
+						(3, 'AIO', 0, 0, 'Added New Item'),
+						(4, 'CIV', 0, 0, 'Changed Item Version'),
+						(5, 'AIV', 0, 0, 'Added Item Version'),
+						(6, 'ATO', 1, 0, 'Added New Definition'),
+						(7, 'RTV', 1, 1, 'Released Definition Version'),
+                        (8, 'VTV', 1, 1, 'Reverted Definition to Draft'),
+						(9, 'OTO', 1, 1, 'Obsoleted Definition'),
+                        (10, 'UTV', 1, 1, 'Un-Obsoleted Definition'),
+						(11, 'CTV', 1, 0, 'Changed Definition Version'),
+						(12, 'ATV', 1, 0, 'Added Definition Version'),
+						(13, 'DTV', 1, 1, 'Deleted Released Definition Version'),
+						(14, 'DTO', 1, 1, 'Deleted Released Definition'),
+						(15, 'DDT', 1, 0, 'Deleted Draft Definition'),
+						(16, 'AIC', 0, 0, 'Added Item Comment'),
+						(17, 'CIC', 0, 0, 'Changed Item Comment'),
+						(18, 'DIC', 0, 0, 'Deleted Item Comment'),
+						(19, 'AIR', 0, 0, 'Became Used On'),
+						(20, 'AIP', 0, 0, 'Added Procedure'),
+						(21, 'ATC', 1, 0, 'Added Definition Comment'),
+						(22, 'CTC', 1, 0, 'Changed Definition Comment'),
+						(23, 'DTC', 1, 0, 'Deleted Definition Comment');");
+                        DbSchema::getInstance()->mysqlQuery("ALTER TABLE changesubscription ADD COLUMN `exclude_change_codes` VARCHAR(255) DEFAULT NULL AFTER follow_items_too");
+                        $databaseversion = '20';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
+
+
+
 
             }
         }
