@@ -62,7 +62,7 @@ $(function() {
 		});
     }
 
-	activatefollowButton(followUrl,"",true, changeCodesListing);
+	activatefollowButton(followUrl, "Watch this type...", "", true, false, changeCodesListing);
 	activateLinkToPageButton('#linkToPageButton', lookupUrl, linkToPageUrl, layoutTitle, canSendLink);
 	initPanelScrollSaver();
 

@@ -360,6 +360,20 @@ class StructController extends DBControllerActionAbstract
                     $return_url = $this->navigator->getCurrentHandlerUrl('btnDoneTryingToCreateNew', 'partlistview', null, array('typeversion_id' => isset($this->params['typeversion_id']) ? $this->params['typeversion_id'] : ''));
                     $_SESSION['most_recent_new_typeversion_id'] = 'new';  // this should get changed by a successfull change
                     $this->navigator->setReturn($return_url)->CallView('editview', null, array('table' => 'typeversion','typeversion_id' => 'new', 'initialize' => array('effective_date' => time_to_mysqldatetime(script_time())), 'return_url' => $return_url, 'resetview' => 1));
+
+                case isset($this->params['btnFollow']):
+                    DBTableRowChangeSubscription::setFollowing($_SESSION['account']->user_id, null, null, $this->params['notify_instantly'], $this->params['notify_daily'], false, $this->params['exclude_change_codes']);
+                    $_SESSION['account']->setPreference('followNotifyTimeHHMM', $this->params['followNotifyTimeHHMM']);
+                    $_SESSION['account']->setPreference('followInstantly', $this->params['notify_instantly']);
+                    $_SESSION['account']->setPreference('followDaily', $this->params['notify_daily']);
+                    $_SESSION['account']->setPreference('followExcludeChangeCodes', $this->params['exclude_change_codes']);
+                    $this->navigator->jumpToView(null, null, array());
+                case isset($this->params['btnUnFollow']):
+                    DBTableRowChangeSubscription::clearFollowing($_SESSION['account']->user_id, null, null);
+                    $this->navigator->jumpToView(null, null, array());
+
+
+
                 case isset($this->params['btnDoneTryingToCreateNew']):
                     if (is_numeric($_SESSION['most_recent_new_typeversion_id'])) {
                         $this->navigator->jumpToView('itemdefinitionview', '', array('typeversion_id' => $_SESSION['most_recent_new_typeversion_id']));

@@ -81,16 +81,17 @@ class ReportDataChangeSubscription extends ReportDataWithCategory {
                         ->addSelectFields("itemversion.itemversion_id")
                         ->addJoinClause("LEFT JOIN typeversion io_tv on io_tv.typeversion_id=itemversion.typeversion_id")
                         ->addJoinClause("LEFT JOIN typecategory io_tc on io_tc.typecategory_id = io_tv.typecategory_id")
-                        ->addSelectFields("IFNULL(io_tc.is_user_procedure,to_tc.is_user_procedure) as is_user_procedure, IF(itemobject.itemobject_id IS NULL,'tv','iv') as locator_prefix")
+                        ->addSelectFields("IFNULL(io_tc.is_user_procedure,to_tc.is_user_procedure) as is_user_procedure, IF(itemobject.itemobject_id IS NULL, IF(to_tc.is_user_procedure IS NULL, '', 'tv'),'iv') as locator_prefix")
                         ->addJoinClause("LEFT JOIN partnumbercache ON partnumbercache.typeversion_id=IFNULL(itemversion.typeversion_id, to_to.cached_current_typeversion_id) AND partnumbercache.partnumber_alias=IFNULL(itemversion.partnumber_alias,0)")
                         ->addSelectFields('partnumbercache.part_number, partnumbercache.part_description')
                         ->addSelectFields('IF(io_tc.is_user_procedure=1, itemobject.cached_first_ver_date, "") as procedure_date')
                         ->addSelectFields('IF(io_tc.is_user_procedure=1,"",itemversion.item_serial_number) as item_serial_number')
                         ->addSelectFields('IF((io_tc.is_user_procedure IS NULL) and (to_tc.is_user_procedure=1) and (changesubscription.follow_items_too=1) ,"All Procedures + Definition",
 									       IF((io_tc.is_user_procedure IS NULL) and (to_tc.is_user_procedure=1) and (changesubscription.follow_items_too=0) ,"Definition Only",
+						    			   IF((io_tc.is_user_procedure IS NULL) and (to_tc.is_user_procedure IS NULL) and (changesubscription.follow_items_too=0) ,"All Definitions",
 						    			   IF((io_tc.is_user_procedure IS NULL) and (to_tc.is_user_procedure=0) and (changesubscription.follow_items_too=1) ,"All Parts + Definition",
 							    		   IF((io_tc.is_user_procedure IS NULL) and (to_tc.is_user_procedure=0) and (changesubscription.follow_items_too=0) ,"Definition Only",
-					    			       IF((io_tc.is_user_procedure IS NOT NULL) and (io_tc.is_user_procedure=1) ,"Procedure","Part"))))) as watching_changes_to');
+					    			       IF((io_tc.is_user_procedure IS NOT NULL) and (io_tc.is_user_procedure=1) ,"Procedure","Part")))))) as watching_changes_to');
 
         $DBTableRowQuery->addSelectFields("(SELECT GROUP_CONCAT(change_code_name ORDER BY change_code_name ASC SEPARATOR ', ') from changecode WHERE changesubscription.exclude_change_codes LIKE concat('%', change_code, '%')) as excluded_change_code_names");
     }
@@ -143,12 +144,17 @@ class ReportDataChangeSubscription extends ReportDataWithCategory {
 
         $detail_out['changed_on'] = empty($record['changed_on']) ? '' : date('M j, Y G:i', strtotime($record['changed_on']));
 
-        $detail_out['procedure_date'] = empty($record['procedure_date']) ? ($record['is_user_procedure'] ? '*' : '') : linkify( $edit_url, date('M j, Y G:i', strtotime($record['procedure_date'])), 'View');
-        $detail_out['item_serial_number'] = empty($record['item_serial_number']) ? (!$record['is_user_procedure'] ? '*' : '') : linkify( $edit_url, $record['item_serial_number'], 'View');
+        $detail_out['procedure_date'] = !empty($record['procedure_date']) ? linkify( $edit_url, date('M j, Y G:i', strtotime($record['procedure_date'])), 'View') : ($record['is_user_procedure'] ? '*' : '');
+        $detail_out['item_serial_number'] = !empty($record['item_serial_number']) ? linkify( $edit_url, $record['item_serial_number'], 'View') : (!$record['is_user_procedure'] ? '*' : '');
 
         if ($record['locator_prefix']=='tv') {
             $detail_out['part_number'] = linkify( $edit_url, $record['part_number'], 'View');
             $detail_out['part_description'] = linkify( $edit_url, $record['part_description'], 'View');
+        } elseif ($record['watching_changes_to'] == "All Definitions") {
+            $detail_out['part_number'] = '*';
+            $detail_out['part_description'] = '*';
+            $detail_out['procedure_date'] = '';
+            $detail_out['item_serial_number'] = '';
         }
 
         if (!empty($record['excluded_change_code_names'])) {

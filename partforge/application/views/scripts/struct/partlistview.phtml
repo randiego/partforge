@@ -1,21 +1,50 @@
 <?php
-    $this->layout()->title = 'List of Part Definitions';
-    $BreadCrumbs = new BreadCrumbsManager();
-    $BreadCrumbs->newAnchor($this->navigator->getCurrentViewUrl(),$this->layout()->title);    
-    $this->layout()->setLayout('layout');
-    $this->layout()->scrollhold = true;
-    $html = '';
-    
-    $minibuttons = new EditLinks();
-    if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'ui:caneditdefinitions')) {
-	    $minibuttons->add_item( $this->navigator->getCurrentHandlerUrl('btnType'),"New Type", 'Add a new part or form type to the system');
-    }
-    
-    $overtablehtml = '';
-    if ($minibuttons->count() > 0) {
-    	$overtablehtml .= '<div class="firstbuttonrow">'.$minibuttons->buttons_html().'</div>';
-    }
-    
-    echo fetch_form_tag($html.$this->paginated_report_page->fetch_form_body_html($overtablehtml));
-
+$this->layout()->title = 'List of Part Definitions';
+$BreadCrumbs = new BreadCrumbsManager();
+$BreadCrumbs->newAnchor($this->navigator->getCurrentViewUrl(),$this->layout()->title);
+$this->layout()->setLayout('layout');
+$this->layout()->scrollhold = true;
+$html = '';
 ?>
+<script type="text/javascript">
+var changeCodesListing = <?php echo json_encode(DBTableRowChangeLog::getChangeCodes());?>;
+<?php
+$Subscription = new DBTableRowChangeSubscription();
+$is_following = $Subscription->getRecordByIds($_SESSION['account']->user_id, null, null);
+?>
+var followUrl = "<?php echo $this->navigator->getCurrentHandlerUrl('btnFollow', null, null, array('followNotifyTimeHHMM' => '_FOLLOWNOTIFYTIMEHHMM_', 'notify_instantly' => '_NOTIFYINSTANTLY_', 'notify_daily' => '_NOTIFYDAILY_', 'exclude_change_codes' => '_EXCLUDECHANGECODES_'));?>";
+var unFollowUrl = "<?php echo $is_following ? $this->navigator->getCurrentHandlerUrl('btnUnFollow', null, null, array()) : '';?>";
+var followInstantly =  "<?php echo $is_following ? $Subscription->notify_instantly : $_SESSION['account']->getPreference('followInstantly');?>";
+var followDaily =  "<?php echo $is_following ? $Subscription->notify_daily : $_SESSION['account']->getPreference('followDaily');?>";
+var followItemsToo =  "<?php echo $is_following ? $Subscription->follow_items_too : $_SESSION['account']->getPreference('followItemsToo');?>";
+var followExcludeChangeCodes =  "<?php echo $is_following ? $Subscription->exclude_change_codes : $_SESSION['account']->getPreference('followExcludeChangeCodesDefs');?>";
+var followNotifyTimeHHMM =  "<?php echo $_SESSION['account']->getPreference('followNotifyTimeHHMM');?>";
+var followNotifyEmailMsg =  "<?php echo implode('  ', $_SESSION['account']->reasonsWhyCantRecieveWatchNotices());?>";
+$(document).ready(function() {
+    activatefollowButton(followUrl, "Watch all definitions...", "", true, true, changeCodesListing);
+});
+</script>
+
+<?php
+$minibuttons = new EditLinks();
+if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(),'ui:caneditdefinitions')) {
+    $minibuttons->add_item( $this->navigator->getCurrentHandlerUrl('btnType'),"New Type", 'Add a new part or form type to the system');
+}
+
+if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'user', 'managemylists')) {
+    if ($is_following) {
+        $follow_url = $this->navigator->getCurrentHandlerUrl('btnFollow', null, null, array());
+        $minibuttons->add_link(linkify($follow_url, 'Watching All Definitions...', "You are currently following. Click to change how your are following.", 'bd-button', '', '', 'followButton'));
+    } else {
+        $follow_url = $this->navigator->getCurrentHandlerUrl('btnFollow', null, null, array());
+        $minibuttons->add_link(linkify($follow_url, 'Watch All Definitions', "Add all definitions to your Watchlist", 'bd-button', '', '', 'followButton'));
+    }
+}
+
+
+$overtablehtml = '';
+if ($minibuttons->count() > 0) {
+    $overtablehtml .= '<div class="firstbuttonrow">'.$minibuttons->buttons_html().'</div>';
+}
+
+echo fetch_form_tag($html.$this->paginated_report_page->fetch_form_body_html($overtablehtml));

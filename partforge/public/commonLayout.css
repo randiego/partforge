@@ -2167,6 +2167,10 @@ div.ex-checks-div h2 {
 	margin: 4px 0 2px 0;
 }
 
+div.watchboxfootnote {
+	margin: 10px 5px 0 5px;
+}
+
 #followDialogContainer {
 	padding: 5px 0 5px 0;
 }

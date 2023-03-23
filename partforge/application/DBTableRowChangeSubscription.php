@@ -41,6 +41,9 @@ class DBTableRowChangeSubscription extends DBTableRow {
         if (!is_null($typeobject_id)) {
             $DBTableRowQuery->addSelectors(array('typeobject_id' => $typeobject_id));
         }
+        if (is_null($itemobject_id) && is_null($typeobject_id)) {
+            $DBTableRowQuery->addAndWhere(" and (itemobject_id IS NULL) and (typeobject_id IS NULL)");
+        }
         return $this->getRecord($DBTableRowQuery->getQuery());
     }
 

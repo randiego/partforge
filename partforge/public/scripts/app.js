@@ -72,9 +72,9 @@ function renderExcludeChecks(changeCodeListing, this_is_a_definition)
 	h += fetchExcludeCheckHtml(changeCodeListing, followExcludeChangeCodes, 0, 0, "changes to items", 'itemsonlycheckcls');
 	$('#ExcludeCodeDiv').html(h);
 	showHideChecks(this_is_a_definition);
-	saveCheckToField(changeCodeListing);
+	saveCheckToField(changeCodeListing, this_is_a_definition);
 	$('.chkexcludecls').on("click", function() {
-		saveCheckToField(changeCodeListing);
+		saveCheckToField(changeCodeListing, this_is_a_definition);
 	});
 
 }
@@ -90,7 +90,7 @@ function showHideChecks(this_is_a_definition)
 	}
 }
 
-function saveCheckToField(changeCodeListing)
+function saveCheckToField(changeCodeListing, this_is_a_definition)
 {
 	var val = [];
 	$('.chkexcludecls:checkbox:checked').each(function(i){
@@ -100,33 +100,35 @@ function saveCheckToField(changeCodeListing)
 	var follow_items_too = $('#followDialogContainer input[name="follow_items_too"]:checked').val();
 	var notval = [];
 	for(var i = 0; i < changeCodeListing.length; i++) {
-		var considerthecheck = (changeCodeListing[i]['is_for_definitions']==1) || ((changeCodeListing[i]['is_for_definitions']==0) && follow_items_too);
+		var considerthecheck = ((changeCodeListing[i]['is_for_definitions']==1) && this_is_a_definition)
+			|| ((changeCodeListing[i]['is_for_definitions']==0) && follow_items_too && this_is_a_definition)
+			|| ((changeCodeListing[i]['is_for_definitions']==0) && !this_is_a_definition);
 		if (considerthecheck && (val.indexOf(changeCodeListing[i]['change_code']) == -1)) {
 			notval.push(changeCodeListing[i]['change_code']);
 		}
 	}
-	$("input[name='exclude_change_codes']").val(notval.join(', '));
+	$("input[name='exclude_change_codes']").val(notval.join(','));
 }
 
 /**
  * Used whereever a followButton id is located to construct dialog and add click handler to.
  * @param followUrl string url with constants _FOLLOWNOTIFYTIMEHHMM_, _NOTIFYINSTANTLY_, _NOTIFYDAILY_ to be substituted with the form results
  */
-function activatefollowButton(followUrl, footnote_text, this_is_a_definition, changeCodeListing) {
+function activatefollowButton(followUrl, dialog_title, footnote_text, this_is_a_definition, forbid_item_watching, changeCodeListing) {
 	if ($('#followButton').length) {
 		// create the popup follow dialog
-		$('<div />').attr('id','followDialogContainer').attr('title',"When something changes...").hide().appendTo('body');
+		$('<div />').attr('id','followDialogContainer').attr('title', dialog_title).hide().appendTo('body');
 		var h = '';
 		h += '<label><input type="checkbox" name="notify_instantly" value="1" '+(followInstantly==1 ? 'checked="checked"' : '')+' />Email Me Instantly</label><br />';
 		h += '<label><input type="checkbox" name="notify_daily" value="1" '+(followDaily==1 ? 'checked="checked"' : '')+' />Send Me a Daily Summary at </label>'+timeSelectHtmlForWatches('timevalueHHMM', '', followNotifyTimeHHMM)+'<br /><div style="margin-left: 20px;"><span class="paren">(time is same for all your daily watches.)</span></div>';
 		h += '<label><input type="checkbox" name="no_notify" value="1" checked="checked" disabled="disabled" />Show on my Watchlist (Activity Tab)</label><br />';
-		if (this_is_a_definition) h += '<label><input type="checkbox" name="follow_items_too" value="1" '+(followItemsToo==1 ? 'checked="checked"' : '')+' />Also Include Any Items of This Type</label><br />';
+		if (this_is_a_definition && !forbid_item_watching) h += '<label><input type="checkbox" name="follow_items_too" value="1" '+(followItemsToo==1 ? 'checked="checked"' : '')+' />Also Include Any Items of This Type</label><br />';
 		h += '<input type="hidden" name="exclude_change_codes" value="'+followExcludeChangeCodes+'" />';
 		h += '<div class="ex-checks-div">';
 		h += '<div id="ExcludeCodeDiv" />'
 		h += '</div>';
-		if (footnote_text!='') h += '<div style="margin-top:10px;"><span class="paren">'+footnote_text+'</span></div>';
-		if (followNotifyEmailMsg!='') h += '<div style="margin-top:10px;"><span class="paren_red">Please fix the following problem before you can receive notifications: '+followNotifyEmailMsg+'</span></div>';
+		if (footnote_text!='') h += '<div class="watchboxfootnote"><span class="paren">'+footnote_text+'</span></div>';
+		if (followNotifyEmailMsg!='') h += '<div class="watchboxfootnote"><span class="paren_red">Please fix the following problem before you can receive notifications: '+followNotifyEmailMsg+'</span></div>';
 		$('#followDialogContainer').html(h);
 		renderExcludeChecks(changeCodeListing, this_is_a_definition);
 
@@ -143,7 +145,7 @@ function activatefollowButton(followUrl, footnote_text, this_is_a_definition, ch
 						filledUrl = filledUrl.replace('_NOTIFYINSTANTLY_',$('#followDialogContainer input[name="notify_instantly"]:checked').val() ? '1' : '0');
 						filledUrl = filledUrl.replace('_NOTIFYDAILY_',$('#followDialogContainer input[name="notify_daily"]:checked').val() ? '1' : '0');
 						filledUrl = filledUrl.replace('_EXCLUDECHANGECODES_',$('#followDialogContainer input[name="exclude_change_codes"]').val());
-						if (this_is_a_definition) {
+						if (this_is_a_definition && !forbid_item_watching) {
 							filledUrl = filledUrl.replace('_ALLITEMS_',$('#followDialogContainer input[name="follow_items_too"]:checked').val() ? '1' : '0');
 						}
 						window.location.href = filledUrl;
