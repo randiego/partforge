@@ -10,6 +10,7 @@ class Email {
     {
 
         $this->PHPMailer = new PHPMailer();
+        $this->PHPMailer->CharSet = 'utf-8';
 
         if (!empty(Zend_Registry::get('config')->phpmailer_host)) {
             $this->PHPMailer->isSMTP();                                      // Set mailer to use SMTP

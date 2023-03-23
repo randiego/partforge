@@ -156,7 +156,7 @@ class DBTableRowSendMessage extends DBTableRow {
             $subject = $sender_name." Sent You a Comment About ".$this->object_name;
             $linkifiedsubject = $sender_name." Sent You a Comment About ".linkify(getAbsoluteBaseUrl().$this->url, $this->object_name);
             $Emailer = new Email($toemail, $toname, $fromemail, Zend_Registry::get('config')->application_title, '', '', $subject, '', false);
-            $Emailer->setContentType('text/html; charset=utf8');
+            $Emailer->setContentType('text/html; charset=utf-8');
             $Comment = new DBTableRowComment();
             if ($Comment->getRecordById($this->comment_id)) {
                 list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($Comment->comment_text, null, 'ET_COM');
@@ -192,7 +192,7 @@ class DBTableRowSendMessage extends DBTableRow {
             $subject = $sender_name." Sent a Link to ".$this->object_name;
             $linkifiedsubject = $sender_name." Sent a Link to ".linkify(getAbsoluteBaseUrl().$this->url, $this->object_name);
             $Emailer = new Email($toemail, $toname, $fromemail, Zend_Registry::get('config')->application_title, '', '', $subject, '', false);
-            $Emailer->setContentType('text/html; charset=utf8');
+            $Emailer->setContentType('text/html; charset=utf-8');
             $html = '';
             $html .= '<p style="max-width: 600px;">'.$linkifiedsubject.'</p>';
             $html .= '<p style="max-width: 600px;">'.TextToHtml($this->message_text).'</p>';
