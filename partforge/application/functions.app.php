@@ -302,7 +302,8 @@ function hextobin($hexstr)
 }
 
 /**
- * need to get a list of all the procedure types that references this type.
+ * need to get a list of all the procedure types that references this type. The idea is to return only one record per typeobject_id so
+ * in the case where there are multiple components of the same type, it will return the component_name of only the first instance.
  * select all the types with components that reference our type.
  * @param integer $typeversion_id
  * @param integer $is_user_procedure set to 1 if you only want procedures, 0 of only want parts, and null if you want them all.
@@ -324,8 +325,17 @@ function getTypesThatReferenceThisType($typeversion_id, $is_user_procedure = 1)
                 AND (pso.of_typeobject_id=typeversiontarg.typeobject_id)
 			WHERE (typeversionself.typeversion_id='{$typeversion_id}')
 			{$is_user_procedure_and}
-			ORDER BY IFNULL(pso.sort_order,0), typeversiontarg.type_description
+			ORDER BY IFNULL(pso.sort_order,0), typeversiontarg.type_description, typecomponent.component_name
 			");
+    // remove duplicates that occur when there are multiple components of the same type in a procedure.
+    $typeobject_ids = array();
+    foreach ($procedure_records as $key => $procedure_record) {
+        if (!in_array($procedure_record['typeobject_id'], $typeobject_ids)) {
+            array_push($typeobject_ids, $procedure_record['typeobject_id']);
+        } else {
+            unset($procedure_records[$key]);
+        }
+    }
     return $procedure_records;
 }
 

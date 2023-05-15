@@ -2173,6 +2173,7 @@ class DBTableRowItemVersion extends DBTableRow {
                         // the literal '$itemobject_id' should get changed into a number after the save.
                         $initialize_params .= "&initialize[{$targfieldname}]=".'$itemobject_id';
                     }
+                    break 2; // if we've initialized one component without itemobject_id, that is enough. Don't keep initializing others.
                 }
             }
         }
