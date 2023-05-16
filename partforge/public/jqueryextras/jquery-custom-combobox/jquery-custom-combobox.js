@@ -2,7 +2,7 @@
 	$.widget( "custom.comboboxjumper", {
 
 		 options: {
-			 skipfav: false,
+			 skipfav: true,
 			 hidecurrentvaluewhenchanging: 1,
 			 allowempty: false
 			 },
@@ -20,6 +20,7 @@
 			var selected = this.element.children( ":selected" ),
 				value = selected.val() ? selected.text() : (this.options.allowempty ? "" : this.element.children().first().text()),
 				selectbox = this.element;
+			var allowempty = this.options.allowempty;
 
 			this.input = $( "<input>" )
 				.appendTo( this.wrapper )
@@ -43,7 +44,7 @@
 			}
 
 			this.input.autocomplete( "instance" )._renderItem = function( ul, item ) {
-				var text = "--- clear ---";
+				var text = allowempty ? "--- clear ---" : "--------------"; // all dashes appears to just create a seperator
 				if (item.label!='') {
 					text = item.label;
 				}
