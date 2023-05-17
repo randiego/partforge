@@ -1068,6 +1068,10 @@ function layoutFieldnameSelectHtml(curr_value) {
 	return html;
 }
 
+/**
+ *
+ * @returns an array of procedure_to that are in the layout.
+ */
 function allLayoutProcLists() {
 	var out = [];
 	for(var i=0; i<typeFormLayoutArray.length; i++) {
@@ -1588,6 +1592,25 @@ function checkUndefinedLayoutFields() {
 	return ok;
 }
 
+function checkObsoleteProcedureListsInLayout() {
+	var ok = true;
+	var procTOInLayout = allLayoutProcLists();
+	var layedOutObsoleteProcs = [];
+
+	for (var tdi = 0; tdi < typeProcDescriptions.length; tdi++) {
+		// for each obsolete procedure that we know about that is also in the layout, add to booboo list.
+		if ((typeProcDescriptions[tdi][1].indexOf('[Obsolete]') > -1) && (procTOInLayout.indexOf(typeProcDescriptions[tdi][0]) > -1)) {
+			layedOutObsoleteProcs.push(typeProcDescriptions[tdi][1]);
+		}
+	}
+
+	if (layedOutObsoleteProcs.length > 0) {
+		alert("You have at least one procedure list in your layout [ " + layedOutObsoleteProcs.join(", ") + " ] that is obsolete.");
+		ok = false;
+	}
+	return ok;
+}
+
 /**
  * Checks to make sure that each component_subfield has a valid component name and subfield selected.
  * It loops through and finds all component_subfield types to do this.
@@ -1734,7 +1757,7 @@ function validate() {
 	$(".doneSortLink").last().trigger("click");
 	$("a.db-done").trigger("click"); // makes sure any in-place edit dialogs are submitted.
 	var layoutOk = checkLayoutFilled();
-	var everthingElseOk = checkUndefinedLayoutFields() && checkValidComponents() && checkValidComponentSubFields() && checkValidCalculatedTypes();
+	var everthingElseOk = checkUndefinedLayoutFields() && checkValidComponents() && checkValidComponentSubFields() && checkValidCalculatedTypes() && checkObsoleteProcedureListsInLayout();
 	if (everthingElseOk) {
 		if (!layoutOk) {
 			return confirm("save anyway?");

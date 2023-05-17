@@ -1289,7 +1289,8 @@ class DBTableRowTypeVersion extends DBTableRow {
     {
         $out = array();
         foreach (getTypesThatReferenceThisType($this->typeversion_id) as $record) {
-            $out[] = array($record['typeobject_id'], DBTableRowTypeVersion::formatPartNumberDescription($record['type_part_number'], $record['type_description']));
+            $obsolete = $record['typedisposition']=='B' ? ' [Obsolete]' : '';
+            $out[] = array($record['typeobject_id'], DBTableRowTypeVersion::formatPartNumberDescription($record['type_part_number'], $record['type_description'].$obsolete));
         }
         return $out;
     }
