@@ -1,29 +1,33 @@
 <?php
-	$this->layout()->title = 'Register for Account';
-	$this->layout()->setLayout('layoutdialog');
-        
-	$html = '';
-	$html .= '<table class="edittable">';
+$this->layout()->title = 'Register for Account';
+$this->layout()->setLayout('layoutdialog');
 
-	$html .= fetchEditTableTR(array(array('first_name'),array('last_name'),array('login_id')), $this->dbtable);
+$help_text = getGlobal('account_register_help_html');
 
-	$html .= '
-            <tr> 
-              <th>Password:<br><span class="paren">At least 7 characters,<br>no spaces.</span></th>
-              <td><input class="inputboxclass" type="password" name="password" value="'.TextToHtml($this->dbtable->password).'" size="20"></td>
-            </tr>
-            <tr> 
-              <th>Verify Password:</th>
-              <td><input class="inputboxclass" type="password" name="password2" value="'.TextToHtml($this->dbtable->password2).'" size="20"></td>
-            </tr>
-	';
+$html = '';
+$html .= '<table class="edittable"><colgroup>
+					 <col class="table_label_width">
+					 <col class="table_value_width">
+					 <col class="table_label_width">
+					 <col class="table_value_width"></colgroup>';
+if ($help_text) {
+	$html .= '<tr class="editview_text"><td colspan="4"><div class="editview_text_div"><div class="messagePanel">'.$help_text.'</div></div></td></tr>';
+}
 
-	$this->dbtable->setFieldType('email2',$this->dbtable->getFieldType('email'));
-	$this->dbtable->setFieldAttribute('email2','caption','Verify Email');
-	$html .= fetchEditTableTR(array(array('email'),array('email2')), $this->dbtable);
-	$html .= '</table>
-        ';
-        
-        echo fetch_form_page($this->layout()->title,$html,array('OK' => 'btnOK', 'Cancel' => 'btnCancel'))
-?>
+$html .= fetchEditTableTR(array(array('first_name'),array('last_name'),array('login_id')), $this->dbtable);
 
+$html .= '
+	<tr>
+		<th>Password:<br><span class="paren">At least 7 characters,<br>no spaces.</span></th>
+		<td><input class="inputboxclass" type="password" name="password" value="'.TextToHtml($this->dbtable->password).'" size="20"></td>
+		<th>Verify Password:</th>
+		<td><input class="inputboxclass" type="password" name="password2" value="'.TextToHtml($this->dbtable->password2).'" size="20"></td>
+	</tr>
+';
+
+$this->dbtable->setFieldType('email2', $this->dbtable->getFieldType('email'));
+$this->dbtable->setFieldAttribute('email2', 'caption', 'Verify Email');
+$html .= fetchEditTableTR(array(array('email'),array('email2')), $this->dbtable);
+$html .= '</table>';
+
+echo fetch_form_page($this->layout()->title, $html, array('OK' => 'btnOK', 'Cancel' => 'btnCancel'));

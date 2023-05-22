@@ -75,7 +75,7 @@ $(function () {
 	}
     if ($('input[name="qruploadkey_value"]').val()) {
         startQRUploadPolling();
-        $('#qrcode').qrcode(qrUploadUrl);
+        $('#qrcode').qrcode({width: 200, height: 200, text: qrUploadUrl});
     }
 
     attachNameSearchAutoComplete("#send_to_names", lookupUrl);

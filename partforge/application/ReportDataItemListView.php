@@ -77,7 +77,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
         }
 
         if (($this->view_category!='*')) {
-            $show_all_fields = $_SESSION['account']->getPreference('chkShowAllFields');
+            $show_all_fields = $_SESSION['account']->getPreference('chkShowAllFields'); // '1' = all fields all version, 'allnew' = only from current version
             list($this->addon_fields_list,$this->_has_aliases) = $this->getAddOnFieldsForTypeObjectId($this->view_category, $show_all_fields, false, false, $this->is_user_procedure);
         }
 
@@ -185,7 +185,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
                 $this->csvfields[$field] = $params['display'];
             }
             if ($this->view_category!='*') {
-                list($this->all_fields,$has_aliases) = $this->getAddOnFieldsForTypeObjectId($this->view_category, true, true, true);
+                list($this->all_fields,$has_aliases) = $this->getAddOnFieldsForTypeObjectId($this->view_category, '1', true, true);
                 foreach ($this->all_fields as $fieldname => $fieldtype) {
                     $comp_suffix = $fieldtype['type']=='component' ? ' (to/'.implode('|', $fieldtype['can_have_typeobject_id']).')' : '';
                     if (str_contains($fieldname, '.')) {
@@ -228,23 +228,27 @@ class ReportDataItemListView extends ReportDataWithCategory {
      * If there is more than one typeversion, it will amalgamate all fields from all typeversions for the specified
      * $typeobject_id.
      * @param integer $typeobject_id
-     * @param boolean $featured_fields_only
+     * @param string $show_all_fields '0' =  only featured fields, '1' = all fields all version, 'allnew' = all fields from current version
      * @return multitype:
      */
 
-    protected function getAddOnFieldsForTypeObjectId($typeobject_id, $get_nonfeatured_local_fields, $get_subfields, $get_header_fields, $force_include_components = false)
+    protected function getAddOnFieldsForTypeObjectId($typeobject_id, $show_all_fields, $get_subfields, $get_header_fields, $force_include_components = false)
     {
+
         $TypeObject = new DBTableRowTypeVersion(false, null);
         $DBTableRowQuery = new DBTableRowQuery($TypeObject);
-        $DBTableRowQuery->addAndWhere("and typeversion.typeobject_id='".$typeobject_id."'");
+        $DBTableRowQuery->addAndWhere("and typeversion.typeobject_id='".$typeobject_id."' and typeversion.versionstatus='A'");
         $DBTableRowQuery->setOrderByClause("order by typeversion.effective_date desc");
+        if ($show_all_fields == 'allnew') { // only use most recent active version.
+            $DBTableRowQuery->setLimitClause('LIMIT 1');
+        }
         $typerecords = DbSchema::getInstance()->getRecords('', $DBTableRowQuery->getQuery());
         $has_aliases = false;
         $out = array();
         foreach ($typerecords as $typerecord) {
             $TypeVersion = new DBTableRowTypeVersion(false, null);
             if ($TypeVersion->getRecordById($typerecord['typeversion_id'])) {
-                $out = array_merge($out, ($get_nonfeatured_local_fields ? $TypeVersion->getItemFieldTypes(true, $get_header_fields, $force_include_components) : $TypeVersion->getItemFieldTypes(false, $get_header_fields, $force_include_components)));
+                $out = array_merge($out, (($show_all_fields != '0') ? $TypeVersion->getItemFieldTypes(true, $get_header_fields, $force_include_components) : $TypeVersion->getItemFieldTypes(false, $get_header_fields, $force_include_components)));
                 if ($TypeVersion->partnumber_count > 1) {
                     $has_aliases = true;
                 }

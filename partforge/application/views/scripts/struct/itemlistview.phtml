@@ -145,11 +145,11 @@ $overtablehtml .= DBTableRowWhatsNewUser::fetchWhatsNew('COMPONENT_ERRORS', "Ser
 
 $pagination_line_html = '';
 if (is_numeric($this->report_data->getViewCategory())) {
-    $pagination_line_html .= '<input class="minibutton2" type="submit" name="btnSetViewPreference" title="Update View Preferences" value="Update" />';
     if (!$this->is_user_procedure) {
-        $pagination_line_html .= checkbox_html('chkShowProcMatrix', $_SESSION['account']->getPreference('chkShowProcMatrix')).' <label for="chkShowProcMatrix_1">Show Procedure Results</label>';
+        $pagination_line_html .= format_select_tag(array('0' => 'No Procedure Results', '1' => 'All Procedure Results'), 'chkShowProcMatrix', array('chkShowProcMatrix' => $_SESSION['account']->getPreference('chkShowProcMatrix')), '', false, '-- select one --', '', 'bd-button-colors').' ';
     }
-    $pagination_line_html .= checkbox_html('chkShowAllFields', $_SESSION['account']->getPreference('chkShowAllFields')).' <label for="chkShowAllFields_1">Show All Fields</label>';
+    $pagination_line_html .= ' '.format_select_tag(array('0' => 'Featured Fields Only', 'allnew' => 'All Fields', '1' => 'All Fields (including old versions)'), 'chkShowAllFields', array('chkShowAllFields' => $_SESSION['account']->getPreference('chkShowAllFields')), '', false, '-- select one --', '', 'bd-button-colors').' ';
+    $pagination_line_html .= '<input class="bd-button-colors" type="submit" name="btnSetViewPreference" title="Update View Preferences" value="Update" />';
 }
 
 

@@ -130,14 +130,14 @@ echo '  <div class="dialogbody">
             <div class="progress-extended">&nbsp;</div>
         </div>
     </div>
-    <div class="qrwrapper"><div><ul style="margin-left: -25px; margin-top:0px; margin-bottom: 0px; font-weight: bold;"><li>Drag and Drop Files Here or</li><li>Scan this Code with Your Mobile Device</ul></div>
+    <!-- The table listing the files available for upload/download -->
+    <table role="presentation" class="table table-striped"><tbody class="files" data-toggle="modal-gallery" data-target="#modal-gallery"></tbody></table>
+    <div class="qrwrapper"><div><ul style="margin-left: -25px; margin-top:0px; margin-bottom: 0px; font-weight: bold;"><li>Drag and Drop Files Here or</li><li>Scan this Code with Your Mobile Device<div class="paren"><?php echo getGlobal('qr_upload_help_html');?></div></ul></div>
     <div id="updatebannerId" class="qrupload_comm_banner" style="display:none;">Connected</div>
     <div style="margin-top:10px;" id="qrcode"></div></div>
     <!-- The loading indicator is shown during file processing -->
     <div class="fileupload-loading"></div>
     <br>
-    <!-- The table listing the files available for upload/download -->
-    <table role="presentation" class="table table-striped"><tbody class="files" data-toggle="modal-gallery" data-target="#modal-gallery"></tbody></table>
 </form>
 
 
@@ -217,7 +217,7 @@ echo '  <div class="dialogbody">
 <script src="<?php echo $baseUrl;?>/jqueryextras/jquery-file-upload/js/jquery.fileupload-ui.js"></script>
 <!-- The File Upload jQuery UI plugin -->
 <script src="<?php echo $baseUrl;?>/jqueryextras/jquery-file-upload/js/jquery.fileupload-jui.js"></script>
-<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/commenteditview.js?v=18" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/commenteditview.js?v=19" type="TEXT/JAVASCRIPT"></script>
 
 
 <!-- The XDomainRequest Transport is included for cross-domain file deletion for IE8+ -->

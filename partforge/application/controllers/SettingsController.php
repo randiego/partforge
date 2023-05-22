@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2023 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -25,49 +25,52 @@
 
 class SettingsController extends DBControllerActionAbstract
 {
-    
-    public function listviewAction() {
+
+    public function listviewAction()
+    {
         $action_taken = array();
         $Obj = new TableRowSettings();
-        foreach($Obj->getSessionBooleanFieldNames() as $fieldname) {
-        	if (!AdminSettings::getInstance()->{$fieldname}) AdminSettings::getInstance()->{$fieldname} = false;
+        foreach ($Obj->getSessionBooleanFieldNames() as $fieldname) {
+            if (!AdminSettings::getInstance()->{$fieldname}) {
+                AdminSettings::getInstance()->{$fieldname} = false;
+            }
         }
         $Obj->loadGlobals();
-        
+
         switch (true) {
             case isset($this->params['btnSave']):
-            	// store temporary boolean
-            	foreach($Obj->getSessionBooleanFieldNames() as $fieldname) {
-            		if (AdminSettings::getInstance()->{$fieldname} != $this->params[$fieldname]) {
-            			$action_taken[] = $Obj->getFieldAttribute($fieldname, 'caption').' is now temporarily '.($this->params[$fieldname] ? 'Enabled' : 'Disabled').'.';
-            		}
-            	}
-            	foreach($Obj->getSessionBooleanFieldNames() as $fieldname) {
-            		AdminSettings::getInstance()->{$fieldname} = $this->params[$fieldname];
-            	}
-                AdminSettings::getInstance()->setExpirationTimeMinutes('edit_help',4*60);
-                
+                // store temporary boolean
+                foreach ($Obj->getSessionBooleanFieldNames() as $fieldname) {
+                    if (AdminSettings::getInstance()->{$fieldname} != $this->params[$fieldname]) {
+                        $action_taken[] = $Obj->getFieldAttribute($fieldname, 'caption').' is now temporarily '.($this->params[$fieldname] ? 'Enabled' : 'Disabled').'.';
+                    }
+                }
+                foreach ($Obj->getSessionBooleanFieldNames() as $fieldname) {
+                    AdminSettings::getInstance()->{$fieldname} = $this->params[$fieldname];
+                }
+                AdminSettings::getInstance()->setExpirationTimeMinutes('edit_help', 4*60);
+
                 // store permanent globals
-                foreach($Obj->getGlobalsFieldNames() as $fieldname) {
-                	setGlobal($fieldname, DBTableRowItemVersion::varToStandardForm($this->params[$fieldname], $Obj->getFieldType($fieldname)));
-                }                
-                
+                foreach ($Obj->getGlobalsFieldNames() as $fieldname) {
+                    setGlobal($fieldname, DBTableRowItemVersion::varToStandardForm($this->params[$fieldname], $Obj->getFieldType($fieldname)));
+                }
+
                 break;
         }
-        
-        $this->view->action_taken = implode('  ',$action_taken);
+
+        $this->view->action_taken = implode('  ', $action_taken);
     }
-    
+
     public function treeviewAction()
     {
     }
-    
+
     public function deleteAction()
     {
     }
-    
+
     public function editviewAction()
     {
     }
-    
- }
+
+}

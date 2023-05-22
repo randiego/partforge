@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2023 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -36,7 +36,7 @@ $config['subcaptions']['user|edit|user_type'] = '';
 
 $config['banner_array'] = array();   // an array of html banners to show at the top of the application.
 $config['application_title'] = 'PartForge'; // appears in title tag and other places
-$config['cached_code_version'] = '145';  // for css and js files, this appended as ?v=N to the end to force reload to browse.  Increment when css or js files changes.
+$config['cached_code_version'] = '147';  // for css and js files, this appended as ?v=N to the end to force reload to browse.  Increment when css or js files changes.
 $config['databaseversion'] = '20';
 $config['config_for_testing'] = false; // Makes a few minor changes to improve testability when we are running as a test instance during automated testing.
 
