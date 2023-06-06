@@ -903,7 +903,7 @@ class StructController extends DBControllerActionAbstract
             $this->jumpToUsersLandingPage('The requested URL is not correct: No definition ID has been specified.');
         }
 
-        $ItemCounts = $TypeVersion->getItemInstanceCounts();
+        $ItemCounts = AdminSettings::getInstance()->reoganize_data ? $TypeVersion->getItemInstanceCounts() : array();
         $TypeRefs = $TypeVersion->getTypeVersionInstancesWhereFieldIsASubField();
 
         if (isset($this->params['form'])) {
