@@ -65,17 +65,24 @@ class WatchListReporter {
             $DBTableRowQuery->addAndWhere(" and (changelog.changed_on>='".time_to_mysqldatetime($start_time)."')");
             $DBTableRowQuery->addAndWhere(" and (changelog.changed_on<='".time_to_mysqldatetime($end_time)."')");
             $DBTableRowQuery->addAndWhere(" and Exists (select 1 from changesubscription where (
-						  (
-						    (changelog.trigger_itemobject_id IS NULL) and
-						    (changesubscription.typeobject_id = changelog.trigger_typeobject_id)
-						  ) or
-						  (
-						    (changelog.trigger_itemobject_id IS NOT NULL) and
-						    (
-						       (changesubscription.itemobject_id = changelog.trigger_itemobject_id) or
-						       ( (changesubscription.typeobject_id = changelog.trigger_typeobject_id) and  (changesubscription.follow_items_too=1) )
-						     )
-						  )
+                        (
+                            (changelog.trigger_itemobject_id IS NULL) and
+                            (
+                                (changesubscription.typeobject_id = changelog.trigger_typeobject_id) or
+                                ((changesubscription.typeobject_id IS NULL) and (changesubscription.itemobject_id IS NULL))
+                            )
+                        ) or
+                        (
+                            (changelog.trigger_itemobject_id IS NULL) and
+                            (changesubscription.typeobject_id = changelog.trigger_typeobject_id)
+                        ) or
+                        (
+                            (changelog.trigger_itemobject_id IS NOT NULL) and
+                            (
+                                (changesubscription.itemobject_id = changelog.trigger_itemobject_id) or
+                                ( (changesubscription.typeobject_id = changelog.trigger_typeobject_id) and  (changesubscription.follow_items_too=1) )
+                            )
+                        )
 					) and (changesubscription.user_id='{$user_id}')  and (changesubscription.notify_daily=1)
                     and (IFNULL(changesubscription.exclude_change_codes, '') not like CONCAT('%', changelog.change_code, '%')))");
             $records = DbSchema::getInstance()->getRecords('', $DBTableRowQuery->getQuery());
