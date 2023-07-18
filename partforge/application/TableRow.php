@@ -572,7 +572,7 @@ class TableRow {
         if (($value!=='') && !is_null($value) && in_array($this->_fieldtypes[$fieldname]['type'], array('date','datetime'))) {
             $value = strtotime($value);
         }
-        return is_numeric($value) ? $value : null;
+        return is_numeric($value) ? (float)$value : null;
     }
 
     /**

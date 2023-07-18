@@ -206,6 +206,7 @@ class ItemViewPDF extends TCPDF {
     ) {
         $errormsg = array();
         $this->dbtable->validateFields($this->dbtable->getSaveFieldNames(), $errormsg);
+        $component_depths_array = $this->dbtable->getComponentValidationErrorsAndDepths($errormsg, true);
         $this->dbtable->applyCategoryDependentHeaderCaptions(false);
         $html = '';
         $html .= '<table border="0.0" cellpadding="4" cellspacing="0">';
@@ -270,7 +271,7 @@ class ItemViewPDF extends TCPDF {
                     }
 
                     $fieldtype = $this->dbtable->getFieldType($fieldname);
-                    $label = $fieldtype['caption'].":";
+                    $label = isset($fieldtype['caption']) ? $fieldtype['caption'].":" : ":";
                     $sublabel = TableRow::composeSubcaptionWithValidation($fieldtype, true);
 
                     $label = $this->clean_html($label);
