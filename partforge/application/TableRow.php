@@ -572,7 +572,8 @@ class TableRow {
         if (($value!=='') && !is_null($value) && in_array($this->_fieldtypes[$fieldname]['type'], array('date','datetime'))) {
             $value = strtotime($value);
         }
-        return is_numeric($value) ? (float)$value : null;
+        // This creates a string version of the number than never has an e or E in it. The EvalMath function can't handle scientific notation.
+        return is_numeric($value) ? number_format($value, 20, ".", "") : null;
     }
 
     /**
