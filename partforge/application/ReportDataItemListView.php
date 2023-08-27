@@ -37,6 +37,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
     private $_recent_row_age = null;
     private $_has_aliases = false;
     private $_show_used_on = false;
+    public $_last_changed_days = '';
 
     /**
      * If $output_all_versions is true, then there is 1 output row per itemversion_id.  If false, then 1 output row per itemobject_id.
@@ -207,6 +208,10 @@ class ReportDataItemListView extends ReportDataWithCategory {
             $this->export_user_records = DbSchema::getInstance()->getRecords('user_id', "SELECT * FROM user");
         }
 
+        if (!$initialize_for_export && !$this->_showing_search_results) {
+            $this->_last_changed_days =  $_SESSION['account']->getPreference('lastChangedDays');
+        }
+
         $this->search_box_label = $this->is_user_procedure ? 'proc. number, SN, or locator' : 'part number, SN, or locator';
     }
 
@@ -296,6 +301,19 @@ class ReportDataItemListView extends ReportDataWithCategory {
                 }
             }
         }
+        // add date range
+        if (is_numeric($this->_last_changed_days)) {
+            $iv_alias = $DBTableRowQuery->getJoinAlias('itemversion');
+            $from_date = time_to_mysqldate(script_time() - $this->_last_changed_days*3600*24);
+            $to_date = time_to_mysqldate(script_time());
+            $and_where .= " and (IF ( itemobject.cached_last_comment_date IS NULL OR  itemobject.cached_last_comment_date <= {$iv_alias}.effective_date,
+                                IF (itemobject.cached_last_ref_date IS NULL OR itemobject.cached_last_ref_date <= {$iv_alias}.effective_date, {$iv_alias}.effective_date, itemobject.cached_last_ref_date ),
+                                IF (itemobject.cached_last_ref_date IS NULL OR itemobject.cached_last_ref_date <= itemobject.cached_last_comment_date, itemobject.cached_last_comment_date, itemobject.cached_last_ref_date) )
+                                    between '{$from_date}' and '{$to_date}')";
+        }
+
+
+
         return $and_where;
     }
 

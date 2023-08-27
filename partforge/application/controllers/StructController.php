@@ -88,6 +88,9 @@ class StructController extends DBControllerActionAbstract
                     if (isset($this->params['chkShowAllFields'])) {
                         $_SESSION['account']->setPreference('chkShowAllFields', $this->params['chkShowAllFields']);
                     }
+                    if (isset($this->params['lastChangedDays'])) {
+                        $_SESSION['account']->setPreference('lastChangedDays', $this->params['lastChangedDays']);
+                    }
                     $this->navigator->jumpToView();
 
                 case isset($this->params['btnSavetoCSV']):

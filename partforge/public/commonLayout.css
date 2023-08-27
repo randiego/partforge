@@ -1349,6 +1349,14 @@ li.bd-event-row.bd-event-indented {
 	background-color: #FFC;
 }
 
+.itemviewlist-show-more {
+	border: 1px solid #999999;
+	font-style:italic;
+	padding: 2px;
+	width: 100%;
+	background-color: #FFC;
+}
+
 .bd-type-change .bd-event-content {
 	background-color: #FFC;
 	border: 1px solid #99F;
