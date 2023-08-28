@@ -304,8 +304,8 @@ class ReportDataItemListView extends ReportDataWithCategory {
         // add date range
         if (is_numeric($this->_last_changed_days)) {
             $iv_alias = $DBTableRowQuery->getJoinAlias('itemversion');
-            $from_date = time_to_mysqldate(script_time() - $this->_last_changed_days*3600*24);
-            $to_date = time_to_mysqldate(script_time());
+            $from_date = time_to_mysqldatetime(script_time() - $this->_last_changed_days*3600*24);
+            $to_date = time_to_mysqldatetime(script_time());
             $and_where .= " and (IF ( itemobject.cached_last_comment_date IS NULL OR  itemobject.cached_last_comment_date <= {$iv_alias}.effective_date,
                                 IF (itemobject.cached_last_ref_date IS NULL OR itemobject.cached_last_ref_date <= {$iv_alias}.effective_date, {$iv_alias}.effective_date, itemobject.cached_last_ref_date ),
                                 IF (itemobject.cached_last_ref_date IS NULL OR itemobject.cached_last_ref_date <= itemobject.cached_last_comment_date, itemobject.cached_last_comment_date, itemobject.cached_last_ref_date) )
