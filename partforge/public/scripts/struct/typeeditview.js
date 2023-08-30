@@ -1723,9 +1723,9 @@ function checkValidCalculatedTypes() {
 	var calculated_field_idx = [];
 
 	// scan the dictionary for fields of type calculated.
-	// get list that includes all the fieldnames that can evaluate to a number, even with some effot (varchar,float,boolean,date, datetime,enum, component_subfield)
+	// get list that includes all the fieldnames that can evaluate to a number, even with some effort (varchar,float,boolean,date, datetime,enum, component_subfield)
 	for(var i=0; i<typeDictionaryArray.length; i++) {
-		if (['float','varchar','boolean','date','datetime','enum'].includes(typeDictionaryArray[i]['type'])) {
+		if (['float','varchar','boolean','date','datetime','enum','component_subfield'].includes(typeDictionaryArray[i]['type'])) {
 			allowed_var_names.push(typeDictionaryArray[i]['name']);
 		} else if (typeDictionaryArray[i]['type']=='calculated') {
 			calculated_field_idx.push(i);
