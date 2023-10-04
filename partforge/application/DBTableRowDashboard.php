@@ -129,15 +129,21 @@ class DBTableRowDashboard extends DBTableRow {
     {
         $out = array();
         $prevwasmine = true;
+        $already_output_create_new = false;
         foreach (self::getDashboardRecords() as $dashboard_id => $record) {
             // if we are about to output a dashboard entry that is not one of mine, then add separator.
             if (!$record['is_mine'] && $prevwasmine) {
                 $out['new'] = '-- Create New Dashboard --';
+                $already_output_create_new = true;
                 $out[''] = '';
             }
             $username = $record['is_mine'] ? '' : DBTableRowUser::concatNames($record, true).': ';
             $out[$dashboard_id] = $username.$record['title'];
             $prevwasmine = $record['is_mine'];
+        }
+        // if there were no global (! is mine) dashboards
+        if (!$already_output_create_new) {
+            $out['new'] = '-- Create New Dashboard --';
         }
         return $out;
     }
