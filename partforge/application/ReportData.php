@@ -103,7 +103,7 @@ abstract class ReportData {
         return implode(', ', $fields);
     }
 
-    public function display_fields(UrlCallRegistry $navigator, $queryvars, $get_legend_only = false)
+    public function display_fields(UrlCallRegistry $navigator, $queryvars, $get_legend_only = false, $query_key_name = 'btnChangeSortKey', $readonly = false)
     {
         $out = array();
         $curr_sort_array = explode(',', $this->get_sort_key($queryvars));
@@ -146,7 +146,11 @@ abstract class ReportData {
                     }
                     $new_sort_array = array_slice($new_sort_array, 0, 3);
                     $new_sort_keys = implode(',', $new_sort_array);
-                    $out[$fieldname] = $help_html.linkify($navigator->getCurrentHandlerUrl('btnChangeSortKey', '', '', array('sort_key' => $new_sort_keys)), $fielddesc['display'], "Sort listing by ".$this->format_sort_key($new_sort_keys));
+                    if ($readonly) {
+                        $out[$fieldname] = $help_html.$fielddesc['display'];
+                    } else {
+                        $out[$fieldname] = $help_html.linkify($navigator->getCurrentHandlerUrl($query_key_name, '', '', array('sort_key' => $new_sort_keys)), $fielddesc['display'], "Sort listing by ".$this->format_sort_key($new_sort_keys));
+                    }
 
 
                     // now indicate which are the second and third sort columns

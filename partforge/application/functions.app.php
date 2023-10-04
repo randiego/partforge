@@ -433,8 +433,8 @@ function outputJoinedCSVToBrowser($A_category, $B_category, $A_joincolumn, $B_jo
 {
     $procedure_options = DBTableRowTypeVersion::getPartNumbersWAliasesAllowedToUser($_SESSION['account'], true);
 
-    $ReportDataA = new ReportDataItemListView(true, true, isset($procedure_options[$A_category]), false, $A_category);
-    $ReportDataB = new ReportDataItemListView(true, true, isset($procedure_options[$B_category]), false, $B_category);
+    $ReportDataA = new ReportDataItemListView(true, true, isset($procedure_options[$A_category]), false, array('view_category' => $A_category));
+    $ReportDataB = new ReportDataItemListView(true, true, isset($procedure_options[$B_category]), false, array('view_category' => $B_category));
 
     $dummyparms = array();
     // process records to fill out extra fields and do normal format conversion
@@ -459,7 +459,7 @@ function outputJoinedCSVToBrowser($A_category, $B_category, $A_joincolumn, $B_jo
 function outputCSVToBrowser($typeobject_id)
 {
     $procedure_options = DBTableRowTypeVersion::getPartNumbersWAliasesAllowedToUser($_SESSION['account'], true);
-    $ReportData = new ReportDataItemListView(true, true, isset($procedure_options[$typeobject_id]), false, $typeobject_id);
+    $ReportData = new ReportDataItemListView(true, true, isset($procedure_options[$typeobject_id]), false, array('view_category' => $typeobject_id));
     $dummyparms = array();
     $records_out = $ReportData->get_export_detail_records($dummyparms, '', '');
     send_download_headers('text/csv', "Export_TypeObjectId{$typeobject_id}.csv");
@@ -802,13 +802,17 @@ function getAbsoluteBaseUrl()
 
 /**
  *
- * @param str $prefix 'io' or 'iv' or 'tv' or 'to'
+ * @param str $prefix 'io' 'iv' 'tv' 'to' or 'panel' or 'dash'
  * @param integer $id the itemobject or itemversion
  * @return string
  */
 function formatAbsoluteLocatorUrl($prefix, $id)
 {
-    $locator = '/struct/'.$prefix.'/'.$id;
+    if (in_array($prefix, array('dash', 'panel'))) {
+        $locator = '/dash/panel/'.$id;
+    } else {
+        $locator = '/struct/'.$prefix.'/'.$id;
+    }
     return getAbsoluteBaseUrl().$locator;
 }
 
@@ -817,8 +821,8 @@ function specialSearchKeyToUrl($search_string, $strict = true)
     if (!$strict && ctype_digit($search_string)) {
         $search_string = 'io/'.$search_string;
     }
-    $map = array('io' => 'itemobject', 'iv' => 'itemversion','to' => 'typeobject','tv' => 'typeversion');
-    preg_match('/^(io|iv|tv|to)\/([0-9]+)$/', strtolower($search_string), $out);
+    $map = array('io' => 'itemobject', 'iv' => 'itemversion','to' => 'typeobject','tv' => 'typeversion', 'dash' => 'dashboard', 'panel' => 'dashboard');
+    preg_match('/^(io|iv|tv|to|dash|panel)\/([0-9]+)$/', strtolower($search_string), $out);
     if (isset($out[1]) && isset($out[2])) {
         $table = $map[$out[1]];
         $id = $out[2];
@@ -833,12 +837,12 @@ function fetchHtmlHeaderIncludes()
     $ver = Zend_Registry::get('config')->cached_code_version;
     return <<<EOD
 <link href="{$baseurl}/commonLayout.css?v={$ver}" rel="stylesheet" type="text/css" />
-<link type="text/css" href="{$baseurl}/jqueryui11/jquery-ui.min.css" rel="Stylesheet" />
+<link type="text/css" href="{$baseurl}/jqueryui11/jquery-ui.css" rel="Stylesheet" />
 <link rel="stylesheet" href="{$baseurl}/jqueryextras/gallery-2.15.2/css/blueimp-gallery.min.css">
 <link rel="stylesheet" href="{$baseurl}/jqueryextras/jquery-file-upload/css/jquery.fileupload-ui.css">
-<link rel="stylesheet" href="{$baseurl}/jqueryextras/jquery-custom-combobox/jquery-custom-combobox.css?v=4">
+<link rel="stylesheet" href="{$baseurl}/jqueryextras/jquery-custom-combobox/jquery-custom-combobox.css?v=5">
 <script type="text/javascript" src="{$baseurl}/jqueryui11/external/jquery/jquery.js"></script>
-<script type="text/javascript" src="{$baseurl}/jqueryui11/jquery-ui.min.js"></script>
+<script type="text/javascript" src="{$baseurl}/jqueryui11/jquery-ui.js"></script>
 <script type="text/javascript" src="{$baseurl}/jqueryextras/js/jquery-ui-timepicker-addon.js"></script>
 <script type="text/javascript" src="{$baseurl}/jqueryextras/js/jquery-ui-sliderAccess.js"></script>
 <script type="text/javascript" src="{$baseurl}/jqueryextras/js/jquery.watermark.min.js"></script>
@@ -847,7 +851,7 @@ function fetchHtmlHeaderIncludes()
 <script language="JavaScript" src="{$baseurl}/jqueryextras/jquery.cookie.js" type="TEXT/JAVASCRIPT"></script>
 <script language="JavaScript" src="{$baseurl}/jqueryextras/jquery.json-2.3.js" type="TEXT/JAVASCRIPT"></script>
 <script language="JavaScript" src="{$baseurl}/scripts/tiny_mce/jquery.tinymce.js" type="TEXT/JAVASCRIPT"></script>
-<script language="JavaScript" src="{$baseurl}/jqueryextras/jquery-custom-combobox/jquery-custom-combobox.js?v=4" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="{$baseurl}/jqueryextras/jquery-custom-combobox/jquery-custom-combobox.js?v=6" type="TEXT/JAVASCRIPT"></script>
 <script language="JavaScript" src="{$baseurl}/jqueryextras/jquery.ui.touch-punch.min.js" type="TEXT/JAVASCRIPT"></script>
 <script language="JavaScript" src="{$baseurl}/jqueryextras/jquery-qrcode/jquery.qrcode.min.js" type="TEXT/JAVASCRIPT"></script>
 EOD;

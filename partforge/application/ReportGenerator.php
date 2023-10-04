@@ -206,8 +206,8 @@ class ReportGenerator {
 
         $procedure_options = DBTableRowTypeVersion::getPartNumbersWAliasesAllowedToUser($_SESSION['account'], true);
 
-        $ReportDataA = new ReportDataItemListView(true, true, isset($procedure_options[$A_typeobject_id]), false, $A_typeobject_id);
-        $ReportDataB = new ReportDataItemListView(true, true, isset($procedure_options[$B_typeobject_id]), false, $B_typeobject_id);
+        $ReportDataA = new ReportDataItemListView(true, true, isset($procedure_options[$A_typeobject_id]), false, array('view_category' => $A_typeobject_id));
+        $ReportDataB = new ReportDataItemListView(true, true, isset($procedure_options[$B_typeobject_id]), false, array('view_category' => $B_typeobject_id));
 
         $dummyparms = array();
         // process records to fill out extra fields and do normal format conversion
@@ -225,7 +225,7 @@ class ReportGenerator {
     public function extractWorkingSet($typeobject_id)
     {
         $procedure_options = DBTableRowTypeVersion::getPartNumbersWAliasesAllowedToUser($_SESSION['account'], true);
-        $ReportData = new ReportDataItemListView(true, true, isset($procedure_options[$typeobject_id]), false, $typeobject_id);
+        $ReportData = new ReportDataItemListView(true, true, isset($procedure_options[$typeobject_id]), false, array('view_category' => $typeobject_id));
         $dummyparms = array();
         $this->_headers = $ReportData->csvfields;
         $this->_rows = $ReportData->get_export_detail_records($dummyparms, '', '');

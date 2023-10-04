@@ -529,6 +529,33 @@ class UtilsController extends DBControllerActionAbstract
                         setGlobal('databaseversion', $databaseversion);
                     }
 
+                    if ($this->shouldUpgradeFrom('20')) {
+                        $msgs[] = 'Upgrading to version 21: Add Dashboard.';
+                        DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS dashboardtable (
+                            dashboardtable_id int(11) NOT NULL AUTO_INCREMENT,
+                            user_id int(11) NOT NULL,
+                            typeobject_id int(11) NOT NULL,
+                            title VARCHAR(128) DEFAULT NULL,
+                            include_fields longtext,
+                            data_items longtext,
+                            PRIMARY KEY (dashboardtable_id),
+                            KEY user_id (user_id),
+                            KEY typeobject_id (typeobject_id)
+                        ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4;");
+                        DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS dashboard (
+                            dashboard_id int(11) NOT NULL AUTO_INCREMENT,
+                            user_id int(11) NOT NULL,
+                            title VARCHAR(128) DEFAULT NULL,
+                            is_public int(1) NOT NULL DEFAULT 0,
+                            list_of_table_ids longtext,
+                            list_of_closed_tables longtext,
+                            record_created datetime,
+                            PRIMARY KEY (dashboard_id),
+                            KEY user_id (user_id)
+                        ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4;");
+                        $databaseversion = '21';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
 
 
 

@@ -1,0 +1,110 @@
+<script type="text/javascript">
+var linkToPageUrl = "<?php echo DBTableRowDashboard::getAbsoluteUrl($this->dashboard->dashboard_id);?>";
+var lookupUrl = '<?php echo $this->navigator->getCurrentViewUrl('jsonsearchloginids', 'user');?>';
+var canSendLink = <?php echo in_array($_SESSION['account'] ->getRole(), array('Guest','DataTerminal')) ? 'false' : 'true';?>;
+
+var editdashboardtableUrl = "<?php echo $this->navigator->getCurrentHandlerUrl('btnEditTable', null, null, array('dashboardTableId' => '_DASHBOARDTABLEID_', 'tablecolor' => '_COLOR_', 'tabletitle' => '_TITLE_', 'tablefields' => '_TABLEFIELDS_'));?>";
+var editdashboardUrl = "<?php echo $this->navigator->getCurrentHandlerUrl('btnEditDashboard', null, null, array('title' => '_TITLE_', 'tableids' => '_TABLEIDS_', 'is_public' => '_ISPUBLIC_'));?>";
+// var autoStartEditing = <?php echo (($this->dashboard->list_of_table_ids == "") && !$this->readonly) ? 'true' : 'false';?>;
+var tabledata = {};
+</script>
+<?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/dash/panel.js?v=47" type="TEXT/JAVASCRIPT"></script>
+<?php
+
+$this->layout()->title = 'Dashboard: '.$this->dashboard->title;
+
+$BreadCrumbs = new BreadCrumbsManager();
+$BreadCrumbs->newAnchor($this->navigator->getCurrentViewUrl(), $this->layout()->title);
+//$BreadCrumbs->addCurrentUrl($this->navigator->getCurrentViewUrl(null,null,array('resetview' => 1)),$this->layout()->title, true);
+// $title_html = $BreadCrumbs->render($this->navigator->getCurrentViewUrl(), $this->layout()->title, 3);
+
+$this->layout()->setLayout('layout');
+$this->layout()->scrollhold = true;
+
+$html = '';
+$html .= '<div class="dashandbuttonsdiv">';
+$subtitle =  $this->readonly ? '<div class="smallundertitleparen">Board Owner: '.linkify( UrlCallRegistry::formatViewUrl('id/'.$this->dashboard->user_id, 'user'), DBTableRowUser::getFullName($this->dashboard->user_id), 'View user details').'</div>' : '';
+$selector = format_select_tag(DBTableRowDashboard::indexOfAllDashboards(), 'selectdashboard_id', array('selectdashboard_id' => $this->dashboard->dashboard_id), "document.theform.btnOnChange.value='changedashboard';document.theform.submit();return false;", false, '--  select one --', '', 'dashboardselector');
+$html .= '<div class="dashheader"><span class="dshspn">Dashboard: </span>'.$selector.$subtitle.'</div>';
+$html .= '<div class="buttonrow">';
+if (!$this->readonly) {
+    $html .= linkify('#', 'Edit', 'Add, Remove, Edit Dashboard Tables', 'bd-button', "", '', 'editDashboardButton');
+    if (!$this->dashboard->isThisMyOnlyDashboard()) {
+        $delete_url = $this->navigator->getCurrentHandlerUrl('btnDeleteDashboard', null, null, array('dashboard_id' => $this->dashboard->dashboard_id));
+        $html .= linkify($delete_url, 'Delete', "Delete this Dashboard and all the Tables", 'bd-button', 'return confirm(\'Delete this Dashboard and all the Tables?\');', '', '');
+    }
+}
+$copy_url = $this->navigator->getCurrentHandlerUrl('btnCopyDashboard', null, null, array('dashboard_id' => $this->dashboard->dashboard_id));
+$html .= linkify($copy_url, 'Copy', 'Duplicate the current dashboard and all its tables', 'bd-button', 'return confirm(\'Save this dashboard as a completely new dashboard?\');', '', '');
+$html .= linkify('#', 'Link to Page', 'Copy or send link to this dashboard', 'bd-button', "", '', 'linkToPageButton');
+
+
+$html .= '</div>';
+$html .= '</div>';
+$html .= '<input type="hidden" name="btnOnChange" value="">';
+$html .= '<input type="hidden" name="btnOnChangeTableFilter" value="">';
+$html .= '<input type="hidden" name="dashboard_id" value="'.$this->dashboard->dashboard_id.'">';
+$html .= '<input type="hidden" name="dashboardtitle" value="'.$this->dashboard->title.'">';
+$html .= '<input type="hidden" name="dashboardispublic" value="'.$this->dashboard->is_public.'">';
+
+/*
+* Build the view preferences checkbox(es) and button that go next to pagination at top of table
+*/
+$periods = array('7' => '1 Week', '14' => '2 Weeks', '30' => '1 Month', '60' => '2 Months', '180' => '6 Months', '365' => '1 Year', '730' => '2 Years', '1825' => '5 Years');
+$last_changed_days_array = array('' => 'All Dates');
+foreach ($periods as $days => $period) {
+    $last_changed_days_array[$days] = 'Changed in Past '.$period;
+}
+$max_rows_array = array("" => "No Limit");
+foreach (array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 30, 50, 100) as $rows) {
+    $max_rows_array[$rows] = "{$rows} Max";
+}
+
+if ($this->dashboard->list_of_table_ids != "") {
+    foreach (explode(',', $this->dashboard->list_of_table_ids) as $dashidx) {
+        $dashidx = intval($dashidx);
+        $DashboardTable = new DBTableRowDashboardTable();
+        if ($DashboardTable->getRecordById($dashidx)) {
+            $report_params = $DashboardTable->getArray();
+            $report_params['view_category'] = $DashboardTable->typeobject_id;
+            $ReportData = new ReportDataItemListView(false, false, false, !empty($this->view->params['search_string']), $report_params, true);
+            $typeobject_id = $DashboardTable->typeobject_id;
+            $ReportData->title = $ReportData->category_array[$typeobject_id];
+            $ReportData->show_row_enumeration = false;
+            $ReportData->use_override_subtitle = false;
+            $PaginatedReportPage = new PaginatedReportPageSimple($DashboardTable->getArray(), $ReportData, $this->navigator);
+            if (!empty($DashboardTable->title)) {
+                $PaginatedReportPage->overrideReportTitle($DashboardTable->title);
+                $PaginatedReportPage->subtitle_text = $ReportData->title;
+            }
+            $color = isset($DashboardTable->color) ? 'border-left: 10px solid #'.$DashboardTable->color.'; ' : '';
+
+            $select_html = '';
+            $part_type_name = $ReportData->category_array[$typeobject_id];
+
+            $pagination_line_html = '';
+            if (!$this->readonly) {
+                $pagination_line_html .= format_select_tag(array('0' => 'No Procedure Results', '1' => 'All Procedure Results'), "chkShowProcMatrix[$dashidx]", array("chkShowProcMatrix[$dashidx]" => $DashboardTable->chkShowProcMatrix), "document.theform.btnOnChangeTableFilter.value='{$dashidx}';document.theform.submit();return false;", false, '-- select one --', '', 'bd-button-colors').' ';
+                $pagination_line_html .= ' '.format_select_tag(array('0' => 'Featured Fields Only', 'allnew' => 'All Fields', '1' => 'All Fields (including old versions)'), "chkShowAllFields[$dashidx]", array("chkShowAllFields[$dashidx]" => $DashboardTable->chkShowAllFields), "document.theform.btnOnChangeTableFilter.value='{$dashidx}';document.theform.submit();return false;", false, '-- select one --', '', 'bd-button-colors').' ';
+                $pagination_line_html .= ' '.format_select_tag($last_changed_days_array, "lastChangedDays[$dashidx]", array("lastChangedDays[$dashidx]" => $DashboardTable->lastChangedDays), "document.theform.btnOnChangeTableFilter.value='{$dashidx}';document.theform.submit();return false;", false, '-- select one --', '', 'bd-button-colors').' ';
+                $pagination_line_html .= ' '.format_select_tag($max_rows_array, "rowLimit[$dashidx]", array("rowLimit[$dashidx]" => $DashboardTable->rowLimit), "document.theform.btnOnChangeTableFilter.value='{$dashidx}';document.theform.submit();return false;", false, '-- select one --', '', 'bd-button-colors').' ';
+                $pagination_line_html .= '<span>'.linkify('#', 'Format Table', "Change settings for this table.", 'bd-linkbtn dashtableeditbtn', '', '', 'TableEditBtn['.$dashidx.']').'</span>';
+            }
+            $pagination_line_html .= '<input type="hidden" name="tabletitle['.$dashidx.']" value="'.$DashboardTable->title.'" />';
+            $pagination_line_html .= '<input type="hidden" name="tablecolor['.$dashidx.']" value="'.$DashboardTable->color.'" />';
+            $pagination_line_html .= '<input type="hidden" name="tablefields['.$dashidx.']" value="'.$DashboardTable->include_fields.'" />';
+            $sorted_base_fields = $DashboardTable->sortByIncludedFields($ReportData->fields);
+            $html .= '<script type="text/javascript">
+            tabledata['.$dashidx.'] = {"names" : '.json_encode(array_keys($sorted_base_fields)).', "data" : '.json_encode($sorted_base_fields).'};
+            </script>';
+
+            $html .= '<div class="dashheaddiv" id="dashboardtableid_'.$dashidx.'" data-typeobject_id="'.$DashboardTable->typeobject_id.'" style="'.$color.' padding-left: 5px; margin-bottom: 20px;">'.
+                    $PaginatedReportPage->fetch_form_body_html_dashboard('', $pagination_line_html, "btnChangeSortKey[$dashidx]", explode(",", $DashboardTable->include_fields), $DashboardTable->rowLimit, $this->readonly).
+                    '</div>';
+        }
+    }
+} else {
+    $html .= '<h3>This Dashboard is Empty. Click the Edit button to add tables.</h3>';
+}
+echo fetch_form_tag($html);

@@ -297,7 +297,13 @@ class DBTableRowUser extends DBTableRow {
 
     public function getNumericFavorites($keyname)
     {
-        return explode('|', $this->getPreference($keyname));
+        $out = array();
+        foreach (explode('|', $this->getPreference($keyname)) as $value) {
+            if (is_numeric($value)) {
+                $out[] = $value;
+            }
+        }
+        return $out;
     }
 
     public function fullName($is_html = false)

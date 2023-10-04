@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2023 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -61,10 +61,10 @@ class PaginatedReportPage {
             case isset($this->queryvars['btnChangeSortKey']):
                 $handle = true;
                 break;
-            case ($this->queryvars['btnOnChange'] == 'listtypechange'):
+            case isset($this->queryvars['btnOnChange']) && ($this->queryvars['btnOnChange'] == 'listtypechange'):
                 $handle = true;
                 break;
-            case ($this->queryvars['btnOnChange'] == 'rowschange'):
+            case isset($this->queryvars['btnOnChange']) && ($this->queryvars['btnOnChange'] == 'rowschange'):
                 $_SESSION['account']->pref_rows_per_page = $this->queryvars['rows_per_page'];
                 $_SESSION['account']->save(array('pref_rows_per_page'));
                 $handle = true;
@@ -356,6 +356,3 @@ class PaginatedReportPage {
         return $html;
     }
 }
-
-
-?>

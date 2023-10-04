@@ -24,14 +24,14 @@ $options = $proc_options + $part_options;
 $A_options = $options;
 $B_options = $options;
 if (isset($this->params['A_category'])) {
-    $ReportDataA = new ReportDataItemListView(true, true, isset($proc_options[$this->params['A_category']]), false, $this->params['A_category']);
+    $ReportDataA = new ReportDataItemListView(true, true, isset($proc_options[$this->params['A_category']]), false, array( 'view_category' => $this->params['A_category']));
 } else {
     $ReportDataA = new ReportDataItemListView(true, true, false, false, null);
 }
 if (isset($this->params['B_category'])) {
-    $ReportDataB = new ReportDataItemListView(true, true, isset($proc_options[$this->params['B_category']]), false, $this->params['B_category']);
+    $ReportDataB = new ReportDataItemListView(true, true, isset($proc_options[$this->params['B_category']]), false, array( 'view_category' => $this->params['B_category']));
 } else {
-    $ReportDataB = new ReportDataItemListView(true, true, false, false, null);
+    $ReportDataB = new ReportDataItemListView(true, true, false, false, array());
 }
 
 $joinFieldA_options = $ReportDataA->csvfields;

@@ -211,9 +211,9 @@ class DBTableRowItemVersion extends DBTableRow {
         } else if ($type == 'date') {
             $lit = !$is_null_str ? time_to_mysqldate(strtotime($var)) : null;
         } else if ($type == 'int') {
-            $lit = !$is_null_str ? round($var) : null;
+            $lit = !$is_null_str ? (is_numeric($var) ? round($var) : $var) : null;
         } else if (in_array($type, array('float','calculated'))) {
-            $lit = !$is_null_str ? (float) $var : null;
+            $lit = !$is_null_str ? (is_numeric($var) ? (float) $var : $var) : null;
         } else if ($type == 'boolean') {
             $lit = !$is_null_str ? (boolean) $var : null;
         } else if (is_array($var)) {
@@ -2463,7 +2463,7 @@ class DBTableRowItemVersion extends DBTableRow {
             $query_params['itemobject_id'] = $value;
             $query_params['return_url'] = $navigator->getCurrentViewUrl();
             $query_params['resetview'] = 1;
-            $edit_url = $navigator->getCurrentViewUrl('itemview', '', $query_params);
+            $edit_url = $navigator->getCurrentViewUrl('itemview', 'struct', $query_params);
             $html_text = linkify( $edit_url, $text, "View {$text_name}: {$text}");
         } else {
             $html_text = TextToHtml($text);

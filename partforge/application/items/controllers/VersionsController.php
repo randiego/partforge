@@ -122,7 +122,7 @@ class Items_VersionsController extends RestControllerActionAbstract
                     }
                     break;
                 case 'sheet':
-                    $ReportData = new ReportDataItemListView(true, true, $ItemVersion->hasADisposition(), false, $ItemVersion->tv__typeobject_id, $ItemVersion->itemversion_id);
+                    $ReportData = new ReportDataItemListView(true, true, $ItemVersion->hasADisposition(), false, array('view_category' => $ItemVersion->tv__typeobject_id, 'itemversion_id' => $ItemVersion->itemversion_id));
                     $records = $ReportData->getCSVRecordsAsArray($use_internal_names);
                     if (count($records)==1) {
                         $record = reset($records);

@@ -45,9 +45,9 @@ class ReportDataItemListView extends ReportDataWithCategory {
      * @param boolean $output_all_versions
      * @param boolean $is_user_procedure
      */
-    public function __construct($initialize_for_export = false, $output_all_versions = false, $is_user_procedure = false, $showing_search_results = false, $override_view_category = null, $override_itemversion_id = null, $display_only = false)
+    public function __construct($initialize_for_export = false, $output_all_versions = false, $is_user_procedure = false, $showing_search_results = false, $overrides = array(), $display_only = false)
     {
-    //  if (!is_null($override_view_category) && ($override_view_category==='')) $override_view_category = '*';
+
         $this->_showing_search_results = $showing_search_results;
         if ($output_all_versions) {
             parent::__construct('itemversion');
@@ -57,12 +57,12 @@ class ReportDataItemListView extends ReportDataWithCategory {
         $this->pref_view_category_name = $is_user_procedure ? 'pref_proc_view_category' : 'pref_part_view_category';
         $this->is_user_procedure = $is_user_procedure;
         $this->output_all_versions = $output_all_versions;
-        $this->_override_itemversion_id = $override_itemversion_id;
+        $this->_override_itemversion_id = isset($overrides['itemversion_id']) ? $overrides['itemversion_id'] : null;
         $this->_recent_row_age = Zend_Registry::get('config')->recent_row_age;
         $this->_show_used_on = !$is_user_procedure && !$this->output_all_versions;
 
         // this little dance is to make sure that we get a valid view_category.
-        $this->view_category = is_null($override_view_category) ? $_SESSION['account']->getPreference($this->pref_view_category_name) : $override_view_category;
+        $this->view_category = isset($overrides['view_category']) ? $overrides['view_category'] : $_SESSION['account']->getPreference($this->pref_view_category_name);
         if ($this->_showing_search_results) {
             $this->view_category = '*';
         }
@@ -70,7 +70,8 @@ class ReportDataItemListView extends ReportDataWithCategory {
             $this->category_array = $this->category_choices_array($_SESSION['account']->getRole());
             $this->view_category = $this->ensure_category($this->view_category);
             $matrix_selector_visible = ($this->view_category!='*') && !$this->is_user_procedure;
-            $this->_show_proc_matrix = $_SESSION['account']->getPreference('chkShowProcMatrix') && $matrix_selector_visible && !$this->output_all_versions;
+            $chkShowProcMatrix = (isset($overrides['chkShowProcMatrix']) ? $overrides['chkShowProcMatrix'] : $_SESSION['account']->getPreference('chkShowProcMatrix'));
+            $this->_show_proc_matrix =  $chkShowProcMatrix && $matrix_selector_visible && !$this->output_all_versions;
         } else {
             // we are in a special mode when overriding itemversion.
             $this->category_array = array();
@@ -78,7 +79,8 @@ class ReportDataItemListView extends ReportDataWithCategory {
         }
 
         if (($this->view_category!='*')) {
-            $show_all_fields = $_SESSION['account']->getPreference('chkShowAllFields'); // '1' = all fields all version, 'allnew' = only from current version
+            // '1' = all fields all version, 'allnew' = only from current version
+            $show_all_fields = (isset($overrides['chkShowAllFields']) ? $overrides['chkShowAllFields'] : $_SESSION['account']->getPreference('chkShowAllFields'));
             list($this->addon_fields_list,$this->_has_aliases) = $this->getAddOnFieldsForTypeObjectId($this->view_category, $show_all_fields, false, false, $this->is_user_procedure);
         }
 
@@ -209,7 +211,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
         }
 
         if (!$initialize_for_export && !$this->_showing_search_results) {
-            $this->_last_changed_days =  $_SESSION['account']->getPreference('lastChangedDays');
+            $this->_last_changed_days =  (isset($overrides['lastChangedDays']) ? $overrides['lastChangedDays'] : $_SESSION['account']->getPreference('lastChangedDays'));
         }
 
         $this->search_box_label = $this->is_user_procedure ? 'proc. number, SN, or locator' : 'part number, SN, or locator';
@@ -561,7 +563,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
         $query_params['itemversion_id'] = $record['iv__itemversion_id'];
         $query_params['return_url'] = $navigator->getCurrentViewUrl();
         $query_params['resetview'] = 1;
-        $edit_url = $navigator->getCurrentViewUrl('itemview', '', $query_params);
+        $edit_url = $navigator->getCurrentViewUrl('itemview', 'struct', $query_params);
         // the following links have superfluis table params--oh well.
         $buttons_arr[] = linkify( $edit_url, 'View', 'View', 'listrowlink');
 
@@ -582,7 +584,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
                     $wu_query_params = $query_params;
                     unset($wu_query_params['itemversion_id']);
                     $wu_query_params['itemobject_id'] = $wu_itemobject_id;
-                    $wu_url = $navigator->getCurrentViewUrl('itemview', '', $wu_query_params);
+                    $wu_url = $navigator->getCurrentViewUrl('itemview', 'struct', $wu_query_params);
                     list($error_counts_array, $depths_array) = DBTableRowItemObject::refreshAndGetValidationErrorCountsAndDepths(array($wu_itemobject_id), false);
                     if ($error_counts_array[$wu_itemobject_id]>0) {
                         $detail_out['td_class']['used_on'] = 'cell_error';
@@ -665,7 +667,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
                         $out[$key] = array();
                     }
                     $matrix_query_params['itemobject_id'] = $proc_io;
-                    $edit_url = $navigator->getCurrentViewUrl('itemview', '', $matrix_query_params);
+                    $edit_url = $navigator->getCurrentViewUrl('itemview', 'struct', $matrix_query_params);
                     $title = date('M j, Y G:i', strtotime($proc_effective_date)).' - '.(isset($this->fields[$key]['display']) ? $this->fields[$key]['display'] : '');
                     $out[$key][] = linkify($edit_url, DBTableRowItemVersion::renderDisposition($this->dbtable->getFieldType('iv__disposition'), $proc_disposition, true, '<span class="disposition Black">No Disposition</span>'), $title);
                 }

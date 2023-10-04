@@ -4,7 +4,9 @@
 		 options: {
 			 skipfav: true,
 			 hidecurrentvaluewhenchanging: 1,
-			 allowempty: false
+			 allowempty: false,
+			 containersel: "",
+			 myclassname: ""
 			 },
 
 		_create: function() {
@@ -39,6 +41,9 @@
 						event.target.value = '';
 					}
 				});
+			if (this.options.myclassname!="") {
+				this.input.addClass( this.options.myclassname );
+			}
 			if (this.options.hidecurrentvaluewhenchanging==1) {
 				this.input.watermark(value, {className: 'ui-widget-content', useNative: false});
 			}
@@ -52,6 +57,15 @@
 					.append( '<a>' + text + "</a>" )
 					.appendTo( ul );
 			};
+			if (this.options.containersel !== "") {
+				var autoComplete = this.input.autocomplete("widget");
+				var dlg = $(this.options.containersel);
+				this.input.autocomplete({
+					open: function () {
+						autoComplete.zIndex(dlg.zIndex()+1);
+					}
+				})
+			}
 
 			this._on( this.input, {
 				autocompleteselect: function( event, ui ) {

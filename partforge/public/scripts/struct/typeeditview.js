@@ -1,5 +1,5 @@
 
-var typeComponents = [];  // array of components
+var typeComponents = [];  // array of componentstypeDescriptions
 var typeDescriptions = []; // this is an array of array pairs (typeobject_id, description) for parts.
 var typeDictionaryArray = [];
 var typeFormLayoutArray = [];

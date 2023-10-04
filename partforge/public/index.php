@@ -74,6 +74,7 @@ $frontController->getRouter()->addRoute('io', new Zend_Controller_Router_Route('
 $frontController->getRouter()->addRoute('iv', new Zend_Controller_Router_Route('/struct/iv/:iv', array('controller' => 'struct', 'action' => 'iv') ) );
 
 $frontController->getRouter()->addRoute('userid', new Zend_Controller_Router_Route('/user/id/:user_id', array('controller' => 'user', 'action' => 'itemview') ) );
+$frontController->getRouter()->addRoute('dashboard', new Zend_Controller_Router_Route('/dash/panel/:dashboard_id', array('controller' => 'dash', 'action' => 'panel') ) );
 $frontController->getRouter()->addRoute('dotask', new Zend_Controller_Router_Route('/dotask/:assigned_to_task_id/:link_password', array('controller' => 'user', 'action' => 'workflowtaskresponse') ) );
 
 $frontController->getRouter()->addRoute('qrupload', new Zend_Controller_Router_Route('/utils/qrupload/:qrkey', array('controller' => 'utils', 'action' => 'qrupload') ) );

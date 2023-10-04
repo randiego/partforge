@@ -24,15 +24,15 @@
  */
 
   $onload = array();
-  if (!$this->layout()->show_in_any_window) {
+if (!$this->layout()->show_in_any_window) {
     $onload[] = "verifyCorrectWindow('PopupWin',false);";
-  }
-  if ($this->layout()->scrollhold) {
+}
+if ($this->layout()->scrollhold) {
     $scrollholdkey = empty($this->layout()->scrollholdkey) ? Zend_Controller_Front::getInstance()->getRequest()->getActionName() : $this->layout()->scrollholdkey;
     $onload[] = "initScrollSaver('".$scrollholdkey."');";
-  } elseif (!$this->layout()->no_set_form_focus) {  // note: in IE 8, then two things are mutually exclusive
+} elseif (!$this->layout()->no_set_form_focus) {  // note: in IE 8, then two things are mutually exclusive
     $onload[] = "set_default_focus();";
-  }
+}
 
   $config = Zend_Registry::get('config');
   $fake_date_warning = isset($config->fake_date) ? '<span class="fakedatestyle">FAKE DATE SET: '.$config->fake_date.'</span>&nbsp;' : '';
@@ -40,45 +40,49 @@
   $baseurl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();
   $ver = Zend_Registry::get('config')->cached_code_version;
 
-function addLink($controller, $action, $linkname, $linkdesc, &$links, $onclick='', $extra_params=array()) {
-	$request = Zend_Controller_Front::getInstance()->getRequest();
-	$id = (($request->getControllerName()==$controller) && ($request->getActionName()==$action)) ? 'navcurrent' : '';
-	$extra_params['resetview'] = '1';
-	$links[] = linkify( UrlCallRegistry::formatViewUrl($action,$controller,$extra_params),$linkname,$linkdesc,'',$onclick,'',$id);
+function addLink($controller, $action, $linkname, $linkdesc, &$links, $onclick = '', $extra_params = array())
+{
+    $request = Zend_Controller_Front::getInstance()->getRequest();
+    $id = (($request->getControllerName()==$controller) && ($request->getActionName()==$action)) ? 'navcurrent' : '';
+    $extra_params['resetview'] = '1';
+    $links[] = linkify( UrlCallRegistry::formatViewUrl($action, $controller, $extra_params), $linkname, $linkdesc, '', $onclick, '', $id);
 }
 
-function addLinkIfIsAllowed(Zend_Acl $acl, $controller, $action, $linkname, $linkdesc, &$links) {
-	if ($acl->isAllowed($_SESSION['account']->getRole(),$controller,$action)) {
-		addLink($controller, $action, $linkname, $linkdesc, $links);
-	}
+function addLinkIfIsAllowed(Zend_Acl $acl, $controller, $action, $linkname, $linkdesc, &$links)
+{
+    if ($acl->isAllowed($_SESSION['account']->getRole(), $controller, $action)) {
+        addLink($controller, $action, $linkname, $linkdesc, $links);
+    }
 }
 
-function fetchMenuLinks() {
-	$links = array();
-	$acl = Zend_Registry::get('customAcl');
-	addLinkIfIsAllowed($acl, 'struct', 'itemlistview', 'Parts', 'manage list of parts', $links);
-	addLinkIfIsAllowed($acl, 'struct', 'procedurelistview', 'Procedures', 'manage list of procedures', $links);
-	addLinkIfIsAllowed($acl, 'struct', 'commentlistview', 'Comments', 'view all comments and attachements', $links);
-	addLinkIfIsAllowed($acl, 'struct', 'partlistview', 'Definitions', 'manage part and procedure definitions', $links);
-	if (Zend_Registry::get('config')->show_analyze_page) {
-		addLinkIfIsAllowed($acl, 'struct', 'joinedexport', 'Analyze', 'Export and Correlate Data', $links);
-	}
+function fetchMenuLinks()
+{
+    $links = array();
+    $acl = Zend_Registry::get('customAcl');
+    addLinkIfIsAllowed($acl, 'struct', 'itemlistview', 'Parts', 'manage list of parts', $links);
+    addLinkIfIsAllowed($acl, 'struct', 'procedurelistview', 'Procedures', 'manage list of procedures', $links);
+    addLinkIfIsAllowed($acl, 'dash', 'panel', 'Dashboard', 'view your (and public) dashboards', $links);
+    addLinkIfIsAllowed($acl, 'struct', 'commentlistview', 'Comments', 'view all comments and attachements', $links);
+    addLinkIfIsAllowed($acl, 'struct', 'partlistview', 'Definitions', 'manage part and procedure definitions', $links);
+    if (Zend_Registry::get('config')->show_analyze_page) {
+        addLinkIfIsAllowed($acl, 'struct', 'joinedexport', 'Analyze', 'Export and Correlate Data', $links);
+    }
 
-	addLinkIfIsAllowed($acl, 'struct', 'changelistview', 'Activity', 'view your Watchlist and other system activity', $links);
+    addLinkIfIsAllowed($acl, 'struct', 'changelistview', 'Activity', 'view your Watchlist and other system activity', $links);
 
-	addLinkIfIsAllowed($acl, 'user', 'listview', 'Users', 'manage all users', $links);
-	addLinkIfIsAllowed($acl, 'settings', 'listview', 'Settings', 'View / Edit system settings', $links);
-	addLinkIfIsAllowed($acl, 'user', 'manageaccount', 'My Account', 'change names, email, and password', $links);
-	if (Zend_Registry::get('config')->global_readonly) {
-		if (!LoginStatus::getInstance()->isValidUser()) {
-			addLink('user', 'login', 'Login', 'Login so you can add and edit.', $links,'',array('return_url' => self_url().'?'.$_SERVER['QUERY_STRING']));
-		} else {
-			addLink('user', 'logout', 'Logout', 'Logout of this account', $links,'return confirm(\'Logout?\');',array('return_url' => self_url().'?'.$_SERVER['QUERY_STRING']));
-		}
-	} else {
-		addLink('user', 'logout', 'Logout', 'Logout of this account', $links,'return confirm(\'Logout?\');');
-	}
-	return $links;
+    addLinkIfIsAllowed($acl, 'user', 'listview', 'Users', 'manage all users', $links);
+    addLinkIfIsAllowed($acl, 'settings', 'listview', 'Settings', 'View / Edit system settings', $links);
+    addLinkIfIsAllowed($acl, 'user', 'manageaccount', 'My Account', 'change names, email, and password', $links);
+    if (Zend_Registry::get('config')->global_readonly) {
+        if (!LoginStatus::getInstance()->isValidUser()) {
+            addLink('user', 'login', 'Login', 'Login so you can add and edit.', $links, '', array('return_url' => self_url().'?'.$_SERVER['QUERY_STRING']));
+        } else {
+            addLink('user', 'logout', 'Logout', 'Logout of this account', $links, 'return confirm(\'Logout?\');', array('return_url' => self_url().'?'.$_SERVER['QUERY_STRING']));
+        }
+    } else {
+        addLink('user', 'logout', 'Logout', 'Logout of this account', $links, 'return confirm(\'Logout?\');');
+    }
+    return $links;
 }
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -93,27 +97,27 @@ function fetchMenuLinks() {
 var baseUrl = '<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>';
 var layoutTitle = '<?php echo $this->layout()->title;?>';
 $(document).ready(function () {
-	$( ".bd-button, .listrowlink, .minibutton2, .searchbutton" ).button();
-	$('#headmessages').append('<?php echo str_replace("\n","",str_replace("\r","", addslashes(fetchPageBannerDiv())));?>');
-	$('#navlist').buttonset();
+    $( ".bd-button, .listrowlink, .minibutton2, .searchbutton" ).button();
+    $('#headmessages').append('<?php echo str_replace("\n", "", str_replace("\r", "", addslashes(fetchPageBannerDiv())));?>');
+    $('#navlist').buttonset();
 });
 </script>
 
 </head>
 
-<body onLoad="<?php echo implode('',$onload);?>">
+<body onLoad="<?php echo implode('', $onload);?>">
 <div class="main">
 <div id="logobar">
-	<div id="whoisloggedin"><?php echo $fake_date_warning.$_SESSION['account']->whoAmIHtml() ?></div>
-	<div class="logographic"><a href="<?php echo UrlCallRegistry::formatViewUrl('itemlistview','struct',array('resetview' => '1'));?>"><img title="<?php echo $config->application_title;?>" class="logoheadimage" src="<?php echo $baseurl.$config->logo_file;?>"></a></div>
-	<div id="headmessages"></div>
-	<div id="helpLink"><?php echo DBTableRowHelp::helpLinkIfPresent(isset($this->layout()->getView()->navigator) ? $this->layout()->getView()->navigator : null); ?></div>
+    <div id="whoisloggedin"><?php echo $fake_date_warning.$_SESSION['account']->whoAmIHtml() ?></div>
+    <div class="logographic"><a href="<?php echo UrlCallRegistry::formatViewUrl('itemlistview', 'struct', array('resetview' => '1'));?>"><img title="<?php echo $config->application_title;?>" class="logoheadimage" src="<?php echo $baseurl.$config->logo_file;?>"></a></div>
+    <div id="headmessages"></div>
+    <div id="helpLink"><?php echo DBTableRowHelp::helpLinkIfPresent(isset($this->layout()->getView()->navigator) ? $this->layout()->getView()->navigator : null); ?></div>
 </div>
 
 <div>
 <a name="TopOfPageAnchor"></a>
 <div id="navlist">
-<?php echo implode("",fetchMenuLinks()) ?>
+<?php echo implode("", fetchMenuLinks()) ?>
 </div>
 </div>
 

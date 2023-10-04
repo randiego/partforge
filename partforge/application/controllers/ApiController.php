@@ -86,7 +86,7 @@ class ApiController extends Zend_Controller_Action
         $output = array('data' => array(), 'errormessages' => $errormsg);
         $simple_out = array();
         if (count($errormsg)==0) {
-            $ReportData = new ReportDataItemListView(true, false, false, false, $this->params['typeobject_id']);
+            $ReportData = new ReportDataItemListView(true, false, false, false, array('view_category' => $this->params['typeobject_id']));
 
             $dummyparms = array();
             // process records to fill out extra fields and do normal format conversion

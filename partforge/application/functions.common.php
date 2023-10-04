@@ -160,6 +160,13 @@ class UrlCallRegistry {
         return $this;
     }
 
+    public function addPropagatingParamName($name)
+    {
+        if (!in_array($name, $this->_propagating_param_names)) {
+            $this->_propagating_param_names[] = $name;
+        }
+    }
+
     public function getPropagatingParamValues()
     {
         $params = $this->_controller_action->params;

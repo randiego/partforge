@@ -54,7 +54,7 @@ class StructController extends DBControllerActionAbstract
     public function partAndProcListViewHandler($is_user_procedure)
     {
         $this->view->is_user_procedure = $is_user_procedure;
-        $ReportData = new ReportDataItemListView(false, false, $is_user_procedure, !empty($this->params['search_string']), null, null, true);
+        $ReportData = new ReportDataItemListView(false, false, $is_user_procedure, !empty($this->params['search_string']), array(), true);
         $PaginatedReportPage = new PaginatedReportPage($this->params, $ReportData, $this->navigator);
 
         if (isset($this->params['form'])) {
