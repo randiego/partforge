@@ -1,5 +1,6 @@
 var typeDescriptions = []; // this is an array of array pairs (typeobject_id, description) for parts.
 var typeDescByTypeObject = {};
+var typeObjectsAndSerNums = {};
 var dellink = '<IMG style="vertical-align:middle;" src="'+baseUrl+'/images/deleteicon.png" width="16" height="16" border="0" alt="Delete this table">';
 var typeselobj = null;  // need global reference to this.
 
@@ -239,10 +240,92 @@ function activateDashboardEditButton(element, editUrl) {
 	}
 }
 
+function renderSerNumEditButton(editUrl, link, idx) {
+	var h = '';
+	var typeobject_id = $('input[name="tabletypeobject['+idx+']"]').val();
+	var autoadd_new_items = $('input[name="tableautoadd['+idx+']"]').val();
+	var sel_sernums = $('input[name="tablesernums['+idx+']"]').val().split(',');
+	if (sel_sernums.length==1 && ("" in sel_sernums)) {
+		sel_sernums = {}
+	}
+	h += '<div class="db-label">Auto-add</div>';
+	var ischecked = autoadd_new_items == 1 ? 'checked="checked" ' : '';
+	h += '<div style="margin-top:5px;"><label><input type="checkbox" id="autoadd_new_items_chk" value="1" '+ischecked+' />When a new serial number is created, automatically add it to this list.</label></div>';
+	h += '<div class="db-label">Serial Number to Include in Table<br /><span class="paren">(<a id="uncheckall">uncheck all</a> for no filtering)</span></div>';
+	h += '<div id="tablelistdiv" style="">';
+	for (var ii in typeObjectsAndSerNums[typeobject_id]) {
+		var sernum = typeObjectsAndSerNums[typeobject_id][ii][1];
+		var ioid = typeObjectsAndSerNums[typeobject_id][ii][0];
+		var style = ' style="font-weight: normal; color: #0073EA; font-size: 12px;"';
+		h += '<div><label><input type="checkbox" name="included_sernums" value="'+ioid+'" '+(sel_sernums.includes(ioid) ? 'checked="checked"' : '')+' /><span'+style+'>'+sernum+'</span></label></div>';
+	}
+	h += '</div>';
+
+	$('#linkToDashboardSerNumContainer').html(h);
+	var contentdiv = $('#linkToDashboardSerNumContainer');
+	$('#uncheckall').on('click', function(event){
+		$('#tablelistdiv').find('input[type=checkbox]').prop('checked', false);
+		return false;
+	});
+	var buttonslist = {};
+	buttonslist["OK"] = function() {
+		var filledUrl = editUrl;
+		filledUrl = filledUrl.replace('_DASHBOARDTABLEID_',idx);
+		var ios = [];
+		$('#tablelistdiv').find('input[type=checkbox]:checked').each(function () {
+			ios.push($(this).val());
+		});
+		filledUrl = filledUrl.replace('_ITEMOBJIDS_', ios.join(','));
+		filledUrl = filledUrl.replace('_AUTOADD_', $('#autoadd_new_items_chk:checked').val() && (ios.length > 0) ? '1' : '0');
+		window.location.href = filledUrl;
+		$( this ).dialog( "close" );
+	};
+	buttonslist["Close"] = function(event,ui) {
+		$(this).dialog('destroy');
+	};
+	dialogdiv = contentdiv.dialog({
+		position: { my: "left top", at: "right bottom", of: link },
+		width: 300,
+		height: 500,
+		buttons: buttonslist,
+		close: function(event,ui) {
+			$(this).dialog('destroy');
+		}
+	});
+	return false; // prevents the default link
+}
+
+
+function activateDashboardSerNumEditButton(element, editUrl) {
+	if ($(element).length) {
+		// create the popup link-to-page dialog
+		$('<div />').attr('id','linkToDashboardSerNumContainer').attr('title',"Select Serial Numbers").attr('class',"dashdialog").hide().appendTo('body');
+		// now connect the on click handler that will override the normal link
+		$(element).on("click",function(link) {
+			var idx = $(this).closest('.dashheaddiv')[0].id.split('_')[1]; // looks to parents for first one with class.
+			var typeobject_id = $('input[name="tabletypeobject['+idx+']"]').val();
+			if (!(typeobject_id in typeObjectsAndSerNums)) {
+				$.getJSON(baseUrl + '/api/getserialnumbers',
+						{"typeobject_id" : typeobject_id, "json_array" : "pairs", "sort_order" : "created_desc"},
+						function(data) {
+							typeObjectsAndSerNums[typeobject_id] = data;
+							renderSerNumEditButton(editUrl, link, idx);
+						});
+			} else {
+				renderSerNumEditButton(editUrl, link, idx);
+			}
+			return false;
+		});
+	}
+}
+
+
+
 $(document).ready(function() {
 	activateLinkToPageButton('#linkToPageButton', lookupUrl, linkToPageUrl, layoutTitle, canSendLink);
 	activeTreeViewLinks();
 	activateDashboardTableEditButton('.dashtableeditbtn', editdashboardtableUrl);
+	activateDashboardSerNumEditButton('.dashsernumeditbtn', editsernumsUrl);
 	activateDashboardEditButton('#editDashboardButton', editdashboardUrl);
 	$('select.dashboardselector').comboboxjumper({hidecurrentvaluewhenchanging: 1});
 	// for all the overfull procedure columns, scroll to the bottom so we see the latest ones.

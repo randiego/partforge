@@ -874,10 +874,11 @@ a.bd-linkbtn:active {
 	text-decoration: none;
 }
 
-a.dashtableeditbtn {
+a.dashtableeditbtn, a.dashsernumeditbtn {
 	padding: 2px 2px 1.5px 2px;
 	font-weight: normal;
 	vertical-align: 3%;
+	margin-right: 4px;
 }
 
 .ui-menu {

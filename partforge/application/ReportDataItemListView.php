@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2023 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -38,6 +38,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
     private $_has_aliases = false;
     private $_show_used_on = false;
     public $_last_changed_days = '';
+    private $_include_only_itemobject_ids = null;
 
     /**
      * If $output_all_versions is true, then there is 1 output row per itemversion_id.  If false, then 1 output row per itemobject_id.
@@ -47,7 +48,6 @@ class ReportDataItemListView extends ReportDataWithCategory {
      */
     public function __construct($initialize_for_export = false, $output_all_versions = false, $is_user_procedure = false, $showing_search_results = false, $overrides = array(), $display_only = false)
     {
-
         $this->_showing_search_results = $showing_search_results;
         if ($output_all_versions) {
             parent::__construct('itemversion');
@@ -212,6 +212,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
 
         if (!$initialize_for_export && !$this->_showing_search_results) {
             $this->_last_changed_days =  (isset($overrides['lastChangedDays']) ? $overrides['lastChangedDays'] : $_SESSION['account']->getPreference('lastChangedDays'));
+            $this->_include_only_itemobject_ids = isset($overrides['include_only_itemobject_ids']) ? $overrides['include_only_itemobject_ids'] : null;
         }
 
         $this->search_box_label = $this->is_user_procedure ? 'proc. number, SN, or locator' : 'part number, SN, or locator';
@@ -312,6 +313,10 @@ class ReportDataItemListView extends ReportDataWithCategory {
                                 IF (itemobject.cached_last_ref_date IS NULL OR itemobject.cached_last_ref_date <= {$iv_alias}.effective_date, {$iv_alias}.effective_date, itemobject.cached_last_ref_date ),
                                 IF (itemobject.cached_last_ref_date IS NULL OR itemobject.cached_last_ref_date <= itemobject.cached_last_comment_date, itemobject.cached_last_comment_date, itemobject.cached_last_ref_date) )
                                     between '{$from_date}' and '{$to_date}')";
+        }
+        // handle when we show only specific serial numbers.
+        if (!is_null($this->_include_only_itemobject_ids) && ($this->_include_only_itemobject_ids !=="")) {
+            $and_where .= " and itemobject.itemobject_id in ($this->_include_only_itemobject_ids)";
         }
 
 

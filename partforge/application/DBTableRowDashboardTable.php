@@ -109,4 +109,23 @@ class DBTableRowDashboardTable extends DBTableRow {
         return array_combine($targkeys, $targvals);
     }
 
+    public static function handleAddNewItem($itemobject_id, $itemversion_id)
+    {
+        $records = DbSchema::getInstance()->getRecords('dashboardtable_id', "SELECT dashboardtable.dashboardtable_id, dashboardtable.include_only_itemobject_ids
+            FROM dashboardtable
+            WHERE dashboardtable.typeobject_id in (
+                SELECT typeversion.typeobject_id FROM itemversion
+                    LEFT JOIN typeversion ON typeversion.typeversion_id=itemversion.typeversion_id
+                    WHERE itemversion.itemversion_id='{$itemversion_id}')
+                and dashboardtable.autoadd_new_items=1");
+        foreach ($records as $dashboardtable_id => $record) {
+            $arr = explode(',', $record['include_only_itemobject_ids']);
+            if (!in_array($itemobject_id, $arr)) {
+                $arr[] = $itemobject_id;
+                $out = implode(',', $arr);
+                DbSchema::getInstance()->mysqlQuery("UPDATE dashboardtable SET include_only_itemobject_ids='{$out}' WHERE dashboardtable_id='{$dashboardtable_id}'");
+            }
+        }
+    }
+
 }

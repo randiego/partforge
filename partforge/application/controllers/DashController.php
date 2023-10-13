@@ -84,6 +84,14 @@ class DashController extends DBControllerActionAbstract
                         $DashBoardTable->save();
                     }
                     $this->navigator->jumpToView();
+                case isset($this->params['btnEditSerNums']):
+                    $DashBoardTable = new DBTableRowDashboardTable();
+                    if ($DashBoardTable->getRecordById($this->params['dashboardTableId'])) {
+                        $DashBoardTable->include_only_itemobject_ids = $this->params['include_only_itemobject_ids'];
+                        $DashBoardTable->autoadd_new_items = $this->params['autoadd_new_items'];
+                        $DashBoardTable->save();
+                    }
+                    $this->navigator->jumpToView();
                 case isset($this->params['btnEditDashboard']):
                     $Dashboard->title = $this->params['title'];
                     $Dashboard->is_public = $this->params['is_public'];

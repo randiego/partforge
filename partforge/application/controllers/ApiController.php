@@ -60,14 +60,13 @@ class ApiController extends Zend_Controller_Action
 
     /**
      * Gets a list of all the current serial numbers for the specified typeobject_id.  For parts, it returns
-     * a serial number with itemobject_id as the key.  If procedure, it returns an object of associated serial numbers.
-     * identified by name.
+     * a serial number with itemobject_id as the key.
      */
     public function getserialnumbersAction()
     {
-
-        $json_array = isset($this->params['json_array']) && ($this->params['json_array']);
-
+        $sort_schemes = ['sn_asc' => 'itemversion.item_serial_number asc', 'sn_desc' => 'itemversion.item_serial_number desc', 'created_desc' => 'itemobject.cached_first_ver_date desc, itemversion.item_serial_number desc'];
+        $json_array = isset($this->params['json_array']) && ($this->params['json_array']) ? $this->params['json_array'] : false;
+        $sort_order = isset($this->params['sort_order']) && in_array($this->params['sort_order'], array_keys($sort_schemes)) ? $sort_schemes[ $this->params['sort_order'] ]: $sort_schemes['sn_asc'];
         $errormsg = array();
         if (!isset($this->params['typeobject_id']) || !is_numeric($this->params['typeobject_id'])) {
             $errormsg[] = 'You must include a typeobject_id parameter with your request.';
@@ -82,27 +81,30 @@ class ApiController extends Zend_Controller_Action
             }
         }
 
-
-        $output = array('data' => array(), 'errormessages' => $errormsg);
-        $simple_out = array();
+        $output = ['data' => [], 'errormessages' => $errormsg ];
+        $simple_out = [];
+        $out_pairs = [];
         if (count($errormsg)==0) {
-            $ReportData = new ReportDataItemListView(true, false, false, false, array('view_category' => $this->params['typeobject_id']));
-
-            $dummyparms = array();
-            // process records to fill out extra fields and do normal format conversion
-            $records_out = $ReportData->get_export_detail_records($dummyparms, '', '');
+            $records = DbSchema::getInstance()->getRecords('itemobject_id', "SELECT itemversion.itemobject_id, itemversion.item_serial_number FROM itemobject
+                            LEFT JOIN itemversion ON itemobject.cached_current_itemversion_id=itemversion.itemversion_id
+                            LEFT JOIN typeversion ON typeversion.typeversion_id=itemversion.typeversion_id
+                            WHERE typeversion.typeobject_id='{$TypeVersion->typeobject_id}'
+                            ORDER BY {$sort_order}");
             $data = array();
-            foreach ($records_out as $record) {
+            foreach ($records as $record) {
                 $data[$record['itemobject_id']] = $record['item_serial_number'];
                 $simple_out[] = $record['item_serial_number'];
+                $out_pairs[] = [$record['itemobject_id'], $record['item_serial_number']];
             }
             $output['data'] = $data;
         }
 
-        if ($json_array) {
-            $this->returnOutput($simple_out);
-        } else {
+        if (!$json_array) {
             $this->returnOutput($output);
+        } elseif ($json_array=="pairs") {
+            $this->returnOutput($out_pairs);
+        } else {
+            $this->returnOutput($simple_out);
         }
     }
 

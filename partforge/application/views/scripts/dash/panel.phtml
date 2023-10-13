@@ -5,11 +5,12 @@ var canSendLink = <?php echo in_array($_SESSION['account'] ->getRole(), array('G
 
 var editdashboardtableUrl = "<?php echo $this->navigator->getCurrentHandlerUrl('btnEditTable', null, null, array('dashboardTableId' => '_DASHBOARDTABLEID_', 'tablecolor' => '_COLOR_', 'tabletitle' => '_TITLE_', 'tablefields' => '_TABLEFIELDS_'));?>";
 var editdashboardUrl = "<?php echo $this->navigator->getCurrentHandlerUrl('btnEditDashboard', null, null, array('title' => '_TITLE_', 'tableids' => '_TABLEIDS_', 'is_public' => '_ISPUBLIC_'));?>";
+var editsernumsUrl = "<?php echo $this->navigator->getCurrentHandlerUrl('btnEditSerNums', null, null, array('dashboardTableId' => '_DASHBOARDTABLEID_', 'include_only_itemobject_ids' => '_ITEMOBJIDS_', 'autoadd_new_items' => '_AUTOADD_'));?>";
 // var autoStartEditing = <?php echo (($this->dashboard->list_of_table_ids == "") && !$this->readonly) ? 'true' : 'false';?>;
 var tabledata = {};
 </script>
 <?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
-<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/dash/panel.js?v=47" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/dash/panel.js?v=53" type="TEXT/JAVASCRIPT"></script>
 <?php
 
 $this->layout()->title = 'Dashboard: '.$this->dashboard->title;
@@ -68,6 +69,7 @@ if ($this->dashboard->list_of_table_ids != "") {
         if ($DashboardTable->getRecordById($dashidx)) {
             $report_params = $DashboardTable->getArray();
             $report_params['view_category'] = $DashboardTable->typeobject_id;
+            $report_params['include_only_itemobject_ids'] = $DashboardTable->include_only_itemobject_ids;
             $ReportData = new ReportDataItemListView(false, false, false, !empty($this->view->params['search_string']), $report_params, true);
             $typeobject_id = $DashboardTable->typeobject_id;
             $ReportData->title = $ReportData->category_array[$typeobject_id];
@@ -89,11 +91,15 @@ if ($this->dashboard->list_of_table_ids != "") {
                 $pagination_line_html .= ' '.format_select_tag(array('0' => 'Featured Fields Only', 'allnew' => 'All Fields', '1' => 'All Fields (including old versions)'), "chkShowAllFields[$dashidx]", array("chkShowAllFields[$dashidx]" => $DashboardTable->chkShowAllFields), "document.theform.btnOnChangeTableFilter.value='{$dashidx}';document.theform.submit();return false;", false, '-- select one --', '', 'bd-button-colors').' ';
                 $pagination_line_html .= ' '.format_select_tag($last_changed_days_array, "lastChangedDays[$dashidx]", array("lastChangedDays[$dashidx]" => $DashboardTable->lastChangedDays), "document.theform.btnOnChangeTableFilter.value='{$dashidx}';document.theform.submit();return false;", false, '-- select one --', '', 'bd-button-colors').' ';
                 $pagination_line_html .= ' '.format_select_tag($max_rows_array, "rowLimit[$dashidx]", array("rowLimit[$dashidx]" => $DashboardTable->rowLimit), "document.theform.btnOnChangeTableFilter.value='{$dashidx}';document.theform.submit();return false;", false, '-- select one --', '', 'bd-button-colors').' ';
+                $pagination_line_html .= '<span>'.linkify('#', 'Select SNs', "Select which serial numbers to include.", 'bd-linkbtn dashsernumeditbtn', '', '', 'SerNumBtn['.$dashidx.']').'</span>';
                 $pagination_line_html .= '<span>'.linkify('#', 'Format Table', "Change settings for this table.", 'bd-linkbtn dashtableeditbtn', '', '', 'TableEditBtn['.$dashidx.']').'</span>';
             }
             $pagination_line_html .= '<input type="hidden" name="tabletitle['.$dashidx.']" value="'.$DashboardTable->title.'" />';
             $pagination_line_html .= '<input type="hidden" name="tablecolor['.$dashidx.']" value="'.$DashboardTable->color.'" />';
             $pagination_line_html .= '<input type="hidden" name="tablefields['.$dashidx.']" value="'.$DashboardTable->include_fields.'" />';
+            $pagination_line_html .= '<input type="hidden" name="tablesernums['.$dashidx.']" value="'.$DashboardTable->include_only_itemobject_ids.'" />';
+            $pagination_line_html .= '<input type="hidden" name="tableautoadd['.$dashidx.']" value="'.$DashboardTable->autoadd_new_items.'" />';
+            $pagination_line_html .= '<input type="hidden" name="tabletypeobject['.$dashidx.']" value="'.$DashboardTable->typeobject_id.'" />';
             $sorted_base_fields = $DashboardTable->sortByIncludedFields($ReportData->fields);
             $html .= '<script type="text/javascript">
             tabledata['.$dashidx.'] = {"names" : '.json_encode(array_keys($sorted_base_fields)).', "data" : '.json_encode($sorted_base_fields).'};

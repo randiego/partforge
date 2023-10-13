@@ -557,7 +557,14 @@ class UtilsController extends DBControllerActionAbstract
                         setGlobal('databaseversion', $databaseversion);
                     }
 
-
+                    if ($this->shouldUpgradeFrom('21')) {
+                        $msgs[] = 'Upgrading to version 22: Add Dashboard Ser Num Selector.';
+                        DbSchema::getInstance()->mysqlQuery("ALTER TABLE dashboardtable ADD COLUMN include_only_itemobject_ids longtext AFTER typeobject_id");
+                        DbSchema::getInstance()->mysqlQuery("ALTER TABLE dashboardtable ADD COLUMN autoadd_new_items INT DEFAULT 0 AFTER include_only_itemobject_ids");
+                        DbSchema::getInstance()->mysqlQuery("ALTER TABLE dashboardtable ADD INDEX(autoadd_new_items)");
+                        $databaseversion = '22';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
 
             }
         }

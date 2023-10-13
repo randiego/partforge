@@ -160,6 +160,7 @@ class DBTableRowChangeLog extends DBTableRow {
     static public function addedItemObject($itemobject_id, $itemversion_id)
     {
         self::saveItemEntry($itemobject_id, $itemversion_id, 'iv', 'AIO');
+        DBTableRowDashboardTable::handleAddNewItem($itemobject_id, $itemversion_id);
     }
 
     static public function changedItemVersion($itemobject_id, $itemversion_id)
