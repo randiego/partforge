@@ -959,7 +959,8 @@ class StructController extends DBControllerActionAbstract
                         }
                     }
                     $TypeVersion->versionstatus = 'A';
-                    $TypeVersion->save(array('versionstatus'));
+                    $TypeVersion->effective_date = time_to_mysqldatetime(script_time());
+                    $TypeVersion->save(array('versionstatus', 'effective_date'));
                     $this->navigator->jumpToView(null, null, array('typeversion_id' => $this->params['typeversion_id']));
                 case isset($this->params['btnPreview']):
                     $return_url = $this->navigator->getCurrentHandlerUrl('', null, null, array('typeversion_id' => $this->params['typeversion_id']));
