@@ -39,6 +39,10 @@ class ReportDataItemListView extends ReportDataWithCategory {
     private $_show_used_on = false;
     public $_last_changed_days = '';
     private $_include_only_itemobject_ids = null;
+    private $_dashboardtable_id = null;
+    private $_extracolumnnotetables = array();
+    private $_readonly = false;
+    private $_is_public_dashboard = false;
 
     /**
      * If $output_all_versions is true, then there is 1 output row per itemversion_id.  If false, then 1 output row per itemobject_id.
@@ -58,6 +62,8 @@ class ReportDataItemListView extends ReportDataWithCategory {
         $this->is_user_procedure = $is_user_procedure;
         $this->output_all_versions = $output_all_versions;
         $this->_override_itemversion_id = isset($overrides['itemversion_id']) ? $overrides['itemversion_id'] : null;
+        $this->_is_public_dashboard = isset($overrides['is_public']) ? $overrides['is_public'] : false;
+        $this->_readonly = isset($overrides['readonly']) ? $overrides['readonly'] : false;
         $this->_recent_row_age = Zend_Registry::get('config')->recent_row_age;
         $this->_show_used_on = !$is_user_procedure && !$this->output_all_versions;
 
@@ -121,6 +127,14 @@ class ReportDataItemListView extends ReportDataWithCategory {
             $this->fields['iv__item_serial_number'] = array('display'=> 'Item Serial Number', 'key_asc'=>'iv__item_serial_number', 'key_desc'=>'iv__item_serial_number desc');
         }
 
+        if (isset($overrides['dashboardtable_id'])) {
+            $this->_dashboardtable_id = $overrides['dashboardtable_id'];
+            $person = !isset($overrides['dashboardtableuser_id']) || ($overrides['dashboardtableuser_id'] == $_SESSION['account']->user_id)
+                    ? ($this->_is_public_dashboard ? 'My Notes (public)' : 'My Notes (private)')
+                    : DBTableRowUser::getFullName($overrides['dashboardtableuser_id']).' Notes';
+            $this->fields['__column_notes__'] = array('display' => $person);
+        }
+
         if ($this->_show_used_on) {
             $this->fields['used_on']   = array('display'=> 'Used On');
         }
@@ -162,7 +176,6 @@ class ReportDataItemListView extends ReportDataWithCategory {
             $this->fields['iv__disposition']    = array('display'=> 'Disposition',      'key_asc'=>'iv__disposition', 'key_desc'=>'iv__disposition desc');
         }
 
-
         // dates
         if ($initialize_for_export) {
             $this->fields['iv__effective_date']     = array('display'=>($this->is_user_procedure ? 'Completed on Date' : 'Effective Date'),     'key_asc'=>'iv__effective_date', 'key_desc'=>'iv__effective_date desc', 'start_key' => 'key_desc');
@@ -181,6 +194,13 @@ class ReportDataItemListView extends ReportDataWithCategory {
         if ($show_change_date_column) {
             $this->fields['last_change_date']   = array('display'=>($this->is_user_procedure ? 'Last Change' : 'Last Change'),      'key_asc'=>'last_change_date', 'key_desc'=>'last_change_date desc', 'start_key' => 'key_desc');
             $this->fields['last_changed_by']    = array('display'=>($this->is_user_procedure ? 'Changed By' : 'Changed By'),      'key_asc'=>'last_changed_by', 'key_desc'=>'last_changed_by desc');
+        }
+
+        if (isset($overrides['dashboardtable_id'])) {
+            $this->_extracolumnnotetables = DBTableRowDashboardColumnNote::getDashboardTableIdsOfTypeObjectId($this->view_category, $this->_dashboardtable_id);
+            foreach ($this->_extracolumnnotetables as $dashboardtable_id => $dashboardcol) {
+                $this->fields['column_notes_'.$dashboardtable_id] = array('display' => $dashboardcol['display']);
+            }
         }
 
         if ($initialize_for_export) {
@@ -216,6 +236,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
         }
 
         $this->search_box_label = $this->is_user_procedure ? 'proc. number, SN, or locator' : 'part number, SN, or locator';
+
     }
 
     public function getViewCategory()
@@ -497,11 +518,11 @@ class ReportDataItemListView extends ReportDataWithCategory {
              * for the current itemversion, stich together serial numbers.
              */
             $DBTableRowQuery->addSelectFields("
-						(SELECT GROUP_CONCAT(iv_them.item_serial_number)
-						FROM itemcomponent
-						LEFT JOIN itemobject AS io_them ON io_them.itemobject_id=itemcomponent.has_an_itemobject_id
-						LEFT JOIN itemversion AS iv_them ON iv_them.itemversion_id=io_them.cached_current_itemversion_id
-						WHERE itemcomponent.belongs_to_itemversion_id=itemversion.itemversion_id) as component_serial_numbers"
+                    (SELECT GROUP_CONCAT(iv_them.item_serial_number)
+                    FROM itemcomponent
+                    LEFT JOIN itemobject AS io_them ON io_them.itemobject_id=itemcomponent.has_an_itemobject_id
+                    LEFT JOIN itemversion AS iv_them ON iv_them.itemversion_id=io_them.cached_current_itemversion_id
+                    WHERE itemcomponent.belongs_to_itemversion_id=itemversion.itemversion_id) as component_serial_numbers"
             );
             $this->addExtraJoins($DBTableRowQuery);
         } else {
@@ -514,12 +535,28 @@ class ReportDataItemListView extends ReportDataWithCategory {
              * concats will do anything here.
              */
             $DBTableRowQuery->addSelectFields("
-						(SELECT GROUP_CONCAT(iv_them.item_serial_number)
-						FROM itemcomponent
-						LEFT JOIN itemobject AS io_them ON io_them.itemobject_id=itemcomponent.has_an_itemobject_id
-						LEFT JOIN itemversion AS iv_them ON iv_them.itemversion_id=io_them.cached_current_itemversion_id
-						WHERE itemcomponent.belongs_to_itemversion_id=itemobject.cached_current_itemversion_id) as component_serial_numbers"
+                (SELECT GROUP_CONCAT(iv_them.item_serial_number)
+                FROM itemcomponent
+                LEFT JOIN itemobject AS io_them ON io_them.itemobject_id=itemcomponent.has_an_itemobject_id
+                LEFT JOIN itemversion AS iv_them ON iv_them.itemversion_id=io_them.cached_current_itemversion_id
+                WHERE itemcomponent.belongs_to_itemversion_id=itemobject.cached_current_itemversion_id) as component_serial_numbers"
             );
+
+            if (is_numeric($this->_dashboardtable_id)) {
+                // group concat in case we ended up with more than one record for some reason.
+                $DBTableRowQuery->addSelectFields("
+                    (SELECT GROUP_CONCAT(dashboardcolumnnote.value)
+                    FROM dashboardcolumnnote
+                    WHERE (dashboardcolumnnote.itemobject_id=itemobject.itemobject_id) and (dashboardcolumnnote.dashboardtable_id='{$this->_dashboardtable_id}')) as __column_notes__"
+                );
+                foreach ($this->_extracolumnnotetables as $dashboardtable_id => $dashboardcol) {
+                    $DBTableRowQuery->addSelectFields("
+                    (SELECT GROUP_CONCAT(dashboardcolumnnote.value)
+                    FROM dashboardcolumnnote
+                    WHERE (dashboardcolumnnote.itemobject_id=itemobject.itemobject_id) and (dashboardcolumnnote.dashboardtable_id='{$dashboardtable_id}')) as column_notes_".$dashboardtable_id
+                    );
+                }
+            }
 
             if ($this->_show_proc_matrix) {
                 // we will only see the latest version of the procedure
@@ -701,6 +738,25 @@ class ReportDataItemListView extends ReportDataWithCategory {
             $detail_out['tr_class'] .= ' recently_changed_row';
             $detail_out['td_class']['last_change_date'] = 'em';
         }
+
+        if (is_numeric($this->_dashboardtable_id)) {
+            $edit_btn = !$this->_readonly ? '<div class="bd-edit"><a href="#" class="columnnoteeditbtn minibutton2">Edit</a></div>' : '';
+            $fname = '__column_notes__';
+            $detail_out[$fname] = '<div class="dash-column-container" data-itemobject_id="'.$record['itemobject_id'].'" data-dashboard_id="'.$this->_dashboardtable_id.'">'.$edit_btn.'<div class="dash-column-content">'.text_to_unwrappedhtml($record[$fname]).'</div></div>';
+            if ($record[$fname]) {
+                $detail_out['td_class'][$fname] = 'notebkg';
+            }
+
+            foreach ($this->_extracolumnnotetables as $dashboardtable_id => $dashboardcol) {
+                $edit_btn = '';
+                $fname = 'column_notes_'.$dashboardtable_id;
+                $detail_out[$fname] = '<div class="dash-column-container" data-itemobject_id="'.$record['itemobject_id'].'" data-dashboard_id="'.$dashboardtable_id.'">'.$edit_btn.'<div class="dash-column-content">'.text_to_unwrappedhtml($record[$fname]).'</div></div>';
+                if ($record[$fname]) {
+                    $detail_out['td_class'][$fname] = 'notebkg';
+                }
+            }
+        }
+
 
     }
 

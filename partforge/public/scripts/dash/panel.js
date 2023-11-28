@@ -38,6 +38,7 @@ function selectHtml2(selectTagId, classId, keyValueArray, component_value) {
 	return html;
 }
 
+var dashtabledialogdiv = null;  // this will force only one a time
 /**
  * Create and activate the Dashboard Table editor dialog (popup) for editing a single table.
  * @param {jquery selector object} element - button element that pops this up
@@ -46,7 +47,9 @@ function selectHtml2(selectTagId, classId, keyValueArray, component_value) {
 function activateDashboardTableEditButton(element, editUrl) {
 	if ($(element).length) {
 		// create the popup link-to-page dialog
-		$('<div />').attr('id','linkToPageDialogContainer').attr('title',"Edit Dashboard Table").attr('class',"dashdialog").hide().appendTo('body');
+		if (dashtabledialogdiv===null) {
+			dashtabledialogdiv = $('<div />').attr('id','linkToDashboardTableEditDialogContainer').attr('title',"Edit Dashboard Table").attr('class',"dashdialog").hide().appendTo('body');
+		}
 
 		// now connect the on click handler that will override the normal link
 		$(element).on("click",function(link) {
@@ -65,19 +68,21 @@ function activateDashboardTableEditButton(element, editUrl) {
 			for (var i = 0; i < tabledata[idx]['names'].length; i++) {
 				var fn = tabledata[idx]['names'][i];
 				var caption = tabledata[idx]['data'][fn]['display'];				// need to check for fn.contains("ref_procedure_typeobject_id") to know if procedure
-				var style = ' style="font-weight: normal; color: #0073EA; font-size: 12px;"';
+				var style = ' class="dictionary_field"';
 				if (fn.includes("ref_procedure_typeobject_id")) {
-					style = ' style="font-weight: normal; font-size: 12px;"';
+					style = ' class="proc_field"';
+				} else if (fn.includes("column_notes_")) {
+						style = ' class="note_field"';
 				}
 				h += '<div><label><input type="checkbox" name="included_fields" value="'+fn+'" '+(fieldnames.includes(fn) ? 'checked="checked"' : '')+' /><span'+style+'>'+caption+'</span></label></div>';
 			}
 			h += '</div>'
 
 
-			$('#linkToPageDialogContainer').html(h);
+			$('#linkToDashboardTableEditDialogContainer').html(h);
 			initColorPicker();
 			$('#columnlistdiv').sortable();
-			var contentdiv = $('#linkToPageDialogContainer');
+			var contentdiv = $('#linkToDashboardTableEditDialogContainer');
 			var buttonslist = {};
 			buttonslist["OK"] = function() {
 				var filledUrl = editUrl;
@@ -120,7 +125,7 @@ function renderDashboardEditButton(editUrl, link) {
 	h += '<div style="margin-top:5px;"><input style="width:100%;" type="text" value="'+$('input[name="dashboardtitle"]').val()+'" id="dashboardtitle_id"></div>';
 	h += '<div class="db-label">Visibility</div>';
 	var ischecked = $('input[name="dashboardispublic"]').val() == 1 ? 'checked="checked" ' : '';
-	h += '<div style="margin-top:5px;"><label><input type="checkbox" id="publicdashboardchk" value="1" '+ischecked+' />Other users can view this Dashboard</label></div>';
+	h += '<div style="margin-top:5px;"><label><input type="checkbox" id="publicdashboardchk" value="1" '+ischecked+' />Public (others can view this dashboard)</label></div>';
 
 	h += '<div class="db-label">Tables<br /><span class="paren"> (drag to change order)</span></div>';
 	h += '<div id="tablelistdiv">';
@@ -210,6 +215,7 @@ function renderDashboardEditButton(editUrl, link) {
 	return false; // prevents the default link
 }
 
+var dashdialogdiv = null;  // this will force only one a time
 /**
  * We call this instead of renderDashboardEditButton() directly because we want we want to cache the fetched list of
  * type object descriptions.
@@ -219,7 +225,9 @@ function renderDashboardEditButton(editUrl, link) {
 function activateDashboardEditButton(element, editUrl) {
 	if ($(element).length) {
 		// create the popup link-to-page dialog
-		$('<div />').attr('id','linkToDashboardOrgContainer').attr('title',"Organize Dashboard").attr('class',"dashdialog").hide().appendTo('body');
+		if (dashdialogdiv===null) {
+			dashdialogdiv = $('<div />').attr('id','linkToDashboardOrgContainer').attr('title',"Organize Dashboard").attr('class',"dashdialog").hide().appendTo('body');
+		}
 		// now connect the on click handler that will override the normal link
 		$(element).on("click",function(link) {
 			if (typeDescriptions.length == 0) {
@@ -295,11 +303,14 @@ function renderSerNumEditButton(editUrl, link, idx) {
 	return false; // prevents the default link
 }
 
-
+var sernumdialogdiv = null;
 function activateDashboardSerNumEditButton(element, editUrl) {
 	if ($(element).length) {
 		// create the popup link-to-page dialog
-		$('<div />').attr('id','linkToDashboardSerNumContainer').attr('title',"Select Serial Numbers").attr('class',"dashdialog").hide().appendTo('body');
+		// only want to create this div once
+		if (sernumdialogdiv===null) {
+			sernumdialogdiv = $('<div />').attr('id','linkToDashboardSerNumContainer').attr('title',"Select Serial Numbers").attr('class',"dashdialog").hide().appendTo('body');
+		}
 		// now connect the on click handler that will override the normal link
 		$(element).on("click",function(link) {
 			var idx = $(this).closest('.dashheaddiv')[0].id.split('_')[1]; // looks to parents for first one with class.
@@ -319,7 +330,97 @@ function activateDashboardSerNumEditButton(element, editUrl) {
 	}
 }
 
+// keep pinging the server when I'm editing a note
+var editing_keep_alive = false;
+function startKeepAliveProcess() {
+	if (editing_keep_alive) {
+		$.getJSON(baseUrl + '/struct/keepalive',
+			{},
+			function(data) {
+				var not_valid_user = typeof data['is_valid_user'] == 'undefined';
+			});
+		setTimeout('startKeepAliveProcess()', sessionTimeoutInterval);
+	}
+}
 
+function renderColumnNoteEditButton(editUrl, link, data) {
+	var comment_id = data['dashboardcolumnnote_id'];
+	var comment_value = data['value'];
+	var dashboardtable_id = data['dashboardtable_id'];
+	var itemobject_id = data['itemobject_id'];
+	var h = '';
+	var id_name = 'comment_id_'+comment_id;
+	h += '<textarea class="columnnotetext" id="'+id_name+'">'+comment_value+'</textarea>';
+	$('#linkToCommentNotesContainer').html(h);
+	var contentdiv = $('#linkToCommentNotesContainer');
+	var targetdiv = $("div.dash-column-container[data-itemobject_id='"+itemobject_id+"'][data-dashboard_id='"+dashboardtable_id+"'] .dash-column-content");
+	var buttonslist = {};
+	buttonslist['OK'] = function() {
+		$.getJSON(baseUrl + '/dash/updatecolumnnote',
+			{'dashboardTableId' : dashboardtable_id, 'itemobjectId' : itemobject_id, 'commentValue' : $('#comment_id_'+comment_id).val()},
+			function(commentdata) {
+				targetdiv.html(commentdata['html_value']);
+				if (commentdata['html_value'].length > 0) {
+					targetdiv.closest('td').addClass('notebkg');
+				} else {
+					targetdiv.closest('td').removeClass('notebkg');
+				}
+
+			});
+		$(this).dialog('destroy');
+		editing_keep_alive = false;
+	}
+	buttonslist["Close"] = function(event,ui) {
+		$(this).dialog('destroy');
+		editing_keep_alive = false;
+	};
+	editing_keep_alive = true;
+	startKeepAliveProcess();
+	dialogdiv = contentdiv.dialog({
+		position: { my: "left top", at: "left top", of: targetdiv },
+		width: 500,
+		height: 500,
+		buttons: buttonslist,
+		close: function(event,ui) {
+			$(this).dialog('destroy');
+			startKeepAliveProcess();
+		}
+	});
+	textAreaScrollToBottom('#'+id_name);
+	return false; // prevents the default link
+}
+
+function textAreaScrollToBottom(selector) {
+	// weird gyrations to put cursor at end of input.
+	var box = $(selector);
+	box.focus();
+	var tmpStr = box.val();
+	box.val('');
+	box.val(tmpStr);
+	box.scrollTop(box[0].scrollHeight);  // chrome
+}
+
+var notedialogdiv = null;  // this will force only one a time
+function activateColumnNoteEditButton(element, editUrl) {
+	if ($(element).length) {
+		// create the popup link-to-page dialog
+		$(element).on("click",function(link) {
+			// only want to create this div once
+			if (notedialogdiv===null) {
+				var dial_title = $('input[name="dashboardispublic"]').val() == 1 ? "My Notes (public)" : "My Notes (private)";
+				notedialogdiv = $('<div />').attr('id','linkToCommentNotesContainer').attr('title',dial_title).attr('class',"dashdialog").hide().appendTo('body');
+			}
+			var dashboardtable_id = $(this).closest('.dash-column-container').data('dashboard_id');
+			var itemobject_id = $(this).closest('.dash-column-container').data('itemobject_id');
+			$.getJSON(baseUrl + '/dash/jsongetcolumnnote',
+					{"dashboardtable_id" : dashboardtable_id, "itemobject_id" : itemobject_id},
+					function(data) {
+						renderColumnNoteEditButton(editUrl, link, data);
+					});
+			return false;
+		});
+	}
+}
 
 $(document).ready(function() {
 	activateLinkToPageButton('#linkToPageButton', lookupUrl, linkToPageUrl, layoutTitle, canSendLink);
@@ -327,9 +428,10 @@ $(document).ready(function() {
 	activateDashboardTableEditButton('.dashtableeditbtn', editdashboardtableUrl);
 	activateDashboardSerNumEditButton('.dashsernumeditbtn', editsernumsUrl);
 	activateDashboardEditButton('#editDashboardButton', editdashboardUrl);
+	activateColumnNoteEditButton('.columnnoteeditbtn', editcolumnnoteUrl);
 	$('select.dashboardselector').comboboxjumper({hidecurrentvaluewhenchanging: 1});
 	// for all the overfull procedure columns, scroll to the bottom so we see the latest ones.
-	$('table.listtable tr td div.cellofprocs').each(function() {
+	$('table.listtable tr td div.cellofprocs, div.dash-column-content').each(function() {
 		$(this).scrollTop($(this)[0].scrollHeight);
 	});
 });

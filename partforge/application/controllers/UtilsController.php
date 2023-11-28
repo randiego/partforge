@@ -566,6 +566,26 @@ class UtilsController extends DBControllerActionAbstract
                         setGlobal('databaseversion', $databaseversion);
                     }
 
+                    if ($this->shouldUpgradeFrom('22')) {
+                        $msgs[] = 'Upgrading to version 23: Add Dashboard My Notes column.';
+                        DbSchema::getInstance()->mysqlQuery("CREATE TABLE IF NOT EXISTS dashboardcolumnnote (
+                            dashboardcolumnnote_id int(11) NOT NULL AUTO_INCREMENT,
+                            dashboardtable_id int(11) NOT NULL,
+                            user_id int(11) NOT NULL,
+                            typeobject_id int(11) NOT NULL,
+                            itemobject_id int(11) NOT NULL,
+                            value longtext,
+                            record_modified datetime,
+                            PRIMARY KEY (dashboardcolumnnote_id),
+                            KEY dashboardtable_id (dashboardtable_id),
+                            KEY user_id (user_id),
+                            KEY typeobject_id (typeobject_id),
+                            KEY itemobject_id (itemobject_id)
+                        ) ENGINE=InnoDB  DEFAULT CHARSET=utf8mb4;");
+                        $databaseversion = '23';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
+
             }
         }
         $this->view->currentversion = getGlobal('databaseversion');

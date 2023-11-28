@@ -45,7 +45,13 @@ class DBTableRowDashboardTable extends DBTableRow {
         $report_params = $this->getArray();
         $report_params['view_category'] = $this->typeobject_id;
         $ReportData = new ReportDataItemListView(false, false, false, false, $report_params, true);
-        $this->include_fields = implode(',', array_keys($ReportData->fields));
+        $selected_fields = array();
+        foreach ($ReportData->fields as $fieldname => $fieldarr) {
+            if (substr($fieldname, 0, 13) !== 'column_notes_') {
+                $out[] = $fieldname;
+            }
+        }
+        $this->include_fields = implode(',', $out);
     }
 
     protected function onAfterGetRecord(&$record_vars)
@@ -126,6 +132,18 @@ class DBTableRowDashboardTable extends DBTableRow {
                 DbSchema::getInstance()->mysqlQuery("UPDATE dashboardtable SET include_only_itemobject_ids='{$out}' WHERE dashboardtable_id='{$dashboardtable_id}'");
             }
         }
+    }
+
+    public static function getMyTablesByType()
+    {
+        $records = DbSchema::getInstance()->getRecords('dashboardtable_id', "SELECT dashboardtable.dashboardtable_id, dashboardtable.include_only_itemobject_ids,
+            dashboardtable.title, typeversion.type_description, dashboardtable.typeobject_id
+            FROM dashboardtable
+            LEFT JOIN typeobject ON typeobject.typeobject_id = dashboardtable.typeobject_id
+            LEFT JOIN typeversion ON typeversion.typeversion_id = typeobject.cached_current_typeversion_id
+            WHERE dashboardtable.user_id='".$_SESSION['account']->user_id."'
+            ORDER BY dashboardtable.dashboardtable_id");
+        return $records;
     }
 
 }

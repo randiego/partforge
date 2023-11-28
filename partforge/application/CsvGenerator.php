@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2023 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -27,52 +27,57 @@ class CsvGenerator {
     private $_params;
     private $_report_data;
     private $_passthru_fields;
-    
-    public function __construct($params,ReportData $report_data,$passthru_fields=array()) {
+
+    public function __construct($params, ReportData $report_data, $passthru_fields = array())
+    {
         $this->_params = $params;
         $this->_report_data = $report_data;
         $this->_passthru_fields = $passthru_fields; // these fields should be passed directly to output without quotes or quoting
     }
-    
-    static public function arrayToCsv(&$records,$fieldcaptions,$passthrough_fields=array()) {
+
+    static public function arrayToCsv(&$records, $fieldcaptions, $passthrough_fields = array())
+    {
         $out = '';
         $first = true;
-        foreach($records as $record) {
-                if ($first) {
-                        $first = false;
-                        $arr = array();
-                        foreach($fieldcaptions as $field => $caption) {
-                                $arr[] = '"'.$caption.'"';
-                        }
-                        $out .= implode(',',$arr)."\r\n";
+        foreach ($records as $record) {
+            if ($first) {
+                    $first = false;
+                    $arr = array();
+                foreach ($fieldcaptions as $field => $caption) {
+                        $arr[] = '"'.$caption.'"';
                 }
+                    $out .= implode(',', $arr)."\r\n";
+            }
                 $arr = array();
-                foreach($fieldcaptions as $field => $caption) {
-                    if (in_array($field,$passthrough_fields)) {
-                        $arr[] = $record[$field];
-                    } else {
-                        $arr[] = '"'.str_replace('"',"'",$record[$field]).'"';
-                    }
+            foreach ($fieldcaptions as $field => $caption) {
+                if (in_array($field, $passthrough_fields)) {
+                    $arr[] = $record[$field];
+                } else {
+                    $arr[] = '"'.str_replace('"', "'", $record[$field]).'"';
                 }
-                $out .= implode(',',$arr)."\r\n";
+            }
+                $out .= implode(',', $arr)."\r\n";
         }
         return $out;
     }
-    
-    
-    public function outputToBrowser($filename='') {
-        if ($filename=='') $filename = $this->_params['filename'];
-        $records = $this->_report_data->get_records($this->_params, isset($this->_params['search_string']) ? $this->_params['search_string'] : '','');
+
+
+    public function outputToBrowser($filename = '')
+    {
+        if ($filename=='') {
+            $filename = $this->_params['filename'];
+        }
+        $records = $this->_report_data->get_records($this->_params, isset($this->_params['search_string']) ? $this->_params['search_string'] : '', '');
         $records_out = array();
-        foreach($records as $index => $record) {
+        foreach ($records as $index => $record) {
             $out_rec = array();
             if ($this->_report_data->make_export_detail($this->_params, $record, $out_rec)) {
                 $records_out[$index] = $out_rec;
             }
         }
         send_download_headers('text/csv', $filename);
-        echo self::arrayToCsv($records_out,$this->_report_data->csvfields,$this->_passthru_fields);
+        echo self::arrayToCsv($records_out, $this->_report_data->csvfields, $this->_passthru_fields);
         exit;
     }
-    
+
 }

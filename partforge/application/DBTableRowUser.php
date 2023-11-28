@@ -315,9 +315,10 @@ class DBTableRowUser extends DBTableRow {
 
     static public function getFullName($user_id, $is_html = false)
     {
-        $User = new DBTableRowUser();
-        $User->getRecordById($user_id);
-        return $User->fullName($is_html);
+        $records = DbSchema::getInstance()->getRecords('', "SELECT first_name, last_name FROM user WHERE user_id='".$user_id."'");
+        $record = reset($records);
+        $out = self::concatNames($record);
+        return $is_html ? TextToHtml($out) : $out;
     }
 
     public function userTypeText()

@@ -6,11 +6,12 @@ var canSendLink = <?php echo in_array($_SESSION['account'] ->getRole(), array('G
 var editdashboardtableUrl = "<?php echo $this->navigator->getCurrentHandlerUrl('btnEditTable', null, null, array('dashboardTableId' => '_DASHBOARDTABLEID_', 'tablecolor' => '_COLOR_', 'tabletitle' => '_TITLE_', 'tablefields' => '_TABLEFIELDS_'));?>";
 var editdashboardUrl = "<?php echo $this->navigator->getCurrentHandlerUrl('btnEditDashboard', null, null, array('title' => '_TITLE_', 'tableids' => '_TABLEIDS_', 'is_public' => '_ISPUBLIC_'));?>";
 var editsernumsUrl = "<?php echo $this->navigator->getCurrentHandlerUrl('btnEditSerNums', null, null, array('dashboardTableId' => '_DASHBOARDTABLEID_', 'include_only_itemobject_ids' => '_ITEMOBJIDS_', 'autoadd_new_items' => '_AUTOADD_'));?>";
-// var autoStartEditing = <?php echo (($this->dashboard->list_of_table_ids == "") && !$this->readonly) ? 'true' : 'false';?>;
+var editcolumnnoteUrl = "<?php echo $this->navigator->getCurrentHandlerUrl('btnEditColumnNote', null, null, array('dashboardTableId' => '_DASHBOARDTABLEID_', 'itemobjectId' => '_ITEMOBJECTID_', 'commentValue' => '_COMMENTVALUE_'));?>";
+var sessionTimeoutInterval = <?php echo Zend_Registry::get('config')->edit_form_keep_alive_interval*1000;?>;
 var tabledata = {};
 </script>
 <?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
-<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/dash/panel.js?v=53" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/dash/panel.js?v=72" type="TEXT/JAVASCRIPT"></script>
 <?php
 
 $this->layout()->title = 'Dashboard: '.$this->dashboard->title;
@@ -24,13 +25,14 @@ $this->layout()->setLayout('layout');
 $this->layout()->scrollhold = true;
 
 $html = '';
+$html .= DBTableRowDashboardColumnNote::fetchOrphanEditBlockHtml($this->navigator, $this->dashboard);
 $html .= '<div class="dashandbuttonsdiv">';
 $subtitle =  $this->readonly ? '<div class="smallundertitleparen">Board Owner: '.linkify( UrlCallRegistry::formatViewUrl('id/'.$this->dashboard->user_id, 'user'), DBTableRowUser::getFullName($this->dashboard->user_id), 'View user details').'</div>' : '';
 $selector = format_select_tag(DBTableRowDashboard::indexOfAllDashboards(), 'selectdashboard_id', array('selectdashboard_id' => $this->dashboard->dashboard_id), "document.theform.btnOnChange.value='changedashboard';document.theform.submit();return false;", false, '--  select one --', '', 'dashboardselector');
 $html .= '<div class="dashheader"><span class="dshspn">Dashboard: </span>'.$selector.$subtitle.'</div>';
 $html .= '<div class="buttonrow">';
 if (!$this->readonly) {
-    $html .= linkify('#', 'Edit', 'Add, Remove, Edit Dashboard Tables', 'bd-button', "", '', 'editDashboardButton');
+    $html .= linkify('#', 'Add / Remove Tables', 'Add, Remove, Edit Tables on this Dashboard', 'bd-button', "", '', 'editDashboardButton');
     if (!$this->dashboard->isThisMyOnlyDashboard()) {
         $delete_url = $this->navigator->getCurrentHandlerUrl('btnDeleteDashboard', null, null, array('dashboard_id' => $this->dashboard->dashboard_id));
         $html .= linkify($delete_url, 'Delete', "Delete this Dashboard and all the Tables", 'bd-button', 'return confirm(\'Delete this Dashboard and all the Tables?\');', '', '');
@@ -39,10 +41,10 @@ if (!$this->readonly) {
 $copy_url = $this->navigator->getCurrentHandlerUrl('btnCopyDashboard', null, null, array('dashboard_id' => $this->dashboard->dashboard_id));
 $html .= linkify($copy_url, 'Copy', 'Duplicate the current dashboard and all its tables', 'bd-button', 'return confirm(\'Save this dashboard as a completely new dashboard?\');', '', '');
 $html .= linkify('#', 'Link to Page', 'Copy or send link to this dashboard', 'bd-button', "", '', 'linkToPageButton');
-
-
 $html .= '</div>';
 $html .= '</div>';
+
+
 $html .= '<input type="hidden" name="btnOnChange" value="">';
 $html .= '<input type="hidden" name="btnOnChangeTableFilter" value="">';
 $html .= '<input type="hidden" name="dashboard_id" value="'.$this->dashboard->dashboard_id.'">';
@@ -70,6 +72,9 @@ if ($this->dashboard->list_of_table_ids != "") {
             $report_params = $DashboardTable->getArray();
             $report_params['view_category'] = $DashboardTable->typeobject_id;
             $report_params['include_only_itemobject_ids'] = $DashboardTable->include_only_itemobject_ids;
+            $report_params['readonly'] = $this->readonly;
+            $report_params['dashboardtableuser_id'] = $DashboardTable->user_id;
+            $report_params['is_public'] = $this->dashboard->is_public;
             $ReportData = new ReportDataItemListView(false, false, false, !empty($this->view->params['search_string']), $report_params, true);
             $typeobject_id = $DashboardTable->typeobject_id;
             $ReportData->title = $ReportData->category_array[$typeobject_id];

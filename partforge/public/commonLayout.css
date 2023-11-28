@@ -943,7 +943,7 @@ input.searchbutton {
 	width: 720px;
 }
 
-.itemview_notice {
+.itemview_notice, .orphan_notes_notice {
 	font-size: 14px;
 	padding: 10px 10px 10px 10px;
 	font-weight: bold;
@@ -953,14 +953,14 @@ input.searchbutton {
 	margin-bottom: 10px;
 }
 
-.itemview_notice .changesinbox {
+.itemview_notice .changesinbox, .orphan_notes_notice .orphnotes_div {
 	font-size: 12px;
 	margin-top: 10px;
 	margin-bottom: 0px;
 	font-weight: normal;
 }
 
-.itemview_notice .changesinbox h2 {
+.itemview_notice .changesinbox h2, .orphan_notes_notice .orphnotes_div h2 {
 	margin-top: 20px;
 	font-weight: bold;
 	font-size: 12px;
@@ -968,6 +968,13 @@ input.searchbutton {
 	color: #0073ea;
 }
 
+.orphan_notes_notice .orphnotes_div span.sernumcls {
+	font-weight: bold;
+}
+
+.orphan_notes_notice .ophan_ctl_div {
+	margin-left: 20px;
+}
 
 .notice_box {
 	width: 700px;
@@ -1354,6 +1361,57 @@ li.bd-event-row.bd-event-indented {
 	padding: 5px 5px 5px 200px;
 	position: relative;
 	min-height: 32px;
+}
+
+table.listtable tr td div.dash-column-content {
+	width: 100%;
+	max-height: 300px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	position: relative;
+}
+
+.columnnotetext {
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	white-space: pre-wrap;
+}
+
+#linkToCommentNotesContainer {
+	overflow: hidden;
+}
+
+.notebkg {
+	background-color: #fffcf0;
+}
+
+.dash-column-container {
+	position: relative;
+	min-width: 200px;
+	max-width: 500px;
+}
+
+.dash-column-container .bd-edit {
+	z-index: 1;
+	position: absolute;
+	display: block;
+	opacity:0.5;
+	width: auto;
+	height: auto;
+	margin: 0px 0px 8px 0px;
+	right:4px;
+	top:0px;
+}
+
+td:hover > .dash-column-container > .bd-edit {
+	opacity:1.0;
+	display: block;
+}
+
+
+.dash-column-content .bd-edit a {
+	margin-left: 8px;
 }
 
 .bd-event-row.bd-type-change .bd-event-content.bd-with-edit-date,
@@ -2397,6 +2455,23 @@ input.call-picker {
 	opacity: 0.8;
 	-moz-opacity: 0.8;
 	filter: alpha(opacity=8);
+}
+
+#columnlistdiv .dictionary_field {
+	font-weight: normal;
+	color: #0073EA;
+	font-size: 12px;
+}
+
+#columnlistdiv .proc_field {
+	font-weight: normal;
+	font-size: 12px;
+}
+
+#columnlistdiv .note_field {
+	font-weight: bold;
+	color: #646303;
+	font-size: 12px;
 }
 
 #tablelistdiv .custom-combobox-input.typeselinput {

@@ -37,6 +37,35 @@ class DashController extends DBControllerActionAbstract
         $this->navigator->jumpToView('panel');
     }
 
+    /**
+     * Returns the column content record.
+     */
+    public function jsongetcolumnnoteAction()
+    {
+        $record = array();
+        $Note = new DBTableRowDashboardColumnNote();
+        if (isset($this->params['dashboardcolumnnote_id'])) {
+            if ($Note->getRecordById(addslashes($this->params['dashboardcolumnnote_id']))) {
+                $record = $Note->getArray();
+            }
+        } elseif (isset($this->params['dashboardtable_id']) && isset($this->params['itemobject_id'])) {
+            if (!$Note->getRecordByTableAndItemObject($this->params['dashboardtable_id'], $this->params['itemobject_id'])) {
+                $Note->value = '';
+            }
+            $record = $Note->getArray();
+        }
+        echo json_encode($record);
+        die();
+    }
+
+    public function updatecolumnnoteAction()
+    {
+        $Note = DBTableRowDashboardColumnNote::storeColumnNote($this->params['dashboardTableId'], $this->params['itemobjectId'], $this->params['commentValue']);
+        $out = array('html_value' => isset($Note->value) ? text_to_unwrappedhtml($Note->value) : "");
+        echo json_encode($out);
+        die();
+    }
+
     public function panelAction()
     {
         $Dashboard = new DBTableRowDashboard();
@@ -106,6 +135,10 @@ class DashController extends DBControllerActionAbstract
                     } else {
                         $this->navigator->jumpToView(null, null, array('dashboard_id' => $this->params['selectdashboard_id']));
                     }
+                case isset($this->params['btnOnChange']) && explode(':', $this->params['btnOnChange'])[0]=='import_column_notes':
+                    $orph_dashboardtable_id = explode(':', $this->params['btnOnChange'])[1];
+                    DBTableRowDashboardColumnNote::mergeOrphanColumnNotes($orph_dashboardtable_id, $this->params['dashboardtable_id'][$orph_dashboardtable_id]);
+                    $this->navigator->jumpToView();
                 case isset($this->params['btnCopyDashboard']):
                     $new_dashboard_id = $Dashboard->saveCopy();
                     $this->navigator->jumpToView(null, null, array('dashboard_id' => $new_dashboard_id));
@@ -113,6 +146,12 @@ class DashController extends DBControllerActionAbstract
                     $Dashboard->delete();
                     $fallback_dashboard_id = DBTableRowDashboard::getAValidDashboardIdForUser($_SESSION['account']->user_id);
                     $this->navigator->jumpToView(null, null, array('dashboard_id' => $fallback_dashboard_id));
+                case isset($this->params['btnEditColumnNote']):
+                    DBTableRowDashboardColumnNote::storeColumnNote($this->params['dashboardTableId'], $this->params['itemobjectId'], $this->params['commentValue']);
+                    $this->navigator->jumpToView();
+                case isset($this->params['btnDeleteOrphan']):
+                    DBTableRowDashboardColumnNote::deleteOrphans($this->params['dashboardtable_id']);
+                    $this->navigator->jumpToView();
             }
         }
 
