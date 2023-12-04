@@ -337,7 +337,7 @@ class DefinitionEventStream {
             }
 
             if ($record['event_type_id']=='ET_COM') {
-                $line['edit_links'] = !is_null($navigator) ? DBTableRowTypeComment::commentEditLinks($navigator, $return_url, $dbtable->typeobject_id, $record['comment_id'], $record['effective_date'], $record['user_id']) : '';
+                $line['edit_links'] = !is_null($navigator) ? DBTableRowTypeComment::commentEditLinks($navigator, $return_url, $record['comment_id'], $record['effective_date'], $record['user_id']) : '';
                 if (DBTableRow::wasItemTouchedRecently('typecomment', $record['comment_id'])) {
                     $line['recently_edited'] = true;
                 }

@@ -874,11 +874,12 @@ a.bd-linkbtn:active {
 	text-decoration: none;
 }
 
-a.dashtableeditbtn, a.dashsernumeditbtn {
-	padding: 2px 2px 1.5px 2px;
+a.dashtableeditbtn, a.dashsernumeditbtn, a.dashtablepartsbtn {
+	padding: 1.5px 2px 1.5px 2px;
 	font-weight: normal;
 	vertical-align: 3%;
 	margin-right: 4px;
+	margin-left: 1px;
 }
 
 .ui-menu {
@@ -1392,7 +1393,11 @@ table.listtable tr td div.dash-column-content {
 	max-width: 500px;
 }
 
-.dash-column-container .bd-edit {
+.dash-comments-container {
+	position: relative;
+}
+
+.dash-column-container .bd-edit, .dash-comments-container .bd-edit {
 	z-index: 1;
 	position: absolute;
 	display: block;
@@ -1404,7 +1409,7 @@ table.listtable tr td div.dash-column-content {
 	top:0px;
 }
 
-td:hover > .dash-column-container > .bd-edit {
+td:hover > .dash-column-container > .bd-edit, td:hover > .dash-comments-container > .bd-edit {
 	opacity:1.0;
 	display: block;
 }
@@ -1654,7 +1659,7 @@ ul.bd-bullet_features li {
 	padding-top: 10px;
 }
 
-.bd-event-subcomments-container ul.bd-event-subcomments {
+.bd-event-subcomments-container ul.bd-event-subcomments, .dash-comments-container ul.bd-event-subcomments {
 	list-style: none outside none;
 	margin: 0px;
 	position: relative;
@@ -1665,6 +1670,11 @@ ul.bd-bullet_features li {
 ul.bd-event-subcomments li.bd-event-subcomment {
 	border-top: 1px solid #9999FF;
 	padding: 5px;
+}
+
+ul.bd-event-subcomments li.bd-event-subcomment.dash-no-hrule {
+	border-top: 0px;
+	padding-top: 0px;
 }
 
 .bd-subcomment-when {

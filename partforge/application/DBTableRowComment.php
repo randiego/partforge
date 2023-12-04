@@ -96,7 +96,7 @@ class DBTableRowComment extends DBTableRow {
      * @param integer $user_id
      * @return array of link structures
      */
-    static public function commentEditLinks($navigator, $return_url, $itemobject_id, $comment_id, $comments_added, $user_id, $proxy_user_id)
+    static public function commentEditLinks($navigator, $return_url, $comment_id, $comments_added, $user_id, $proxy_user_id)
     {
         $can_edit_self = true;
         $links = array();

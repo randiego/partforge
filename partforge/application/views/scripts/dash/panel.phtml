@@ -92,6 +92,7 @@ if ($this->dashboard->list_of_table_ids != "") {
 
             $pagination_line_html = '';
             if (!$this->readonly) {
+                $pagination_line_html .= '<span>'.linkify(DBTableRowTypeVersion::getListViewAbsoluteUrl($typeobject_id, $_SESSION['account']->getPreference('chkShowProcMatrix')), 'Parts', "List all items of this type on the Parts Tab.", 'bd-linkbtn dashtablepartsbtn').'</span>';
                 $pagination_line_html .= format_select_tag(array('0' => 'No Procedure Results', '1' => 'All Procedure Results'), "chkShowProcMatrix[$dashidx]", array("chkShowProcMatrix[$dashidx]" => $DashboardTable->chkShowProcMatrix), "document.theform.btnOnChangeTableFilter.value='{$dashidx}';document.theform.submit();return false;", false, '-- select one --', '', 'bd-button-colors').' ';
                 $pagination_line_html .= ' '.format_select_tag(array('0' => 'Featured Fields Only', 'allnew' => 'All Fields', '1' => 'All Fields (including old versions)'), "chkShowAllFields[$dashidx]", array("chkShowAllFields[$dashidx]" => $DashboardTable->chkShowAllFields), "document.theform.btnOnChangeTableFilter.value='{$dashidx}';document.theform.submit();return false;", false, '-- select one --', '', 'bd-button-colors').' ';
                 $pagination_line_html .= ' '.format_select_tag($last_changed_days_array, "lastChangedDays[$dashidx]", array("lastChangedDays[$dashidx]" => $DashboardTable->lastChangedDays), "document.theform.btnOnChangeTableFilter.value='{$dashidx}';document.theform.submit();return false;", false, '-- select one --', '', 'bd-button-colors').' ';
@@ -119,3 +120,19 @@ if ($this->dashboard->list_of_table_ids != "") {
     $html .= '<h3>This Dashboard is Empty. Click the Edit button to add tables.</h3>';
 }
 echo fetch_form_tag($html);
+?>
+
+<!-- The dialog widget -->
+<div id="blueimp-gallery-dialog" data-show="fade" data-hide="fade">
+    <!-- The gallery widget  -->
+    <div class="blueimp-gallery blueimp-gallery-carousel blueimp-gallery-controls"  data-transition-speed=100>
+        <div class="slides"></div>
+        <h3 class="title"></h3>
+        <a class="prev">‹</a>
+        <a class="next">›</a>
+        <a class="play-pause"></a>
+        <ol class="indicator"></ol>
+    </div>
+</div>
+<script src="<?php echo $baseUrl;?>/jqueryextras/gallery-2.15.2/js/blueimp-gallery.min.js"></script>
+<script src="<?php echo $baseUrl;?>/jqueryextras/image-gallery/js/jquery.image-gallery.custom.js"></script>

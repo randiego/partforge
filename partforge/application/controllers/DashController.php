@@ -69,9 +69,10 @@ class DashController extends DBControllerActionAbstract
     public function panelAction()
     {
         $Dashboard = new DBTableRowDashboard();
-        if (isset($this->params['dashboard_id']) && $Dashboard->getRecordById($this->params['dashboard_id'])) {
+        $available_dashboards = DBTableRowDashboard::indexOfAllDashboards();
+        if (isset($this->params['dashboard_id']) && isset($available_dashboards[$this->params['dashboard_id']]) && $Dashboard->getRecordById($this->params['dashboard_id'])) {
             // continue
-        } elseif ($Dashboard->getRecordById($_SESSION['account']->getPreference('current_dashboard_id'))) {
+        } elseif (isset($available_dashboards[$_SESSION['account']->getPreference('current_dashboard_id')]) && $Dashboard->getRecordById($_SESSION['account']->getPreference('current_dashboard_id'))) {
             $this->navigator->jumpToView(null, null, array('dashboard_id' => $Dashboard->dashboard_id));
         } else {
             $this->navigator->jumpToView(null, null, array('dashboard_id' => DBTableRowDashboard::getAValidDashboardIdForUser($_SESSION['account']->user_id)));

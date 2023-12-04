@@ -113,7 +113,7 @@ class DBTableRowTypeComment extends DBTableRow {
     /*
             return the editing links for a dependent row
     */
-    static public function commentEditLinks($navigator, $return_url, $typeobject_id, $comment_id, $comments_added, $user_id)
+    static public function commentEditLinks($navigator, $return_url, $comment_id, $comments_added, $user_id)
     {
         $can_edit_self = true;
         $links = array();

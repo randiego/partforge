@@ -326,6 +326,7 @@ class EventStream {
 								FROM document WHERE (document.comment_id = themcomment.comment_id) and (document.document_path_db_key='{$config->document_path_db_key}')),''))
 								SEPARATOR '|')
 						FROM comment as themcomment WHERE themcomment.itemobject_id=iv_them.itemobject_id and themcomment.is_fieldcomment=0
+                        ORDER BY themcomment.comment_added
 					) as comments_packed
 				FROM itemcomponent
 				LEFT JOIN itemversion AS iv_them ON iv_them.itemversion_id=itemcomponent.belongs_to_itemversion_id
@@ -665,7 +666,7 @@ class EventStream {
 						<img style="border:0;" src="'.$thumb_url.'"></a></span>';
             } else {
                 $title = 'click to open '.$document_displayed_filename.' ('.$size.')';
-                $icon_img = '<IMG style="vertical-align:middle;" src="'.Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/images/'.DBTableRowDocument::findIconFileName($document_file_type, $document_displayed_filename).'" width="16" height="16" border="0" alt="delete">';
+                $icon_img = '<IMG style="vertical-align:middle;" src="'.$baseUrl.'/images/'.DBTableRowDocument::findIconFileName($document_file_type, $document_displayed_filename).'" width="16" height="16" border="0" alt="delete">';
                 $files[] = '<div class="bd-event-document"><a title="'.$title.'" href="'.$filename_url.'" target="_blank">'.$icon_img.' '.$fname.'</a></div>';
             }
         }
@@ -1009,7 +1010,7 @@ class EventStream {
             }
 
             if ($record['event_type_id']=='ET_COM') {
-                $line['edit_links'] = !is_null($navigator) && !$record['is_fieldcomment'] ? DBTableRowComment::commentEditLinks($navigator, $return_url, $dbtable->itemobject_id, $record['comment_id'], $record['record_created'], $record['user_id'], $record['proxy_user_id']) : array();
+                $line['edit_links'] = !is_null($navigator) && !$record['is_fieldcomment'] ? DBTableRowComment::commentEditLinks($navigator, $return_url, $record['comment_id'], $record['record_created'], $record['user_id'], $record['proxy_user_id']) : array();
                 if (isset($record['documents_packed']) && $record['documents_packed']) {
                     $line['documents_packed'] = $record['documents_packed'];
                 }

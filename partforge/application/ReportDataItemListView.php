@@ -43,6 +43,8 @@ class ReportDataItemListView extends ReportDataWithCategory {
     private $_extracolumnnotetables = array();
     private $_readonly = false;
     private $_is_public_dashboard = false;
+    private $_user_records = array();
+    private $_dash_comments_limit;
 
     /**
      * If $output_all_versions is true, then there is 1 output row per itemversion_id.  If false, then 1 output row per itemobject_id.
@@ -64,6 +66,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
         $this->_override_itemversion_id = isset($overrides['itemversion_id']) ? $overrides['itemversion_id'] : null;
         $this->_is_public_dashboard = isset($overrides['is_public']) ? $overrides['is_public'] : false;
         $this->_readonly = isset($overrides['readonly']) ? $overrides['readonly'] : false;
+        $this->_dash_comments_limit = isset($overrides['dash_comments_limit']) ? $overrides['dash_comments_limit'] : 10;
         $this->_recent_row_age = Zend_Registry::get('config')->recent_row_age;
         $this->_show_used_on = !$is_user_procedure && !$this->output_all_versions;
 
@@ -133,6 +136,8 @@ class ReportDataItemListView extends ReportDataWithCategory {
                     ? ($this->_is_public_dashboard ? 'My Notes (public)' : 'My Notes (private)')
                     : DBTableRowUser::getFullName($overrides['dashboardtableuser_id']).' Notes';
             $this->fields['__column_notes__'] = array('display' => $person);
+            $this->fields['__comments__'] = array('display' => 'Comments');
+            $this->_user_records = DbSchema::getInstance()->getRecords('user_id', "SELECT user_id, first_name, last_name FROM user"); // for quick lookups
         }
 
         if ($this->_show_used_on) {
@@ -549,6 +554,22 @@ class ReportDataItemListView extends ReportDataWithCategory {
                     FROM dashboardcolumnnote
                     WHERE (dashboardcolumnnote.itemobject_id=itemobject.itemobject_id) and (dashboardcolumnnote.dashboardtable_id='{$this->_dashboardtable_id}')) as __column_notes__"
                 );
+                $DBTableRowQuery->addSelectFields("
+                    (
+						SELECT
+							GROUP_CONCAT(
+								CONCAT(themcomment.comment_id,'&',themcomment.user_id,'&',themcomment.comment_added,'&',CONVERT(HEX(themcomment.comment_text),CHAR),'&',IFNULL((SELECT
+									GROUP_CONCAT(
+										CONCAT(document.document_id,',',document.document_filesize,',',CONVERT(HEX(document.document_displayed_filename),CHAR),',',CONVERT(HEX(document.document_stored_filename),CHAR),',',document.document_stored_path,',',document.document_file_type,',',document.document_thumb_exists)
+                                        ORDER BY document.document_date_added
+										SEPARATOR ';'
+									)
+								FROM document WHERE (document.comment_id = themcomment.comment_id) and (document.document_path_db_key='".Zend_Registry::get('config')->document_path_db_key."')),''))
+								SEPARATOR '|')
+						FROM comment as themcomment WHERE themcomment.itemobject_id=itemobject.itemobject_id and themcomment.is_fieldcomment=0
+                        ORDER BY themcomment.comment_added
+					) as __comments__"
+                );
                 foreach ($this->_extracolumnnotetables as $dashboardtable_id => $dashboardcol) {
                     $DBTableRowQuery->addSelectFields("
                     (SELECT GROUP_CONCAT(dashboardcolumnnote.value)
@@ -755,6 +776,48 @@ class ReportDataItemListView extends ReportDataWithCategory {
                     $detail_out['td_class'][$fname] = 'notebkg';
                 }
             }
+
+            $subcomments_html = '';
+            $comment_add_btn = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'table:comment', 'add')
+                    ? linkify($navigator->getCurrentViewUrl('commenteditview', 'struct', array('table' => 'comment', 'comment_id' => 'new', 'return_url' => $navigator->getCurrentViewUrl(), 'initialize' => array('itemobject_id' => $record['itemobject_id']))), 'Add', 'add a new comment, photos, or documents to the event stream', 'minibutton2')
+                    : '';
+            $subcomments_html .= '<div class="dash-comments-container"><div class="bd-edit">'.$comment_add_btn.'</div><div class="dash-column-content"><ul class="bd-event-subcomments">';
+            if ($record['__comments__']) {
+                $is_first = true;
+                $comments_arr = explode('|', $record['__comments__']);
+                if (count($comments_arr) > $this->_dash_comments_limit) {
+                     $subcomments_html .= '<li class="bd-event-subcomment dash-no-hrule"><span class="paren">'.(count($comments_arr) - $this->_dash_comments_limit).' older comment(s) not shown</span></li>';
+                     $is_first = false;
+                     $comments_arr = array_slice($comments_arr, count($comments_arr) - $this->_dash_comments_limit, $this->_dash_comments_limit, true);
+                }
+                foreach ($comments_arr as $bare_idx => $subcomment) {
+                    list($comment_id, $user_id, $comment_added, $comment_text, $subdocuments_packed) = explode('&', $subcomment);
+                    $subdatetime = time_to_bulletdate(strtotime($comment_added));
+                    $comment_text = hextobin($comment_text); // we had packed this earlier for safety
+                    list($comment_html,$comment_text_array) = EventStream::textToHtmlWithEmbeddedCodes($comment_text, $navigator, 'ET_COM', false);
+                    if ($is_first) {
+                        $hrule_class = 'bd-event-subcomment dash-no-hrule';
+                        $is_first = false;
+                    } else {
+                        $hrule_class = 'bd-event-subcomment';
+                    }
+                    $subcomments_html .= '<li class="'.$hrule_class.'">
+                            <div class="bd-subcomment-who-message">
+                            <span class="bd-subcomment-byline">'.DBTableRowUser::concatNames($this->_user_records[$user_id]).':</span>'.$comment_html.'
+                                    </div>
+                                    ';
+                    if ($subdocuments_packed) {
+                        $subcomments_html .= '<div class="bd-subcomment-documents">';
+                        $subcomments_html .= EventStream::documentsPackedToFileGallery(Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl(), 'id_'.$this->_dashboardtable_id.'_'.$record['itemobject_id'].'_'.$bare_idx, $subdocuments_packed);
+                        $subcomments_html .= '</div>';
+                    }
+                    $subcomments_html .= '<div class="bd-subcomment-when">'.$subdatetime.'</div></li>';
+                }
+                $subcomments_html .= '</ul></div></div>';
+            }
+            $detail_out['__comments__'] = $subcomments_html;
+
+
         }
 
 
