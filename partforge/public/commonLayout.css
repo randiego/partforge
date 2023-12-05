@@ -1395,6 +1395,7 @@ table.listtable tr td div.dash-column-content {
 
 .dash-comments-container {
 	position: relative;
+	min-width: 200px;
 }
 
 .dash-column-container .bd-edit, .dash-comments-container .bd-edit {
