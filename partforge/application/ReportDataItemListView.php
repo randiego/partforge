@@ -170,9 +170,11 @@ class ReportDataItemListView extends ReportDataWithCategory {
         if ($show_proc_matrix_columns) {
             $type_records_refer_to_us = $this->getProcedureRecordsForTheCategory($this->view_category);
             foreach ($type_records_refer_to_us as $proctyperec) {
+                $list_url = UrlCallRegistry::formatViewUrl('lv', 'struct', array('to' => $proctyperec['typeobject_id'], 'resetview' => 1));
+                $list_button = linkify($list_url, 'All', "List all Proceedures of this type on the Procedures Tab", 'minibutton2');
                 $key = 'ref_procedure_typeobject_id_'.$proctyperec['typeobject_id'];
                 $obs = $proctyperec['typedisposition']=='B' ? ' [Obsolete]' : '';
-                $this->fields[$key] = array('display' => $proctyperec['type_description'].$obs);
+                $this->fields[$key] = array('display' => $proctyperec['type_description'].$obs, 'displaylink' => $list_button);
                 $this->_proc_matrix_column_keys[] = $key;
             }
         }

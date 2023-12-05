@@ -109,7 +109,7 @@ abstract class ReportData {
         $curr_sort_array = explode(',', $this->get_sort_key($queryvars));
         $legend_array = array();
         foreach ($this->fields as $fieldname => $fielddesc) {
-            $help_html = !empty($fielddesc['displaylink']) ? $fielddesc['displaylink'].' ' : '';
+            $help_html = !empty($fielddesc['displaylink']) ? ' '.$fielddesc['displaylink'] : '';
             if ($fielddesc['display']) {
                 $new_sort_array = $curr_sort_array;
                 if (isset($fielddesc['key_asc'])) {
@@ -147,9 +147,9 @@ abstract class ReportData {
                     $new_sort_array = array_slice($new_sort_array, 0, 3);
                     $new_sort_keys = implode(',', $new_sort_array);
                     if ($readonly) {
-                        $out[$fieldname] = $help_html.$fielddesc['display'];
+                        $out[$fieldname] = $fielddesc['display'].$help_html;
                     } else {
-                        $out[$fieldname] = $help_html.linkify($navigator->getCurrentHandlerUrl($query_key_name, '', '', array('sort_key' => $new_sort_keys)), $fielddesc['display'], "Sort listing by ".$this->format_sort_key($new_sort_keys));
+                        $out[$fieldname] = linkify($navigator->getCurrentHandlerUrl($query_key_name, '', '', array('sort_key' => $new_sort_keys)), $fielddesc['display'], "Sort listing by ".$this->format_sort_key($new_sort_keys)).$help_html;
                     }
 
 
@@ -165,7 +165,7 @@ abstract class ReportData {
                         $legend_array[3] = true;
                     }
                 } else {
-                    $out[$fieldname] = $help_html.$fielddesc['display'];
+                    $out[$fieldname] = $fielddesc['display'].$help_html;
                 }
             }
         }
