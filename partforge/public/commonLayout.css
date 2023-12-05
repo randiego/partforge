@@ -1387,15 +1387,10 @@ table.listtable tr td div.dash-column-content {
 	background-color: #fffcf0;
 }
 
-.dash-column-container {
+.dash-column-container, .dash-comments-container {
 	position: relative;
 	min-width: 200px;
 	max-width: 500px;
-}
-
-.dash-comments-container {
-	position: relative;
-	min-width: 200px;
 }
 
 .dash-column-container .bd-edit, .dash-comments-container .bd-edit {
