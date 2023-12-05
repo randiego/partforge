@@ -2485,6 +2485,12 @@ input.call-picker {
 	font-size: 12px;
 }
 
+#columnlistdiv .comments_field {
+	font-weight: bold;
+	color: #01317E;
+	font-size: 12px;
+}
+
 #tablelistdiv .custom-combobox-input.typeselinput {
 	margin: 0;
 	padding: 3px 3px;

@@ -73,6 +73,8 @@ function activateDashboardTableEditButton(element, editUrl) {
 					style = ' class="proc_field"';
 				} else if (fn.includes("column_notes_")) {
 						style = ' class="note_field"';
+				} else if (fn.includes("__comments__")) {
+						style = ' class="comments_field"';
 				}
 				h += '<div><label><input type="checkbox" name="included_fields" value="'+fn+'" '+(fieldnames.includes(fn) ? 'checked="checked"' : '')+' /><span'+style+'>'+caption+'</span></label></div>';
 			}
