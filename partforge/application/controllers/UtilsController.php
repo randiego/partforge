@@ -36,6 +36,14 @@ class UtilsController extends DBControllerActionAbstract
         $this->view->navigator = $this->navigator;
     }
 
+    public function calculatedfieldtesterAction()
+    {
+        $Tester = new TableRowCalculatedFieldTester();
+        $out = $Tester->test_validate_1();
+        echo json_encode($out);
+        die();
+    }
+
     private function shouldUpgradeFrom($testversion)
     {
         return (getGlobal('databaseversion')==$testversion) && (intval(Zend_Registry::get('config')->databaseversion) > intval($testversion));
