@@ -544,12 +544,12 @@ class EventStream {
      */
     public static function embeddedLinksToHtmlTags($event_description)
     {
-        // see http://stackoverflow.com/questions/287144/need-a-good-regex-to-convert-urls-to-links-but-leave-existing-links-alone
-        /*
-         * This regex has changed many times and is never quite right.  It almost certainly needs to be done a different way.
-         * stuff to check: httpsds   https://www.google.com
-         */
-        return preg_replace( '@(?!(?!.*?<a)[^<]*<\/a>)(https?|ftp|file):[-A-Z0-9+&#/%=~_|$?!,.]*[A-Z0-9+&#/%=~_|$]@i', '<html><a href="\0" target="_blank" title="open link in new tab">\0</a></html>', $event_description );
+        $pattern = '/\b(?:https?:\/\/|file:\/\/|ftp:\/\/)\S+\b/';
+        $event_description = preg_replace_callback($pattern, function ($matches) {
+            $url = $matches[0];
+            return '<html><a href="'.$url.'" target="_blank" title="open link in new tab">'.$url.'</a></html>';
+        }, $event_description);
+        return $event_description;
     }
 
 

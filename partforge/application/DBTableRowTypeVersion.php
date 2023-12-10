@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2023 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -24,6 +24,8 @@
  */
 
 class DBTableRowTypeVersion extends DBTableRow {
+
+    protected static $_type_diff_cache = array();
 
     public function __construct($ignore_joins = false, $parent_index = null)
     {
@@ -1616,10 +1618,8 @@ class DBTableRowTypeVersion extends DBTableRow {
 
     }
 
-    public function getFieldTypeGroomedForShow($fieldname, $components_as_links = false, $show_subcaption = false, $show_caption = false)
+    public function getFieldTypeGroomedForShow($typedigest, $fieldname, $components_as_links = false, $show_subcaption = false, $show_caption = false)
     {
-        // these are defaults so we can know not to waste paper when values equal them.
-        $typedigest = $this->getLoadedTypeVersionDigest(false);
 
         $defaults = array();
         $defaults['required'] = 0;
@@ -1643,8 +1643,13 @@ class DBTableRowTypeVersion extends DBTableRow {
             unset($fieldtype['can_have_typeobject_id']);
             $fieldtype['Type Object ID'] = array();
             foreach ($ids as $id) {
-                $SubTypeVersion = new DBTableRowTypeVersion();
-                $SubTypeVersion->getCurrentRecordByObjectId($id);
+                if (isset(self::$_type_diff_cache[$id])) {
+                    $SubTypeVersion = self::$_type_diff_cache[$id];
+                } else {
+                    $SubTypeVersion = new DBTableRowTypeVersion();
+                    $SubTypeVersion->getCurrentRecordByObjectId($id);
+                    self::$_type_diff_cache[$id] = $SubTypeVersion;
+                }
                 $comp_name = TextToHtml(DBTableRowTypeVersion::formatPartNumberDescription($SubTypeVersion->type_part_number, $SubTypeVersion->type_description));
                 $fieldtype['Type Object ID'][$id] = ($components_as_links ? linkify($SubTypeVersion->absoluteUrl(), $comp_name, 'view definition for '.$comp_name) : $comp_name);
             }
@@ -1689,7 +1694,7 @@ class DBTableRowTypeVersion extends DBTableRow {
         if (!isset($typedigest['fieldtypes'][$fieldname])) {
             return '';
         } else {
-            $fieldtype = $this->getFieldTypeGroomedForShow($fieldname, $components_as_links, $show_subcaption);
+            $fieldtype = $this->getFieldTypeGroomedForShow($typedigest, $fieldname, $components_as_links, $show_subcaption);
 
             $out = '';
             foreach ($fieldtype as $name => $value) {
@@ -1763,9 +1768,9 @@ class DBTableRowTypeVersion extends DBTableRow {
         return implode(', ', $nums_and_desc);
     }
 
-    public function fetchLayoutFieldParamsHtmlOneLine($fieldname, $components_as_links = false, $show_subcaption = false, $show_caption = false)
+    public function fetchLayoutFieldParamsHtmlOneLine($typedigest, $fieldname, $components_as_links = false, $show_subcaption = false, $show_caption = false)
     {
-        $fieldtype = $this->getFieldTypeGroomedForShow($fieldname, $components_as_links, $show_subcaption, $show_caption);
+        $fieldtype = $this->getFieldTypeGroomedForShow($typedigest, $fieldname, $components_as_links, $show_subcaption, $show_caption);
         $params = array();
         foreach ($fieldtype as $name => $value) {
             if (is_array($value)) {
@@ -1842,19 +1847,6 @@ class DBTableRowTypeVersion extends DBTableRow {
     }
 
     /**
-     * Use <del> and <ins> tags to annotate the difference between two blocks of text.
-     * @param text $was
-     * @param text $is
-     * @return string the $was text with the markup tags
-     */
-    static function markupDiffBetweenTextBlocks($was, $is)
-    {
-        require_once("PHPFineDiff/finediff.php");
-        $opcodes = FineDiff::getDiffOpcodes($was, $is, FineDiff::$characterGranularity /* , default granularity is set to character */);
-        return FineDiff::renderDiffToHTMLFromOpcodes($was, $opcodes);
-    }
-
-    /**
      * give this method another object of the same type, and it finds any differences
      * and output them as a textual description of the change.  This is used in generating
      * the difference messages in the EventStream.
@@ -1900,17 +1892,17 @@ class DBTableRowTypeVersion extends DBTableRow {
 
         $fields_deleted = array_diff($compare_fields, $this_fields);
         foreach ($fields_deleted as $fieldname) {
-            checkWasChangedDefinition($list, $compare_fieldtypes[$fieldname]['caption'], $CompareItem->fetchLayoutFieldParamsHtmlOneLine($fieldname, false, true), null);
+            checkWasChangedDefinition($list, $compare_fieldtypes[$fieldname]['caption'], $CompareItem->fetchLayoutFieldParamsHtmlOneLine($compare_typeversion_digest, $fieldname, false, true), null);
         }
         $fields_added = array_diff($this_fields, $compare_fields);
         foreach ($fields_added as $fieldname) {
-            checkWasChangedDefinition($list, $this_fieldtypes[$fieldname]['caption'], null, $this->fetchLayoutFieldParamsHtmlOneLine($fieldname, false, true));
+            checkWasChangedDefinition($list, $this_fieldtypes[$fieldname]['caption'], null, $this->fetchLayoutFieldParamsHtmlOneLine($this_typeversion_digest, $fieldname, false, true));
         }
 
         foreach (array_intersect($this_fields, $compare_fields) as $fieldname) {
             // in case the caption itself changed...
             $show_caption = (strcmp($this_fieldtypes[$fieldname]['caption'], $compare_fieldtypes[$fieldname]['caption']) !== 0);
-            checkWasChangedDefinition($list, $this_fieldtypes[$fieldname]['caption'], $CompareItem->fetchLayoutFieldParamsHtmlOneLine($fieldname, false, true, $show_caption), $this->fetchLayoutFieldParamsHtmlOneLine($fieldname, false, true, $show_caption));
+            checkWasChangedDefinition($list, $this_fieldtypes[$fieldname]['caption'], $CompareItem->fetchLayoutFieldParamsHtmlOneLine($compare_typeversion_digest, $fieldname, false, true, $show_caption), $this->fetchLayoutFieldParamsHtmlOneLine($this_typeversion_digest, $fieldname, false, true, $show_caption));
         }
 
         // layout items
