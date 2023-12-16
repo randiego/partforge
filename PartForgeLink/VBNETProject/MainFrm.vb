@@ -107,6 +107,8 @@ Public Class MainFrm
             End Try
 
         Next
+        ListView1.ListViewItemSorter = New EffectiveDateListViewComparer(2)
+        ListView1.Sort()
 
         RefreshControls()
     End Sub
@@ -264,3 +266,28 @@ Public Class MainFrm
 
     End Sub
 End Class
+
+' We need this to sort the list on EffectiveDate.
+Public Class EffectiveDateListViewComparer
+    Implements IComparer
+
+    Private col As Integer
+
+    Public Sub New(column As Integer)
+        col = column
+    End Sub
+
+    Public Function Compare(x As Object, y As Object) As Integer Implements IComparer.Compare
+        Dim dateX As DateTime
+        Dim dateY As DateTime
+
+        If DateTime.TryParse(CType(x, ListViewItem).SubItems(col).Text, dateX) AndAlso
+           DateTime.TryParse(CType(y, ListViewItem).SubItems(col).Text, dateY) Then
+            Return DateTime.Compare(dateX, dateY)
+        Else
+            ' Handle the case where parsing fails
+            Return 0
+        End If
+    End Function
+End Class
+
