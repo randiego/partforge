@@ -206,6 +206,78 @@ class ImportStrategyObjects {
         return $this->_log;
     }
 
+    public static function mapInputsIntoItemVersion($ItemVersion, $curr_field_to_columns, $record, $allow_same_date, &$errormsg)
+    {
+        $made_change_to_set_field = false;
+        // start by initializing the components so that we can pull in any intial values for subcomponent fields like we were editing manually
+        $init_components = array();
+        $init_components['typeversion_id'] = $ItemVersion->typeversion_id;
+        foreach ($curr_field_to_columns as $fieldname => $columnname) {
+            $type = $ItemVersion->getFieldType($fieldname);
+            if (!is_null($type)) {
+                if ($type['type']=='component') {
+                    $allowedvalues = $ItemVersion->getComponentSelectOptions($fieldname, $ItemVersion->effective_date, '', true, false, true);
+                    $allowedvalues[''] = '';
+                    $keyval = array_search($record[$columnname], $allowedvalues);
+                    if ($keyval!==false) {
+                        if (isset($init_components[$fieldname])) {
+                            $made_change_to_set_field = true;
+                        }
+                        $init_components[$fieldname] = $keyval;
+                    } else {
+                        $errormsg[] = "Value {$record[$columnname]} in column {$columnname} not a valid component value.";
+                    }
+                }
+            }
+        }
+
+        // this can handle pulling in subcomponent values and also diving deep to pull in other related component values
+        $ItemVersion->processPostedInitializeVars($init_components);
+
+        // now map in everything except the components
+        foreach ($curr_field_to_columns as $fieldname => $columnname) {
+            $type = $ItemVersion->getFieldType($fieldname);
+            if (!is_null($type)) {
+                if ($type['type']!='component') { // since we've already mapped in the components
+                    if ($fieldname=='partnumber_alias') {
+                        if ($ItemVersion->hasAliases()) {
+                            $allowedvalues = extract_column($ItemVersion->getAliases(), 'part_number');
+                            $keyval = array_search($record[$columnname], $allowedvalues);
+                            if ($keyval!==false) {
+                                if (isset($ItemVersion->partnumber_alias) && ($ItemVersion->partnumber_alias != $keyval)) {
+                                    $made_change_to_set_field = true;
+                                }
+                                $ItemVersion->partnumber_alias = $keyval;
+                            } else {
+                                $errormsg[] = "Value {$record[$columnname]} in column {$columnname} not a valid partnumber alias.";
+                            }
+                        } else {
+                            $ItemVersion->partnumber_alias = 0;
+                        }
+                    } else {
+                        if (isset($ItemVersion->{$fieldname}) && !empty($ItemVersion->{$fieldname}) && ($ItemVersion->{$fieldname} != $record[$columnname])) {
+                            $made_change_to_set_field = true;
+                        }
+                        $ItemVersion->{$fieldname} = $record[$columnname];
+                    }
+                }
+            }
+        }
+
+        $fields_to_check = $ItemVersion->getSaveFieldNames();
+        if ($allow_same_date) {
+            // we are probably resaving, so we don't worry about having the same date
+            $fields_to_check = array_diff($fields_to_check, array('effective_date'));
+        }
+        $ItemVersion->autoSelectDisposition($fields_to_check);
+        $ItemVersion->validateForFatalFields($fields_to_check, $errormsg);
+
+        return $made_change_to_set_field;
+
+    }
+
+
+
     /**
      * This is a singulation of the storeObjectsFromArray() function.  It uses the same machinery
      * as that method in order to save or update a single object.  We use this rather than going
@@ -239,52 +311,7 @@ class ImportStrategyObjects {
                     $ItemVersion->effective_date = $effective_date;
                 }
 
-                // start by initializing the components so that we can pull in any intial values for subcomponent fields like we were editing manually
-                $init_components = array();
-                $init_components['typeversion_id'] = $typeversion_id;
-                foreach ($curr_field_to_columns as $fieldname => $columnname) {
-                    $type = $ItemVersion->getFieldType($fieldname);
-                    if (!is_null($type)) {
-                        if ($type['type']=='component') {
-                            $allowedvalues = $ItemVersion->getComponentSelectOptions($fieldname, $ItemVersion->effective_date, '');
-                            $allowedvalues[''] = '';
-                            $keyval = array_search($record[$columnname], $allowedvalues);
-                            if ($keyval!==false) {
-                                $init_components[$fieldname] = $keyval;
-                            } else {
-                                $errormsg[] = "Value {$record[$columnname]} in column {$columnname} not a valid component value.";
-                            }
-                        }
-                    }
-                }
-
-                // this can handle pulling in subcomponent values and also diving deep to pull in other related component values
-                $ItemVersion->processPostedInitializeVars($init_components);
-
-                // Now that the inherited fields have all been mapped in, time to overwrite the fields
-                foreach ($curr_field_to_columns as $fieldname => $columnname) {
-                    $type = $ItemVersion->getFieldType($fieldname);
-                    if (!is_null($type)) {
-                        if ($type['type']!='component') {
-                            $ItemVersion->{$fieldname} = $record[$columnname];
-                        } else if ($fieldname=='partnumber_alias') {
-                            if ($ItemVersion->hasAliases()) {
-                                $allowedvalues = extract_column($ItemVersion->getAliases(), 'part_number');
-                                $keyval = array_search($record[$columnname], $allowedvalues);
-                                if ($keyval!==false) {
-                                    $ItemVersion->partnumber_alias = $keyval;
-                                } else {
-                                    $errormsg[] = "Value {$record[$columnname]} in column {$columnname} not a valid partnumber alias.";
-                                }
-                            } else {
-                                $ItemVersion->partnumber_alias = 0;
-                            }
-                        }
-                    }
-                }
-
-                $ItemVersion->autoSelectDisposition($ItemVersion->getSaveFieldNames());
-                $ItemVersion->validateForFatalFields($ItemVersion->getSaveFieldNames(), $errormsg);
+                self::mapInputsIntoItemVersion($ItemVersion, $curr_field_to_columns, $record, false, $errormsg);
             } else {
                 $errormsg[] = 'TypeVersion ID missing.  You must select what type of record you are importing.';
             }
@@ -312,37 +339,9 @@ class ImportStrategyObjects {
                     if ($effective_date) {
                         $ItemVersion->effective_date = $effective_date;
                     }
-                    foreach ($curr_field_to_columns as $fieldname => $columnname) {
-                        $type = $ItemVersion->getFieldType($fieldname);
-                        if (isset($type['type']) && ($type['type']=='component')) {
-                            $allowedvalues = $ItemVersion->getComponentSelectOptions($fieldname, $ItemVersion->effective_date, '');
-                            $allowedvalues[''] = '';
-                            $keyval =  array_search($record[$columnname], $allowedvalues);
-                            if ($keyval!==false) {
-                                $ItemVersion->{$fieldname} = $keyval;
-                            } else {
-                                $errormsg[] = "Value {$record[$columnname]} in column {$columnname} not a valid component value.";
-                            }
-                        } else if ($fieldname=='partnumber_alias') {
-                            if ($ItemVersion->hasAliases()) {
-                                $allowedvalues = extract_column($ItemVersion->getAliases(), 'part_number');
-                                $keyval = array_search($record[$columnname], $allowedvalues);
-                                if ($keyval!==false) {
-                                    $ItemVersion->partnumber_alias = $keyval;
-                                } else {
-                                    $errormsg[] = "Value {$record[$columnname]} in column {$columnname} not a valid partnumber alias.";
-                                }
-                            } else {
-                                $ItemVersion->partnumber_alias = 0;
-                            }
-                        } else {
-                            $ItemVersion->{$fieldname} = $record[$columnname];
-                        }
-                    }
-                    $fields_to_check = $ItemVersion->getSaveFieldNames();
-                    $fields_to_check = array_diff($fields_to_check, array('effective_date'));
-                    $ItemVersion->autoSelectDisposition($fields_to_check);
-                    $ItemVersion->validateForFatalFields($fields_to_check, $errormsg);
+
+                    self::mapInputsIntoItemVersion($ItemVersion, $curr_field_to_columns, $record, true, $errormsg);
+
                     if ((count($errormsg) == 0) && !$simulate_only) {
                         $ItemVersion->save(array(), true, $ItemVersion->user_id);
                     }
@@ -405,41 +404,22 @@ class ImportStrategyObjects {
             $base_version_array = $ItemVersion->getArray();
 
             if (count($errormsg) == 0) {
+
+                $same_effective_date = ($ItemVersion->user_id == $user_id) && ( strtotime($ItemVersion->effective_date) == strtotime($effective_date));
+
                 if ($user_id) {
                     $ItemVersion->user_id = $user_id;
                 }
                 if ($effective_date) {
                     $ItemVersion->effective_date = $effective_date;
                 }
-                foreach ($curr_field_to_columns as $fieldname => $columnname) {
-                    $type = $ItemVersion->getFieldType($fieldname);
-                    if ($type['type']=='component') {
-                        $allowedvalues = $ItemVersion->getComponentSelectOptions($fieldname, $ItemVersion->effective_date, '');
-                        $allowedvalues[''] = '';
-                        $keyval = array_search($record[$columnname], $allowedvalues);
-                        if ($keyval!==false) {
-                            $ItemVersion->{$fieldname} = $keyval;
-                        } else {
-                            $errormsg[] = "Value {$record[$columnname]} in column {$columnname} not a valid component value.";
-                        }
-                    } else if ($fieldname=='partnumber_alias') {
-                        if ($ItemVersion->hasAliases()) {
-                            $allowedvalues = extract_column($ItemVersion->getAliases(), 'part_number');
-                            $keyval = array_search($record[$columnname], $allowedvalues);
-                            if ($keyval!==false) {
-                                $ItemVersion->partnumber_alias = $keyval;
-                            } else {
-                                $errormsg[] = "Value {$record[$columnname]} in column {$columnname} not a valid partnumber alias.";
-                            }
-                        } else {
-                            $ItemVersion->partnumber_alias = 0;
-                        }
-                    } else {
-                        $ItemVersion->{$fieldname} = $record[$columnname];
-                    }
-                }
-                $ItemVersion->autoSelectDisposition($ItemVersion->getSaveFieldNames());
-                $ItemVersion->validateForFatalFields($ItemVersion->getSaveFieldNames(), $errormsg);
+
+                // If the incoming effective_date is the same as the current version, and it's the same user, etc
+                // and we are only setting fields that have not yet been set, then we will change the existing version
+                // rather than create a new version.
+
+                $made_change_to_set_field = self::mapInputsIntoItemVersion($ItemVersion, $curr_field_to_columns, $record, false, $errormsg);
+
                 $PreviousItemVersion = new DBTableRowItemVersion();
                 $PreviousItemVersion->assign($base_version_array);
 
@@ -451,7 +431,11 @@ class ImportStrategyObjects {
                     if (!$has_changes && strtotime($ItemVersion->effective_date)<strtotime($PreviousItemVersion->effective_date)) {
                         $ItemVersion->save(array(), true, $ItemVersion->user_id);  // save the same version only with the earlier date.
                     } else if ($has_changes) {
-                        $ItemVersion->saveVersioned($ItemVersion->user_id);
+                        if ($same_effective_date && !$made_change_to_set_field) {
+                            $ItemVersion->save(array(), true, $ItemVersion->user_id);
+                        } else {
+                            $ItemVersion->saveVersioned($ItemVersion->user_id);
+                        }
                     }
                 }
             } else {

@@ -182,7 +182,7 @@ class DBTableRowItemVersion extends DBTableRow {
                     // if we are actually initializing a component, then...
                     if (isset($initialize_array[$component_field_name]) && is_numeric($initialize_array[$component_field_name])) {
                         foreach ($this->reloadComponent($component_field_name) as $field => $value) {
-                            $this->{$field} = $value;
+                            $this->{$field} = $value; // might be redundent
                         }
                     }
                 }
@@ -1919,9 +1919,10 @@ class DBTableRowItemVersion extends DBTableRow {
      * In this case we return only procedures that
      * @param unknown_type $fieldname
      * @param unknown_type $effective_date
+     * @param boolean $hide_annotations if true this will not show any used on or future effective date warnings. This is used for strict serial number lookups
      * @return multitype:string unknown
      */
-    public function getComponentSelectOptions($fieldname, $effective_date, $future_suffix_label = ' (future effective date)', $only_self_ref_proc = true, $show_types = false)
+    public function getComponentSelectOptions($fieldname, $effective_date, $future_suffix_label, $only_self_ref_proc, $show_types, $hide_annotations)
     {
         /*
              * This list should be ordered by effective_date
@@ -2009,7 +2010,7 @@ class DBTableRowItemVersion extends DBTableRow {
                         $used_on = ' (used on '.implode(', ', $sn_arr).')';
                     }
                 }
-                $out[$record['itemobject_id']] = $record['sn'].$type_desc.($record['is_future_component'] ? $future_suffix_label : '').$used_on;
+                $out[$record['itemobject_id']] = $record['sn'].($hide_annotations ? '' : $type_desc.($record['is_future_component'] ? $future_suffix_label : '').$used_on);
             }
         }
         natcasesort($out);
@@ -2184,7 +2185,7 @@ class DBTableRowItemVersion extends DBTableRow {
     protected function formatInputTagComponent($fieldname)
     {
         $fieldtype = $this->getFieldType($fieldname);
-        $select_values = $this->getComponentSelectOptions($fieldname, $this->effective_date, ' (future effective date)', true, true);
+        $select_values = $this->getComponentSelectOptions($fieldname, $this->effective_date, ' (future effective date)', true, true, false);
         $select_values[''] = ''; // the way you unset a component
 
         /*
