@@ -269,6 +269,7 @@ class ImportStrategyObjects {
             // we are probably resaving, so we don't worry about having the same date
             $fields_to_check = array_diff($fields_to_check, array('effective_date'));
         }
+        $ItemVersion->processCalculatedFields();
         $ItemVersion->autoSelectDisposition($fields_to_check);
         $ItemVersion->validateForFatalFields($fields_to_check, $errormsg);
 
