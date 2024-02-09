@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2023 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2024 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -594,6 +594,52 @@ class UtilsController extends DBControllerActionAbstract
                         setGlobal('databaseversion', $databaseversion);
                     }
 
+                    if ($this->shouldUpgradeFrom('23')) {
+                        $msgs[] = 'Upgrading to version 24: Add missing indexes for speed.';
+
+                        // add index if missing
+                        $records = DbSchema::getInstance()->getRecords('Field', "SHOW FIELDS FROM comment");
+                        foreach ($records as $record) {
+                            if ($record['Field'] == 'comment_added') {
+                                if ($record['Key'] != 'MUL') {
+                                    DbSchema::getInstance()->mysqlQuery("ALTER TABLE comment ADD INDEX(comment_added)");
+                                }
+                            }
+                        }
+
+                        // add index if missing
+                        $records = DbSchema::getInstance()->getRecords('Field', "SHOW FIELDS FROM itemversion");
+                        foreach ($records as $record) {
+                            if ($record['Field'] == 'effective_date') {
+                                if ($record['Key'] != 'MUL') {
+                                    DbSchema::getInstance()->mysqlQuery("ALTER TABLE itemversion ADD INDEX(effective_date)");
+                                }
+                            }
+                        }
+
+                        // increase size of field from varchar(64)
+                        $records = DbSchema::getInstance()->getRecords('Field', "SHOW FIELDS FROM typecomponent");
+                        foreach ($records as $record) {
+                            if ($record['Field'] == 'component_name') {
+                                if ($record['Type'] != 'varchar(80)') {
+                                    DbSchema::getInstance()->mysqlQuery("ALTER TABLE typecomponent CHANGE COLUMN component_name component_name varchar(80) DEFAULT NULL COMMENT 'field name of this component in the dictionary'");
+                                }
+                            }
+                        }
+
+                        // increase size of field from varchar(64)
+                        $records = DbSchema::getInstance()->getRecords('Field', "SHOW FIELDS FROM itemcomponent");
+                        foreach ($records as $record) {
+                            if ($record['Field'] == 'component_name') {
+                                if ($record['Type'] != 'varchar(80)') {
+                                    DbSchema::getInstance()->mysqlQuery("ALTER TABLE itemcomponent CHANGE COLUMN component_name component_name varchar(80) DEFAULT NULL COMMENT 'field name of this component in the dictionary'");
+                                }
+                            }
+                        }
+
+                        $databaseversion = '24';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
             }
         }
         $this->view->currentversion = getGlobal('databaseversion');
