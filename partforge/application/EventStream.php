@@ -117,11 +117,16 @@ class EventStream {
                 $ComponentObj = $ItemVersion->getComponentAsIVObject($componentname);
                 if (!is_null($ComponentObj) && $ComponentObj->hasASerialNumber()) {
                     $EventStream = new self($itemobject_id);
+                    $comptypeinfo = $ItemVersion->getFieldType($componentname);
                     $morelines = $EventStream->assembleStreamArray($componentname, $end_date);
 
-                    // remove any duplicates of top-level items.
                     foreach ($morelines as $idx => $moreline) {
+                        // remove any duplicates of top-level items.
                         if (in_array($moreline['event_type_id'], array('ET_CHG','ET_PROCREF','ET_PARTREF')) && in_array($moreline['this_itemversion_id'], $parent_itemversion_ids)) {
+                            unset($morelines[$idx]);
+                        }
+                        // remove part reference for multiple used components. We don't want to see all these Became Part of events!
+                        if (isset($comptypeinfo['max_uses']) && in_array($comptypeinfo['max_uses'], array(0, -1)) && ($moreline['event_type_id'] == 'ET_PARTREF')) {
                             unset($morelines[$idx]);
                         }
                     }
