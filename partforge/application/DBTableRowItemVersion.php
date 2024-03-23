@@ -2330,7 +2330,14 @@ class DBTableRowItemVersion extends DBTableRow {
                     $latest_effective_date = $this->getLatestOfComponentCreatedDates();
 
                     $now_btn = !$value ? '&nbsp<a class="minibutton2" id="effectiveDateNow" title="insert current time">now</a>' : '';
-                    $date_warn_html = ($latest_effective_date!=null) ? '<div style="margin-top:4px;"><span class="'.(($current_effective_date_set && ($latest_effective_date>strtotime($value))) ? 'paren_red' : 'paren').'">Must be '.date("m/d/Y H:i", $latest_effective_date)." or later</span></div>" : '';
+                    $date_warn_html = '';
+                    if ($latest_effective_date!=null) {
+                        if ($current_effective_date_set && ($latest_effective_date>strtotime($value))) {
+                            $date_warn_html .= '<div style="margin-top:4px;"><span class="paren_red">Must be '.date("m/d/Y H:i", $latest_effective_date)." or later. Check Component Create Dates.</span></div>";
+                        } else {
+                            $date_warn_html .= '<div style="margin-top:4px;"><span class="paren">Must be '.date("m/d/Y H:i", $latest_effective_date)." or later</span></div>";
+                        }
+                    }
 
                     return '<div><INPUT class="inputboxclass" TYPE="text" NAME="'.$fieldname.'" VALUE="'.($current_effective_date_set ? date('m/d/Y H:i', strtotime($value)) : $value).'" SIZE="20" MAXLENGTH="24"'.$attributes.'>'.$now_btn.'</div>'.$date_warn_html;
                 } else {
