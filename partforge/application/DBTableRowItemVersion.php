@@ -2209,6 +2209,12 @@ class DBTableRowItemVersion extends DBTableRow {
         } else if (count($link_info)>1) {
             $buttons = linkify('#', 'New...', 'Add a component that does not already exist in the list', 'minibutton2', "$(this).next('.comp_add_button_group').toggle(); return false;");
             $buttons .= '<div style="display:none;" class="comp_add_button_group">';
+
+            // sort by name instead of typeobject id
+            uasort($link_info, function ($a, $b) {
+                return strnatcasecmp($a['desc'], $b['desc']);
+            });
+
             foreach ($link_info as $li) {
                 $buttons .= '<div>'.linkify('#', $li['desc'], 'Add a new '.$li['pn'].' ('.$li['desc'].')', '', $li['js']).'</div>';
             }
