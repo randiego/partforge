@@ -467,7 +467,7 @@ class DbSchema {   // singleton
     private function logQuery($query)
     {
         if (Zend_Registry::get('config')->db_query_dump_file) {
-            file_put_contents(Zend_Registry::get('config')->db_query_dump_file, $query."\r\n\r\n\r\n", FILE_APPEND);
+            file_put_contents(Zend_Registry::get('config')->db_query_dump_file, $query.";\r\n\r\n\r\n", FILE_APPEND);
         }
     }
 

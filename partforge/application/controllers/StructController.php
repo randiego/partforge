@@ -1385,8 +1385,14 @@ class StructController extends DBControllerActionAbstract
                      */
                     if (count($iv_records)==1) {
                         $ref_records = DbSchema::getInstance()->getRecords('', "SELECT * FROM itemcomponent where has_an_itemobject_id='{$EditRow->itemobject_id}'");
+                        $links_str = array();
+                        foreach ($ref_records as $ref_record) {
+                            $view_url = $this->navigator->getCurrentViewUrl('itemview', '', array('itemversion_id' => $ref_record['belongs_to_itemversion_id']));
+                            $link_strings[] = linkify( $view_url, $ref_record['belongs_to_itemversion_id'], "Go to ItemVersion ID ".$ref_record['belongs_to_itemversion_id']);
+                        }
                         if (count($ref_records)>0) {
-                            $msgs[] = 'You cannot delete this if there are other parts or procedures that reference it.  You must delete them first.';
+                            $msgs[] = 'You cannot delete this if there are other parts or procedures that reference it.  These item versions contain this object as a component: '.
+                                        implode(', ', $link_strings).'.  You must delete these version or edit them to unselect this component.';
                         }
                         $com_records = DbSchema::getInstance()->getRecords('', "SELECT * FROM comment where (itemobject_id='{$EditRow->itemobject_id}') and (comment.is_fieldcomment=0)");
                         if (count($com_records)>0) {
