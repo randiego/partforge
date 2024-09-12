@@ -2521,3 +2521,9 @@ div.dashandbuttonsdiv {
 	margin-bottom: 20px; font-weight: bold;
 }
 
+#pagefooter {
+	color: #777;
+	font-weight: bold;
+	font-size: 11px;
+	margin-left: 10px;
+}

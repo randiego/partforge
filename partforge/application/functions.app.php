@@ -1037,3 +1037,19 @@ function popupTreeViewLink($itemobject_id)
     $icon = '<IMG style="vertical-align:middle;" src="'.Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/images/tree-structure.png" width="16" height="16" border="0" alt="subcomponent tree">';
     return linkify('#', $icon, 'subcomponent tree', 'tree_pop_link').'<div class="tree_pop_div" id="tree_pop_'.$itemobject_id.'" title="..." style="display: none;"></div>';
 }
+
+function codeVersion()
+{
+    $config = Zend_Registry::get('config');
+    if (isset($config->fake_version_string)) {
+        return $config->fake_version_string;
+    }
+    $codever = "";
+    try {
+        $getver = trim(file_get_contents(dirname(__FILE__) . '/../codeversion.txt'));
+        $codever = is_numeric($getver) ? $getver : '??';
+    } catch (Exception $e) {
+        $codever = "???";
+    }
+    return $config->databaseversion.".".$codever;
+}
