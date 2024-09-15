@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2023 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2024 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -222,7 +222,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
                         $a = explode('.', $fieldname);
                         $this->csvfields[$fieldname] = $a[0].'->'.$fieldtype['caption'].$comp_suffix;
                     } else {
-                        $this->csvfields[$fieldname]    = $fieldtype['caption'].$comp_suffix;
+                        $this->csvfields[$fieldname] = $fieldtype['caption'].$comp_suffix;
                     }
                 }
             }
@@ -849,6 +849,8 @@ class ReportDataItemListView extends ReportDataWithCategory {
                         if ($subfieldtype['type']=='component') {
                             $value_array = $SubIV->getComponentValueAsArray($subfieldname);
                             $detail_out[DBTableRowTypeVersion::formatSubfieldPrefix($fieldname, $SubIV->tv__typeobject_id).'.'.$subfieldname] = isset($SubIV->{$subfieldname}) ? $value_array[$SubIV->{$subfieldname}] : null;
+                        } elseif (($subfieldname == 'user_id') && isset($this->export_user_records[$SubIV->user_id])) {
+                            $detail_out[DBTableRowTypeVersion::formatSubfieldPrefix($fieldname, $SubIV->tv__typeobject_id).'.'.$subfieldname] = $this->export_user_records[$SubIV->user_id]['login_id'];
                         } else {
                             $detail_out[DBTableRowTypeVersion::formatSubfieldPrefix($fieldname, $SubIV->tv__typeobject_id).'.'.$subfieldname] = $SubIV->{$subfieldname};
                         }

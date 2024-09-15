@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2023 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2024 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -319,7 +319,8 @@ class DBTableRowTypeVersion extends DBTableRow {
     /**
      * This will return an array of fieldtypes with keys like "component_name(to/234).myfieldname" instead
      * of the normal "impedance" field names.  This is needed for exporting with deep recursion.
-     * This naming provides a unique namespace for the fields.
+     * This naming provides a unique namespace for the fields. There are some odd balls like user_id
+     * that are in there because it is useful later.
      */
     static public function getAllPossibleComponentExtendedFieldNames($typeobject_id)
     {
@@ -338,6 +339,7 @@ class DBTableRowTypeVersion extends DBTableRow {
             //  including the (to/n) makes sure we've listed out all the possibilities because we don't want mycomp(to/5).myfield to
             // step on mycomp(to/10).myfield since they are potentiall completely different types.
             $out = array_merge($out, prefix_array_keys($TV->getItemFieldTypes(true, true), self::formatSubfieldPrefix($record['component_name'], $TV->typeobject_id).'.'));
+            $out[DBTableRowTypeVersion::formatSubfieldPrefix($record['component_name'], $TV->typeobject_id).'.user_id'] = array('type' => '', 'caption' => 'user_id');
         }
         return $out;
     }
