@@ -352,6 +352,7 @@ class PaginatedReportPage {
 		<tr><td nowrap valign="MIDDLE">'.nbsp_ifblank($this->rows_select_tag_if_enough_rows($numrows, $_SESSION['account']->pref_rows_per_page)).'</td><td align="right">'.(($right_pagination_url && (count($header_fields_array) > 4)) ? linkify($right_pagination_url, '&raquo;&raquo;', 'Next Page') : '&nbsp;').'</td></tr>
 		</table>
 		<div class="paginationline">'.$paginationline_html.'</div>
+        <div id="pagefooter"><p>Powered by <a href="https://github.com/randiego/partforge" target="_blank">PartForge</a> version '.codeVersion().'</p></div>
 ';
         return $html;
     }
