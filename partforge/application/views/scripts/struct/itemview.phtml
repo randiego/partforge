@@ -133,7 +133,7 @@ if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 
 */
 
 $records = $this->streamrecords;
-list($lines,$references_by_typeobject_id) = EventStream::eventStreamRecordsToLines($records, $this->dbtable, $this->navigator);
+list($lines,$references_by_typeobject_id) = EventStream::eventStreamRecordsToLines($records, $this->dbtable, $this->navigator, false);
 $layout_rows = EventStream::eventStreamLinesToHtml($this->dbtable, $lines, $this->navigator);
 
 /*

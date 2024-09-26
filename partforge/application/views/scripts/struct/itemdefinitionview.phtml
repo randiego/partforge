@@ -366,7 +366,7 @@ if ($is_a_part) {
 
 $DefinitionEventStream = new DefinitionEventStream($this->dbtable->typeobject_id);
 $records = $DefinitionEventStream->assembleStreamArray();
-$lines = DefinitionEventStream::eventStreamRecordsToLines($records, $this->dbtable, $this->navigator);
+$lines = DefinitionEventStream::eventStreamRecordsToLines($records, $this->dbtable, $this->navigator, false);
 $layout_rows = DefinitionEventStream::eventStreamLinesToHtml($this->dbtable, $lines, $this->navigator);
 
 $html .= '</div>';

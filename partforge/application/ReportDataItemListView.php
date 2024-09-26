@@ -796,7 +796,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
                     list($comment_id, $user_id, $comment_added, $comment_text, $subdocuments_packed) = explode('&', $subcomment);
                     $subdatetime = time_to_bulletdate(strtotime($comment_added));
                     $comment_text = hextobin($comment_text); // we had packed this earlier for safety
-                    list($comment_html,$comment_text_array) = EventStream::textToHtmlWithEmbeddedCodes($comment_text, $navigator, 'ET_COM', false);
+                    list($comment_html,$comment_text_array) = EventStream::textToHtmlWithEmbeddedCodes($comment_text, $navigator, 'ET_COM', false, false);
                     if ($is_first) {
                         $hrule_class = 'bd-event-subcomment dash-no-hrule';
                         $is_first = false;
@@ -810,7 +810,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
                                     ';
                     if ($subdocuments_packed) {
                         $subcomments_html .= '<div class="bd-subcomment-documents">';
-                        $subcomments_html .= EventStream::documentsPackedToFileGallery(Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl(), 'id_'.$this->_dashboardtable_id.'_'.$record['itemobject_id'].'_'.$bare_idx, $subdocuments_packed);
+                        $subcomments_html .= EventStream::documentsPackedToFileGallery('id_'.$this->_dashboardtable_id.'_'.$record['itemobject_id'].'_'.$bare_idx, $subdocuments_packed);
                         $subcomments_html .= '</div>';
                     }
                     $subcomments_html .= '<div class="bd-subcomment-when">'.$subdatetime.'</div></li>';

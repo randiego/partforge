@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2024 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -143,7 +143,7 @@ class ReportDataMyMessages extends ReportDataWithCategory {
         $detail_out['object_name'] = '<div class="excerpt" style="display: block; max-width:400px;">'.$type.linkify($view_url, $record['object_name'], 'View').'</div>';
 
 
-        list($comment_html,$dummy) = EventStream::textToHtmlWithEmbeddedCodes($record['sent_text'], $navigator, 'ET_COM');
+        list($comment_html,$dummy) = EventStream::textToHtmlWithEmbeddedCodes($record['sent_text'], $navigator, 'ET_COM', false, false);
         $detail_out['sent_text'] = '<div class="excerpt" style="display: block; max-width:400px;">'.$comment_html.'</div>';
     }
 

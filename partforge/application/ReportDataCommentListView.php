@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2024 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -149,7 +149,7 @@ class ReportDataCommentListView extends ReportDataWithCategory {
             $detail_out[$fieldname] = TextToHtml($record[$fieldname]);
         }
         $detail_out['item_serial_number'] = linkify( $edit_url, $record['item_serial_number'], 'View');
-        list($comment_html,$dummy) = EventStream::textToHtmlWithEmbeddedCodes($record['comment_text'], $navigator, 'ET_COM');
+        list($comment_html,$dummy) = EventStream::textToHtmlWithEmbeddedCodes($record['comment_text'], $navigator, 'ET_COM', false, false);
         $detail_out['comment_text'] = '<div class="excerpt" style="display: block; width:400px; max-width:400px;">'.$comment_html.'</div>';
 
         $detail_out['comment_added'] = empty($record['comment_added']) ? '' : date('M j, Y G:i', strtotime($record['comment_added']));
@@ -158,7 +158,7 @@ class ReportDataCommentListView extends ReportDataWithCategory {
 
         if ($record['documents_packed']) {
             $documents_html = '<div style="max-width:400px;"><div class="bd-event-documents">';
-            $documents_html .= EventStream::documentsPackedToFileGallery($this->baseUrl, 'id'.$record['comment_id'], $record['documents_packed']);
+            $documents_html .= EventStream::documentsPackedToFileGallery('id'.$record['comment_id'], $record['documents_packed']);
             $documents_html .= '</div></div>';
         } else {
             $documents_html = '';

@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2024 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -159,7 +159,7 @@ class DBTableRowSendMessage extends DBTableRow {
             $Emailer->setContentType('text/html; charset=utf-8');
             $Comment = new DBTableRowComment();
             if ($Comment->getRecordById($this->comment_id)) {
-                list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($Comment->comment_text, null, 'ET_COM');
+                list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($Comment->comment_text, null, 'ET_COM', false, false);
                 $documents_block_html = self::formatDocumentsBlock($Comment->document_ids, $Emailer);
                 $html = '';
                 $html .= "<p>{$linkifiedsubject}</p>";

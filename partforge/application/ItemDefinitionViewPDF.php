@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2024 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -198,7 +198,7 @@ class ItemDefinitionViewPDF extends ItemViewPDF {
         $this->outputLinkedDefinitions(0, 'Linked Part Definitions');
 
         $DefinitionEventStream = new DefinitionEventStream($this->TypeVersion->typeobject_id);
-        $lines = DefinitionEventStream::eventStreamRecordsToLines($DefinitionEventStream->assembleStreamArray(), $this->TypeVersion);
+        $lines = DefinitionEventStream::eventStreamRecordsToLines($DefinitionEventStream->assembleStreamArray(), $this->TypeVersion, null, false);
 
         $this->renderTypeCommentsChangesTable($lines);
 

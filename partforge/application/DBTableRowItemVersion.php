@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2024 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -973,7 +973,7 @@ class DBTableRowItemVersion extends DBTableRow {
             $Arc->cached_user_id = $record['user_id'];
             $Arc->original_record_created = $record['record_created'];
             $event_description_array = array();
-            $Arc->changes_html = EventStream::itemversionMarkupToHtmlTags($this->itemDifferencesFrom($ItemVersionOrig, true), null, 'ET_CHG', $event_description_array, false);
+            $Arc->changes_html = EventStream::itemversionMarkupToHtmlTags($this->itemDifferencesFrom($ItemVersionOrig, true), null, 'ET_CHG', $event_description_array, false, false);
             $Arc->item_data = json_encode($record);
             $Arc->save();
         }
@@ -2225,7 +2225,7 @@ class DBTableRowItemVersion extends DBTableRow {
         return format_select_tag($select_values, $fieldname, $this->getArray(), $fieldtype['onchange_js'], null, null, null, 'inputboxclass compsel').'<br />'.$footer;
     }
 
-    public static function getFieldCommentRecord($navigator, $comment_id, $gallery_id)
+    public static function getFieldCommentRecord($navigator, $comment_id, $gallery_id, $genHtmlForPdf)
     {
         $config = Zend_Registry::get('config');
         $query = "
@@ -2237,8 +2237,12 @@ class DBTableRowItemVersion extends DBTableRow {
         $records = DbSchema::getInstance()->getRecords('comment_id', $query);
         if (count($records)>0) {
             $record = reset($records);
-            list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($record['comment_text'], $navigator, 'ET_COM', false);
-            return array($record['documents_packed'] ? EventStream::documentsPackedToFileGallery(Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl(), $gallery_id, $record['documents_packed']) : '', $event_description, $record);
+            list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($record['comment_text'], $navigator, 'ET_COM', false, false);
+            if ($genHtmlForPdf) {
+                return array($record['documents_packed'] ? EventStream::renderCommentDocumentsPackedToPdfHtml($record['documents_packed']) : '', $event_description, $record);
+            } else {
+                return array($record['documents_packed'] ? EventStream::documentsPackedToFileGallery($gallery_id, $record['documents_packed']) : '', $event_description, $record);
+            }
         }
         return array("","",array());
     }
@@ -2250,7 +2254,7 @@ class DBTableRowItemVersion extends DBTableRow {
         $initial_text = '';
         $got_something_to_edit = false;
         if (is_numeric($this->{$fieldname})) {
-            list($documents_gallery_html, $comment_html, $record) = self::getFieldCommentRecord($this->_navigator, $this->{$fieldname}, 'id_edit_'.$this->{$fieldname});
+            list($documents_gallery_html, $comment_html, $record) = self::getFieldCommentRecord($this->_navigator, $this->{$fieldname}, 'id_edit_'.$this->{$fieldname}, false);
             if ((count($record) > 0) && $record['is_fieldcomment']) {
                 $got_something_to_edit = true;
                 $initial_text = $record['comment_text']; // since there's a commment here, we can seed it if we want to use the add button.
@@ -2558,19 +2562,19 @@ class DBTableRowItemVersion extends DBTableRow {
             foreach ($value_array as $f => $v) {
                 if (is_numeric($v)) {
                     $text_name = ucwords(str_replace('_', ' ', $f));
-                    $out[] = ucwords(str_replace('_', ' ', $f)).':&nbsp;'.self::formatPrintFieldAttachment($navigator, $v, $is_html);
+                    $out[] = ucwords(str_replace('_', ' ', $f)).':&nbsp;'.self::formatPrintFieldAttachment($navigator, $v, $is_html, false);
                 }
             }
         }
         return count($out)==0 ? '' : '<ul class="bd-bullet_features"><li>'.implode('</li><li>', $out).'</li></ul>';
     }
 
-    protected static function formatPrintFieldAttachment($navigator, $comment_id, $is_html)
+    protected static function formatPrintFieldAttachment($navigator, $comment_id, $is_html, $genHtmlForPdf)
     {
         $out = '';
         $got_a_valid_fieldcomment = false;
         if (is_numeric($comment_id)) {
-            list($documents_gallery_html, $comment_html, $record) = self::getFieldCommentRecord($navigator, $comment_id, 'id_print_'.$comment_id);
+            list($documents_gallery_html, $comment_html, $record) = self::getFieldCommentRecord($navigator, $comment_id, 'id_print_'.$comment_id, $genHtmlForPdf);
             if ((count($record) > 0) && $record['is_fieldcomment']) {
                 $got_a_valid_fieldcomment = true;
             }
@@ -2604,7 +2608,7 @@ class DBTableRowItemVersion extends DBTableRow {
         return $out;
     }
 
-    public function formatPrintField($fieldname, $is_html = true, $show_float_units = false)
+    public function formatPrintField($fieldname, $is_html = true, $show_float_units = false, $genHtmlForPdf = false)
     {
         $fieldtype = $this->getFieldType($fieldname);
         $value = $this->$fieldname;
@@ -2617,7 +2621,7 @@ class DBTableRowItemVersion extends DBTableRow {
                 $type_addon = (count($fieldtype['can_have_typeobject_id']) > 1) && !is_null($ComponentItemVersion) ? ' ['.$ComponentItemVersion->part_description.']' : '';
                 return self::fetchComponentPrintFieldHtml($this->_navigator, $ComponentItemVersion, $text_name, $value, $is_html).$type_addon;
             case 'attachment' :
-                return self::formatPrintFieldAttachment($this->_navigator, $this->{$fieldname}, $is_html);
+                return self::formatPrintFieldAttachment($this->_navigator, $this->{$fieldname}, $is_html, $genHtmlForPdf);
             default:
                 // if float type and there are units, then show them if $show_float_units
                 if (in_array($type, array('float','calculated')) && $show_float_units) {
@@ -2995,7 +2999,7 @@ class DBTableRowItemVersion extends DBTableRow {
     public function getProcedureEditBlockHtmlByTypeObjectId($showlinks, $end_date = null)
     {
         $streamrecord = EventStream::getTopLevelEventStreamRecords($this, $end_date);
-        list($lines,$references_by_typeobject_id) = EventStream::eventStreamRecordsToLines($streamrecord, $this, null);
+        list($lines,$references_by_typeobject_id) = EventStream::eventStreamRecordsToLines($streamrecord, $this, null, false);
 
         $procedure_records = getTypesThatReferenceThisType($this->typeversion_id);
         // remove any obsolete ones

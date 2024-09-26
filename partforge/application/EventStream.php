@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2024 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -566,7 +566,7 @@ class EventStream {
      * @param array $event_description_array
      * @return mixed array($event_description still in plain text but now with <html>tags inserted for the itemversion markdown.)
      */
-    public static function itemversionMarkupToHtmlTags($event_description, $navigator, $event_type, &$event_description_array, $include_html_wrapper = true)
+    public static function itemversionMarkupToHtmlTags($event_description, $navigator, $event_type, &$event_description_array, $include_html_wrapper, $genHtmlForPdf)
     {
         $event_description_array = array();
         $match = preg_match_all('/<itemversion>([0-9]+)<\/itemversion>/i', $event_description, $out);
@@ -582,24 +582,37 @@ class EventStream {
             if (in_array($event_type, array('ET_PROCREF','ET_PARTREF'))) {
                 foreach ($ItemVersion->getFeaturedFieldTypes() as $fieldname => $fieldtype) {
                     if (trim($ItemVersion->{$fieldname})!=='') {
-                        $features[] = '<span class="label">'.$ItemVersion->formatFieldnameNoColon($fieldname).':</span> <span class="value">'.$ItemVersion->formatPrintField($fieldname, true, true).'</span>';
-                        $features_structured[] = array('name' => $ItemVersion->formatFieldnameNoColon($fieldname), 'value' => $ItemVersion->formatPrintField($fieldname, true, true));
+                        if ($genHtmlForPdf) {
+                            $features[] = ItemViewPDF::formatFeaturedFieldforPdf($ItemVersion->formatFieldnameNoColon($fieldname), $ItemVersion->formatPrintField($fieldname, true, true, $genHtmlForPdf));
+                        } else {
+                            $features[] = '<span class="label">'.$ItemVersion->formatFieldnameNoColon($fieldname).':</span> <span class="value">'.$ItemVersion->formatPrintField($fieldname, true, true, $genHtmlForPdf).'</span>';
+                        }
+
+                        $features_structured[] = array('name' => $ItemVersion->formatFieldnameNoColon($fieldname), 'value' => $ItemVersion->formatPrintField($fieldname, true, true, $genHtmlForPdf));
                     }
                 }
                 // if event type  is procedure, then show the errors $ItemVersion->getArrayOfAllFieldErrors()
                 if ($event_type=='ET_PROCREF') {
                     $validation_errors = $ItemVersion->getArrayOfAllFieldErrors();
                     if (count($validation_errors)>self::MAX_ERRORS_TO_SHOW) {
-                        $features[] = '<span class="errorred">'.count($validation_errors).' Errors</span>';
+                        if ($genHtmlForPdf) {
+                            $features[] = ItemViewPDF::formatFeaturedFieldforPdf(count($validation_errors).' Errors', '', true);
+                        } else {
+                            $features[] = '<span class="errorred">'.count($validation_errors).' Errors</span>';
+                        }
                     } elseif (count($validation_errors)>0) {
                         foreach ($validation_errors as $err) {
-                            $features[] = '<span class="errorred">Error: '.$err['name'].'</span>';
+                            if ($genHtmlForPdf) {
+                                $features[] = ItemViewPDF::formatFeaturedFieldforPdf('Error: '.$err['name'], '', true);
+                            } else {
+                                $features[] = '<span class="errorred">Error: '.$err['name'].'</span>';
+                            }
                         }
                     }
                 }
                 $featuresstr = '';
                 if (count($features)>0) {
-                    $featuresstr = ' <ul><li>'.implode('</li><li>', $features).'</li></ul>';
+                    $featuresstr = $genHtmlForPdf ? "<br />".implode("<br />", $features) : ' <ul><li>'.implode('</li><li>', $features).'</li></ul>';
                 }
             } else if ($event_type=='ET_CHG') {
                 $featuresstr = '';
@@ -636,7 +649,7 @@ class EventStream {
      * data.  $navigator can be null, in which case this is a display only thing that is returned.
      * $description_is_html true means that the only conversion to be done is expanding <itemversion> markup.
      */
-    public static function textToHtmlWithEmbeddedCodes($event_description, $navigator, $event_type, $description_is_html = false)
+    public static function textToHtmlWithEmbeddedCodes($event_description, $navigator, $event_type, $description_is_html, $genHtmlForPdf)
     {
         // convert to htmlentities, then pick out all the <itemversion>NNN</itemversion> tags. (Note that these are themselves converted to entities)
         $event_description_array = array();
@@ -646,15 +659,16 @@ class EventStream {
         if (!$description_is_html) {
             $event_description = self::embeddedLinksToHtmlTags($event_description);
         }
-        $event_description = self::itemversionMarkupToHtmlTags($event_description, $navigator, $event_type, $event_description_array, !$description_is_html);
+        $event_description = self::itemversionMarkupToHtmlTags($event_description, $navigator, $event_type, $event_description_array, !$description_is_html, $genHtmlForPdf);
         if (!$description_is_html) {
             $event_description = self::textToHtmlwithEmbeddedHtml($event_description);
         }
         return array($event_description,$event_description_array);
     }
 
-    public static function documentsPackedToFileGallery($baseUrl, $slideshow_unique_id, $documents_packed)
+    public static function documentsPackedToFileGallery($slideshow_unique_id, $documents_packed)
     {
+        $baseUrl = getAbsoluteBaseUrl();
         $thumbs = $files = array();
         foreach (explode(';', $documents_packed) as $document_packed) {
             list($document_id,$document_filesize,$document_displayed_filename,$document_stored_filename,$document_stored_path,$document_file_type,$document_thumb_exists) = explode(',', $document_packed);
@@ -744,7 +758,7 @@ class EventStream {
             if ($line['event_type_id']=='ET_COM') {
                 if ($line['documents_packed']) {
                     $documents_html = '<div class="bd-event-documents">';
-                    $documents_html .= self::documentsPackedToFileGallery($baseUrl, 'id'.$line_idx, $line['documents_packed']);
+                    $documents_html .= self::documentsPackedToFileGallery('id'.$line_idx, $line['documents_packed']);
                     $documents_html .= '</div>';
                 } else {
                     $documents_html = '';
@@ -769,7 +783,7 @@ class EventStream {
                         list($user_id,$comment_added,$comment_text,$subdocuments_packed) = explode('&', $subcomment);
                         $subdatetime = time_to_bulletdate(strtotime($comment_added));
                         $comment_text = hextobin($comment_text); // we had packed this earlier for safety
-                        list($comment_html,$comment_text_array) = EventStream::textToHtmlWithEmbeddedCodes($comment_text, $navigator, $line['event_type_id'], false);
+                        list($comment_html,$comment_text_array) = EventStream::textToHtmlWithEmbeddedCodes($comment_text, $navigator, $line['event_type_id'], false, false);
                         $subcomments_html .= '<li class="bd-event-subcomment">
 								<div class="bd-subcomment-who-message">
 								<span class="bd-subcomment-byline">'.DBTableRowUser::concatNames($user_records[$user_id]).':</span>'.$comment_html.'
@@ -778,7 +792,7 @@ class EventStream {
 										';
                         if ($subdocuments_packed) {
                             $subcomments_html .= '<div class="bd-subcomment-documents">';
-                            $subcomments_html .= self::documentsPackedToFileGallery($baseUrl, 'id'.$line_idx, $subdocuments_packed);
+                            $subcomments_html .= self::documentsPackedToFileGallery('id'.$line_idx, $subdocuments_packed);
                             $subcomments_html .= '</div>';
                         }
                         $subcomments_html .= '<div class="bd-subcomment-when">'.$subdatetime.'</div></li>';
@@ -837,15 +851,15 @@ class EventStream {
     public static function renderCommentDocumentsPackedToPdfHtml($documents_packed)
     {
         $baseUrl = getAbsoluteBaseUrl();
-        $documents_html = '<ul>';
+        $items = array();
         foreach (explode(';', $documents_packed) as $document_packed) {
             list($document_id,$document_filesize,$document_displayed_filename,$document_stored_filename,$document_stored_path,$document_file_type,$document_thumb_exists) = explode(',', $document_packed);
             $document_stored_filename = hextobin($document_stored_filename); // we had to store this earlier for safety
             $document_displayed_filename = hextobin($document_displayed_filename); // we had to store this earlier for safety
             $filename_url = $baseUrl.'/items/documents/'.$document_id."?fmt=medium";
-            $documents_html .= '<li><a href="'.$filename_url.'">'.$document_displayed_filename.'</a></li>';
+            $items[] = '<a href="'.$filename_url.'">'.$document_displayed_filename.'</a>';
         }
-        $documents_html .= '</ul>';
+        $documents_html = '['.implode(', ', $items).']';
         return $documents_html;
     }
 
@@ -888,9 +902,6 @@ class EventStream {
                 if (isset($line['actual_effective_date'])) {
                     $editing_msg = 'Edit: '.time_to_bulletdate(strtotime($line['actual_effective_date']), false);
                 }
-                if ($editing_msg && empty($line['indented_component_name'])) {
-                    $alt_edit_date_html = '<div class="bd-dateline-edited">('.$editing_msg.')</div>';
-                }
             }
 
             if ($line['is_future_version']) {
@@ -914,7 +925,7 @@ class EventStream {
      * @param unknown_type $navigator  we allow this to be null in case we want to use this to generate a view only page like pdf
      * @return $lines, $references_by_typeobject_id
      */
-    public static function eventStreamRecordsToLines($records, $dbtable, $navigator = null)
+    public static function eventStreamRecordsToLines($records, $dbtable, $navigator, $genHtmlForPdf)
     {
 
         $references_by_typeobject_id = array();
@@ -958,7 +969,7 @@ class EventStream {
                 $version_url = !is_null($navigator) ? $navigator->getCurrentViewUrl('itemview', '', $query_params) : '';
             }
 
-            list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($record['event_description'], $navigator, $record['event_type_id'], $record['description_is_html']);
+            list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($record['event_description'], $navigator, $record['event_type_id'], $record['description_is_html'], $genHtmlForPdf);
             $line = array(
                     'event_type_id' => isset($record['event_type_id']) ? $record['event_type_id'] : null,
                     'this_itemversion_id' => isset($record['this_itemversion_id']) ? $record['this_itemversion_id'] : null,

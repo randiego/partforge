@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2024 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -254,7 +254,7 @@ class ItemViewPDF extends TCPDF {
                             $out = '';
                             $got_a_valid_fieldcomment = false;
                             if (is_numeric($this->dbtable->{$fieldname})) {
-                                list($documents_gallery_html, $comment_html, $record) = DBTableRowItemVersion::getFieldCommentRecord(null, $this->dbtable->{$fieldname}, '');
+                                list($documents_gallery_html, $comment_html, $record) = DBTableRowItemVersion::getFieldCommentRecord(null, $this->dbtable->{$fieldname}, '', true);
                                 if ((count($record) > 0) && $record['is_fieldcomment']) {
                                     $got_a_valid_fieldcomment = true;
                                 }
@@ -323,6 +323,16 @@ class ItemViewPDF extends TCPDF {
         }
     }
 
+    public static function formatFeaturedFieldforPdf($name, $value, $error = false)
+    {
+        if ($error) {
+            return '<font color="red">&bull; '.$name.' Errors</font>';
+        } else {
+            return "&bull; ".$name.': <b>'.$value.'</b>';
+        }
+
+    }
+
     public function renderDashboardView($procedure_records, $references_by_typeobject_id)
     {
         $html = '';
@@ -339,14 +349,14 @@ class ItemViewPDF extends TCPDF {
                     foreach ($reference['event_description_array'] as $iv => $item) {
                         $user_time = '<b>'.time_to_bulletdate(strtotime($reference['effective_date']), false).'</b>';
                         foreach ($item['features'] as $feature) {
-                            $feat[] = "&bull; ".$feature['name'].': <b>'.$feature['value'].'</b>';
+                            $feat[] = self::formatFeaturedFieldforPdf($feature['name'], $feature['value']);
                         }
                     }
                     if (count($reference['validation_errors'])>EventStream::MAX_ERRORS_TO_SHOW) {
-                        $feat[] = '<font color="red">&bull;'.count($reference['validation_errors']).' Errors</font>';
+                        $feat[] = self::formatFeaturedFieldforPdf(count($reference['validation_errors']).' Errors', '', true);
                     } elseif (count($reference['validation_errors'])>0) {
                         foreach ($reference['validation_errors'] as $err) {
-                            $feat[] = '<font color="red">&bull;Error: '.$err['name'].'</font>';
+                            $feat[] = self::formatFeaturedFieldforPdf('Error: '.$err['name'], '', true);
                         }
                     }
 
@@ -475,7 +485,8 @@ class ItemViewPDF extends TCPDF {
 
         $procedure_records = getTypesThatReferenceThisType($this->dbtable->typeversion_id);
         $EventStream = new EventStream($this->dbtable->itemobject_id);
-        list($lines,$references_by_typeobject_id) = EventStream::eventStreamRecordsToLines($EventStream->assembleStreamArray(), $this->dbtable);
+        // get everything that belongs in the Event Stream
+        list($lines,$references_by_typeobject_id) = EventStream::eventStreamRecordsToLines($EventStream->assembleStreamArray(), $this->dbtable, null, true);
 
         if ($this->show_form_fields) {
             // get the layout for the itemview
@@ -491,6 +502,7 @@ class ItemViewPDF extends TCPDF {
                     unset($procedure_records[$key]);
                 }
             }
+            // This makes the form layout including any procedure blocks.
             $this->itemViewFieldOutput($fieldlayout, '', null, $procedure_records_by_to, $references_by_typeobject_id);
         } else {
             $this->WriteHTML('<p><i>(form output suppressed)</i></p>');

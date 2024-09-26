@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2024 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -266,7 +266,7 @@ class DefinitionEventStream {
     /**
      * This takes a record representation of the stream array from ::assemblyStreamArray() and generates an array of lines.
      */
-    public static function eventStreamRecordsToLines($records, $dbtable, $navigator = null)
+    public static function eventStreamRecordsToLines($records, $dbtable, $navigator, $genHtmlForPdf)
     {
 
 
@@ -310,7 +310,7 @@ class DefinitionEventStream {
                 $version_url = !is_null($navigator) ? $navigator->getCurrentViewUrl('itemdefinitionview', '', $query_params) : '';
             }
 
-            list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($record['event_description'], $navigator, $record['event_type_id']);
+            list($event_description,$event_description_array) = EventStream::textToHtmlWithEmbeddedCodes($record['event_description'], $navigator, $record['event_type_id'], false, $genHtmlForPdf);
             $line = array(
                     'event_type_id' => isset($record['event_type_id']) ? $record['event_type_id'] : null,
                     'this_typeversion_id' => isset($record['this_typeversion_id']) ? $record['this_typeversion_id'] : null,
