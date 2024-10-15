@@ -1,5 +1,5 @@
 
-You action is required for the following task.
+Your action is required for the following task.
 
 Task: {_WORKFLOW_TITLE_}
 
