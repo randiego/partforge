@@ -1082,67 +1082,64 @@ class EventStream {
                 } elseif (isset($procedure_record['add_link'])) {
                     $link = ' '.$procedure_record['add_link'];
                 }
+            } else {
+                $link = ' <span style="font-size:11px;" class="disposition Obsolete">Obsolete</span>';
             }
 
-            // we want to show the procedure block header only if there are a non-zero number of procedures or it's not obsolete and so business as usual.
-            // however, if it's obsolete, and there are no procedures already in there, we don't output anything.
-            if ((count($references)>0) || ($procedure_record['typedisposition'] != 'B')) {
+            $html_dashboard .= '<div id="dashboard_to_'.$typeobject_id.'" class="dashboard_item_div"><h3 class="itemview-proc-head">'.$procedure_record['type_description'].$link.'</h3>';
 
-                $html_dashboard .= '<div id="dashboard_to_'.$typeobject_id.'" class="dashboard_item_div"><h3 class="itemview-proc-head">'.$procedure_record['type_description'].$link.'</h3>';
-
-                if (count($references)>0) {
-                    $html_dashboard .= '<table class="sublisttable"><colgroup><col class="col1"><col class="col2"><col class="col3"></colgroup>';
-                    $row = array();
-                    foreach ($references as $reference) {
-                        $feat = array();
-                        foreach ($reference['event_description_array'] as $iv => $item) {
-                            // if this is a procedure
-                            $alt_edit_date_html = '';
-                            if (isset($reference['actual_effective_date'])) {
-                                $alt_edit_date_html = '<div class="bd-dateline-edited">(Edit: '.time_to_bulletdate(strtotime($reference['actual_effective_date']), false).')</div>';
-                            }
-                            if ($showlinks) {
-                                $row['Date'] = linkify($item['url'], time_to_bulletdate(strtotime($reference['effective_date']), false)).$alt_edit_date_html;
-                            } else {
-                                $row['Date'] = time_to_bulletdate(strtotime($reference['effective_date']), false).$alt_edit_date_html;
-                            }
-                            foreach ($item['features'] as $feature) {
-                                $feat[] = $feature['name'].':&nbsp;<b>'.$feature['value'].'</b>';
-                            }
+            if (count($references)>0) {
+                $html_dashboard .= '<table class="sublisttable"><colgroup><col class="col1"><col class="col2"><col class="col3"></colgroup>';
+                $row = array();
+                foreach ($references as $reference) {
+                    $feat = array();
+                    foreach ($reference['event_description_array'] as $iv => $item) {
+                        // if this is a procedure
+                        $alt_edit_date_html = '';
+                        if (isset($reference['actual_effective_date'])) {
+                            $alt_edit_date_html = '<div class="bd-dateline-edited">(Edit: '.time_to_bulletdate(strtotime($reference['actual_effective_date']), false).')</div>';
                         }
-
-                        if (count($reference['validation_errors'])>self::MAX_ERRORS_TO_SHOW) {
-                            $feat[] = '<span class="errorred">'.count($reference['validation_errors']).' Errors</span>';
-                        } elseif (count($reference['validation_errors'])>0) {
-                            foreach ($reference['validation_errors'] as $err) {
-                                $feat[] = '<span class="errorred">Error: '.$err['name'].'</span>';
-                            }
+                        if ($showlinks) {
+                            $row['Date'] = linkify($item['url'], time_to_bulletdate(strtotime($reference['effective_date']), false)).$alt_edit_date_html;
+                        } else {
+                            $row['Date'] = time_to_bulletdate(strtotime($reference['effective_date']), false).$alt_edit_date_html;
                         }
+                        foreach ($item['features'] as $feature) {
+                            $feat[] = $feature['name'].':&nbsp;<b>'.$feature['value'].'</b>';
+                        }
+                    }
 
-                        $row['Data'] = count($feat)==0 ? '' : '<ul class="bd-bullet_features"><li>'.implode('</li><li>', $feat).'</li></ul>';
-                        $row['Pass/Fail'] = DBTableRowItemVersion::renderDisposition($dbtable->getFieldType('disposition'), $reference['disposition']);
+                    if (count($reference['validation_errors'])>self::MAX_ERRORS_TO_SHOW) {
+                        $feat[] = '<span class="errorred">'.count($reference['validation_errors']).' Errors</span>';
+                    } elseif (count($reference['validation_errors'])>0) {
+                        foreach ($reference['validation_errors'] as $err) {
+                            $feat[] = '<span class="errorred">Error: '.$err['name'].'</span>';
+                        }
+                    }
 
-                        $dimmed_class_attr = $reference['is_future_version'] ? ' class="bd-dimmed"' : '';
-                        $disp_cell_class = isset($reference['validation_errors']['disposition']) ? ' class="cell_error"' : '';
-                        $html_dashboard .= '<tr'.$dimmed_class_attr.'>
-                    <td>'.nbsp_ifblank($row['Date']).'</td>
-                    <td>'.nbsp_ifblank($row['Data']).'</td>
-                    <td'.$disp_cell_class.'>'.nbsp_ifblank($row['Pass/Fail']).'</td>
-                    </tr>';
-                    }
-                    $html_dashboard .= '</table>';
-                    if ($more_to_show_msg_html) {
-                        $html_dashboard .= $more_to_show_msg_html;
-                    }
-                } else {
-                    if ($more_to_show_msg_html) {
-                        $html_dashboard .= $more_to_show_msg_html;
-                    } else {
-                        $html_dashboard .= '<p>No Results.</p>';
-                    }
+                    $row['Data'] = count($feat)==0 ? '' : '<ul class="bd-bullet_features"><li>'.implode('</li><li>', $feat).'</li></ul>';
+                    $row['Pass/Fail'] = DBTableRowItemVersion::renderDisposition($dbtable->getFieldType('disposition'), $reference['disposition']);
+
+                    $dimmed_class_attr = $reference['is_future_version'] ? ' class="bd-dimmed"' : '';
+                    $disp_cell_class = isset($reference['validation_errors']['disposition']) ? ' class="cell_error"' : '';
+                    $html_dashboard .= '<tr'.$dimmed_class_attr.'>
+                <td>'.nbsp_ifblank($row['Date']).'</td>
+                <td>'.nbsp_ifblank($row['Data']).'</td>
+                <td'.$disp_cell_class.'>'.nbsp_ifblank($row['Pass/Fail']).'</td>
+                </tr>';
                 }
-                $html_dashboard .= '</div>';
+                $html_dashboard .= '</table>';
+                if ($more_to_show_msg_html) {
+                    $html_dashboard .= $more_to_show_msg_html;
+                }
+            } else {
+                if ($more_to_show_msg_html) {
+                    $html_dashboard .= $more_to_show_msg_html;
+                } else {
+                    $html_dashboard .= '<p>No Results.</p>';
+                }
             }
+            $html_dashboard .= '</div>';
         }
 
         return $html_dashboard;
