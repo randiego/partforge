@@ -3002,17 +3002,11 @@ class DBTableRowItemVersion extends DBTableRow {
         list($lines,$references_by_typeobject_id) = EventStream::eventStreamRecordsToLines($streamrecord, $this, null, false);
 
         $procedure_records = getTypesThatReferenceThisType($this->typeversion_id);
-        // remove any obsolete ones
-        foreach ($procedure_records as $key => $record) {
-            if ($record['typedisposition']=='B') {
-                unset($procedure_records[$key]);
-            }
-        }
 
         if (!$this->previewDefinition()) {
             foreach ($procedure_records as $key => $record) {
                 $linkinfo = $this->getLinkInfoForAddComponent($record['typeobject_id'], '');
-                if (!is_null($linkinfo)) {
+                if (!is_null($linkinfo) && ($record['typedisposition']!='B')) { // don't offer to add if not allowed or procedure is obsoolete.
                     unset($procedure_records[$key]['add_url']);
                     $procedure_records[$key]['add_link'] = linkify('#', 'Add', 'Add a procedure', 'minibutton2', $linkinfo['js']);
                 }
