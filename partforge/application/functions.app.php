@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2025 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -29,6 +29,58 @@ require_once('functions.common.php');
 define('AUTOPROPAGATING_QUERY_PARAMS', 'pageno,search_string,sort_key,table,edit_buffer_key,list_type,months');
 
 require_once('functions.common.php');
+
+/**
+ * Callback for autoloader.
+ *
+ * @param [type] $class
+ *
+ * @return void
+ */
+function myAutoloader($class)
+{
+    // Base directories for PSR-4 namespaces
+    $namespaces = [
+        'App\\' => APPLICATION_PATH.'\\',  // Adjust for your namespace
+    ];
+
+    // Check if the class matches any registered namespace
+    foreach ($namespaces as $prefix => $baseDir) {
+        if (strncmp($prefix, $class, strlen($prefix)) === 0) {
+            // Remove namespace prefix
+            $relativeClass = substr($class, strlen($prefix));
+
+            // Replace namespace separators with directory separators
+            $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
+
+            // Load the file if it exists
+            if (file_exists($file)) {
+                require $file;
+                return;
+            }
+        }
+    }
+
+    // Handle Zend Framework classes (Zend_Controller_Action, etc.)
+    $zendBaseDir = APPLICATION_PATH . '/../library/Zend/';
+    if (strncmp('Zend_', $class, 5) === 0) {
+        // Convert underscores to directory separators
+        $relativeClass = substr($class, 5); // Strip the 'Zend_' prefix
+        $file = $zendBaseDir . str_replace('_', '/', $relativeClass) . '.php';
+
+        if (file_exists($file)) {
+            require $file;
+            return;
+        }
+    }
+
+    // Handle application-specific classes in /application directory
+    $file = APPLICATION_PATH . '/' . $class . '.php'; // Assumes 1:1 mapping of class names to file names
+    if (file_exists($file)) {
+        require $file;
+        return;
+    }
+}
 
 /**
  * This is a simple substitution engine grabbed from

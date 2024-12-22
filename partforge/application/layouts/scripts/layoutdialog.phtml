@@ -32,12 +32,12 @@
   } elseif (!$this->layout()->no_set_form_focus) {  // note: in IE 8, then two things are mutually exclusive
     $onload[] = "set_default_focus();";
   }
-  
+
   $nav_html = '<span>&nbsp;</span>';
   if (is_array($this->layout()->navlist_array)) {
     $nav_html = implode("</li>\r\n<li>",$this->layout()->navlist_array);
   }
-  
+
   $baseurl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();
   $config = Zend_Registry::get('config');
 
@@ -68,7 +68,7 @@ $(document).ready(function () {
 <div id="logobar">
 	<div id="whoisloggedin"><?php echo $_SESSION['account']->whoAmIHtml() ?></div>
 	<div class="logographic"><a href="<?php echo UrlCallRegistry::formatViewUrl('itemlistview','struct',array('resetview' => '1'));?>"><img title="<?php echo $config->application_title;?>" class="logoheadimage" src="<?php echo $baseurl.$config->logo_file;?>"></a></div>
-	<div id="helpLink"><?php echo DBTableRowHelp::helpLinkIfPresent(isset($this->layout()->getView()->navigator) ? $this->layout()->getView()->navigator : null); ?></div>
+	<div id="helpLink"><?php echo \App\DBTableRowHelp::helpLinkIfPresent(isset($this->layout()->getView()->navigator) ? $this->layout()->getView()->navigator : null); ?></div>
 </div>
 
 <div>

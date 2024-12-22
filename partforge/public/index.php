@@ -5,20 +5,17 @@ ini_set('error_log', dirname(__FILE__) . '/../error_log.txt');
 error_reporting(E_ALL);
 
 define('APPLICATION_PATH', realpath(dirname(__FILE__) . '/../application/'));
+// the main reason for having this include path is the Zend Framework 1 requires it internally.
 set_include_path(
-    APPLICATION_PATH . PATH_SEPARATOR . APPLICATION_PATH . '/../library' . PATH_SEPARATOR . get_include_path()
+    APPLICATION_PATH . '/../library'
 );
 
 // need to do this to make sure we are not stepping on any other apps on the same server.
 ini_set('session.save_path', realpath(dirname(__FILE__) . '/../sessions/'));
 ini_set('session.gc_maxlifetime', 36000);
 
-require_once "Zend/Loader/Autoloader.php";
-$autoloader = Zend_Loader_Autoloader::getInstance();
-$autoloader->setFallbackAutoloader(true);
-
-
 require_once("../application/functions.app.php");
+spl_autoload_register('myAutoloader');
 Zend_Session::start();
 require_once("../application/init.php");
 
