@@ -38,7 +38,7 @@ class ItemViewNestedPDF extends \setasign\Fpdi\Tcpdf\Fpdi {
         parent::__construct('P', 'mm', 'LETTER');
         $this->SetAutoPageBreak(true, 10);
         $this->SetDisplayMode('default', 'continuous');  // makes it nicer to scroll through a multipage PDF.
-        $this->setPrintFooter(false);
+        $this->setPrintFooter(true);
     }
 
     public static function tempDirPrefix()
@@ -141,12 +141,10 @@ class ItemViewNestedPDF extends \setasign\Fpdi\Tcpdf\Fpdi {
         $this->endTOCPage();
     }
 
-    // function Footer()
-    // {
-    //     // I have to set the font here so that getAliasNbPages() properly knowns what type of font we are using.
-    //     $this->SetFont($this->_myfont, 'I', 10);
-    //     $this->outputFooter($this->dbtable->getPageTypeTitleHtml().($this->dbtable->item_serial_number ? ' - '.TextToHtml($this->dbtable->item_serial_number) : ''), 'Page '.$this->getAliasNumPage().'/'.$this->getAliasNbPages());
-    //     $this->SetFont($this->_myfont, '', 10);
-    // }
+    public function Footer()
+    {
+        $this->SetXY(0, -9);
+        $this->Cell($this->w + 2.0, 0, $this->getAliasRightShift().$this->getAliasNumPage(), 0, 0, 'R');
+    }
 
 }
