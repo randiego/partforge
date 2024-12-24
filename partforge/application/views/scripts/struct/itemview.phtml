@@ -1,7 +1,7 @@
 <script type="text/javascript">
 var scrollPosKeyRight = "<?php echo 'itemViewRightPanelPos'.$this->dbtable->itemversion_id;?>";
 var scrollPosKeyLeft = "<?php echo 'itemViewLeftPanelPos'.$this->dbtable->itemversion_id;?>";
-var pdfViewUrl = "<?php echo $this->navigator->getCurrentViewUrl('itemviewpdf', null, array('itemversion_id' => $this->dbtable->itemversion_id, 'show_form_fields' => '_SHOWFORM_', 'show_text_fields' => '_SHOWTEXT_', 'show_event_stream' => '_SHOWEVENTS_'));?>";
+var pdfViewUrl = "<?php echo $this->navigator->getCurrentViewUrl('itemviewpdf', null, array('itemversion_id' => $this->dbtable->itemversion_id, 'show_form_fields' => '_SHOWFORM_', 'show_text_fields' => '_SHOWTEXT_', 'show_event_stream' => '_SHOWEVENTS_', 'nested_tree_view' => '_NESTEDVIEW_'));?>";
 <?php
 $Subscription = new DBTableRowChangeSubscription();
 $is_following = $Subscription->getRecordByIds($_SESSION['account']->user_id, $this->dbtable->itemobject_id, null);
@@ -19,7 +19,7 @@ var lookupUrl = '<?php echo $this->navigator->getCurrentViewUrl('jsonsearchlogin
 var canSendLink = <?php echo in_array($_SESSION['account'] ->getRole(), array('Guest','DataTerminal')) ? 'false' : 'true';?>;
 </script>
 <?php $baseUrl = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>
-<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemview.js?v=19" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo $baseUrl;?>/scripts/struct/itemview.js?v=20" type="TEXT/JAVASCRIPT"></script>
 <?php
 
 $title = $this->dbtable->getPageTypeTitleHtml().($this->dbtable->item_serial_number ? ' - '.TextToHtml($this->dbtable->item_serial_number) : '');

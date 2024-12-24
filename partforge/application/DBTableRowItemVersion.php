@@ -2680,15 +2680,18 @@ class DBTableRowItemVersion extends DBTableRow {
         }
     }
 
-    public function getPageTypeTitleHtml($description_only = false)
+    public function getPageTypeTitleHtml($description_only = false, $html = true)
     {
         $type_name = 'Unknown Item Type';
         if (is_numeric($this->typeversion_id) && is_numeric($this->partnumber_alias)) {
             $records = DbSchema::getInstance()->getRecords('partnumber_alias', "select partnumber_alias, part_number, part_description FROM partnumbercache WHERE typeversion_id='{$this->typeversion_id}' ORDER BY part_number");
             if (isset($records[$this->partnumber_alias])) {
                 $rec = $records[$this->partnumber_alias];
-                $type_name = $description_only ? TextToHtml($rec['part_description']) : TextToHtml($rec['part_number'].' ('.$rec['part_description'].')');
+                $type_name = $description_only ? $rec['part_description'] : $rec['part_number'].' ('.$rec['part_description'].')';
             }
+        }
+        if ($html) {
+            $type_name = TextToHtml($type_name);
         }
         return $type_name;
     }

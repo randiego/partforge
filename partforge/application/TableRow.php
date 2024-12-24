@@ -357,7 +357,7 @@ class TableRow {
 
     public function formatFieldnameNoColon($string)
     {
-        return $this->_fieldtypes[$string]['caption'];
+        return isset($this->_fieldtypes[$string]) ? $this->_fieldtypes[$string]['caption'] : '';
     }
 
 
