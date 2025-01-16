@@ -555,12 +555,12 @@ function renderDictRawEditor(containerSet) {
 /*
  * Turns the dictionary structure passed in by php into a numeric indexed array for processing
  */
-function dictionaryToArray(dictObj, keyname = "name") {
+function dictionaryToArray(dictObj) {
 	var out = [];
 	for(var key in dictObj) {
 		if (key != undefined) {
 			var props = dictObj[key];
-			props[keyname] = key;
+			props["name"] = key;
 			out.push(props);
 		}
 	}
@@ -627,14 +627,14 @@ function checkifDictionaryNameOk(name, showAlerts) {
 /*
  * converts the working array dictionary into a of fieldname={json junk}
  */
-function dictArrayToKeyValueList(dictArray, keyname = "name") {
+function dictArrayToKeyValueList(dictArray) {
 	var strarr = [];
 	for(var key=0; key<dictArray.length; key++) {
-		var name = dictArray[key][keyname];
+		var name = dictArray[key]["name"];
 		var dictentry = dictArray[key];
 		if (typeof name != "undefined") {
 			var obj = $.extend({},dictentry);  // clone the object
-			delete obj[keyname];
+			delete obj["name"];
 			strarr.push(name + "=" + $.toJSON(obj));
 		}
 	}
@@ -658,7 +658,7 @@ function splitOnce(st,ch) {
 /*
  * Basically an inverse of dictArrayToKeyValueList()
  */
-function keyValueListToDictArray(keyValStr, keyname = "name") {
+function keyValueListToDictArray(keyValStr) {
 	propvalue = {};
 	var rowpropvaluesplit = keyValStr.split("\n");
 	for(var i=0; i<rowpropvaluesplit.length; i++) {
@@ -673,7 +673,7 @@ function keyValueListToDictArray(keyValStr, keyname = "name") {
 			propvalue[rowkey] = JSON.parse(rowval);
 		}
 	}
-	return dictionaryToArray(propvalue, keyname);
+	return dictionaryToArray(propvalue);
 }
 
 /*
@@ -757,32 +757,6 @@ function typeSelectHtml(selectTagId, component_value) {
 	return selectHtml(selectTagId,'', out, component_value);
 }
 
-function renderCompRawEditor(containerSet) {
-
-	var html = "";
-	html += '<div class="bd-propeditor"><p><a class="bd-linkbtn" id="compraweditdonelink" href="#">done</a></p>';
-	html += $('<textarea class="de-propval" id="dictrawtext"></textarea>').text(dictArrayToKeyValueList(typeComponents, "component_name"))[0].outerHTML;
-	html += '</div>';
-	containerSet.html(html);
-	containerSet.dialog({
-		title: "Edit/View Raw Component String",
-		width: 700,
-		modal: true,
-		closeOnEscape: false,
-		close: function( event, ui ) {containerSet.dialog('destroy'); renderAll();}
-	});
-
-
-	// if we click done, then grab input and replace the contents of the buffer
-	$("#compraweditdonelink").on("click", function(event) {
-		$("#componentEditorDiv a").off('click');
-		typeComponents = keyValueListToDictArray($("#dictrawtext").val(), "component_name");
-		containerSet.dialog('destroy');
-		renderAll();
-		return false;
-	});
-}
-
 function renderListOfComponents() {
 
 	// It's our responsibility to keep the componentSubFieldsList array up to date.  This runs asynchronously, so
@@ -801,8 +775,6 @@ function renderListOfComponents() {
 		if (a.component_name < b.component_name) return -1;
 		return 0;
 	});
-
-	html += '<p><a class="bd-linkbtn compraweditlink" href="#">edit raw components</a></p>';
 	html += '<table class="listtable"><tr><th>Name</th><th>Type(s)</th><th>Caption / Subcaption</th><th>Featured</th><th>Required</th>'+(isAPart ? '<th>Max Uses</th>' : '')+'<th> </th>';
 	for(var i = 0; i<typeComponents.length; i++) {
 		var f = typeComponents[i];
@@ -850,13 +822,6 @@ function renderListOfComponents() {
 		renderCompEditor($('#compEditorContainer'), false, key);
 		return false;
 	});
-
-	$("a.compraweditlink").on("click", function(event) {
-		$("#componentEditorDiv a").off('click');
-		renderCompRawEditor($(this).parent());
-		return false;
-	});
-
 
 }
 

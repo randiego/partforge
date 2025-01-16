@@ -143,7 +143,6 @@ $(document).ready(function() {
 	h += '<label><input type="checkbox" name="show_form_fields" value="1" checked="checked" />Show Data Form (left panel)</label><br />';
 	h += '<label><input style="margin-left:30px;" type="checkbox" name="show_text_fields" value="1" checked="checked" />Show Text and Photos</label><br />';
 	h += '<label><input type="checkbox" name="show_event_stream" value="1" checked="checked" />Show Event Stream (right panel)</label><br />';
-	h += '<label><input type="checkbox" name="nested_tree_view" value="1"/>Full Nested Tree View (all pdfs in one)</label><br />';
 	$('#pdfPrintContainer').html(h);
 	$('#pdfPrintContainer input[name="show_form_fields"]').click(function(){
 		$('#pdfPrintContainer input[name="show_text_fields"]').prop("disabled", !$('#pdfPrintContainer input[name="show_form_fields"]:checked').val());
@@ -162,7 +161,6 @@ $(document).ready(function() {
 					filledUrl = filledUrl.replace('_SHOWFORM_',$('#pdfPrintContainer input[name="show_form_fields"]:checked').val() ? '1' : '0');
 					filledUrl = filledUrl.replace('_SHOWTEXT_',$('#pdfPrintContainer input[name="show_text_fields"]:checked').val() ? '1' : '0');
 					filledUrl = filledUrl.replace('_SHOWEVENTS_',$('#pdfPrintContainer input[name="show_event_stream"]:checked').val() ? '1' : '0');
-					filledUrl = filledUrl.replace('_NESTEDVIEW_',$('#pdfPrintContainer input[name="nested_tree_view"]:checked').val() ? '1' : '0');
 					window.open(filledUrl, '_blank');
 					$( this ).dialog( "close" );
 				},

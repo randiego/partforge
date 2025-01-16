@@ -143,7 +143,7 @@ $DICTIONARY['tables'] =
                 ),
             ),
             'help' => array(
-                'class' => '\App\DBTableRowHelp',
+                'class' => 'DBTableRowHelp',
                 'caption' => 'Help',
                 'fields' => array(
                     'help_markup' => array('caption' => 'Help Text', 'subcaption' => 'This help message pops up in a separate window whenever a user clicks the help link.  It is the same for all pages.  Enter text in <a href="http://en.wikipedia.org/wiki/Markdown" target="_blank">Markdown syntax</a>', 'input_cols' => 70, 'input_rows' => 20),

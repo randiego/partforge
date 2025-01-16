@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2025 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2024 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -188,7 +188,7 @@ class UtilsController extends DBControllerActionAbstract
                         if (count($recs)>0) {
                             $group_records = DbSchema::getInstance()->getRecords('', "SELECT GROUP_CONCAT(DISTINCT `help_tip` SEPARATOR ' ') as group_tip,  GROUP_CONCAT(DISTINCT `help_markup` SEPARATOR ' ') as group_markup FROM `help` WHERE 1");
                             $group_record = reset($group_records);
-                            $Help = new \App\DBTableRowHelp();
+                            $Help = new DBTableRowHelp();
                             $Help->action_name = '';
                             $Help->controller_name = '';
                             $Help->table_name = '';

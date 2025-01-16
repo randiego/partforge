@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2025 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2023 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -833,6 +833,7 @@ class StructController extends DBControllerActionAbstract
             }
         }
 
+
         $earliest_date = null;
         if ($this->view->show_big_page_controls && is_numeric($this->params['months'])) {  // e.g.  months=ALL doesn't come here
             $earliest_date = EventStream::getEarliestDateOfHistory($ItemVersion, $this->params['months']);
@@ -850,21 +851,10 @@ class StructController extends DBControllerActionAbstract
 
     public static function renderItemViewPdf(DBTableRowItemVersion $dbtable, $queryvars = array())
     {
-        if (isset($queryvars['nested_tree_view']) && $queryvars['nested_tree_view']) {
-            $Pdf = new \App\ItemViewNestedPDF();
-            $tmpdircode = $Pdf->addTemporaryStorage($dbtable->itemversion_id);
-            $Pdf->dbtable = $dbtable;
-            $Pdf->buildDocument($queryvars);
-            $filesuff = $dbtable->hasASerialNumber() ? $dbtable->item_serial_number : time_to_mysqldatetime(strtotime($dbtable->effective_date));
-            $Pdf->Output(make_filename_safe('ItemView_Nested_'.$dbtable->part_number.'_'.$filesuff).'.pdf', 'D');
-            // Output destroys the object, so we need to do the following statically
-            \App\ItemViewNestedPDF::deleteTemporaryStorage($tmpdircode);
-        } else {
-            $Pdf = new ItemViewPDF();
-            $Pdf->dbtable = $dbtable;
-            $Pdf->buildDocument($queryvars);
-            $Pdf->Output(make_filename_safe('ItemView_'.$dbtable->part_number.'_'.$dbtable->item_serial_number).'.pdf', 'D');
-        }
+        $Pdf = new ItemViewPDF();
+        $Pdf->dbtable = $dbtable;
+        $Pdf->buildDocument($queryvars);
+        $Pdf->Output(make_filename_safe('ItemView_'.$dbtable->part_number.'_'.$dbtable->item_serial_number).'.pdf', 'D');
         exit;
     }
 

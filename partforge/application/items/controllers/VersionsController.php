@@ -116,16 +116,6 @@ class Items_VersionsController extends RestControllerActionAbstract
                     $Pdf->buildDocument($this->params);
                     $Pdf->Output(make_filename_safe('ItemView_'.$ItemVersion->part_number.'_'.$ItemVersion->item_serial_number).'.pdf', 'D');
                     exit;
-                case 'pdfnested':
-                    $Pdf = new \App\ItemViewNestedPDF();
-                    $tmpdircode = $Pdf->addTemporaryStorage($ItemVersion->itemversion_id);
-                    $Pdf->dbtable = $ItemVersion;
-                    $Pdf->buildDocument($this->params);
-                    $filesuff = $ItemVersion->hasASerialNumber() ? $ItemVersion->item_serial_number : time_to_mysqldatetime(strtotime($ItemVersion->effective_date));
-                    $Pdf->Output(make_filename_safe('ItemView_Nested_'.$ItemVersion->part_number.'_'.$filesuff).'.pdf', 'D');
-                    // Output destroys the object, so we need to do the following statically
-                    \App\ItemViewNestedPDF::deleteTemporaryStorage($tmpdircode);
-                    exit;
                 case 'nested':
                     foreach (DBTableRowItemObject::getItemVersionFullNestedArray($ItemVersion->itemversion_id, $max_depth, 0) as $fieldname => $value) {
                         $this->view->{$fieldname} = $value;
