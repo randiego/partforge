@@ -75,7 +75,7 @@
 					});
 				},
 
-				autocompletechange: "_removeIfInvalid"
+				autocompletechange: "_lostFocusNoOptionClicked"
 			});
 		},
 
@@ -129,34 +129,36 @@
 			}) );
 		},
 
-		_removeIfInvalid: function( event, ui ) {
+		_lostFocusNoOptionClicked: function( event, ui ) {
 
-			// Selected an item, nothing to do
+			// Selected an item, nothing to do.
 			if ( ui.item ) {
 				return;
 			}
 
-			// Search for a match (case-insensitive)
+			// Search for a match of just the first part (case-insensitive)
 			var value = this.input.val(),
 				valueLowerCase = value.toLowerCase(),
 				valid = false;
+			var num_lhs_matches = 0;
 			this.element.children( "option" ).each(function() {
-				if ( $( this ).text().toLowerCase() === valueLowerCase ) {
+				if ( $( this ).text().toLowerCase().substring(0, valueLowerCase.length) === valueLowerCase ) {
 					this.selected = valid = true;
-					return false;
+					num_lhs_matches++;
 				}
 			});
 
-			// Found a match, nothing to do
-			if ( valid ) {
+			// Found a match with the first part and there is only one, so we want to trigger a change.
+			if ( valid && (num_lhs_matches == 1)) {
+				this.element.change();
 				return;
 			}
 
 			// Remove invalid value
 			this.input
 				.val( "" )
-				.attr( "title", value + " didn't match any item" )
-				.tooltip( "open" );
+				.attr( "title", value + " didn't match any item." )
+				.tooltip().tooltip( "open" );
 			this.element.val( "" );
 			this._delay(function() {
 				this.input.tooltip( "close" ).attr( "title", "" );

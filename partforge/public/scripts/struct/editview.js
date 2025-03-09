@@ -58,25 +58,42 @@ $(document).ready(function() {
 	    })
 	});
 
-	// Set the focus to the first field that is not one of the known reloaders.  This gives us a fighting chance to do mouse free submission.
-	$("#theform :input:visible:enabled").not("input[name='effective_date']").not("select[name='typeversion_id']").first().focus();
+	var form = $('form[name=theform]');
+	var focusable = form.find('input,select,button,textarea').filter(':visible');
+// see if the query var last_changed_component is set and then set focus to the next field.
+	if (typeof FORM_DATA['last_changed_component'] !== "undefined") {
+		var next;
+		focusable.each(function(index, element) {
+			// fancy footwork with the custom combo box
+			if ($(element).parent().prev().parent().hasClass('compsel') && $(element).parent().hasClass("custom-combobox")) {
+				if ($(element).parent().prev().attr("name") === FORM_DATA['last_changed_component']) {
+					next = focusable.eq(focusable.index($(element)) + 1);
+					return false;  // got it, so exit
+				}
+			}
+		});
+		if (next.length) {
+			next.focus();
+		}
+	} else {
+		// Set the focus to the first field that is not one of the known reloaders.  This gives us a fighting chance to do mouse free submission.
+		$("#theform :input:visible:enabled").not("input[name='effective_date']").not("select[name='typeversion_id']").first().focus();
+	}
 
 	// for most input fields, this makes the Enter key move to the next field.
-	$('body').on('keydown', 'input, select', function(e) {
-	    if (e.which == 13) {
-	    	// if this is a submit button, then do the normal behavior (submit the form)
-	    	if ($(this).filter('input[type="submit"').length) {
-	    		return true;
-	    	}
+	$('body').on('keydown', 'input, select', function (e) {
+		if (e.which == 13) {
+			// if this is a submit button, then do the normal behavior (submit the form)
+			if ($(this).filter('input[type="submit"').length) {
+				return true;
+			}
 
-	        var form = $('form[name=theform]');
-	        var focusable = form.find('input,select,button,textarea').filter(':visible');
-	        var next = focusable.eq(focusable.index(this)+1);
-	        if (next.length) {
-	            next.focus();
-	        }
-	        return false;
-	    }
+			var next = focusable.eq(focusable.index(this) + 1);
+			if (next.length) {
+				next.focus();
+			}
+			return false;
+		}
 	});
 
 	// autosave

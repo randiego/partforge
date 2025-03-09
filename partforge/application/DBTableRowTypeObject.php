@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2025 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -71,7 +71,7 @@ class DBTableRowTypeObject extends DBTableRow {
                 'item_serial_number','cached_serial_number_value','record_locator','effective_date','disposition','user_id','record_created',
                 'dictionary_overrides','item_data','itemcomponent_id','belongs_to_itemversion_id','can_have_itemobject_id',
                 'component_name','hidden_components_array','hidden_properties_array','hidden_attachments_array','component_subfield','embedded_in_typeobject_id','partnumber_alias',
-                'preview_definition_flag','table','field_validation_errors');
+                'preview_definition_flag','table','field_validation_errors','last_changed_component');
     }
 
     /**

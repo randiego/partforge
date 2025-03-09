@@ -605,12 +605,14 @@ class StructController extends DBControllerActionAbstract
             case (isset($this->params['btnOnChange']) && ($this->params['btnOnChange'] == 'componentselectchange')):
                 $sub_params = array();
                 parse_str($this->params['onChangeParams'], $sub_params);
+                $form_placeholder = array();
                 if (!empty($sub_params['component_name'])) {
+                    $form_placeholder['last_changed_component'] = $sub_params['component_name'];
                     // reload the component identified by $sub_params['component_name']
                     $loaded_values = $dbtable->reloadComponent($sub_params['component_name']);
                     $_SESSION[$edit_buffer] = array_merge($_SESSION[$edit_buffer], $loaded_values);
                 }
-                $this->navigator->jumpToView();
+                $this->navigator->jumpToView(null, null, $form_placeholder);
         }
 
         // now check if a different button was pressed

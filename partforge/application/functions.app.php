@@ -903,7 +903,7 @@ function fetchHtmlHeaderIncludes()
 <script language="JavaScript" src="{$baseurl}/jqueryextras/jquery.cookie.js" type="TEXT/JAVASCRIPT"></script>
 <script language="JavaScript" src="{$baseurl}/jqueryextras/jquery.json-2.3.js" type="TEXT/JAVASCRIPT"></script>
 <script language="JavaScript" src="{$baseurl}/scripts/tiny_mce/jquery.tinymce.js" type="TEXT/JAVASCRIPT"></script>
-<script language="JavaScript" src="{$baseurl}/jqueryextras/jquery-custom-combobox/jquery-custom-combobox.js?v=6" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="{$baseurl}/jqueryextras/jquery-custom-combobox/jquery-custom-combobox.js?v=7" type="TEXT/JAVASCRIPT"></script>
 <script language="JavaScript" src="{$baseurl}/jqueryextras/jquery.ui.touch-punch.min.js" type="TEXT/JAVASCRIPT"></script>
 <script language="JavaScript" src="{$baseurl}/jqueryextras/jquery-qrcode/jquery.qrcode.min.js" type="TEXT/JAVASCRIPT"></script>
 EOD;
