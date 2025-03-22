@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2025 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -30,11 +30,18 @@ class Types_ObjectsController extends RestControllerActionAbstract
      * GET /types/objects
      *
      * Return a list of current versions of all objects, subject to query variables
+     * /types/objects?part_number=ASERIALNUMBER
      */
     public function indexAction()
     {
+        $andwhere = [];
+        if (isset($this->params['part_number'])) {
+            $andwhere[] = " and (partnumbercache.part_number like '".addslashes($this->params['part_number'])."')";
+        }
         $records = DbSchema::getInstance()->getRecords('', "SELECT DISTINCT typeobject.typeobject_id FROM typeobject
 				LEFT JOIN typeversion ON typeversion.typeversion_id=typeobject.cached_current_typeversion_id
+                LEFT JOIN partnumbercache on partnumbercache.typeversion_id = typeobject.cached_current_typeversion_id
+                WHERE (1=1)".implode('', $andwhere)."
 				ORDER BY typeversion.effective_date");
         $this->view->typeobject_ids = extract_column($records, 'typeobject_id');
     }

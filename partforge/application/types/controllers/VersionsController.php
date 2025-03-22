@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2025 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -27,16 +27,24 @@ class Types_VersionsController extends RestControllerActionAbstract
 {
 
     /*
-     * GET /types/versions
+     * GET /types/versions/
+     * GET /types/versions?typeobject_id=123
+     * GET /types/versions?part_number=MYPARTN%
      *
      * Return a list of all versions of all types, subject to query variables
      */
     public function indexAction()
     {
-        $typeobject_id = isset($this->params['typeobject_id']) ? (is_numeric($this->params['typeobject_id']) ? addslashes($this->params['typeobject_id']) : null) : null;
-        $and_where = !is_null($typeobject_id) ? " AND (itemcomponent.has_an_itemobject_id='{$has_an_itemobject_id}')" : '';
+        $and_where = '';
+        if (isset($this->params['typeobject_id']) && is_numeric($this->params['typeobject_id'])) {
+            $and_where .= " AND (typeversion.typeobject_id='".addslashes($this->params['typeobject_id'])."')";
+        }
+        if (isset($this->params['part_number'])) {
+            $and_where .= " and (partnumbercache.part_number like '".addslashes($this->params['part_number'])."')";
+        }
+
         $records = DbSchema::getInstance()->getRecords('', "SELECT DISTINCT typeversion.typeversion_id FROM typeversion
-				LEFT JOIN typeobject ON typeobject.typeobject_id=typeversion.typeobject_id
+                LEFT JOIN partnumbercache on partnumbercache.typeversion_id = typeversion.typeversion_id
 				WHERE 1=1 {$and_where}
 				ORDER BY typeversion.effective_date");
         $this->view->typeversion_ids = extract_column($records, 'typeversion_id');
