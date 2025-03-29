@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2024 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2025 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -1139,7 +1139,13 @@ class DBTableRowItemVersion extends DBTableRow {
         $out = array_merge($out, $this->_typeversion_digest['addon_property_fields']);
         $out = array_merge($out, $this->_typeversion_digest['addon_attachment_fields']);
         $out = array_merge($out, $this->_typeversion_digest['addon_component_fields']);
-        $out = array_merge($out, $this->_typeversion_digest['addon_component_subfields']);
+        // don't include any component_subfields that are read only.
+        foreach($this->_typeversion_digest['addon_component_subfields'] as $fieldname) {
+            $fieldtype = $this->_typeversion_digest['fieldtypes'][$fieldname];
+            if (!isset($fieldtype['mode']) || ($fieldtype['mode'] != 'R')) {
+                $out[] = $fieldname;
+            }
+        }
         return $out;
     }
 
@@ -2891,7 +2897,7 @@ class DBTableRowItemVersion extends DBTableRow {
         $editfields = $dbtable->getEditFieldNames();
         $dbtable->applyDictionaryOverridesToFieldTypes();
         $dbtable->applyCategoryDependentHeaderCaptions($editable);
-        $calcparamfieldnames = $dbtable->getCalculatedParamFieldNames();
+        $calcparamfieldnames = TableRow::getCalculatedParamFieldNames($dbtable->getFieldTypes());
 
         foreach ($fieldlayout as $row) {
             if (!is_array($row)) {
@@ -2926,6 +2932,9 @@ class DBTableRowItemVersion extends DBTableRow {
                     if ($can_edit && (isset($fieldtype['error']) || isset($fieldtype['locked']))) {
                         $can_edit = false;  // not allowed to edit something with a message
                         $marker = LOCKED_FIELD_SYM;
+                    }
+                    if (isset($fieldtype['mode']) && $fieldtype['mode']=='R') {
+                        $can_edit = false;  // not allowed to edit a read-only field.
                     }
 
                     $cell_class = array($fieldname.'_cell');

@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2024 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2025 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -160,7 +160,8 @@ class DBTableRowTypeVersion extends DBTableRow {
                     'component_name' => array('type' => 'string', 'help' => 'This is the component containing the subfield'),
                     'embedded_in_typeobject_id' => array('type' => 'string', 'help' => 'If the component is define allowing more than one type, you have to specify which type.'),
                     'component_subfield' => array('type' => 'string', 'help' => 'The name of the field as it appears within the component object.'),
-                    'required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank')
+                    'required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank'),
+                    'mode' => array('type' => 'pickone', 'values' => array('RW','R'), 'help' => 'RW = field can be edited and changes will update the value in the corresponding component object, R = show the value, but no editing')
                     ),
                     'help' => 'If you have any components defined, this data type can be used to represent a field within one of the components.  This provides a convenient way for the user to edit the fields within one of the associated components as if it were part of this record.  Changes made to this field by the user will force a new version of the associated component.  You must enter the component name exactly as it appears in your list of compoents.  Similarly, the component_subfield must be an exact match of the fieldname in the dictionary of the component.'),
         );
@@ -924,7 +925,7 @@ class DBTableRowTypeVersion extends DBTableRow {
     }
 
     /**
-     * returns a list of fieldname that have been defined but do not show up in the layout.
+     * returns a list of fieldname that have been defined but do not show up in the layout or in a calculated field that shows up in the layout.
      * @return array of fieldnames:
      */
     public function getHiddenFieldnames()
@@ -941,6 +942,8 @@ class DBTableRowTypeVersion extends DBTableRow {
                     }
                 }
             }
+            // unset fields that are processed by calculated fields.
+            $defined = array_diff($defined, TableRow::getCalculatedParamFieldNames($type_digest['fieldtypes']));
             return $defined;
         } else {
             return array();
@@ -1639,7 +1642,9 @@ class DBTableRowTypeVersion extends DBTableRow {
         if (!$show_subcaption) {
             unset($fieldtype['subcaption']);
         }
-        unset($fieldtype['mode']);  // unset this for legacy reasons.  It is left behind but we don't use it.
+        if (!isset($fieldtype['component_subfield'])) {
+            unset($fieldtype['mode']);  // unset this for legacy reasons.  It is left behind but we don't use it except for component_subfields
+        }
         if (isset($fieldtype['can_have_typeobject_id'])) {
             $ids = $fieldtype['can_have_typeobject_id'];
             unset($fieldtype['can_have_typeobject_id']);

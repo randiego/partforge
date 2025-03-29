@@ -331,7 +331,7 @@ function fetchDictItemEditorHtml() {
 				var propvalvalue = propvalvalues[propvalkey];
 				out[propvalvalue] = propvalvalue;
 			}
-			var valueinput = selectHtml('','de-propval', out, propvalue);
+			var valueinput = selectHtml('','de-propval', out, propvalue, false);
 		} else if ((typeof propvalue == "object") || (propvaltype=='hashtable')) {
 			var iniStyleProps = [];
 			for(var prop in propvalue) {
@@ -586,7 +586,7 @@ function arrayToDictionaryStr(dictArray) {
 
 
 function subfieldSelectHtml(selectTagId, component_value) {
-	return selectHtml(selectTagId,'de-propval', {component_value:component_value}, component_value);
+	return selectHtml(selectTagId,'de-propval', {component_value:component_value}, component_value, true);
 }
 
 
@@ -597,7 +597,7 @@ function componentSelectHtml(selectTagId, component_value) {
 		var name = typeComponents[i]["component_name"];
 		out[name] = name;
 	}
-	return selectHtml(selectTagId,'de-propval', out, component_value);
+	return selectHtml(selectTagId,'de-propval', out, component_value, true);
 }
 
 
@@ -704,8 +704,7 @@ function arrayToComponentStr(compArray) {
 	return out.join(";");
 }
 
-function selectHtml(selectTagId, classId, valueDict, component_value) {
-	var sorted = true;
+function selectHtml(selectTagId, classId, valueDict, component_value, sorted) {
 	kvpairs = [];
 	for(var key in valueDict) {
 		var val = valueDict[key];
@@ -754,7 +753,7 @@ function typeSelectHtml(selectTagId, component_value) {
 	for(var entry in typesListing) {
 		out[entry] = entry;
 	}
-	return selectHtml(selectTagId,'', out, component_value);
+	return selectHtml(selectTagId,'', out, component_value, true);
 }
 
 function renderCompRawEditor(containerSet) {
@@ -896,11 +895,11 @@ function fetchCompEditorHtml() {
 	html += '<tr data-paramkey="caption"><th>Subcaption:<br /><span class="paren">This text goes under the caption field.  See notes in the data dictionary editor on using HTML in your subcaptions.</span></th><td>'+valueinput+'</td></tr>';
 
 	// featured
-	var valueinput = selectHtml('compFeatured','de-propval', {"0":"0","1":"1"}, compEditBuff["featured"]);
+	var valueinput = selectHtml('compFeatured','de-propval', {"0":"0","1":"1"}, compEditBuff["featured"], true);
 	html += '<tr data-paramkey="caption"><th>Featured:<br /><span class="paren">1 = show this value in headline descriptions of this part or procedure.  By making a handful (say, 1 to 3) of your fields featured, you provide a nice at-a-glance summary of this part or procedure while sparing viewers the gory details.</span></th><td>'+valueinput+'</td></tr>';
 
 	// required
-	var valueinput = selectHtml('compRequired','de-propval', {"0":"0","1":"1"}, compEditBuff["required"]);
+	var valueinput = selectHtml('compRequired','de-propval', {"0":"0","1":"1"}, compEditBuff["required"], true);
 	html += '<tr data-paramkey="caption"><th>Required:<br /><span class="paren">1 = user must enter something for this field.</span></th><td>'+valueinput+'</td></tr>';
 
 	// max_uses
@@ -1051,12 +1050,14 @@ function allFieldNames(showOnlyUnusedFields) {
 	var out = [];
 	var fieldname;
 	var fieldAlreadyUsed = showOnlyUnusedFields ? '|'+allLayoutColumnNames().join('|')+'|' : '';
+	// are any components not in the list?
 	for(var i = 0; i<typeComponents.length; i++) {
 		var fieldname = typeComponents[i]["component_name"];
 		if (fieldAlreadyUsed.indexOf('|'+fieldname+'|')==-1) {
 			out.push(fieldname);
 		}
 	}
+	// any dictionary fields not in the list?
 	for(var i=0; i<typeDictionaryArray.length; i++) {
 		var fieldname = typeDictionaryArray[i]["name"];
 		if (fieldAlreadyUsed.indexOf('|'+fieldname+'|')==-1) {
@@ -1064,14 +1065,6 @@ function allFieldNames(showOnlyUnusedFields) {
 		}
 	}
 
-	// this doesn't do anything anymore.  Remove?
-	var defaultFields = [];
-	for(var i=0; i<defaultFields.length; i++) {
-		var fieldname = defaultFields[i];
-		if (fieldAlreadyUsed.indexOf('|'+fieldname+'|')==-1) {
-			out.push(fieldname);
-		}
-	}
 	return out;
 }
 
@@ -1332,7 +1325,7 @@ function renderFormLayout() {
 		html += '<table class="bd-propeditor">';
 		var valueinput = selectHtml2('ProcListTypeObjectId_'+idx,'de-propval', unusedTypeProcDescriptions(typeFormLayoutArray[idx]["procedure_to"]), typeFormLayoutArray[idx]["procedure_to"]);
 		html += '<tr><th>Procedure Type:</th><td> '+valueinput+'</td></tr>';
-		var valueinput = selectHtml('ProcListRequired_'+idx,'de-propval', {"0":"0","1":"1"}, typeFormLayoutArray[idx]["procedure_required"]);
+		var valueinput = selectHtml('ProcListRequired_'+idx,'de-propval', {"0":"0","1":"1"}, typeFormLayoutArray[idx]["procedure_required"], true);
 		html += '<tr><th>Is Required:</th><td> '+valueinput+'</td></tr>';
 		html += '<tr><td></td><td><a href="#" class="bd-linkbtn db-done">done</a></td></tr>';
 		html += '</table>';
@@ -1598,9 +1591,20 @@ function packupFormVars() {
  */
 function checkLayoutFilled() {
 	var ok = true;
+	// get fields not appearing in the layout
 	var forgottenFields = allFieldNames(true);
-	if (forgottenFields.length > 0) {
-		alert("You have fields defined in your dictionary or component list [ " + forgottenFields.join(", ") + " ] that do not appear in the layout.  This is allowed, but maybe not what you intended.");
+	// then see if this fields are contained in the expressions of calculated fields that do appear in the layout
+	var fieldsInCalculatedExpressions = getCalculatedFieldParamsInLayout();
+	var totallyForgotten = []; // field that don't even appear in calculated expressions of other fields
+	for(var i = 0; i < forgottenFields.length; i++) {
+		var field = forgottenFields[i];
+		if (fieldsInCalculatedExpressions.indexOf(field) == -1) {
+			totallyForgotten.push(field);
+		}
+	}
+
+	if (totallyForgotten.length > 0) {
+		alert("You have fields defined in your dictionary or component list [ " + totallyForgotten.join(", ") + " ] that do not appear in the layout or calculated fields.  This is allowed, but maybe not what you intended.");
 		ok = false;
 	}
 	return ok;
@@ -1767,7 +1771,7 @@ function checkValidCalculatedTypes() {
 		}
 	}
 
-	// now look the fields in the expressions to make sure they are actual fields.
+	// now look at the fields in the expressions to make sure they are actual fields.
 	var reg = /\[([^\[^\]]+)]/g;
 	for(var ifield = 0; ifield < calculated_field_idx.length; ifield++) {
 		var idx = calculated_field_idx[ifield];
@@ -1782,6 +1786,26 @@ function checkValidCalculatedTypes() {
 	}
 
 	return ok;
+}
+
+/**
+ * gets all the field names that are used in calculated fields that appear in the layout
+ */
+function getCalculatedFieldParamsInLayout() {
+	var fields = [];
+	var fieldsInLayout = allLayoutColumnNames();
+	for(var i=0; i<typeDictionaryArray.length; i++) {
+		if ((typeDictionaryArray[i]['type']=='calculated') && (fieldsInLayout.indexOf(typeDictionaryArray[i]['name']) !== -1)) {
+			var reg = /\[([^\[^\]]+)]/g;
+			var fieldsinexp = [...typeDictionaryArray[i]['expression'].matchAll(reg)];
+			for (var j = 0; j < fieldsinexp.length; j++) {
+				if (fields.indexOf(fieldsinexp[j][1]) === -1) {
+					fields.push(fieldsinexp[j][1]);
+				}
+			}
+		}
+	}
+	return fields;
 }
 
 /**

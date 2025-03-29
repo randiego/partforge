@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2025 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -523,19 +523,19 @@ class TableRow {
      *
      * @return array of fieldnames
      */
-    public function getCalculatedParamFieldNames()
+    public static function getCalculatedParamFieldNames($fieldtypes)
     {
         $merge_params = array();
-        foreach ($this->getCalculatedFieldTypes() as $fieldname => $fieldtype) {
-            $merge_params = array_merge($merge_params, $this->extractParamsFromExpression($fieldtype['expression']));
+        foreach (self::getCalculatedFieldTypes($fieldtypes) as $fieldname => $fieldtype) {
+            $merge_params = array_merge($merge_params, self::extractParamsFromExpression($fieldtype['expression']));
         }
         return array_keys($merge_params);
     }
 
-    public function getCalculatedFieldTypes()
+    public static function getCalculatedFieldTypes($fieldtypes)
     {
         $out = array();
-        foreach ($this->getFieldTypes() as $fieldname => $fieldtype) {
+        foreach ($fieldtypes as $fieldname => $fieldtype) {
             if (isset($fieldtype['type']) && ($fieldtype['type'] == 'calculated')) {
                 $out[$fieldname] = $fieldtype;
             }
@@ -552,7 +552,7 @@ class TableRow {
     {
         $assigned_values = array();  // in case the caller wants to know what values were assigned to what
         $ignored_errors = array();
-        foreach ($this->getCalculatedFieldTypes() as $fieldname => $fieldtype) {
+        foreach (self::getCalculatedFieldTypes($this->getFieldTypes()) as $fieldname => $fieldtype) {
             $assigned_values[$fieldname] = $this->evaluateCalulatedField($fieldname, $ignored_errors);
             $this->{$fieldname} = $assigned_values[$fieldname];
         }

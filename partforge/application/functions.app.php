@@ -1099,7 +1099,8 @@ function codeVersion()
     $codever = "";
     try {
         $getver = trim(file_get_contents(dirname(__FILE__) . '/../codeversion.txt'));
-        $codever = is_numeric($getver) ? $getver : '??';
+        $parts = explode(' ', $getver);
+        $codever = is_numeric($parts[0]) ? $getver : '??';
     } catch (Exception $e) {
         $codever = "???";
     }
