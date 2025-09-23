@@ -1744,7 +1744,7 @@ class DBTableRowItemVersion extends DBTableRow {
         $DBTableRowQuery->setLimitClause('LIMIT 1')->addSelectors(array($this->_idField => $id));
         $DBTableRowQuery->addSelectFields(array("CAST((SELECT GROUP_CONCAT(concat(typecomponent.typecomponent_id,',',typecomponent.component_name,',',(
   SELECT GROUP_CONCAT(DISTINCT typecomponent_typeobject.can_have_typeobject_id ORDER BY typecomponent_typeobject.can_have_typeobject_id SEPARATOR '|') FROM typecomponent_typeobject WHERE typecomponent_typeobject.typecomponent_id=typecomponent.typecomponent_id
-),',',CONVERT(HEX(IFNULL(typecomponent.caption,'')),CHAR),',',CONVERT(HEX(IFNULL(typecomponent.subcaption,'')),CHAR),',',IFNULL(typecomponent.featured,0),',',IFNULL(typecomponent.required,0),',',IFNULL(typecomponent.max_uses,1))  ORDER BY typecomponent.component_name SEPARATOR ';') FROM typecomponent WHERE typecomponent.belongs_to_typeversion_id=itemversion.typeversion_id) AS CHAR) as list_of_typecomponents"));
+),',',CONVERT(HEX(IFNULL(typecomponent.caption,'')),CHAR),',',CONVERT(HEX(IFNULL(typecomponent.subcaption,'')),CHAR),',',IFNULL(typecomponent.featured,0),',',IFNULL(typecomponent.required,0),',',IFNULL(typecomponent.max_uses,1),',',IFNULL(typecomponent.show_new_btn,1))  ORDER BY typecomponent.component_name SEPARATOR ';') FROM typecomponent WHERE typecomponent.belongs_to_typeversion_id=itemversion.typeversion_id) AS CHAR) as list_of_typecomponents"));
         $DBTableRowQuery->addSelectFields("(SELECT count(*) FROM partnumbercache WHERE itemversion.typeversion_id=partnumbercache.typeversion_id) as partnumber_count");
         $DBTableRowQuery->addSelectFields(array("CAST((SELECT GROUP_CONCAT(concat(itemcomponent.itemcomponent_id,',',itemcomponent.component_name,',',itemcomponent.has_an_itemobject_id)  ORDER BY itemcomponent.component_name SEPARATOR ';') FROM itemcomponent WHERE itemcomponent.belongs_to_itemversion_id=itemversion.itemversion_id) AS CHAR) as list_of_itemcomponents"));
         $DBTableRowQuery->addSelectFields(array("CAST((SELECT GROUP_CONCAT(concat(itemcomment.itemcomment_id,',',itemcomment.field_name,',',itemcomment.has_a_comment_id)  ORDER BY itemcomment.field_name SEPARATOR ';') FROM itemcomment WHERE itemcomment.belongs_to_itemversion_id=itemversion.itemversion_id) AS CHAR) as list_of_itemcomments"));
@@ -2198,33 +2198,36 @@ class DBTableRowItemVersion extends DBTableRow {
              * Prepare the Add button for new items
          */
 
-        $link_info = array();
+        $buttons = '';
+        $allow_new_button = !isset($fieldtype['show_new_btn']) || (int)$fieldtype['show_new_btn'] !== 0;
+        if ($allow_new_button) {
+            $link_info = array();
 
-        if (!$this->previewDefinition()) {
-            foreach ($fieldtype['can_have_typeobject_id'] as $typeobject_id) {
-                $linkinfo = $this->getLinkInfoForAddComponent($typeobject_id, $fieldname);
-                if (!is_null($linkinfo)) {
-                    $link_info[] = $linkinfo;
+            if (!$this->previewDefinition()) {
+                foreach ($fieldtype['can_have_typeobject_id'] as $typeobject_id) {
+                    $linkinfo = $this->getLinkInfoForAddComponent($typeobject_id, $fieldname);
+                    if (!is_null($linkinfo)) {
+                        $link_info[] = $linkinfo;
+                    }
                 }
             }
-        }
 
-        $buttons = '';
-        if (count($link_info)==1) {
-            $buttons = linkify('#', 'New', 'Add a component that does not already exist in the list', 'minibutton2', $link_info[0]['js']);
-        } else if (count($link_info)>1) {
-            $buttons = linkify('#', 'New...', 'Add a component that does not already exist in the list', 'minibutton2', "$(this).next('.comp_add_button_group').toggle(); return false;");
-            $buttons .= '<div style="display:none;" class="comp_add_button_group">';
+            if (count($link_info)==1) {
+                $buttons = linkify('#', 'New', 'Add a component that does not already exist in the list', 'minibutton2', $link_info[0]['js']);
+            } else if (count($link_info)>1) {
+                $buttons = linkify('#', 'New...', 'Add a component that does not already exist in the list', 'minibutton2', "$(this).next('.comp_add_button_group').toggle(); return false;");
+                $buttons .= '<div style="display:none;" class="comp_add_button_group">';
 
-            // sort by name instead of typeobject id
-            uasort($link_info, function ($a, $b) {
-                return strnatcasecmp($a['desc'], $b['desc']);
-            });
+                // sort by name instead of typeobject id
+                uasort($link_info, function ($a, $b) {
+                    return strnatcasecmp($a['desc'], $b['desc']);
+                });
 
-            foreach ($link_info as $li) {
-                $buttons .= '<div>'.linkify('#', $li['desc'], 'Add a new '.$li['pn'].' ('.$li['desc'].')', '', $li['js']).'</div>';
+                foreach ($link_info as $li) {
+                    $buttons .= '<div>'.linkify('#', $li['desc'], 'Add a new '.$li['pn'].' ('.$li['desc'].')', '', $li['js']).'</div>';
+                }
+                $buttons .= '</div>';
             }
-            $buttons .= '</div>';
         }
 
         $footer  = !is_valid_datetime($this->effective_date) ? '<span class="paren_red">Select Effective Date for more choices.</span>' : $buttons;

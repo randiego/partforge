@@ -210,9 +210,10 @@ class DBTableRowTypeVersion extends DBTableRow {
                     	 ),',',
             		     CONVERT(HEX(IFNULL(typecomponent.caption,'')),CHAR),',',
             			 CONVERT(HEX(IFNULL(typecomponent.subcaption,'')),CHAR),',',
-            			 IFNULL(typecomponent.featured,0),',',
-            			 IFNULL(typecomponent.required,0),',',
-            			 IFNULL(typecomponent.max_uses,1)
+			 IFNULL(typecomponent.featured,0),',',
+			 IFNULL(typecomponent.required,0),',',
+			 IFNULL(typecomponent.max_uses,1),',',
+			 IFNULL(typecomponent.show_new_btn,1)
             		)
             	    ORDER BY typecomponent.component_name SEPARATOR ';')
             	FROM typecomponent
@@ -290,9 +291,11 @@ class DBTableRowTypeVersion extends DBTableRow {
         $out = array();
         foreach (explode(';', $list_of_typecomponents) as $typecomponent) {
             if (!empty($typecomponent)) {
-                list($typecomponent_id, $component_name, $can_have_typeobject_id_packed, $caption, $subcaption, $featured, $required, $max_uses) = explode(',', $typecomponent);
+                $component_parts = explode(',', $typecomponent);
+                $component_parts = array_pad($component_parts, 9, null);
+                list($typecomponent_id, $component_name, $can_have_typeobject_id_packed, $caption, $subcaption, $featured, $required, $max_uses, $show_new_btn) = $component_parts;
                 $can_have_typeobject_id = $can_have_typeobject_id_packed ? explode('|', $can_have_typeobject_id_packed) : array();
-                $type_array = array('type' => 'component', 'can_have_typeobject_id' => $can_have_typeobject_id, 'subcaption' => '', 'required' => 0, 'featured' => 1, 'max_uses' => 1); // superficially is like an enum or something.
+                $type_array = array('type' => 'component', 'can_have_typeobject_id' => $can_have_typeobject_id, 'subcaption' => '', 'required' => 0, 'featured' => 1, 'max_uses' => 1, 'show_new_btn' => 1); // superficially is like an enum or something.
                 $type_array['caption'] = !$caption && $calcCaption ? ucwords(str_replace('_', ' ', $component_name)) : hextobin($caption);
                 if ($subcaption) {
                     $type_array['subcaption'] = hextobin($subcaption);
@@ -303,8 +306,11 @@ class DBTableRowTypeVersion extends DBTableRow {
                 if (!is_null($required)) {
                     $type_array['required'] = $required;
                 }
-                if (!is_null($max_uses)) {
+                if (!is_null($max_uses) && ($max_uses !== '')) {
                     $type_array['max_uses'] = $max_uses;
+                }
+                if (!is_null($show_new_btn) && ($show_new_btn !== '')) {
+                    $type_array['show_new_btn'] = $show_new_btn;
                 }
                 $out[$component_name] = $type_array;
             }
@@ -1009,6 +1015,7 @@ class DBTableRowTypeVersion extends DBTableRow {
             $Comp->featured = $component_type['featured'];
             $Comp->required = $component_type['required'];
             $Comp->max_uses = $component_type['max_uses'];
+            $Comp->show_new_btn = $component_type['show_new_btn'];
             $Comp->save();
 
             // save the can_have_a_typeobject_id records
@@ -1139,7 +1146,7 @@ class DBTableRowTypeVersion extends DBTableRow {
         // load the possibly multiple typeobject_ids into |-separated list in the field can_have_typeobject_id
         $comp_records_to_delete = DbSchema::getInstance()->getRecords('typecomponent_id', "SELECT typecomponent_id, belongs_to_typeversion_id, (
   SELECT GROUP_CONCAT(DISTINCT typecomponent_typeobject.can_have_typeobject_id ORDER BY typecomponent_typeobject.can_have_typeobject_id SEPARATOR '|') FROM typecomponent_typeobject WHERE typecomponent_typeobject.typecomponent_id=typecomponent.typecomponent_id
-) as can_have_typeobject_id, component_name, IFNULL(caption,'') as caption, IFNULL(subcaption,'') as subcaption, IFNULL(featured,0) as featured, IFNULL(required,0) as required, IFNULL(max_uses,1) as max_uses FROM typecomponent WHERE belongs_to_typeversion_id='{$this->typeversion_id}'");
+) as can_have_typeobject_id, component_name, IFNULL(caption,'') as caption, IFNULL(subcaption,'') as subcaption, IFNULL(featured,0) as featured, IFNULL(required,0) as required, IFNULL(max_uses,1) as max_uses, IFNULL(show_new_btn,1) as show_new_btn FROM typecomponent WHERE belongs_to_typeversion_id='{$this->typeversion_id}'");
 
         $components_to_save = array();
         foreach (self::groupConcatComponentsToFieldTypes($this->list_of_typecomponents, false) as $fieldname => $component_type) {
@@ -1162,7 +1169,7 @@ class DBTableRowTypeVersion extends DBTableRow {
                 if (($typecomponent['can_have_typeobject_id']==$to_save['can_have_typeobject_id'])
                         && ($typecomponent['caption']==$to_save['caption']) && ($typecomponent['subcaption']==$to_save['subcaption'])
                         && ($typecomponent['featured']==$to_save['featured']) && ($typecomponent['required']==$to_save['required'])
-                        && ($typecomponent['max_uses']==$to_save['max_uses'])) {
+                        && ($typecomponent['max_uses']==$to_save['max_uses']) && ($typecomponent['show_new_btn']==$to_save['show_new_btn'])) {
                     unset($comp_records_to_delete[$typecomponent_id]);
                     unset($components_to_save[$component_name_on_disk]);
                 }
@@ -1188,6 +1195,7 @@ class DBTableRowTypeVersion extends DBTableRow {
             $Comp->featured = $component_type['featured'];
             $Comp->required = $component_type['required'];
             $Comp->max_uses = $component_type['max_uses'];
+            $Comp->show_new_btn = $component_type['show_new_btn'];
             $Comp->save();
             foreach ($component_type['can_have_typeobject_id'] as $typeobject_id) {
                 $this->_dbschema->mysqlQuery("INSERT INTO typecomponent_typeobject (typecomponent_id,can_have_typeobject_id) VALUES ('{$Comp->typecomponent_id}','{$typeobject_id}')");
@@ -1632,6 +1640,7 @@ class DBTableRowTypeVersion extends DBTableRow {
         $defaults['unique'] = 0;
         $defaults['subcaption'] = "";
         $defaults['max_uses'] = 1;
+        $defaults['show_new_btn'] = 1;
 
         $fieldtype = array('name' => $fieldname);
         $fieldtype = array_merge($fieldtype, $typedigest['fieldtypes'][$fieldname]);

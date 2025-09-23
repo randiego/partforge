@@ -640,6 +640,13 @@ class UtilsController extends DBControllerActionAbstract
                         $databaseversion = '24';
                         setGlobal('databaseversion', $databaseversion);
                     }
+
+                    if ($this->shouldUpgradeFrom('24')) {
+                        $msgs[] = 'Upgrading to version 25: Add show_new_btn option to components.';
+                        DbSchema::getInstance()->mysqlQuery("ALTER TABLE typecomponent ADD COLUMN show_new_btn INT DEFAULT 1 AFTER max_uses");
+                        $databaseversion = '25';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
             }
         }
         $this->view->currentversion = getGlobal('databaseversion');

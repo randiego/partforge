@@ -690,7 +690,8 @@ function componentStrToArray(cStr) {
 		var compArray = cStr.split(';');
 		for(var i=0; i<compArray.length; i++) {
 			var fields = compArray[i].split(',');
-			out.push({"typecomponent_id" : fields[0], "component_name" : fields[1], "can_have_typeobject_id" : fields[2], "caption" : Hex2Str(fields[3]), "subcaption" : Hex2Str(fields[4]), "featured" : ZeroIfUndefined(fields[5]), "required" : ZeroIfUndefined(fields[6]), "max_uses" : ZeroIfUndefined(fields[7])});
+			var showNewBtn = (fields.length>8 && typeof fields[8] !== 'undefined' && fields[8] !== '') ? fields[8] : '1';
+			out.push({"typecomponent_id" : fields[0], "component_name" : fields[1], "can_have_typeobject_id" : fields[2], "caption" : Hex2Str(fields[3]), "subcaption" : Hex2Str(fields[4]), "featured" : ZeroIfUndefined(fields[5]), "required" : ZeroIfUndefined(fields[6]), "max_uses" : ZeroIfUndefined(fields[7]), "show_new_btn" : showNewBtn});
 		}
 	}
 	return out;
@@ -699,7 +700,7 @@ function componentStrToArray(cStr) {
 function arrayToComponentStr(compArray) {
 	var out = [];
 	for(var i=0; i<compArray.length; i++) {
-		out.push(compArray[i]["typecomponent_id"]+","+compArray[i]["component_name"]+","+compArray[i]["can_have_typeobject_id"]+","+Str2Hex(compArray[i]["caption"])+","+Str2Hex(compArray[i]["subcaption"])+","+compArray[i]["featured"]+","+compArray[i]["required"]+","+compArray[i]["max_uses"]);
+		out.push(compArray[i]["typecomponent_id"]+","+compArray[i]["component_name"]+","+compArray[i]["can_have_typeobject_id"]+","+Str2Hex(compArray[i]["caption"])+","+Str2Hex(compArray[i]["subcaption"])+","+compArray[i]["featured"]+","+compArray[i]["required"]+","+compArray[i]["max_uses"]+","+compArray[i]["show_new_btn"]);
 	}
 	return out.join(";");
 }
@@ -802,7 +803,7 @@ function renderListOfComponents() {
 	});
 
 	html += '<p><a class="bd-linkbtn compraweditlink" href="#">edit raw components</a></p>';
-	html += '<table class="listtable"><tr><th>Name</th><th>Type(s)</th><th>Caption / Subcaption</th><th>Featured</th><th>Required</th>'+(isAPart ? '<th>Max Uses</th>' : '')+'<th> </th>';
+	html += '<table class="listtable"><tr><th>Name</th><th>Type(s)</th><th>Caption / Subcaption</th><th>Featured</th><th>Required</th><th>Show New Button</th>'+(isAPart ? '<th>Max Uses</th>' : '')+'<th> </th>';
 	for(var i = 0; i<typeComponents.length; i++) {
 		var f = typeComponents[i];
 	    html += '<tr>';
@@ -816,7 +817,7 @@ function renderListOfComponents() {
 
 	    var delete_btn = !isWriteProtected(f["component_name"]) ? '<a data-key="'+i+'" class="bd-linkbtn linedeletelink" href="#">delete</a>' : '';
 
-	    html += '<td>'+f["component_name"]+'</td><td>'+desc.join('<br />')+'</td><td>'+renderCaption(f["component_name"],f["caption"])+'<br /><span class="paren">'+blankIfUndefined(f["subcaption"])+'</span></td><td>'+f["featured"]+'</td><td>'+f["required"]+'</td>'+(isAPart ? '<td>'+f["max_uses"]+'</td>' : '');
+	    html += '<td>'+f["component_name"]+'</td><td>'+desc.join('<br />')+'</td><td>'+renderCaption(f["component_name"],f["caption"])+'<br /><span class="paren">'+blankIfUndefined(f["subcaption"])+'</span></td><td>'+f["featured"]+'</td><td>'+f["required"]+'</td><td>'+blankIfUndefined(f["show_new_btn"])+'</td>'+(isAPart ? '<td>'+f["max_uses"]+'</td>' : '');
 		html += '<td><a data-key="'+i+'" class="bd-linkbtn lineeditlink" href="#">edit</a> '+delete_btn+'</td>';
 		html += '</tr>';
 	}
@@ -827,7 +828,7 @@ function renderListOfComponents() {
 	$("#componentEditorDiv").html(html);
 
 	$("#addComponentLink").on("click", function(event) {
-		compEditBuff = {"typecomponent_id" : "new", "component_name" : "", "can_have_typeobject_id" : "", "caption" : "", "subcaption" : "", "featured" : "0", "required" : "", "max_uses" : "1"};
+		compEditBuff = {"typecomponent_id" : "new", "component_name" : "", "can_have_typeobject_id" : "", "caption" : "", "subcaption" : "", "featured" : "0", "required" : "", "max_uses" : "1", "show_new_btn" : "1"};
 		var key = -1; // nothing
 		renderCompEditor($('#compEditorContainer'), true, key);
 		return false;
@@ -902,6 +903,10 @@ function fetchCompEditorHtml() {
 	var valueinput = selectHtml('compRequired','de-propval', {"0":"0","1":"1"}, compEditBuff["required"], true);
 	html += '<tr data-paramkey="caption"><th>Required:<br /><span class="paren">1 = user must enter something for this field.</span></th><td>'+valueinput+'</td></tr>';
 
+	// show_new_btn
+	var valueinput = selectHtml('compShowNewBtn','de-propval', {"0":"0","1":"1"}, compEditBuff["show_new_btn"], true);
+	html += '<tr data-paramkey="show_new_btn"><th>Show New Button:<br /><span class="paren">1 = show the "New" button so users can create a component on the fly. Set to 0 to hide it.</span></th><td>'+valueinput+'</td></tr>';
+
 	// max_uses
 	if (isAPart) {
 		var valueinput = '<input id="compMaxUses" class="de-propval" type="text" value="'+htmlEscape(compEditBuff["max_uses"])+'">';
@@ -964,6 +969,7 @@ function saveCompEditorToBuff(showAlerts,isNew,key) {
 	compEditBuff["subcaption"] = $("#compSubCaption").val().trim();
 	compEditBuff["featured"] = $("#compFeatured").val();
 	compEditBuff["required"] = $("#compRequired").val();
+	compEditBuff["show_new_btn"] = $("#compShowNewBtn").val();
 	compEditBuff["max_uses"] = isAPart ? $("#compMaxUses").val() : '1';
 
 	return ok;

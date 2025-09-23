@@ -1,4 +1,4 @@
-<script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/struct/typeeditview.js?v=56" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/struct/typeeditview.js?v=58" type="TEXT/JAVASCRIPT"></script>
 <script type="text/javascript">
 var typeDataDictionary = <?php echo $this->dbtable->type_data_dictionary ? $this->dbtable->type_data_dictionary : '{}'?>;
 var typeFormLayout = <?php echo $this->dbtable->type_form_layout ? $this->dbtable->type_form_layout : '[]'?>;
@@ -104,6 +104,7 @@ if ($this->edit_buffer_key) {
 
     $html .= '<h2 class="bd-edit-page-headers">Components</h2>';
     $html .= DBTableRowWhatsNewUser::fetchWhatsNew('MAX_USES_PARAMETER', 'Components have been enhanced with a max_uses parameter that defaults to 1. If a component is used in more than one place it appears with a red background.', '2/2/2022');
+    $html .= DBTableRowWhatsNewUser::fetchWhatsNew('SHOW_NEW_BTN_PARAMETER', 'Components include a show_new_btn toggle. Use show_new_btn=0 when you want to hide the New button next to the component picker.', '9/22/2025');
     $html .= '<p class="bd-instruction-text">Components refer to other record types that are associated with this record
     		type.  For example, if this is a test procedure for a magnet, then you could include an existing magnet component
     		in this list of components.  That way, both this procedure and the magnet would be linked together.
