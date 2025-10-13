@@ -2607,7 +2607,7 @@ class DBTableRowItemVersion extends DBTableRow {
                         }
                     }
                     $document_summary = trunc_text((count($fieldnames) > 0) ? ' and file(s): '.implode(', ', $fieldnames) : '', $max_len_all_filenames);
-                    $out = ($record['comment_text'] ? '"'.trunc_text($record['comment_text'], $max_len_comment).'" ' : '').'('.$comment_id.')'.$document_summary;
+                    $out = ($record['comment_text'] ? '"'.text_to_trunc_html($record['comment_text'], $max_len_comment).'" ' : '').'('.$comment_id.')'.$document_summary;
                 }
 
             } else {
