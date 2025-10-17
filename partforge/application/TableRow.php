@@ -514,7 +514,8 @@ class TableRow {
         } else if ($type == 'date') {
             return ($value && (strtotime($value) != -1)) ? date('m/d/Y', strtotime($value)) : $value;
         } else {
-            return $is_html ? EventStream::embeddedLinksToHtmlTags(nl2br(TextToHtml($value))) : $value;
+            // $value can have html embedded in it. If we're outputting to html we escape html so it is not active in the webpage.
+            return $is_html ? nl2br(EventStream::embeddedLinksToHtmlTags(TextToHtml($value))) : $value;
         }
     }
 

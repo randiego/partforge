@@ -576,7 +576,7 @@ class DBTableRowItemVersion extends DBTableRow {
         foreach ($deleted as $fieldname) {
             if (in_array($fieldname, $compare_property_fieldnames)
                 || in_array($fieldname, $compare_attachment_fieldnames)) {
-                $compare_value = $CompareItem->formatPrintField($fieldname, false);
+                $compare_value = TextToHtml($CompareItem->formatPrintField($fieldname, false));
                 if ($output_by_fieldname) {
                     checkWasChangedItemFieldByFieldname($list, $fieldname, $compare_value, null);
                 } else {
@@ -602,7 +602,7 @@ class DBTableRowItemVersion extends DBTableRow {
         foreach ($added as $fieldname) {
             if (in_array($fieldname, $this_property_fieldnames)
                 || in_array($fieldname, $this_attachment_fieldnames)) {
-                $this_value = $this->formatPrintField($fieldname, false);
+                $this_value = TextToHtml($this->formatPrintField($fieldname, false));
                 if ($output_by_fieldname) {
                     checkWasChangedItemFieldByFieldname($list, $fieldname, null, $this_value);
                 } else {
@@ -628,8 +628,8 @@ class DBTableRowItemVersion extends DBTableRow {
         foreach ($maybe_changed as $fieldname) {
             if (in_array($fieldname, $this_property_fieldnames + $compare_property_fieldnames )
                     || in_array($fieldname, $this_attachment_fieldnames + $compare_attachment_fieldnames )) {
-                $this_value = $this->formatPrintField($fieldname, false);
-                $compare_value = $CompareItem->formatPrintField($fieldname, false);
+                $this_value = TextToHtml($this->formatPrintField($fieldname, false));
+                $compare_value = TextToHtml($CompareItem->formatPrintField($fieldname, false));
                 if ($output_by_fieldname) {
                     checkWasChangedItemFieldByFieldname($list, $fieldname, $compare_value, $this_value);
                 } else {
@@ -2607,7 +2607,7 @@ class DBTableRowItemVersion extends DBTableRow {
                         }
                     }
                     $document_summary = trunc_text((count($fieldnames) > 0) ? ' and file(s): '.implode(', ', $fieldnames) : '', $max_len_all_filenames);
-                    $out = ($record['comment_text'] ? '"'.text_to_trunc_html($record['comment_text'], $max_len_comment).'" ' : '').'('.$comment_id.')'.$document_summary;
+                    $out = ($record['comment_text'] ? '"'.trunc_text($record['comment_text'], $max_len_comment).'" ' : '').'('.$comment_id.')'.$document_summary;
                 }
 
             } else {
@@ -2936,7 +2936,8 @@ class DBTableRowItemVersion extends DBTableRow {
                         $can_edit = false;  // not allowed to edit something with a message
                         $marker = LOCKED_FIELD_SYM;
                     }
-                    if (isset($fieldtype['mode']) && $fieldtype['mode']=='R') {
+                    // the mode parameter has only been defined for component_subfield types.
+                    if (isset($fieldtype['component_subfield']) && isset($fieldtype['mode']) && $fieldtype['mode']=='R') {
                         $can_edit = false;  // not allowed to edit a read-only field.
                     }
 
