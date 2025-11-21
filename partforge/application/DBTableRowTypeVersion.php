@@ -1290,7 +1290,7 @@ class DBTableRowTypeVersion extends DBTableRow {
                 $result = false;
             }
 
-            $commment_records = DbSchema::getInstance()->getRecords('', "SELECT * FROM typecomment where typeobject_id='{$this->typeobject_id}'");
+            $commment_records = DbSchema::getInstance()->getRecords('', "SELECT * FROM comment where typeobject_id='{$this->typeobject_id}'");
             if (count($commment_records)>0) {
                 $result = false;
             }
@@ -1340,7 +1340,7 @@ class DBTableRowTypeVersion extends DBTableRow {
                 * since normally we would not be allowed to delete when comments or references remained
             */
             DbSchema::getInstance()->mysqlQuery("delete from typecomponent_typeobject where can_have_typeobject_id='{$typeobject_id}'");
-            DbSchema::getInstance()->mysqlQuery("delete from typecomment where typeobject_id='{$typeobject_id}'");
+            DbSchema::getInstance()->mysqlQuery("delete from comment where typeobject_id='{$typeobject_id}'");
             DBTableRowChangeLog::deletedTypeObject($typeobject_id, $text_desc, $versionstatus);
         } else {
             self::updateCachedCurrentTypeVersionId($typeobject_id);

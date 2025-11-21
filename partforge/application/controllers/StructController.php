@@ -1181,7 +1181,7 @@ class StructController extends DBControllerActionAbstract
             $Comment->comment_text = $this->params['comment_text'];
             $Comment->save();
         } else if (isset($this->params['typeobject_id']) && is_numeric($this->params['typeobject_id']) && $this->params['comment_text']) {
-            $Comment = new DBTableRowTypeComment();
+            $Comment = new DBTableRowComment();
             $Comment->typeobject_id = $this->params['typeobject_id'];
             $Comment->comment_text = $this->params['comment_text'];
             $Comment->save();

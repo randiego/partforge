@@ -136,19 +136,30 @@ class DefinitionEventStream {
          * Add Comments
          */
         $query = "
-				SELECT typecomment.*
-				FROM typecomment
-				WHERE typecomment.typeobject_id='{$this->_typeobject_id}'
+
+				SELECT comment.*, (SELECT GROUP_CONCAT(
+				CONCAT(document.document_id,',',document.document_filesize,',',CONVERT(HEX(document.document_displayed_filename),CHAR),',',CONVERT(HEX(document.document_stored_filename),CHAR),',',document.document_stored_path,',',document.document_file_type,',',document.document_thumb_exists)
+				ORDER BY document.document_date_added SEPARATOR ';') FROM document WHERE (document.comment_id = comment.comment_id) and (document.document_path_db_key='{$config->document_path_db_key}')) as documents_packed,
+                (SELECT COUNT(*) FROM sendmessage WHERE sendmessage.comment_id=comment.comment_id) as sent_count
+                FROM comment
+				WHERE is_fieldcomment=0 and typeobject_id='{$this->_typeobject_id}'
 			";
+
         $records = DbSchema::getInstance()->getRecords('comment_id', $query);
         foreach ($records as $comment_id => $record) {
             $itemevent = array();
             $itemevent['event_type_id'] = 'ET_COM';
-            $itemevent['effective_date'] = isset($record['comment_added']) ? $record['comment_added'] : null;
-            $itemevent['record_created'] = isset($record['record_created']) ? $record['record_created'] : null;
-            $itemevent['user_id'] = isset($record['user_id']) ? $record['user_id'] : null;
-            $itemevent['proxy_user_id'] = isset($record['proxy_user_id']) ? $record['proxy_user_id'] : null;
-            $itemevent['event_description'] = isset($record['comment_text']) ? $record['comment_text'] : null;
+            $itemevent['effective_date'] = $record['comment_added'];
+            $itemevent['record_created'] = $record['record_created'];
+            $itemevent['user_id'] = $record['user_id'];
+            $itemevent['proxy_user_id'] = $record['proxy_user_id'];
+            $itemevent['is_fieldcomment'] = $record['is_fieldcomment'];
+            $itemevent['description_is_html'] = false;
+            $itemevent['event_description'] = $record['comment_text'];
+            if ($record['documents_packed']) {
+                $itemevent['documents_packed'] = $record['documents_packed'];
+            }
+            $itemevent['sent_count'] = $record['sent_count'];
             $itemevent['comment_id'] = $comment_id;
 
             $out[] = $itemevent;
@@ -188,7 +199,10 @@ class DefinitionEventStream {
             $datetime = time_to_bulletdate(strtotime($line['effective_date']));
             $select_radio_html = '';
             $edit_buttons_html = '';
+            $documents_html = '';
             $alt_edit_date_html = '';
+            $comment_sent_to_html = '';
+
 
             $status_badge_html = '';
             $background_class = '';
@@ -221,7 +235,22 @@ class DefinitionEventStream {
 
             if ($line['event_type_id']=='ET_COM') {
                 $background_class = 'bd-type-comment';
+                if ($line['documents_packed']) {
+                    $documents_html = '<div class="bd-event-documents">';
+                    $documents_html .= EventStream::documentsPackedToFileGallery('id'.$line_idx, $line['documents_packed']);
+                    $documents_html .= '</div>';
+                } else {
+                    $documents_html = '';
+                }
+                if (EventStream::isWeirdRecordCreatedDate($line)) {
+                    $alt_edit_date_html = '<div class="bd-dateline-edited">(Added: '.time_to_bulletdate(strtotime($line['record_created']), false).')</div>';
+                }
                 $edit_buttons_html = '<div class="bd-edit">'.implode('', $line['edit_links']).'</div>';
+
+                if ($line['sent_count'] > 0) {
+                    $comment_sent_to_message = '<IMG style="vertical-align:bottom;" src="'.Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().'/images/mailicon.gif" width="14" height="14" border="0" alt="sent"> Sent '.linkify('#', $line['sent_count']==1 ? 'Once' : $line['sent_count'].' Times', 'show comment send history...', 'comment_sent_pop_link').'<div class="comment_sent_pop_div" id="comment_sent_pop_'.$line['comment_id'].'" title="Comment Send History" style="display: none;"></div>';
+                    $comment_sent_to_html = '<div class="bd-dateline">'.$comment_sent_to_message.'</div>';
+                }
             }
 
             $subcomments_html = '';
@@ -229,15 +258,14 @@ class DefinitionEventStream {
             $dimmed_class = $line['is_future_version'] ? ' bd-dimmed' : '';
 
 
-
             $highlight_class = $line['recently_edited'] ? (in_array($line['event_type_id'], array('ET_PROCREF','ET_PARTREF')) ? ' event_afterglow_r' : ' event_afterglow_c') : '';
             $layout_rows[] = '<li class="bd-event-row '.$background_class.$dimmed_class.$highlight_class.'">
 				'.$select_radio_html.'
-				<div class="bd-event-content'.($alt_edit_date_html ? ' bd-with-edit-date' : '').'">
+				<div class="bd-event-content'.($alt_edit_date_html ? ' bd-with-edit-date' : '').($comment_sent_to_html ? ' bd-with-comment-sent' : '').'">
 				<div class="bd-event-type"></div>
-				<div class="bd-event-whowhen"><div class="bd-byline">'.linkify(UrlCallRegistry::formatViewUrl('id/'.$line['user_id'], 'user'), strtoupper($line['user_name_html']), 'show details about this user').'</div><div class="bd-dateline">'.$datetime.'</div>'.$alt_edit_date_html.'</div>
+				<div class="bd-event-whowhen"><div class="bd-byline">'.linkify(UrlCallRegistry::formatViewUrl('id/'.$line['user_id'], 'user'), strtoupper($line['user_name_html']), 'show details about this user').'</div><div class="bd-dateline">'.$datetime.'</div>'.$alt_edit_date_html.$comment_sent_to_html.'</div>
 				<div class="bd-event-message">
-				'.$edit_buttons_html.$status_badge_html.'
+				'.$edit_buttons_html.$documents_html.$status_badge_html.'
 				'.$line['event_html'].'
 				</div>
 				'.$subcomments_html.'
@@ -247,20 +275,23 @@ class DefinitionEventStream {
         return $layout_rows;
     }
 
-    public static function renderEventStreamHtmlForPdfFromLines($lines, $show_procedures = true)
+    public static function renderEventStreamHtmlForPdfFromLines($lines)
     {
-
         $layout_rows = array();
         foreach ($lines as $line) {
             $datetime = time_to_bulletdate(strtotime($line['effective_date']), false);
-            $procedure_disposition_html = '';
+            $documents_html = '';
+            if ($line['event_type_id']=='ET_COM') {
+                if ($line['documents_packed']) {
+                    $documents_html = EventStream::renderCommentDocumentsPackedToPdfHtml($line['documents_packed']);
+                }
+            }
 
             if (in_array($line['event_type_id'], array('ET_CHG','ET_COM')) && !$line['is_future_version']) {
-                $layout_rows[] = array('<b>'.strtoupper($line['user_name_html']).'</b><br /> <i>'.$datetime.'</i>', $line['event_html'], $procedure_disposition_html);
+                $layout_rows[] = array('<b>'.strtoupper($line['user_name_html']).'</b><br /> <i>'.$datetime.'</i>', $line['event_html'].' '.$documents_html, '');
             }
         }
         return $layout_rows;
-
     }
 
     /**
@@ -325,22 +356,21 @@ class DefinitionEventStream {
                     'record_modified' => isset($record['record_modified']) ? $record['record_modified'] : null,
                     'versionstatus' => isset($record['versionstatus']) ? $record['versionstatus'] : null,
                     'is_future_version' => $is_future_version,
+                    'documents_packed'=>'',
                     'recently_edited' => false);
 
             $line['edit_links'] = array();
-            if (($record['event_type_id']=='ET_CHG')) {
-                $is_a_procedure = DBTableRowTypeVersion::isTypeCategoryAProcedure($dbtable->typecategory_id);
-                $is_current_version = $dbtable->isCurrentVersion($record['this_typeversion_id']);
-                $record_created = $record['record_created'];
-// This is where editing controls go
-//              $line['edit_links'] = !is_null($navigator) ? DBTableRowTypeVersion::typeversionEditLinks($navigator, $return_url, $delete_failed_return_url, $delete_done_return_url, $dbtable->typeobject_id, $record['this_typeversion_id'], $record_created, $record['user_id'],$is_a_procedure,$is_current_version) : array();
-            }
-
             if ($record['event_type_id']=='ET_COM') {
-                $line['edit_links'] = !is_null($navigator) ? DBTableRowTypeComment::commentEditLinks($navigator, $return_url, $record['comment_id'], $record['effective_date'], $record['user_id']) : '';
-                if (DBTableRow::wasItemTouchedRecently('typecomment', $record['comment_id'])) {
+                $line['edit_links'] = !is_null($navigator) ? DBTableRowComment::commentEditLinks($navigator, $return_url, $record['comment_id'], $record['effective_date'], $record['user_id'], -1) : '';
+                if (isset($record['documents_packed']) && $record['documents_packed']) {
+                    $line['documents_packed'] = $record['documents_packed'];
+                }
+                if (DBTableRow::wasItemTouchedRecently('comment', $record['comment_id'])) {
                     $line['recently_edited'] = true;
                 }
+                $line['is_fieldcomment'] = $record['is_fieldcomment'];
+                $line['sent_count'] = $record['sent_count'];
+                $line['comment_id'] = $record['comment_id'];
             }
 
 

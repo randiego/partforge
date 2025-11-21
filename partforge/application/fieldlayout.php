@@ -44,11 +44,6 @@ $FIELDLAYOUT['comment']['editview'] =
     	array(array('dbfield' => 'comment_text', 'field_attributes' => array('input_cols' => 70, 'input_rows' => 8))),
 	);	
 
-$FIELDLAYOUT['typecomment']['editview'] =
-array(
-		array(array('dbfield' => 'comment_text', 'field_attributes' => array('input_cols' => 70, 'input_rows' => 8))),
-);
-
 $FIELDLAYOUT['user']['editview'] = 
     array(
         array(array('dbfield' => 'first_name'),'last_name'),

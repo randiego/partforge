@@ -647,6 +647,39 @@ class UtilsController extends DBControllerActionAbstract
                         $databaseversion = '25';
                         setGlobal('databaseversion', $databaseversion);
                     }
+
+                    if ($this->shouldUpgradeFrom('25')) {
+                        $msgs[] = 'Upgrading to version 26: Store type comments in the shared comment table.';
+                        $DbSchema = DbSchema::getInstance();
+                        $DbSchema->mysqlQuery("ALTER TABLE comment ADD COLUMN typeobject_id int(11) DEFAULT -1 AFTER itemobject_id");
+                        $DbSchema->mysqlQuery("ALTER TABLE comment ADD INDEX (typeobject_id)");
+                        $DbSchema->resetFieldTypesCache('comment');
+                        $typecomment_records = $DbSchema->getRecords('', "SELECT comment_id as typecomment_id, typeobject_id, user_id, record_created, comment_text, comment_added FROM typecomment");
+                        foreach ($typecomment_records as $record) {
+                            $record_created = $record['record_created'] ? $record['record_created'] : time_to_mysqldatetime(script_time());
+                            $comment_added = $record['comment_added'] ? $record['comment_added'] : $record_created;
+                            $comment_fields = array(
+                                'comment_id' => 'new',
+                                'user_id' => $record['user_id'],
+                                'proxy_user_id' => -1,
+                                'itemobject_id' => -1,
+                                'typeobject_id' => $record['typeobject_id'],
+                                'record_created' => $record_created,
+                                'comment_text' => $record['comment_text'],
+                                'comment_added' => $comment_added,
+                                'is_fieldcomment' => 0,
+                            );
+                            $DbSchema->saveRecord('comment', $comment_fields, array('user_id', 'proxy_user_id', 'itemobject_id', 'typeobject_id', 'record_created', 'comment_text', 'comment_added', 'is_fieldcomment'));
+                            $typecomment_id = intval($record['typecomment_id']);
+                            $DbSchema->mysqlQuery("DELETE FROM typecomment WHERE comment_id='{$typecomment_id}'");
+                        }
+                        $typecomment_records = $DbSchema->getRecords('', "SELECT * FROM typecomment WHERE 1");
+                        if (count($typecomment_records) == 0) {
+                            $DbSchema->mysqlQuery("DROP TABLE typecomment");
+                        }
+                        $databaseversion = '26';
+                        setGlobal('databaseversion', $databaseversion);
+                    }
             }
         }
         $this->view->currentversion = getGlobal('databaseversion');

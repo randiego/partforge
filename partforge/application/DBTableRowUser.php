@@ -498,7 +498,6 @@ return false;
         $relationships = array();
         $relationships[] = array('table' => 'user', 'index' => 'user_id','dep_table' => 'reportsubscription', 'dep_index' => 'user_id');
         $relationships[] = array('table' => 'user', 'index' => 'user_id','dep_table' => 'document', 'dep_index' => 'user_id');
-        $relationships[] = array('table' => 'user', 'index' => 'user_id','dep_table' => 'typecomment', 'dep_index' => 'user_id');
         $relationships[] = array('table' => 'user', 'index' => 'user_id','dep_table' => 'comment', 'dep_index' => 'user_id');
         $relationships[] = array('table' => 'user', 'index' => 'user_id','dep_table' => 'comment', 'dep_index' => 'proxy_user_id');
         $relationships[] = array('table' => 'user', 'index' => 'user_id','dep_table' => 'typeversion', 'dep_index' => 'user_id');

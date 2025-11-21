@@ -157,6 +157,13 @@ class DbSchema {   // singleton
         return $out;
     }
 
+    public function resetFieldTypesCache($tablename)
+    {
+        if (isset($this->_fieldtypes[$tablename])) {
+            unset($this->_fieldtypes[$tablename]);
+        }
+    }
+
     public function getFieldTypes($tablename)
     {
         if (!isset($this->_fieldtypes[$tablename])) {

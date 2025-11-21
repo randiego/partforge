@@ -43,7 +43,7 @@ class DBTableRowSendMessage extends DBTableRow {
         }
     }
 
-    public static function queueUpCommentForSending($comment_id, $itemobject_id, $send_to_login_ids)
+    public static function queueUpCommentForSending($comment_id, $itemobject_id, $typeobject_id, $send_to_login_ids)
     {
         $errormsg = array();
         $send_error_messages = array();
@@ -51,14 +51,22 @@ class DBTableRowSendMessage extends DBTableRow {
         if (count($errormsg) == 0) {
             $SendMessage = new self();
             $SendMessage->comment_id = $comment_id;
-            $SendMessage->url = '/struct/io/'.$itemobject_id;
             $SendMessage->from_user_id = $_SESSION['account']->user_id;
-            $ItemVersion = new DBTableRowItemVersion();
-            // now build the description of the Part or Procedure
-            if ($ItemVersion->getCurrentRecordByObjectId($itemobject_id)) {
-                $title_short = $ItemVersion->getPageTypeTitleHtml(true).($ItemVersion->item_serial_number ? ' - '.TextToHtml($ItemVersion->item_serial_number) : '');
-                $item_disposition = $ItemVersion->hasADisposition() ? ' ('.DBTableRowItemVersion::renderDisposition($ItemVersion->getFieldType('disposition'), $ItemVersion->disposition, false, '').')' : '';
-                $SendMessage->object_name = $title_short.$item_disposition;
+            if (is_numeric($typeobject_id) && ($typeobject_id > 0)) {
+                $SendMessage->url = '/struct/to/'.$typeobject_id;
+                $TypeVersion = new DBTableRowTypeVersion();
+                if ($TypeVersion->getCurrentRecordByObjectId($typeobject_id)) {
+                    $SendMessage->object_name = DBTableRowTypeVersion::formatPartNumberDescription($TypeVersion->type_part_number, $TypeVersion->type_description);
+                }
+            } else {
+                $SendMessage->url = '/struct/io/'.$itemobject_id;
+                $ItemVersion = new DBTableRowItemVersion();
+                // now build the description of the Part or Procedure
+                if ($ItemVersion->getCurrentRecordByObjectId($itemobject_id)) {
+                    $title_short = $ItemVersion->getPageTypeTitleHtml(true).($ItemVersion->item_serial_number ? ' - '.TextToHtml($ItemVersion->item_serial_number) : '');
+                    $item_disposition = $ItemVersion->hasADisposition() ? ' ('.DBTableRowItemVersion::renderDisposition($ItemVersion->getFieldType('disposition'), $ItemVersion->disposition, false, '').')' : '';
+                    $SendMessage->object_name = $title_short.$item_disposition;
+                }
             }
             $SendMessage->save();
             $SendMessage->saveRecipientList(array_keys($login_ids));

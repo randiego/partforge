@@ -22,7 +22,7 @@ var linkToPageUrl = "<?php echo $this->dbtable->absoluteUrl();?>";
 var lookupUrl = '<?php echo $this->navigator->getCurrentViewUrl('jsonsearchloginids', 'user');?>';
 var canSendLink = <?php echo in_array($_SESSION['account'] ->getRole(), array('Guest','DataTerminal')) ? 'false' : 'true';?>;
 </script>
-<script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/struct/itemdefinitionview.js?v=11" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="<?php echo Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl();?>/scripts/struct/itemdefinitionview.js?v=12" type="TEXT/JAVASCRIPT"></script>
 
 <?php
 global $itemcounts, $typerefs;
@@ -374,7 +374,7 @@ $html .= '</div>';
 
 $add_links = array();
 if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'ui:caneditdefinitions')) {
-    $add_links[] = linkify($this->navigator->getCurrentViewUrl('editview', 'db', array('table' => 'typecomment', 'comment_id' => 'new', 'return_url' => $return_url, 'initialize' => array('typeobject_id' => $this->dbtable->typeobject_id))), 'Add Comment', 'add a new comment', 'bd-button');
+    $add_links[] = linkify($this->navigator->getCurrentViewUrl('commenteditview', 'struct', array('table' => 'comment', 'comment_id' => 'new', 'return_url' => $return_url, 'initialize' => array('typeobject_id' => $this->dbtable->typeobject_id))), 'Add Comment or Attachments', 'add a new comment, photos, or documents', 'bd-button');
 }
 
 

@@ -30,6 +30,8 @@ class DBTableRowComment extends DBTableRow {
         parent::__construct('comment');
         $this->comment_added = time_to_mysqldatetime(script_time());
         $this->user_id = $_SESSION['account']->user_id;
+        $this->itemobject_id = -1;
+        $this->typeobject_id = -1;
         $this->proxy_user_id = ($_SESSION['account']->getRole()=='DataTerminal') ? $_SESSION['account']->user_id : LOGGED_IN_USER_IS_CREATOR;
         $this->document_ids = array();
     }
@@ -124,11 +126,23 @@ class DBTableRowComment extends DBTableRow {
     public function delete()
     {
         DBTableRowSendMessage::deleteItemsForCommentId($this->comment_id);
-        $itemobject_id = $this->itemobject_id;
-        $text = $this->comment_text;
-        parent::delete();
-        DBTableRowChangeLog::deletedItemComment($itemobject_id, $text);
-        DBTableRowItemObject::updateCachedLastCommentFields($itemobject_id);
+        if ($this->isTypeComment()) {
+            $typeobject_id = $this->typeobject_id;
+            $text = $this->comment_text;
+            parent::delete();
+            DBTableRowChangeLog::deletedTypeComment($typeobject_id, $text);
+        } else {
+            $itemobject_id = $this->itemobject_id;
+            $text = $this->comment_text;
+            parent::delete();
+            DBTableRowChangeLog::deletedItemComment($itemobject_id, $text);
+            DBTableRowItemObject::updateCachedLastCommentFields($itemobject_id);
+        }
+    }
+
+    public function isTypeComment()
+    {
+        return is_numeric($this->typeobject_id) && ($this->typeobject_id > 0);
     }
 
     public function assignFromFormSubmission($in_params, &$merge_params)
@@ -157,15 +171,22 @@ class DBTableRowComment extends DBTableRow {
     public function save($fieldnames = array(), $handle_err_dups_too = true)
     {
  // function will raise an exception if an error occurs
-        $itemobject_id = $this->itemobject_id;
         $new_comment = !$this->isSaved();
         parent::save($fieldnames, $handle_err_dups_too);
-        if ($new_comment) {
-            DBTableRowChangeLog::addedItemComment($itemobject_id, $this->comment_id, $this->user_id);
+        if ($this->isTypeComment()) {
+            if ($new_comment) {
+                DBTableRowChangeLog::addedTypeComment($this->typeobject_id, $this->comment_id);
+            } else {
+                DBTableRowChangeLog::changedTypeComment($this->typeobject_id, $this->comment_id);
+            }
         } else {
-            DBTableRowChangeLog::changedItemComment($itemobject_id, $this->comment_id, $this->user_id);
+            if ($new_comment) {
+                DBTableRowChangeLog::addedItemComment($this->itemobject_id, $this->comment_id, $this->user_id);
+            } else {
+                DBTableRowChangeLog::changedItemComment($this->itemobject_id, $this->comment_id, $this->user_id);
+            }
+            DBTableRowItemObject::updateCachedLastCommentFields($this->itemobject_id);
         }
-        DBTableRowItemObject::updateCachedLastCommentFields($itemobject_id);
     }
 
     // do any preprocessing after reading table row.  For example, unserialize objects
@@ -204,7 +225,7 @@ class DBTableRowComment extends DBTableRow {
 
         // queue up an email if send_to_login_ids is set.
         if (isset($this->send_to_login_ids) && $this->send_to_login_ids) {
-            DBTableRowSendMessage::queueUpCommentForSending($this->comment_id, $this->itemobject_id, $this->send_to_login_ids);
+            DBTableRowSendMessage::queueUpCommentForSending($this->comment_id, $this->itemobject_id, $this->typeobject_id, $this->send_to_login_ids);
         }
 
 

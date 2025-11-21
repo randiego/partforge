@@ -218,7 +218,7 @@ class TableRowReorgMoveComponent extends TableRow {
 			$io_links[] = "[io/{$itemobject_id}]";
 		}
 		
-		$TypeComment = new DBTableRowTypeComment();
+		$TypeComment = new DBTableRowComment();
 		$TypeComment->typeobject_id = $TV->typeobject_id;
 		$TypeComment->comment_text = "[AUTOPOSTED]: A bulk component move operation was performed on version '{$TV->getCoreDescription()}' that moved components from the '{$this->sourcename}' field to the '{$this->destname}' field on the following items: ".implode(', ',$io_links);
 		$TypeComment->save();

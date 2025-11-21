@@ -124,5 +124,10 @@ $(function() {
 
 	});
 
+    var dialogdiv = null;  // this will force only one a time
+	$('.comment_sent_pop_link').click(function(link){
+		handleCommentSentPopup(this, { my: "right top", at: "left bottom", of: link }, dialogdiv);
+	});
+
 
 });

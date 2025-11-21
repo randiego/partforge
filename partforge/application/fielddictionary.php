@@ -206,12 +206,4 @@ $DICTIONARY['tables'] =
                 'fields' => array(
                 ),
             ),
-            'typecomment' => array(
-                'class' => 'DBTableRowTypeComment',
-                'caption' => 'Type Comment',
-                'fields' => array(
-                        'comment_text' => array('subcaption' => '<a href="#" class="a_pop_link">tips</a>
-                                                <div style="display:none;">'.DBTableRowComment::commentTipsHtml().'</div>'),
-                ),
-            ),
 );
