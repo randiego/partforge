@@ -537,9 +537,8 @@ class StructController extends DBControllerActionAbstract
     }
 
 
-    protected function edit_db_handler(DBTableRow $dbtable, $save_fieldnames)
+    protected function edit_db_handler($edit_buffer, DBTableRow $dbtable, $save_fieldnames)
     {
-        $edit_buffer = 'editing_'.$this->getBufferKey($dbtable);
         switch (true) {
             // make a change to a record instead of adding a new version of the same one.
             case isset($this->params['btnChangePart']):
@@ -616,7 +615,7 @@ class StructController extends DBControllerActionAbstract
         }
 
         // now check if a different button was pressed
-        parent::edit_db_handler($dbtable, $save_fieldnames);
+        parent::edit_db_handler($edit_buffer, $dbtable, $save_fieldnames);
     }
 
     public function getBufferKey(TableRow $dbtable)
@@ -645,7 +644,7 @@ class StructController extends DBControllerActionAbstract
         $this->view->version_edit_mode = isset($_SESSION[$edit_buffer]['version_edit_mode']) ? $_SESSION[$edit_buffer]['version_edit_mode'] : 'vem_new_version';
 
         if (isset($this->params['form'])) {
-            $this->edit_db_handler($EditRow, $EditRow->getSaveFieldNames());
+            $this->edit_db_handler($edit_buffer, $EditRow, $EditRow->getSaveFieldNames());
             if (($EditRow instanceof DBTableRowTypeVersion)) {  //     $this->params['table']=='typeversion'
                 switch (true) {
                     case isset($this->params['btnOnChange']) && ($this->params['btnOnChange']=='deletealias'):

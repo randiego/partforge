@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2025 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -827,10 +827,9 @@ class UserController extends DBCustomControllerAction
      * Needed to override so that we could catch exceptions in the save when a duplicate login ID was attempted, otherwise very messy.
      * @see DBControllerActionAbstract::edit_db_handler()
      */
-    protected function edit_db_handler(DBTableRow $dbtable, $save_fieldnames)
+    protected function edit_db_handler($edit_buffer, DBTableRow $dbtable, $save_fieldnames)
     {
         $dbschema = DbSchema::getInstance();
-        $edit_buffer = 'editing_'.$this->getBufferKey($dbtable);
 
         switch (true) {
             case isset($this->params['btnOK']):
@@ -854,6 +853,6 @@ class UserController extends DBCustomControllerAction
                 $_SESSION[$edit_buffer]['form_result'] = 'btnOK';
                 $this->navigator->returnFromCall();
         }
-        parent::edit_db_handler($dbtable, $save_fieldnames);
+        parent::edit_db_handler($edit_buffer, $dbtable, $save_fieldnames);
     }
 }

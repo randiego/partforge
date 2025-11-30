@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2025 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -316,7 +316,7 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
         }
 
         if (isset($this->params['form'])) {
-            $this->edit_db_handler($EditRow, $EditRow->getSaveFieldNames());
+            $this->edit_db_handler($edit_buffer, $EditRow, $EditRow->getSaveFieldNames());
         }
 
         $this->view->dbtable = $EditRow;
@@ -348,10 +348,10 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
         }
     }
 
-    protected function edit_db_handler(DBTableRow $dbtable, $save_fieldnames)
+    protected function edit_db_handler($edit_buffer, DBTableRow $dbtable, $save_fieldnames)
     {
         $dbschema = DbSchema::getInstance();
-        $edit_buffer = 'editing_'.$this->getBufferKey($dbtable);
+        // $edit_buffer = 'editing_'.$this->getBufferKey($dbtable);
 
         switch (true) {
             case isset($this->params['btnOK']):
