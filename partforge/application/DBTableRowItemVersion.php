@@ -32,7 +32,9 @@ class DBTableRowItemVersion extends DBTableRow {
          * keys are 'typeversion_id', 'addon_property_fields', 'addon_component_fields', 'addon_component_subfields', 'dictionary_field_layout'
      */
     public $_navigator;
+    public $_current_component_depth;
     private $_typeversion_digest = array();
+    private $MAX_COMPONENT_DEPTH = 10;   // This should really only be hit if there is circular references in the definition
     private $_last_loaded_component_objects = array(); // this is a list of recently loaded components, mostly loaded in OnAfterGetRecord() meth.
 
     public function __construct($ignore_joins = false, $parent_index = null)
@@ -44,6 +46,7 @@ class DBTableRowItemVersion extends DBTableRow {
             $this->effective_date = time_to_mysqldatetime(script_time());
         }
         $this->itemobject_id = 'new';
+        $this->_current_component_depth = 0;
     }
 
     public function assignFromFormSubmission($in_params, &$merge_params)
@@ -1669,7 +1672,11 @@ class DBTableRowItemVersion extends DBTableRow {
                 $this->{$component_name} = $has_an_itemobject_id;
                 if (in_array($component_name, $this->_typeversion_digest['components_in_defined_subfields'])) {
                     $this->_last_loaded_component_objects[$component_name] = new DBTableRowItemVersion(false, null);
-                    $this->_last_loaded_component_objects[$component_name]->getCurrentRecordByObjectId($has_an_itemobject_id, $is_current_version_of_part ? null : $effective_date);
+                    if ($this->_current_component_depth < $this->MAX_COMPONENT_DEPTH) {
+                        // only drill deeper if we have not gone too deep.
+                        $this->_last_loaded_component_objects[$component_name]->_current_component_depth = $this->_current_component_depth + 1;
+                        $this->_last_loaded_component_objects[$component_name]->getCurrentRecordByObjectId($has_an_itemobject_id, $is_current_version_of_part ? null : $effective_date);
+                    }
                     // note that at this point, if $is_current_version_of_part and $effective_date < $this->_last_loaded_component_objects[$component_name]->effective_date
                     // then the referenced component was changed after this object was last edited and that we are loading these latest values.
                 }
@@ -1707,7 +1714,8 @@ class DBTableRowItemVersion extends DBTableRow {
         if (is_numeric($record_vars['tv__typeversion_id'])) {
             $varsWithoutPrefix = extract_prefixed_keys($record_vars, 'tv__', true);
             $varsWithoutPrefix['partnumber_count'] = $record_vars['partnumber_count'];
-            $this->_typeversion_digest = DBTableRowTypeVersion::getTypeVersionDigestFromFields($record_vars['list_of_typecomponents'], $record_vars['has_a_serial_number'], $record_vars['has_a_disposition'], $varsWithoutPrefix, false);
+            $antirecursion_manifest = array();
+            $this->_typeversion_digest = DBTableRowTypeVersion::getTypeVersionDigestFromFields($record_vars['list_of_typecomponents'], $record_vars['has_a_serial_number'], $record_vars['has_a_disposition'], $varsWithoutPrefix, false, $antirecursion_manifest);
             $this->setFieldTypes($this->_typeversion_digest['fieldtypes']);
         }
 

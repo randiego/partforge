@@ -568,9 +568,9 @@ class DBTableRowTypeVersion extends DBTableRow {
     }
 
 
-    public function getLoadedTypeVersionDigest($skip_components)
+    public function getLoadedTypeVersionDigest($skip_components, $antirecursion_manifest = array())
     {
-        return self::getTypeVersionDigestFromFields($this->list_of_typecomponents, $this->tc__has_a_serial_number, $this->tc__has_a_disposition, $this->getArray(), $skip_components);
+        return self::getTypeVersionDigestFromFields($this->list_of_typecomponents, $this->tc__has_a_serial_number, $this->tc__has_a_disposition, $this->getArray(), $skip_components, $antirecursion_manifest);
     }
 
     /*
@@ -580,11 +580,12 @@ class DBTableRowTypeVersion extends DBTableRow {
          * information from the relevant typeversion records.
          * $skip_components = true means that we will not read component type information, thus saving some db access.
      */
-    static public function getTypeVersionDigestFromFields($list_of_typecomponents, $has_a_serial_number, $has_a_disposition, $all_typeversion_fields, $skip_components)
+    static public function getTypeVersionDigestFromFields($list_of_typecomponents, $has_a_serial_number, $has_a_disposition, $all_typeversion_fields, $skip_components, $antirecursion_manifest)
     {
 
         $type_data_dictionary = $all_typeversion_fields['type_data_dictionary'];
         $type_form_layout = $all_typeversion_fields['type_form_layout'];
+        $recursion_detected = false;
 
         $out = array();
         $out['typeversion_id'] = isset($all_typeversion_fields['typeversion_id']) ? $all_typeversion_fields['typeversion_id'] : null;
@@ -627,6 +628,13 @@ class DBTableRowTypeVersion extends DBTableRow {
                     if (in_array($type_array['component_name'], $out['addon_component_fields'])) {
                         $to_ids = $fieldtypes[$type_array['component_name']]['can_have_typeobject_id'];
                         $component_typeversions_to_load[$type_array['component_name']] = $to_ids;
+                        foreach ($to_ids as $to_id) {
+                            if (in_array($to_id.'.'.$type_array['component_subfield'], $antirecursion_manifest)) {
+                                $recursion_detected = true;
+                            } else {
+                                $antirecursion_manifest[] = $to_id.'.'.$type_array['component_subfield'];
+                            }
+                        }
                         if (!isset($type_array['caption'])) {
                             $type_array['caption'] = ucwords(str_replace('_', ' ', $fieldname));
                         }
@@ -663,7 +671,7 @@ class DBTableRowTypeVersion extends DBTableRow {
                     throw new Exception("all_typeversion_fields['effective_date'] is empty");
                 }
                 $TV->getCurrentRecordByObjectId($typeobject_id, $all_typeversion_fields['effective_date']);
-                $typeversion_digests_by_to_id[$typeobject_id] = $TV->getLoadedTypeVersionDigest(true); // true=skip component loading
+                $typeversion_digests_by_to_id[$typeobject_id] = $TV->getLoadedTypeVersionDigest($recursion_detected, $antirecursion_manifest); //  true=skip component loading
             }
         }
 
@@ -674,7 +682,7 @@ class DBTableRowTypeVersion extends DBTableRow {
             $embedded_in_typeobject_id = $fieldtype_in_current_dictionary['embedded_in_typeobject_id'];
             $tvd = $typeversion_digests_by_to_id[$embedded_in_typeobject_id];
             $subfieldname = $fieldtype_in_current_dictionary['component_subfield'];
-            if (in_array($subfieldname, $tvd['addon_property_fields'])) {
+            if (in_array($subfieldname, $tvd['addon_property_fields']) || in_array($subfieldname, $tvd['addon_component_subfields'])) {
                 /*
                      looks like this really exists.  So we should include it as a component_subfield.
                     $tvd['fieldtypes'][$subfieldname] is the original fieldtype in the component for this field.
@@ -801,13 +809,20 @@ class DBTableRowTypeVersion extends DBTableRow {
     }
 
     /**
-     * returns only fields that can be used by referencing types as component subfields
-     * @return array of fieldnames
+     * returns a list an array of allowed fieldnames that can be specified as subfield.
+     * It also includes types in a separate object that indicates additional type information
+     * for the fields that themselves are subfields.
+     *
+     * @return array{fieldnames: array of string, subfieldtypes: array of object}
      */
     public function getFieldsAllowsAsSubFields()
     {
         $type_digest = $this->getLoadedTypeVersionDigest(false);
-        return $type_digest['addon_property_fields'];
+        $subfieldtypes = array();
+        foreach ($type_digest['addon_component_subfields'] as $subfield) {
+            $subfieldtypes[$subfield] = $type_digest['fieldtypes'][$subfield];
+        }
+        return array('fieldnames' => array_merge($type_digest['addon_property_fields'], $type_digest['addon_component_subfields']), 'subfieldtypes' => $subfieldtypes);
     }
 
     static function getNumberOfItemsForTypeVersion($typeversion_id, $partnumber_alias = null)

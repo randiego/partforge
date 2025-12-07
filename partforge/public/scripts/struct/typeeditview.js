@@ -4,6 +4,7 @@ var typeDescriptions = []; // this is an array of array pairs (typeobject_id, de
 var typeDictionaryArray = [];
 var typeFormLayoutArray = [];
 var dictEditBuff = {};
+var dictEditBuffsubsubfields = [];
 var compEditBuff = {};
 
 function htmlEscape(str) {
@@ -79,7 +80,7 @@ function loadAllComponentSubFields() {
 				// populate the componentSubFieldsList with the results
 				for(var i = 0; i < typeobject_ids.length; i++) {
 					if (typeof data[typeobject_ids[i]] != "undefined") {
-						componentSubFieldsList[typeobject_ids[i]] = data[typeobject_ids[i]];
+						componentSubFieldsList[typeobject_ids[i]] = data[typeobject_ids[i]]['fieldnames'];
 					} else {
 						alert("Did not get back subfields for typeobject_id = " + typeobject_ids[i]);
 					}
@@ -107,18 +108,24 @@ function startKeepAliveProcess() {
  * @param compFieldSelId is the ID of the select tag where the list of fields should be stuffed.
  * @param component_subfield
  */
-function fillComponentSubFieldSelector(typeobject_id, compFieldSelId, component_subfield) {
+function fillComponentSubFieldSelector(typeobject_id, compFieldSelId, component_subfield, component_name) {
 	var fieldnames = [];
 	$.getJSON(baseUrl + '/struct/jsonlistofobjectfields',
 			{"typeobject_id" : typeobject_id},
 			function(data) {
-				fieldnames = data;
+				fieldnames = data['fieldnames'];
+				dictEditBuffsubsubfields = [];
 				var selHtml = '';
 				var selected = '';
 				fieldnames.sort();
 				for(var j = 0; j<fieldnames.length; j++) {
+					var str = '';
+					if (fieldnames[j] in data['subfieldtypes']) {
+						dictEditBuffsubsubfields.push(fieldnames[j]);
+						str = ' ('+component_name+'.'+data['subfieldtypes'][fieldnames[j]]['component_name']+'.'+data['subfieldtypes'][fieldnames[j]]['component_subfield']+')';
+					}
 					selected = (fieldnames[j] == component_subfield) ? " selected=selected" : "";
-					selHtml += '<option value="'+fieldnames[j]+'"'+selected+'>'+fieldnames[j]+'</option>';
+					selHtml += '<option value="'+fieldnames[j]+'"'+selected+'>'+fieldnames[j] + str + '</option>';
 				}
 				$("#" + compFieldSelId).html(selHtml);
 			});
@@ -461,6 +468,11 @@ function saveDictItemEditorToBuff(containerSet,showAlerts,isNew,key) {
 		}
 	}
 
+	if ((dictEditBuff['type']=='component_subfield') && dictEditBuffsubsubfields.includes(dictEditBuff['component_subfield']) && (dictEditBuff['mode']=='RW')) {
+		alert('The component subfield ' + dictEditBuff['component_subfield'] + ' is itself a component subfield in '+dictEditBuff['component_name']+'. Please select mode = R if you want to nest component subfields like this.');
+		ok = false;
+	}
+
 	return ok;
 }
 
@@ -497,7 +509,7 @@ function renderDictItemEditor(containerSet, isNew, key) {
 		});
 
 		// Create the initial list of options.
-		fillComponentSubFieldSelector($("#propparam_embedded_in_typeobject_id").val(),compFieldSelId, dictEditBuff['component_subfield']);
+		fillComponentSubFieldSelector($("#propparam_embedded_in_typeobject_id").val(),compFieldSelId, dictEditBuff['component_subfield'], dictEditBuff['component_name']);
 	}
 
 	containerSet.find("a.propeditdonelink").on("click", function(event) {
