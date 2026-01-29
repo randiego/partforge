@@ -2630,6 +2630,13 @@ class DBTableRowItemVersion extends DBTableRow {
         $fieldtype = $this->getFieldType($fieldname);
         $value = $this->$fieldname;
         $type = !empty($fieldtype['type']) ? $fieldtype['type'] : '';
+        $formatted_value = null;
+        if ($type == 'calculated' && isset($fieldtype['format']) && ($fieldtype['format'] !== '') && ($value !== '') && is_numeric($value)) {
+            $formatted_value = @sprintf($fieldtype['format'], $value);
+            if ($formatted_value === false || $formatted_value === '' || $formatted_value === null) {
+                $formatted_value = null;
+            }
+        }
         switch ($type) {
             case 'component' :
                 $ComponentItemVersion = $this->getComponentAsIVObject($fieldname);
@@ -2641,10 +2648,10 @@ class DBTableRowItemVersion extends DBTableRow {
                 return self::formatPrintFieldAttachment($this->_navigator, $this->{$fieldname}, $is_html, $genHtmlForPdf);
             default:
                 // if float type and there are units, then show them if $show_float_units
-                if (in_array($type, array('float','calculated')) && $show_float_units) {
+                if ($show_float_units && in_array($type, array('float','calculated'))) {
                     $suffix = !empty($fieldtype['units']) && $is_html ? ' '.$fieldtype['units'] : '';
-                    $valout = parent::formatPrintField($fieldname, $is_html);
-                    return $valout!=='' ? parent::formatPrintField($fieldname, $is_html).$suffix : '';
+                    $valout = ($formatted_value !== null) ? ($is_html ? TextToHtml($formatted_value) : $formatted_value) : parent::formatPrintField($fieldname, $is_html);
+                    return $valout!=='' ? $valout.$suffix : '';
                 }
                 switch ($fieldname) {
                     case 'disposition':
@@ -2692,6 +2699,9 @@ class DBTableRowItemVersion extends DBTableRow {
                             return $is_html ? TextToHtml($login_id_by_user_id[$this->user_id]) : $login_id_by_user_id[$this->user_id];
                         }
                     default:
+                        if ($formatted_value !== null) {
+                            return $is_html ? TextToHtml($formatted_value) : $formatted_value;
+                        }
                         return parent::formatPrintField($fieldname, $is_html);
                 }
         }

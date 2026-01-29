@@ -465,12 +465,19 @@ class TableRow {
                 $classes[] = 'calculated';
             }
             $readonly = ($type=='calculated') ? ' readonly' : '';
+            $display_value = $value;
+            if ($type=='calculated' && isset($fieldtype['format']) && ($fieldtype['format'] !== '') && ($value !== '') && is_numeric($value)) {
+                $formatted_value = @sprintf($fieldtype['format'], $value);
+                if (!($formatted_value === false || $formatted_value === '' || $formatted_value === null)) {
+                    $display_value = $formatted_value;
+                }
+            }
             $maxsize = MAX_INPUT_TAG_WIDTH;
             $size = ($length > $maxsize) ? $maxsize : $length;
             $override_size = isset($fieldtype['input_cols']) ? $fieldtype['input_cols'] : $size;
             $on_change = isset($fieldtype['onchange_js']) ? ' OnChange="'.$fieldtype['onchange_js'].'"' : '';
             $on_click = isset($fieldtype['onclick_js']) ? ' OnClick="'.$fieldtype['onclick_js'].'"' : '';
-            return '<INPUT ID="'.$fieldname.'" class="'.implode(' ', $classes).'" TYPE="text" NAME="'.$fieldname.'" VALUE="'.TextToHtml($value).'" SIZE="'.$override_size.'" MAXLENGTH="'.$length.'"'.$on_change.$on_click.$attributes.$readonly.'>';
+            return '<INPUT ID="'.$fieldname.'" class="'.implode(' ', $classes).'" TYPE="text" NAME="'.$fieldname.'" VALUE="'.TextToHtml($display_value).'" SIZE="'.$override_size.'" MAXLENGTH="'.$length.'"'.$on_change.$on_click.$attributes.$readonly.'>';
         }
     }
 
