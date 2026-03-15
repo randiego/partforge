@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2026 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -85,14 +85,24 @@ class DbSchema {   // singleton
     protected function connectMySql($host, $username, $password, $dbname)
     {
         self::$_db_link = mysqli_connect($host, $username, $password, $dbname);
-        mysqli_set_charset(self::$_db_link, "utf8mb4");
         if (!self::$_db_link) {
-            if (mysqli_errno(self::$_db_link) == 1203) { // too many connections
-                $msg = 'Error connecting to database: '.mysqli_error(self::$_db_link).'; The server is too busy at the moment. You may click refresh in your browser or try again later.';
+            $err = mysqli_connect_errno();
+            $msg_detail = mysqli_connect_error();
+            if ($err == 1203) { // too many connections
+                $msg = 'Error connecting to database: '.$msg_detail.'; The server is too busy at the moment. You may click refresh in your browser or try again later.';
             } else {
-                $msg = 'Error connecting to database: '.mysqli_error(self::$_db_link).'; You may click refresh in your browser or try again later.';
+                $msg = 'Error connecting to database: '.$msg_detail.'; You may click refresh in your browser or try again later.';
             }
             // we should assume that we do not have any framework ready for a call to showdialog if this is the first useable of DbSchema
+            echo block_text_html($msg);
+            die();
+        }
+        if (!mysqli_set_charset(self::$_db_link, "utf8mb4")) {
+            $err = mysqli_errno(self::$_db_link);
+            $msg = 'Error setting database character set: '.mysqli_error(self::$_db_link).'; You may click refresh in your browser or try again later.';
+            if ($err == 1203) { // too many connections
+                $msg = 'Error setting database character set: '.mysqli_error(self::$_db_link).'; The server is too busy at the moment. You may click refresh in your browser or try again later.';
+            }
             echo block_text_html($msg);
             die();
         }
