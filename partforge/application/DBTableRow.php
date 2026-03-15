@@ -895,15 +895,14 @@ class DBTableRow extends TableRow {
         return $out;
     }
 
-    public function getJoinOptions($join_name, $include_only_orphans)
+    public function getJoinOptions($join_name)
     {
         if (!isset($this->_join_options[$join_name])) {
             $joins = $this->getJoinFieldsAndTables();
             $target = $joins[$join_name];
             $DbTableObj = DbSchema::getInstance()->dbTableRowObjectFactory($target['rhs_table'], true);
             $ChildRecords = new DBRecords($DbTableObj, '', '');
-            $self_index = $this->{$this->getIndexName()};
-            $and_where = $include_only_orphans ? "AND (({$this->_table}.{$target['lhs_index']} IS NULL) OR ({$this->_table}.{$this->getIndexName()}='{$self_index}'))" : "";
+            $and_where = '';
             $ChildRecords->getRecords(
                 "SELECT {$target['rhs_table']}.* FROM {$target['rhs_table']}
                     LEFT JOIN {$this->_table} on {$this->_table}.{$target['lhs_index']}={$target['rhs_table']}.{$target['rhs_index']}
@@ -924,19 +923,9 @@ class DBTableRow extends TableRow {
         $fieldvalue = $this->{$fieldname};
         $joins = $this->getJoinFieldsAndTables();
         $target = $joins[$fieldtype['join_name']];
-        $pretty_name = ucwords(str_replace('_', ' ', $fieldtype['join_name']));
         $out = array();
-        if (in_array('jo_add', $target['options'])) {
-            $out['new'] = 'New '.$pretty_name;
-        }
         if (in_array('jo_link', $target['options'])) {
-            $out += $this->getJoinOptions($fieldtype['join_name'], in_array('jo_orphans_only', $target['options'])); // union
-        }
-        if (in_array('jo_detach', $target['options']) && !empty($fieldvalue)) {
-            $out['detach'] = 'Detach this '.$pretty_name;
-        }
-        if (in_array('jo_delete', $target['options']) && is_numeric($fieldvalue)) {
-            $out['delete'] = 'Delete this '.$pretty_name;
+            $out += $this->getJoinOptions($fieldtype['join_name']); // union
         }
         return $out;
     }

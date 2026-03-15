@@ -1859,39 +1859,35 @@ class DBTableRowItemVersion extends DBTableRow {
     /*
          * Alter the following to change the items that appear in the typeversion selection box.
      */
-    public function getJoinOptions($join_name, $include_only_orphans)
+    public function getJoinOptions($join_name)
     {
-
-        if ('type_version'!=$join_name) {
-            return parent::getJoinOptions($join_name, $include_only_orphans);
-        }
-
-        /*
-             * in the following, we want to present a dropdown list of different version of the same
-             * typeobject_id.  We don't want to allow changing of the type itself from here unless it has been explicitely allowed
-             * Example: select * from typeversion where typeobject_id=(select tv.typeobject_id from typeversion as tv where tv.typeversion_id='{$this->typeversion_id}' LIMIT 1)
-         */
-        if (!AdminSettings::getInstance()->use_any_typeversion_id) {
+        if ('type_version'==$join_name) {
+            /*
+                in the following, we want to present a dropdown list of different version of the same
+                typeobject_id.  We don't want to allow changing of the type itself from here unless it has been explicitely allowed
+                Example: select * from typeversion where typeobject_id=(select tv.typeobject_id from typeversion as tv where tv.typeversion_id='{$this->typeversion_id}' LIMIT 1)
+            */
             if (!isset($this->_join_options[$join_name])) {
+                $use_any_typeversion_id = AdminSettings::getInstance()->use_any_typeversion_id;
                 $joins = $this->getJoinFieldsAndTables();
                 $target = $joins[$join_name];
                 $DbTableObj = new DBTableRowTypeVersion(true, null);
                 $ChildRecords = new DBRecords($DbTableObj, '', '');
+                $and_where = !$use_any_typeversion_id ? " AND typeversion.typeobject_id=(SELECT tv.typeobject_id FROM typeversion AS tv WHERE tv.typeversion_id='{$this->typeversion_id}' LIMIT 1)" : "";
+                $order_by = !$use_any_typeversion_id ? "ORDER BY typeversion.effective_date DESC" : "ORDER BY type_part_number ASC, effective_date DESC";
                 $ChildRecords->getRecords(
                     "SELECT typeversion.* FROM typeversion
-	                    LEFT JOIN {$this->_table} on {$this->_table}.typeversion_id=typeversion.typeversion_id
-	                    WHERE typeobject_id=(SELECT tv.typeobject_id FROM typeversion AS tv WHERE tv.typeversion_id='{$this->typeversion_id}' LIMIT 1)
-	                    ORDER BY effective_date desc"
+                        WHERE (1=1) {$and_where}
+                        {$order_by}"
                     );
                 $this->_join_options[$join_name] = array();
                 foreach ($ChildRecords->keys() as $index) {
                     $this->_join_options[$join_name][$index] = $ChildRecords->getRowObject($index)->getCoreDescription();
                 }
             }
-            //if ($_SESSION['account']->getRole()=='Admin') $this->_join_options[$join_name]['show_all_types'] = 'Show All Types';
             return $this->_join_options[$join_name];
         }
-        return parent::getJoinOptions($join_name, $include_only_orphans);
+        return parent::getJoinOptions($join_name);
     }
 
     public function getComponentAsIVObject($fieldname)
