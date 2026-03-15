@@ -64,9 +64,6 @@ function fetchMenuLinks()
     addLinkIfIsAllowed($acl, 'dash', 'panel', 'Dashboard', 'view your (and public) dashboards', $links);
     addLinkIfIsAllowed($acl, 'struct', 'commentlistview', 'Comments', 'view all comments and attachements', $links);
     addLinkIfIsAllowed($acl, 'struct', 'partlistview', 'Definitions', 'manage part and procedure definitions', $links);
-    if (Zend_Registry::get('config')->show_analyze_page) {
-        addLinkIfIsAllowed($acl, 'struct', 'joinedexport', 'Analyze', 'Export and Correlate Data', $links);
-    }
 
     addLinkIfIsAllowed($acl, 'struct', 'changelistview', 'Activity', 'view your Watchlist and other system activity', $links);
 

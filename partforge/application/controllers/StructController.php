@@ -242,39 +242,6 @@ class StructController extends DBControllerActionAbstract
         $CsvGen->outputToBrowser();
     }
 
-    public function joinedexportAction()
-    {
-        if (isset($this->params['resetview']) || !is_array($_SESSION['joinedexport'])) {
-            $_SESSION['joinedexport'] = array();
-        } else {
-            $_SESSION['joinedexport'] = array_merge($_SESSION['joinedexport'], $this->params);
-        }
-        if (isset($this->params['form'])) {
-            switch (true) {
-                case isset($this->params['btnSaveCSV']):
-
-                    outputJoinedCSVToBrowser($_SESSION['joinedexport']['A_category'], $_SESSION['joinedexport']['B_category'],
-                    $_SESSION['joinedexport']['A_joincolumn'], $_SESSION['joinedexport']['B_joincolumn']);
-
-                case isset($this->params['btnSaveOneToCSV']):
-
-                    if (isset($_SESSION['joinedexport'][$this->params['tableid'].'_category'])) {
-                        outputCSVToBrowser($_SESSION['joinedexport'][$this->params['tableid'].'_category']);
-                    }
-
-                case isset($this->params['btnForceRefreshReport']):
-                    if (isset($this->params['class_name'])) {
-                        $Report = ReportGenerator::getReportObject($this->params['class_name']);
-                        $Report->process();
-                        $Report->cacheCSV();
-                        $Report->buildGraphFromSavedCSV();
-                    }
-                    $this->navigator->jumpToView();
-            }
-        }
-        $this->view->params = $_SESSION['joinedexport'];
-    }
-
     /**
      * When commenteditview is open, this function is called in the background every few seconds to see if
      * the QR code has been scanned by a phone. When the code is scanned it creates an unvalidated record that
@@ -1362,14 +1329,6 @@ class StructController extends DBControllerActionAbstract
         $this->view->import_messages = ImportStrategyObjects::storeObjectsFromArray($_SESSION['importobjectsconfirm'], true);
         $this->view->import_records = $ImportRecords;
         $this->view->column_defs = $ColumnDefs;
-    }
-
-    public function reportgenerateAction()
-    {
-        if (isset($this->params['class_name'])) {
-            $Report = ReportGenerator::getReportObject($this->params['class_name']);
-            $Report->outputCachedCSVToBrowser();
-        }
     }
 
      /**

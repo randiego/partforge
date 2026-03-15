@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2022 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2026 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -50,7 +50,6 @@ class MaintenanceTaskRunner {
             array('name' => 'update_definition_stats', 'interval' => 3600),
             array('name' => 'update_cached_fields', 'interval' => 8*3600),
             array('name' => 'update_user_stats', 'interval' => 3600),
-            array('name' => 'generate_user_reports', 'interval' => 5*60),   // reports have their own intervals, so this is not too frequent
             array('name' => 'cleanup_orphaned_records', 'interval' => 3600),
             array('name' => 'refresh_validation_cache', 'interval' => 30),
         );
@@ -153,32 +152,6 @@ class MaintenanceTaskRunner {
         DBTableRowItemObject::updateCachedLastCommentFields();
         DBTableRowItemObject::updateCachedLastReferenceFields();
         DBTableRowItemObject::updateCachedCreatedOnFields();
-    }
-
-    private function generate_user_reports(&$messages)
-    {
-        // the report stuff...
-        if (Zend_Registry::get('config')->show_analyze_page) {
-            $reports = ReportGenerator::getReportList();
-            foreach ($reports as $report) {
-                set_time_limit(300);
-                $need_to_run = true;
-                // if we ran recently, then don't do it yet.
-                if (isset($report['last_run']) && ((script_time() - strtotime($report['last_run']))/24.0/3600. < $report['update_interval'])) {
-                    $need_to_run = false;
-                }
-
-                if ($need_to_run) {
-                    $Report = ReportGenerator::getReportObject($report['class_name']);
-                    $Report->process();
-                    $Report->cacheCSV();
-                    $Report->buildGraphFromSavedCSV();
-                    $this->messages[] = array('message' => 'Ran report '.$report['class_name'], 'notify' => false);
-                }
-            }
-            // reconnect full access since we may have connected in read-only mode.
-            DbSchema::getInstance()->connectFullAccess();
-        }
     }
 
     /**

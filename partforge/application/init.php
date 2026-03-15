@@ -78,7 +78,6 @@ $config['recent_row_age'] = 7*3600*24; // add a light background to any rows in 
 $config['admin_can_toggle_roles'] = false;  // Add the capability for an admin user to cycle between the user interfaces that are available to all the diffrent user types.
 $config['show_old_proc_version_in_eventstream'] = false;
 $config['show_old_part_version_in_eventstream'] = true;
-$config['show_analyze_page'] = false;   // show the analyze tab (contains the reports and the Exporting and Table Joining Functions)
 $config['warn_of_hidden_fields'] = true;   // when true, this shows red warnings when a component or fieldname is present in the def but not in the layout
 $config['allow_self_register'] = true;     // show the "register for account" link on the login page.
 $config['self_register_user_type'] = 'Guest'; // The user type 'Guest, Admin, Tech, Eng'

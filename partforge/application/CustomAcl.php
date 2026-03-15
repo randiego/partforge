@@ -51,7 +51,7 @@ class CustomAcl extends Zend_Acl
 
         // controller resources
 
-        $controller_resources = array('db','error','help','index','cron','utils','api','output','settings','joinedexport','struct','user','dash','types_versions','types_objects','items_versions','items_objects','items_comments', 'items_documents', 'types_documents');
+        $controller_resources = array('db','error','help','index','cron','utils','api','output','settings','struct','user','dash','types_versions','types_objects','items_versions','items_objects','items_comments', 'items_documents', 'types_documents');
         foreach ($controller_resources as $controller_resource) {
             $this->add(new Zend_Acl_Resource($controller_resource));
         }
@@ -137,9 +137,6 @@ class CustomAcl extends Zend_Acl
         $this->deny('DataTerminal', 'settings');
         $this->deny('Guest', 'settings');
         $this->deny($this->_defaultRole, 'settings');
-
-        // analysis tab
-        $this->deny('DataTerminal', 'struct', array('joinedexport'));
 
         $this->deny('Guest', 'user', array('manageaccount','changeprofile','changepassword','managemylists'));
         $this->deny('DataTerminal', 'user', array('manageaccount','changeprofile','changepassword','listview'));
