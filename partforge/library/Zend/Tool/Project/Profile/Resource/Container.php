@@ -335,9 +335,9 @@ class Zend_Tool_Project_Profile_Resource_Container implements RecursiveIterator,
      *
      * @return bool
      */
-    public function next()
+    public function next(): void
     {
-        return next($this->_subResources);
+        next($this->_subResources);
     }
 
     /**
@@ -345,9 +345,9 @@ class Zend_Tool_Project_Profile_Resource_Container implements RecursiveIterator,
      *
      * @return bool
      */
-    public function rewind()
+    public function rewind(): void
     {
-        return reset($this->_subResources);
+        reset($this->_subResources);
     }
 
     /**
@@ -355,7 +355,7 @@ class Zend_Tool_Project_Profile_Resource_Container implements RecursiveIterator,
      *
      * @return bool
      */
-    public function valid()
+    public function valid(): bool
     {
         return (bool) $this->current();
     }
@@ -365,7 +365,7 @@ class Zend_Tool_Project_Profile_Resource_Container implements RecursiveIterator,
      *
      * @return bool
      */
-    public function hasChildren()
+    public function hasChildren(): bool
     {
         return (count($this->_subResources > 0)) ? true : false;
     }
@@ -375,9 +375,13 @@ class Zend_Tool_Project_Profile_Resource_Container implements RecursiveIterator,
      *
      * @return array
      */
-    public function getChildren()
+    public function getChildren(): RecursiveIterator
     {
-        return $this->current();
+        $current = $this->current();
+        if ($current instanceof RecursiveIterator) {
+            return $current;
+        }
+        return new RecursiveArrayIterator(array());
     }
 
     /**
@@ -385,7 +389,7 @@ class Zend_Tool_Project_Profile_Resource_Container implements RecursiveIterator,
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         return count($this->_subResources);
     }

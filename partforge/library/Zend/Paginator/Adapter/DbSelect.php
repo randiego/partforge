@@ -154,7 +154,7 @@ class Zend_Paginator_Adapter_DbSelect implements Zend_Paginator_Adapter_Interfac
      *
      * @return integer
      */
-    public function count()
+    public function count(): int
     {
         if ($this->_rowCount === null) {
             $this->setRowCount(

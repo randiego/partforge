@@ -206,14 +206,14 @@ class Zend_View_Helper_HeadMeta extends Zend_View_Helper_Placeholder_Container_S
      * @return void
      * @throws Zend_View_Exception
      */
-    public function offsetSet($index, $value)
+    public function offsetSet($index, $value): void
     {
         if (!$this->_isValid($value)) {
             require_once 'Zend/View/Exception.php';
             throw new Zend_View_Exception('Invalid value passed to offsetSet; please use offsetSetMeta()');
         }
 
-        return $this->getContainer()->offsetSet($index, $value);
+        $this->getContainer()->offsetSet($index, $value);
     }
 
     /**
@@ -223,14 +223,14 @@ class Zend_View_Helper_HeadMeta extends Zend_View_Helper_Placeholder_Container_S
      * @return void
      * @throws Zend_View_Exception
      */
-    public function offsetUnset($index)
+    public function offsetUnset($index): void
     {
         if (!in_array($index, $this->getContainer()->getKeys())) {
             require_once 'Zend/View/Exception.php';
             throw new Zend_View_Exception('Invalid index passed to offsetUnset.');
         }
 
-        return $this->getContainer()->offsetUnset($index);
+        $this->getContainer()->offsetUnset($index);
     }
 
     /**

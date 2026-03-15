@@ -1002,8 +1002,10 @@ function markupDiffBetweenTextBlocks($was, $is)
 
 function checkWasChangedField(&$changelist, $name, $was = null, $is = null)
 {
-    $was_value_empty = is_null($was) || ($was==='');
-    $is_value_empty = is_null($is) || ($is==='');
+    $was = is_null($was) ? '' : $was;
+    $is = is_null($is) ? '' : $is;
+    $was_value_empty = ($was==='');
+    $is_value_empty = ($is==='');
     if (strcmp($was, $is) !== 0) {
         if (($was_value_empty && !$is_value_empty)) {
             $changelist[] = "<b>{$name}</b> set: <ins>'{$is}'</ins>.";
@@ -1018,8 +1020,10 @@ function checkWasChangedField(&$changelist, $name, $was = null, $is = null)
 
 function checkWasChangedDefinition(&$changelist, $name, $was = null, $is = null)
 {
-    $was_value_empty = is_null($was) || ($was==='');
-    $is_value_empty = is_null($is) || ($is==='');
+    $was = is_null($was) ? '' : $was;
+    $is = is_null($is) ? '' : $is;
+    $was_value_empty = ($was==='');
+    $is_value_empty = ($is==='');
     if (strcmp($was, $is) !== 0) {
         if (($was_value_empty && !$is_value_empty)) {
             $changelist[] = "<b>{$name}</b> added: <ins>'{$is}'</ins>.";
@@ -1034,8 +1038,10 @@ function checkWasChangedDefinition(&$changelist, $name, $was = null, $is = null)
 
 function checkWasChangedItemField(&$changelist, $name, $was = null, $is = null)
 {
-    $was_value_empty = is_null($was) || ($was==='');
-    $is_value_empty = is_null($is) || ($is==='');
+    $was = is_null($was) ? '' : $was;
+    $is = is_null($is) ? '' : $is;
+    $was_value_empty = ($was==='');
+    $is_value_empty = ($is==='');
     if (strcmp($was, $is) !== 0) {
         if (($was_value_empty && !$is_value_empty)) {
             $changelist[] = "<b>{$name}</b> set to '{$is}'.";
@@ -1050,8 +1056,10 @@ function checkWasChangedItemField(&$changelist, $name, $was = null, $is = null)
 
 function checkWasChangedItemFieldByFieldname(&$changelist, $fieldname, $was = null, $is = null)
 {
-    $was_value_empty = is_null($was) || ($was==='');
-    $is_value_empty = is_null($is) || ($is==='');
+    $was = is_null($was) ? '' : $was;
+    $is = is_null($is) ? '' : $is;
+    $was_value_empty = ($was==='');
+    $is_value_empty = ($is==='');
     if (strcmp($was, $is) !== 0) {
         if (($was_value_empty && !$is_value_empty)) {
             $changelist[$fieldname] = "set to '{$is}'";

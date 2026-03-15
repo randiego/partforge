@@ -263,7 +263,7 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess
      * @param string $offset
      * @return boolean
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         return $this->__isset($offset);
     }
@@ -287,7 +287,7 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess
       * @param string $offset
       * @param mixed $value
       */
-     public function offsetSet($offset, $value)
+     public function offsetSet($offset, $value): void
      {
          $this->__set($offset, $value);
      }
@@ -298,7 +298,7 @@ abstract class Zend_Db_Table_Row_Abstract implements ArrayAccess
       *
       * @param string $offset
       */
-     public function offsetUnset($offset)
+     public function offsetUnset($offset): void
      {
      }
 

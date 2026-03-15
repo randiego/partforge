@@ -222,7 +222,7 @@ class DBTableRowItemVersion extends DBTableRow {
         } else if (is_array($var)) {
             $lit = serialize($var);
         } else {
-            $lit = trim($var);
+            $lit = is_null($var) ? '' : trim($var);
         }
         return $lit;
     }
@@ -435,7 +435,8 @@ class DBTableRowItemVersion extends DBTableRow {
         list($this_item_data,$fieldnames_converted)     = $this->propertyFieldsToItemData();
         list($compare_item_data,$fieldnames_converted)  = $CompareItem->propertyFieldsToItemData();
 
-        if ( (strtotime($this->effective_date)!=strtotime($CompareItem->effective_date)) || ($this->partnumber_alias!=$CompareItem->partnumber_alias) || ($this->item_serial_number!=$CompareItem->item_serial_number) || ($this->disposition!=$CompareItem->disposition) || ($this_item_data!=$compare_item_data)
+        if ( ((is_null($this->effective_date) ? 0 : strtotime($this->effective_date))!=(is_null($CompareItem->effective_date) ? 0 : strtotime($CompareItem->effective_date))) 
+            || ($this->partnumber_alias!=$CompareItem->partnumber_alias) || ($this->item_serial_number!=$CompareItem->item_serial_number) || ($this->disposition!=$CompareItem->disposition) || ($this_item_data!=$compare_item_data)
             || ($this->typeversion_id!=$CompareItem->typeversion_id)
             || (count($this->getCurrentlySetComponentValues())!=count($CompareItem->getCurrentlySetComponentValues()))
             || (count($this->getCurrentlySetFieldAttachmentValues())!=count($CompareItem->getCurrentlySetFieldAttachmentValues())) ) {
@@ -1172,7 +1173,7 @@ class DBTableRowItemVersion extends DBTableRow {
         				WHERE (itemobject.itemobject_id='{$this->itemobject_id}') LIMIT 1");
             if (count($records)>0) {
                 $record = reset($records);
-                if ((strtotime($this->effective_date)<strtotime($record['current_effective_date']))
+                if (!is_null($this->effective_date) && !is_null($record['current_effective_date']) && (strtotime($this->effective_date) <strtotime($record['current_effective_date']))
                         && ($this->itemversion_id != $record['itemversion_id'])) {
                     $saving_an_older_version = true;
                 }
@@ -1351,7 +1352,7 @@ class DBTableRowItemVersion extends DBTableRow {
                 unset($fieldnames[array_search('item_serial_number', $fieldnames)]);
             } else {
                 // need to see if this serial number exists already
-                if (!$this->weWillBeSavedAsAnOlderVersion() && $this->serialNumberAlreadyUsed($this->item_serial_number)) {
+                if (!$this->weWillBeSavedAsAnOlderVersion() && !is_null($this->item_serial_number) && $this->serialNumberAlreadyUsed($this->item_serial_number)) {
                     $errormsg['item_serial_number'] = 'This serial number is already in use.  Please use a different serial number';
                 } else {
                     // make sure the format of the serial number is OK.
@@ -1665,7 +1666,7 @@ class DBTableRowItemVersion extends DBTableRow {
 
         // extract the component values (just the value of itemcomponent_id) from the just processed record
         $this->_last_loaded_component_objects = array();
-        foreach (explode(';', $list_of_itemcomponents) as $itemcomponent) {
+        foreach (is_null($list_of_itemcomponents) ? array() : explode(';', $list_of_itemcomponents) as $itemcomponent) {
             $component_params = explode(',', $itemcomponent);
             if (count($component_params)==3) {
                 list($itemcomponent_id, $component_name, $has_an_itemobject_id) = $component_params;
@@ -1731,7 +1732,7 @@ class DBTableRowItemVersion extends DBTableRow {
         $is_current_version_of_part = ($record_vars['io__cached_current_itemversion_id']==$record_vars['itemversion_id']) && !$record_vars['is_user_procedure'];
         $this->loadComponentValuesFromItemComponentsList($record_vars['list_of_itemcomponents'], $record_vars['effective_date'], $is_current_version_of_part);
 
-        foreach (explode(';', $record_vars['list_of_itemcomments']) as $itemcomment) {
+        foreach (is_null($record_vars['list_of_itemcomments']) ? array() : explode(';', $record_vars['list_of_itemcomments']) as $itemcomment) {
             $comment_params = explode(',', $itemcomment);
             if (count($comment_params)==3) {
                 list($itemcomment_id, $field_name, $has_a_comment_id) = $comment_params;
@@ -1915,7 +1916,7 @@ class DBTableRowItemVersion extends DBTableRow {
      * value of a component.  It shows the serial number of the most recent version of the component (which only
      * matters if the serial number of the component has changed).  It is just easier to comprehend this way.
      * @param unknown_type $fieldname
-     * @return multitype:mixed |multitype:
+     * @return multitype |multitype:
      */
     public function getComponentValueAsArray($fieldname)
     {
@@ -2984,7 +2985,7 @@ class DBTableRowItemVersion extends DBTableRow {
                         }
                     } else {
                         $rhs_html = $dbtable->formatPrintField($fieldname);
-                        if (is_numeric($dbtable->{$fieldname}) && isset($component_depths[$dbtable->{$fieldname}]) && ($component_depths[$dbtable->{$fieldname}] > 0)) {
+                        if (isset($fieldtype['type']) && ($fieldtype['type'] == 'component') && is_numeric($dbtable->{$fieldname}) && isset($component_depths[$dbtable->{$fieldname}]) && ($component_depths[$dbtable->{$fieldname}] > 0)) {
                             $rhs_html .= popupTreeViewLink($dbtable->{$fieldname});
                         }
                         if (isset($fieldhistory[$fieldname])) {

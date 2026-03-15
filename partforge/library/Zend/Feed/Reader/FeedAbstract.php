@@ -112,7 +112,7 @@ abstract class Zend_Feed_Reader_FeedAbstract implements Zend_Feed_Reader_FeedInt
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         return count($this->_entries);
     }
@@ -213,7 +213,7 @@ abstract class Zend_Feed_Reader_FeedAbstract implements Zend_Feed_Reader_FeedInt
      * Move the feed pointer forward
      *
      */
-    public function next()
+    public function next(): void
     {
         ++$this->_entriesKey;
     }
@@ -222,7 +222,7 @@ abstract class Zend_Feed_Reader_FeedAbstract implements Zend_Feed_Reader_FeedInt
      * Reset the pointer in the feed object
      *
      */
-    public function rewind()
+    public function rewind(): void
     {
         $this->_entriesKey = 0;
     }
@@ -242,7 +242,7 @@ abstract class Zend_Feed_Reader_FeedAbstract implements Zend_Feed_Reader_FeedInt
      *
      * @return boolean
      */
-    public function valid()
+    public function valid(): bool
     {
         return 0 <= $this->_entriesKey && $this->_entriesKey < $this->count();
     }

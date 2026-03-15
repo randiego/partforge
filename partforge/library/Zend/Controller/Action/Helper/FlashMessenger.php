@@ -230,7 +230,7 @@ class Zend_Controller_Action_Helper_FlashMessenger extends Zend_Controller_Actio
      *
      * @return ArrayObject
      */
-    public function getIterator()
+    public function getIterator(): Traversable
     {
         if ($this->hasMessages()) {
             return new ArrayObject($this->getMessages());
@@ -244,7 +244,7 @@ class Zend_Controller_Action_Helper_FlashMessenger extends Zend_Controller_Actio
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         if ($this->hasMessages()) {
             return count($this->getMessages());

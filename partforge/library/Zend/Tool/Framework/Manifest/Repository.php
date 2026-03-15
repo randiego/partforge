@@ -282,7 +282,7 @@ class Zend_Tool_Framework_Manifest_Repository
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         return count($this->_metadatas);
     }
@@ -292,7 +292,7 @@ class Zend_Tool_Framework_Manifest_Repository
      *
      * @return ArrayIterator
      */
-    public function getIterator()
+    public function getIterator(): Traversable
     {
         return new ArrayIterator($this->_metadatas);
     }

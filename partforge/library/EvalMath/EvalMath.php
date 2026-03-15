@@ -177,7 +177,9 @@ class EvalMath
                     if (is_null($o2)) return $this->trigger("unexpected ')'");
                     else $output[] = $o2;
                 }
-                if (preg_match("/^([A-Za-z]\w*)\($/", $stack->last(2), $matches)) { // did we just close a function?
+                $stacklast = $stack->last(2);
+                $stacklast = is_null($stacklast) ? '' : $stacklast;
+                if (preg_match("/^([A-Za-z]\w*)\($/", $stacklast, $matches)) { // did we just close a function?
                     $fnn = $matches[1]; // get the function name
                     $arg_count = $stack->pop(); // see how many arguments there were (cleverly stored on the stack, thank you)
                     $output[] = $stack->pop(); // pop the function and push onto the output

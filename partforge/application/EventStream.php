@@ -581,7 +581,7 @@ class EventStream {
             // additional description:
             if (in_array($event_type, array('ET_PROCREF','ET_PARTREF'))) {
                 foreach ($ItemVersion->getFeaturedFieldTypes() as $fieldname => $fieldtype) {
-                    if (trim($ItemVersion->{$fieldname})!=='') {
+                    if (isset($ItemVersion->{$fieldname}) && trim($ItemVersion->{$fieldname})!=='') {
                         if ($genHtmlForPdf) {
                             $features[] = ItemViewPDF::formatFeaturedFieldforPdf($ItemVersion->formatFieldnameNoColon($fieldname), $ItemVersion->formatPrintField($fieldname, true, true, $genHtmlForPdf));
                         } else {
@@ -618,7 +618,7 @@ class EventStream {
                 $featuresstr = '';
             } else { // ET_COM
                 foreach ($ItemVersion->getFeaturedFieldTypes() as $fieldname => $fieldtype) {
-                    if (trim($ItemVersion->{$fieldname})!=='') {
+                    if (isset($ItemVersion->{$fieldname}) && trim($ItemVersion->{$fieldname})!=='') {
                         $features[] = $fieldname.' = '.$ItemVersion->{$fieldname};
                         $features_structured[] = array('name' => $fieldname, 'value' => $ItemVersion->{$fieldname});
                     }

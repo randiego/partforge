@@ -375,7 +375,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
     // ensures returned category is reasonable and if not, sets it to a good default
     public function ensure_category($category)
     {
-        if (!is_numeric($category) && ($category!='*')) {
+        if (!is_null($category) && !is_numeric($category) && ($category!='*')) {
             preg_match('/^fav([0-9]+)$/', $category, $out);
             if (isset($out[1])) {
                 $category = $out[1];
@@ -641,22 +641,24 @@ class ReportDataItemListView extends ReportDataWithCategory {
 
         if ($this->_show_used_on) {
             $wu_links = array();
-            foreach (explode(';', $record['used_on_packed']) as $wu) {
-                $fields = explode(',', $wu);
-                if (count($fields)==4) {
-                    list($wu_itemobject_id, $wu_hex_item_serial_number, $wu_partnumber_alias, $wu_hex_type_description) = $fields;
-                    $type_desc = explode('|', hextobin($wu_hex_type_description))[$wu_partnumber_alias];
-                    $wu_query_params = $query_params;
-                    unset($wu_query_params['itemversion_id']);
-                    $wu_query_params['itemobject_id'] = $wu_itemobject_id;
-                    $wu_url = $navigator->getCurrentViewUrl('itemview', 'struct', $wu_query_params);
-                    list($error_counts_array, $depths_array) = DBTableRowItemObject::refreshAndGetValidationErrorCountsAndDepths(array($wu_itemobject_id), false);
-                    if ($error_counts_array[$wu_itemobject_id]>0) {
-                        $detail_out['td_class']['used_on'] = 'cell_error';
-                    }
-                    $tree_link = $depths_array[$wu_itemobject_id] > 0 ? popupTreeViewLink($wu_itemobject_id) : '';
+            if (!is_null($record['used_on_packed'])) {
+                foreach (explode(';', $record['used_on_packed']) as $wu) {
+                    $fields = explode(',', $wu);
+                    if (count($fields)==4) {
+                        list($wu_itemobject_id, $wu_hex_item_serial_number, $wu_partnumber_alias, $wu_hex_type_description) = $fields;
+                        $type_desc = explode('|', hextobin($wu_hex_type_description))[$wu_partnumber_alias];
+                        $wu_query_params = $query_params;
+                        unset($wu_query_params['itemversion_id']);
+                        $wu_query_params['itemobject_id'] = $wu_itemobject_id;
+                        $wu_url = $navigator->getCurrentViewUrl('itemview', 'struct', $wu_query_params);
+                        list($error_counts_array, $depths_array) = DBTableRowItemObject::refreshAndGetValidationErrorCountsAndDepths(array($wu_itemobject_id), false);
+                        if ($error_counts_array[$wu_itemobject_id]>0) {
+                            $detail_out['td_class']['used_on'] = 'cell_error';
+                        }
+                        $tree_link = $depths_array[$wu_itemobject_id] > 0 ? popupTreeViewLink($wu_itemobject_id) : '';
 
-                    $wu_links[] = linkify($wu_url, hextobin($wu_hex_item_serial_number), 'View '.$type_desc.': '.hextobin($wu_hex_item_serial_number)).$tree_link;
+                        $wu_links[] = linkify($wu_url, hextobin($wu_hex_item_serial_number), 'View '.$type_desc.': '.hextobin($wu_hex_item_serial_number)).$tree_link;
+                    }
                 }
             }
             $detail_out['used_on'] = implode(', ', $wu_links);

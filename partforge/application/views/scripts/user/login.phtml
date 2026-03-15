@@ -1,8 +1,8 @@
 <?php
 $this->layout()->title = 'Login';
 $this->layout()->setLayout('layoutlogin');
-$loginid = htmlentities($this->remembered_login);
-$passwd = htmlentities($this->remembered_cryptpw);
+$loginid = is_null($this->remembered_login) ? '' : htmlentities($this->remembered_login);
+$passwd = is_null($this->remembered_cryptpw) ? '' : htmlentities($this->remembered_cryptpw);
 $remember_checked = $this->remembered_login ? ' checked' : '';
 
 if (!$this->databasecompatible) {

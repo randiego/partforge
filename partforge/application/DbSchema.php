@@ -549,7 +549,7 @@ class DbSchema {   // singleton
         } else if (is_array($slashes_var)) {
             $quoted_lit = "'".serialize($slashes_var)."'";
         } else {
-            $quoted_lit = "'".trim($slashes_var)."'";
+            $quoted_lit = "'".trim(is_null($slashes_var) ? '' : $slashes_var)."'";
         }
         return $quoted_lit;
     }

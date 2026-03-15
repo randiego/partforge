@@ -343,7 +343,7 @@ class Zend_Feed_Element implements ArrayAccess
      * @param  string $offset
      * @return boolean
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         if (strpos($offset, ':') !== false) {
             list($ns, $attr) = explode(':', $offset, 2);
@@ -378,16 +378,16 @@ class Zend_Feed_Element implements ArrayAccess
      * @param  string $value
      * @return string
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         $this->ensureAppended();
 
         if (strpos($offset, ':') !== false) {
             list($ns, $attr) = explode(':', $offset, 2);
             // DOMElement::setAttributeNS() requires $qualifiedName to have a prefix
-            return $this->_element->setAttributeNS(Zend_Feed::lookupNamespace($ns), $offset, $value);
+            $this->_element->setAttributeNS(Zend_Feed::lookupNamespace($ns), $offset, $value);
         } else {
-            return $this->_element->setAttribute($offset, $value);
+            $this->_element->setAttribute($offset, $value);
         }
     }
 
@@ -398,13 +398,13 @@ class Zend_Feed_Element implements ArrayAccess
      * @param  string $offset
      * @return boolean
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         if (strpos($offset, ':') !== false) {
             list($ns, $attr) = explode(':', $offset, 2);
-            return $this->_element->removeAttributeNS(Zend_Feed::lookupNamespace($ns), $attr);
+            $this->_element->removeAttributeNS(Zend_Feed::lookupNamespace($ns), $attr);
         } else {
-            return $this->_element->removeAttribute($offset);
+            $this->_element->removeAttribute($offset);
         }
     }
 

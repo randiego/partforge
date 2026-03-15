@@ -76,7 +76,7 @@ class DBTableRowChangeLog extends DBTableRow {
         return $records;
     }
 
-    static private function saveItemEntry($desc_itemobject_id, $desc_itemversion_id, $locator_prefix, $change_code, $comment_id = null, $comment_text = null, $user_id = null)
+    static private function saveItemEntry($desc_itemobject_id, $desc_itemversion_id, $locator_prefix, $change_code, $comment_id = null, $comment_text = '', $user_id = null)
     {
         $Rec = new self();
         $Rec->locator_prefix = $locator_prefix;
@@ -175,12 +175,12 @@ class DBTableRowChangeLog extends DBTableRow {
 
     static public function addedItemComment($itemobject_id, $comment_id, $user_id = null)
     {
-        self::saveItemEntry($itemobject_id, null, 'iv', 'AIC', $comment_id, null, $user_id);
+        self::saveItemEntry($itemobject_id, null, 'iv', 'AIC', $comment_id, '', $user_id);
     }
 
     static public function changedItemComment($itemobject_id, $comment_id, $user_id = null)
     {
-        self::saveItemEntry($itemobject_id, null, 'iv', 'CIC', $comment_id, null, $user_id);
+        self::saveItemEntry($itemobject_id, null, 'iv', 'CIC', $comment_id, '', $user_id);
     }
 
     static public function deletedItemComment($itemobject_id, $comment_text)
@@ -204,7 +204,7 @@ class DBTableRowChangeLog extends DBTableRow {
         self::saveItemEntry($has_an_itemobject_id, null, 'iv', $code, null, $text, $user_id);
     }
 
-    static private function saveTypeEntry($desc_typeobject_id, $desc_typeversion_id, $locator_prefix, $change_code, $comment_id = null, $comment_text = null)
+    static private function saveTypeEntry($desc_typeobject_id, $desc_typeversion_id, $locator_prefix, $change_code, $comment_id = null, $comment_text = '')
     {
         $Rec = new self();
         $Rec->locator_prefix = $locator_prefix;

@@ -285,7 +285,8 @@ class DBTableRowUser extends DBTableRow {
     public function setNumericFavoriteToRollingList($keyname, $value, $favorites_max_length = 7)
     {
         if (is_numeric($value)) {
-            $favorites = explode('|', $this->getPreference($keyname));
+            $preferences = $this->getPreference($keyname);
+            $favorites = is_null($preferences) ? array() : explode('|', $preferences);
             if (in_array($value, $favorites)) {
                 $favorites = array_diff($favorites, array($value));
             }
@@ -298,7 +299,9 @@ class DBTableRowUser extends DBTableRow {
     public function getNumericFavorites($keyname)
     {
         $out = array();
-        foreach (explode('|', $this->getPreference($keyname)) as $value) {
+        $preferences = $this->getPreference($keyname);
+        $favorites = is_null($preferences) ? array() : explode('|', $preferences);
+        foreach ($favorites as $value) {
             if (is_numeric($value)) {
                 $out[] = $value;
             }

@@ -129,7 +129,7 @@ class Zend_Ldap_Collection_Iterator_Default implements Zend_Ldap_Collection_Iter
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         return $this->_itemCount;
     }
@@ -178,7 +178,7 @@ class Zend_Ldap_Collection_Iterator_Default implements Zend_Ldap_Collection_Iter
      *
      * @throws Zend_Ldap_Exception
      */
-    public function next()
+    public function next(): void
     {
         if (!is_resource($this->_current)) return;
         $this->_current = @ldap_next_entry($this->_ldap->getResource(), $this->_current);
@@ -204,7 +204,7 @@ class Zend_Ldap_Collection_Iterator_Default implements Zend_Ldap_Collection_Iter
      *
      * @throws Zend_Ldap_Exception
      */
-    public function rewind()
+    public function rewind(): void
     {
         if (!is_resource($this->_resultId)) return;
         $this->_current = @ldap_first_entry($this->_ldap->getResource(), $this->_resultId);
@@ -245,7 +245,7 @@ class Zend_Ldap_Collection_Iterator_Default implements Zend_Ldap_Collection_Iter
      *
      * @return boolean
      */
-    public function valid()
+    public function valid(): bool
     {
         return (is_resource($this->_current) && is_string($this->_currentDn));
     }

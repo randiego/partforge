@@ -2910,7 +2910,7 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
      *
      * @return void
      */
-    public function next()
+    public function next(): void
     {
         $this->_sort();
         next($this->_order);
@@ -2921,7 +2921,7 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
      *
      * @return void
      */
-    public function rewind()
+    public function rewind(): void
     {
         $this->_sort();
         reset($this->_order);
@@ -2932,7 +2932,7 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
      *
      * @return bool
      */
-    public function valid()
+    public function valid(): bool
     {
         $this->_sort();
         return (current($this->_order) !== false);
@@ -2943,7 +2943,7 @@ class Zend_Form implements Iterator, Countable, Zend_Validate_Interface
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         return count($this->_order);
     }

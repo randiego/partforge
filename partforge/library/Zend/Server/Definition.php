@@ -210,7 +210,7 @@ class Zend_Server_Definition implements Countable, Iterator
      *
      * @return int
      */
-    public function count()
+    public function count(): int
     {
         return count($this->_methods);
     }
@@ -240,9 +240,9 @@ class Zend_Server_Definition implements Countable, Iterator
      *
      * @return void
      */
-    public function next()
+    public function next(): void
     {
-        return next($this->_methods);
+        next($this->_methods);
     }
 
     /**
@@ -250,9 +250,9 @@ class Zend_Server_Definition implements Countable, Iterator
      *
      * @return void
      */
-    public function rewind()
+    public function rewind(): void
     {
-        return reset($this->_methods);
+        reset($this->_methods);
     }
 
     /**
@@ -260,7 +260,7 @@ class Zend_Server_Definition implements Countable, Iterator
      *
      * @return bool
      */
-    public function valid()
+    public function valid(): bool
     {
         return (bool) $this->current();
     }

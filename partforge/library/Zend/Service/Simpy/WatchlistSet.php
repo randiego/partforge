@@ -65,7 +65,7 @@ class Zend_Service_Simpy_WatchlistSet implements IteratorAggregate
      *
      * @return ArrayIterator
      */
-    public function getIterator()
+    public function getIterator(): Traversable
     {
         return new ArrayIterator($this->_watchlists);
     }

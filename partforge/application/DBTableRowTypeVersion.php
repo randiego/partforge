@@ -290,7 +290,7 @@ class DBTableRowTypeVersion extends DBTableRow {
     {
         // process the components list.
         $out = array();
-        foreach (explode(';', $list_of_typecomponents) as $typecomponent) {
+        foreach (is_null($list_of_typecomponents) ? array() : explode(';', $list_of_typecomponents) as $typecomponent) {
             if (!empty($typecomponent)) {
                 $component_parts = explode(',', $typecomponent);
                 $component_parts = array_pad($component_parts, 9, null);
@@ -1481,11 +1481,14 @@ class DBTableRowTypeVersion extends DBTableRow {
      */
     static public function formatPartNumberDescription($type_part_number, $type_description = null)
     {
-        $ns = explode('|', $type_part_number);
-        $ds = explode('|', $type_description);
+        $ns = is_null($type_part_number) ? array() : explode('|', $type_part_number);
+        $ds = is_null($type_description) ? array() : explode('|', $type_description);
         $numbercomp = count($ns)<5 ? implode(', ', $ns) : implode(', ', array_slice($ns, 0, 3)).',...,'.$ns[count($ns)-1];
+        if (is_null($type_description)) {
+            return $numbercomp;
+        }
         $desccomp = $ds[0].(count($ds)>1 ? '...' : '');
-        return is_null($type_description) ? $numbercomp : $numbercomp.' ('.$desccomp.')';
+        return $numbercomp.' ('.$desccomp.')';
     }
 
     static public function formatSubActiveDefinitionStatus($typedisposition, $versionstatus, $is_current_version)

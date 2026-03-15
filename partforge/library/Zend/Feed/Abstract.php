@@ -170,7 +170,7 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
      *
      * @return integer Entry count.
      */
-    public function count()
+    public function count(): int
     {
         return count($this->_entries);
     }
@@ -181,7 +181,7 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
      *
      * @return void
      */
-    public function rewind()
+    public function rewind(): void
     {
         $this->_entryIndex = 0;
     }
@@ -216,7 +216,7 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
      *
      * @return mixed The next row, or null if no more rows.
      */
-    public function next()
+    public function next(): void
     {
         ++$this->_entryIndex;
     }
@@ -227,7 +227,7 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
      *
      * @return boolean Whether the iteration is valid
      */
-    public function valid()
+    public function valid(): bool
     {
         return 0 <= $this->_entryIndex && $this->_entryIndex < $this->count();
     }

@@ -190,7 +190,7 @@ class Zend_Tool_Project_Profile_Iterator_ContextFilter extends RecursiveFilterIt
      *
      * @return unknown
      */
-    function getChildren()
+    public function getChildren(): RecursiveIterator
     {
 
         if (empty($this->ref)) {

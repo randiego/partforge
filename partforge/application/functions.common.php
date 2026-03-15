@@ -472,7 +472,7 @@ function spawnurl($url)
 
 function is_valid_datetime($str)
 {
-    return !((strtotime($str)==-1) || (strtotime($str)===false));
+    return !is_null($str) && !((strtotime($str)==-1) || (strtotime($str)===false));
 }
 
 function check_valid_nonnegative_number_params($fieldname, $param, &$errormsg)
@@ -1021,7 +1021,7 @@ function send_download_headers($file_type, $file_name, $attachment = 'attachment
 
 function TextToHtml($text)
 {
-    $conv = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    $conv = htmlspecialchars(is_null($text) ? '' : $text, ENT_QUOTES, 'UTF-8');
     if ($conv=='' && $text!='') {
         return $text;
     } else {

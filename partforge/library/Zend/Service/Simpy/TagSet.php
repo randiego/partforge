@@ -66,7 +66,7 @@ class Zend_Service_Simpy_TagSet implements IteratorAggregate
      *
      * @return ArrayIterator
      */
-    public function getIterator()
+    public function getIterator(): Traversable
     {
         return new ArrayIterator($this->_tags);
     }

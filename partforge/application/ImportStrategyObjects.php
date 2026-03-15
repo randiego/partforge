@@ -406,7 +406,7 @@ class ImportStrategyObjects {
 
             if (count($errormsg) == 0) {
 
-                $same_effective_date = ($ItemVersion->user_id == $user_id) && ( strtotime($ItemVersion->effective_date) == strtotime($effective_date));
+                $same_effective_date = ($ItemVersion->user_id == $user_id) && ( (is_null($ItemVersion->effective_date) ? 0 : strtotime($ItemVersion->effective_date)) == (is_null($effective_date) ? 0 : strtotime($effective_date)));
 
                 if ($user_id) {
                     $ItemVersion->user_id = $user_id;

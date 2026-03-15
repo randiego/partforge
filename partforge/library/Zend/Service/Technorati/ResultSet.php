@@ -188,7 +188,7 @@ abstract class Zend_Service_Technorati_ResultSet implements SeekableIterator
      * @throws  Zend_Service_Exception
      * @abstract
      */
-    // abstract public function current();
+    abstract public function current();
 
     /**
      * Implements SeekableIterator::key().
@@ -205,7 +205,7 @@ abstract class Zend_Service_Technorati_ResultSet implements SeekableIterator
      *
      * @return  void
      */
-    public function next()
+    public function next(): void
     {
         $this->_currentIndex += 1;
     }
@@ -215,10 +215,9 @@ abstract class Zend_Service_Technorati_ResultSet implements SeekableIterator
      *
      * @return  bool
      */
-    public function rewind()
+    public function rewind(): void
     {
         $this->_currentIndex = 0;
-        return true;
     }
 
     /**
@@ -228,7 +227,7 @@ abstract class Zend_Service_Technorati_ResultSet implements SeekableIterator
      * @return  void
      * @throws  OutOfBoundsException
      */
-    public function seek($index)
+    public function seek($index): void
     {
         $indexInt = (int) $index;
         if ($indexInt >= 0 && $indexInt < $this->_results->length) {
@@ -243,7 +242,7 @@ abstract class Zend_Service_Technorati_ResultSet implements SeekableIterator
      *
      * @return boolean
      */
-    public function valid()
+    public function valid(): bool
     {
         return null !== $this->_results && $this->_currentIndex < $this->_results->length;
     }
