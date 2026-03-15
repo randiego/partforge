@@ -1066,8 +1066,8 @@ class DBTableRowTypeVersion extends DBTableRow {
     static function saveOrRebuildPartNumberCache($typeversion_id, $type_part_number, $type_description)
     {
         $records_to_delete = DbSchema::getInstance()->getRecords('partnumber_id', "SELECT * FROM partnumbercache WHERE typeversion_id='{$typeversion_id}'");
-        $part_numbers = explode('|', $type_part_number);
-        $part_descriptions = explode('|', $type_description);
+        $part_numbers = explode('|', (string) $type_part_number);
+        $part_descriptions = explode('|', (string) $type_description);
         if (count($part_numbers)==count($part_descriptions)) {
             $pns_to_save = array();
             foreach ($part_numbers as $index => $pn) {
@@ -1399,10 +1399,10 @@ class DBTableRowTypeVersion extends DBTableRow {
         }
 
         if (in_array('type_part_number', $fieldnames)) {
-            if (count(explode('|', $this->type_part_number))!=count(array_unique(explode('|', $this->type_part_number)))) {
+            if (count(explode('|', (string) $this->type_part_number))!=count(array_unique(explode('|', (string) $this->type_part_number)))) {
                 $errormsg[] = 'You have duplicate item numbers.  Please make all your part/procedure numbers different.';
             }
-            foreach (explode('|', $this->type_part_number) as $idx => $part_number) {
+            foreach (explode('|', (string) $this->type_part_number) as $idx => $part_number) {
                 if (!$part_number) {
                     $errormsg[] = 'Part/Procedure Number cannot be blank.';
                 } else if ($this->partNumberAlreadyUsed($part_number)) {
@@ -1413,7 +1413,7 @@ class DBTableRowTypeVersion extends DBTableRow {
         }
 
         if (in_array('type_description', $fieldnames)) {
-            foreach (explode('|', $this->type_description) as $idx => $description) {
+            foreach (explode('|', (string) $this->type_description) as $idx => $description) {
                 if (!$description) {
                     $errormsg[] = 'Part/Procedure Name cannot be blank.';
                 }
@@ -1454,8 +1454,8 @@ class DBTableRowTypeVersion extends DBTableRow {
      */
     public function deleteAlias()
     {
-        $pns = explode('|', $this->type_part_number);
-        $pds = explode('|', $this->type_description);
+        $pns = explode('|', (string) $this->type_part_number);
+        $pds = explode('|', (string) $this->type_description);
         if (count($pns)>1) {
             unset($pns[count($pns)-1]);
             unset($pds[count($pds)-1]);
@@ -1540,8 +1540,8 @@ class DBTableRowTypeVersion extends DBTableRow {
         if ($this->typecategory_id) {
             if ($editable) {
                 #protect again nulls in the part number and description by treating them as arrays and imploding them with | when we save, and exploding them when we load.  This also makes it easier to add aliases in the future if we want to.
-                $pns = isset($this->type_part_number) ? array() : explode('|', $this->type_part_number);
-                $pds = isset($this->type_description) ? array() : explode('|', $this->type_description);
+                $pns = isset($this->type_part_number) ? array() : explode('|', (string) $this->type_part_number);
+                $pds = isset($this->type_description) ? array() : explode('|', (string) $this->type_description);
                 foreach ($pns as $idx => $pn) {
                     $btns = array();
                     $last_entry = ($idx == count($pns)-1);
@@ -1569,8 +1569,8 @@ class DBTableRowTypeVersion extends DBTableRow {
                                   '.(count($btns)>0 ? '<br />'.implode(' ', $btns) : '&nbsp;').'</td></tr>';
                 }
             } else {
-                $pns = isset($this->type_part_number) ? explode('|', $this->type_part_number) : array();
-                $pds = isset($this->type_description) ? explode('|', $this->type_description) : array();
+                $pns = isset($this->type_part_number) ? explode('|', (string) $this->type_part_number) : array();
+                $pds = isset($this->type_description) ? explode('|', (string) $this->type_description) : array();
                 $nums_and_desc = array();
                 foreach ($pns as $idx => $pn) {
                     $nums_and_desc[] = $pn.(isset($pds[$idx]) ? ' ('.$pds[$idx].')' : '');
@@ -1795,8 +1795,8 @@ class DBTableRowTypeVersion extends DBTableRow {
 
     public function formatPartNumbersConcat()
     {
-        $pns = explode('|', $this->type_part_number);
-        $pds = explode('|', $this->type_description);
+        $pns = explode('|', (string) $this->type_part_number);
+        $pds = explode('|', (string) $this->type_description);
         $nums_and_desc = array();
         foreach ($pns as $idx => $pn) {
             $nums_and_desc[] = $pn.(isset($pds[$idx]) ? ' ('.$pds[$idx].')' : '');
@@ -2103,7 +2103,7 @@ class DBTableRowTypeVersion extends DBTableRow {
              * Error if part number list of aliases has been shrunken.  (this really should be smarter and actually see what aliases are used.)
          */
 
-        if (count(explode('|', $TargetTypeVersion->type_part_number))<count(explode('|', $this->type_part_number))) {
+        if (count(explode('|', (string) $TargetTypeVersion->type_part_number))<count(explode('|', (string) $this->type_part_number))) {
             $fail_msg[] = "There are fewer Part Number Aliases defined in the target than in this version.";
         }
 

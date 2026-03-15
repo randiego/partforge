@@ -87,7 +87,7 @@ class DBTableRowDashboardTable extends DBTableRow {
      */
     public function sortByIncludedFields($in_arr)
     {
-        $sortguide = explode(',', $this->include_fields);
+        $sortguide = explode(',', (string) $this->include_fields);
         $targkeys = array_keys($in_arr);
         $targvals = array_values($in_arr);
         do {
@@ -125,7 +125,7 @@ class DBTableRowDashboardTable extends DBTableRow {
                     WHERE itemversion.itemversion_id='{$itemversion_id}')
                 and dashboardtable.autoadd_new_items=1");
         foreach ($records as $dashboardtable_id => $record) {
-            $arr = explode(',', $record['include_only_itemobject_ids']);
+            $arr = explode(',', (string) ($record['include_only_itemobject_ids'] ?? ''));
             if (!in_array($itemobject_id, $arr)) {
                 $arr[] = $itemobject_id;
                 $out = implode(',', $arr);

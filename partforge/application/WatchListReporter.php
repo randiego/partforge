@@ -223,7 +223,7 @@ class WatchListReporter {
 					</tr>';
 
         foreach ($records as $record) {
-            $loc_parts = explode('/', $record['locator']);
+            $loc_parts = explode('/', (string) ($record['locator'] ?? ''));
 
             $item_name = TextToHtml($record['item_name']);
             if ($loc_parts[0]=='tv') {

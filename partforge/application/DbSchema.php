@@ -55,7 +55,7 @@ class DbSchema {   // singleton
         if (is_null($this->_has_json_support)) {
             $records = $this->getRecords('', "SELECT VERSION() AS ver;");
             $record = reset($records);
-            $arr = explode('-', $record['ver']);
+            $arr = explode('-', (string) ($record['ver'] ?? ''));
             if (isset($arr[1]) && (substr($arr[1], 0, strlen('MariaDB'))=='MariaDB')) {
                 $this->_has_json_support = version_compare($arr[0], '10.2.3') >= 0;
             } else {

@@ -1291,7 +1291,7 @@ class DBTableRowItemVersion extends DBTableRow {
     {
         if ($this->hasADisposition()) {
             if ( in_array($this->disposition, array('Pass|Fail', 'Pass|Review', 'Pass|Invalid', 'Pass|InProcess', 'Pass|SignedOff')) ) {
-                $disposition_if_errors = explode('|', $this->disposition)[1];
+                $disposition_if_errors = explode('|', (string) $this->disposition)[1];
                 $testmsgs = array();
                 $this->validateFields($fields_to_check, $testmsgs);
                 $this->disposition = count($testmsgs) > 0 ? $disposition_if_errors : 'Pass';
@@ -2606,7 +2606,7 @@ class DBTableRowItemVersion extends DBTableRow {
                     $max_len_comment = 80;
                     $fieldnames = array();
                     if ($record['documents_packed']) {
-                        foreach (explode(';', $record['documents_packed']) as $document_packed) {
+                        foreach (explode(';', (string) ($record['documents_packed'] ?? '')) as $document_packed) {
                             list($document_id,$document_filesize,$document_displayed_filename,$document_stored_filename,$document_stored_path,$document_file_type,$document_thumb_exists) = explode(',', $document_packed);
                             $fieldnames[] = trunc_text(hextobin($document_displayed_filename), $max_len_one_filename);
                         }

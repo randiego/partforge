@@ -643,11 +643,11 @@ class ReportDataItemListView extends ReportDataWithCategory {
         if ($this->_show_used_on) {
             $wu_links = array();
             if (!is_null($record['used_on_packed'])) {
-                foreach (explode(';', $record['used_on_packed']) as $wu) {
+                foreach (explode(';', (string) ($record['used_on_packed'] ?? '')) as $wu) {
                     $fields = explode(',', $wu);
                     if (count($fields)==4) {
                         list($wu_itemobject_id, $wu_hex_item_serial_number, $wu_partnumber_alias, $wu_hex_type_description) = $fields;
-                        $type_desc = explode('|', hextobin($wu_hex_type_description))[$wu_partnumber_alias];
+                        $type_desc = explode('|', (string) hextobin($wu_hex_type_description))[$wu_partnumber_alias];
                         $wu_query_params = $query_params;
                         unset($wu_query_params['itemversion_id']);
                         $wu_query_params['itemobject_id'] = $wu_itemobject_id;
@@ -789,7 +789,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
             $subcomments_html .= '<div class="dash-comments-container"><div class="bd-edit">'.$comment_add_btn.'</div><div class="dash-column-content"><ul class="bd-event-subcomments">';
             if ($record['__comments__']) {
                 $is_first = true;
-                $comments_arr = explode('|', $record['__comments__']);
+                $comments_arr = explode('|', (string) ($record['__comments__'] ?? ''));
                 if (count($comments_arr) > $this->_dash_comments_limit) {
                      $subcomments_html .= '<li class="bd-event-subcomment dash-no-hrule"><span class="paren">'.(count($comments_arr) - $this->_dash_comments_limit).' older comment(s) not shown</span></li>';
                      $is_first = false;

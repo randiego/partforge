@@ -86,7 +86,7 @@ class DBTableRowDashboard extends DBTableRow {
     {
         $table_ids = array();
         if ($tableids !== "") {
-            foreach (explode(',', $tableids) as $pair) {
+            foreach (explode(',', (string) $tableids) as $pair) {
                 list($table_id, $typeobject_id) = explode('|', $pair);
                 if (in_array($table_id, $table_ids)) {
                     // we should create a duplicate table like the existing one
@@ -107,7 +107,7 @@ class DBTableRowDashboard extends DBTableRow {
                 }
             }
         }
-        $item_to_delete = array_diff(explode(',', $this->list_of_table_ids), $table_ids);
+        $item_to_delete = array_diff(explode(',', (string) $this->list_of_table_ids), $table_ids);
         foreach ($item_to_delete as $dashboardtable_id) {
             $DashboardTable = new DBTableRowDashboardTable();
             if ($DashboardTable->getRecordById($dashboardtable_id)) {
@@ -168,7 +168,7 @@ class DBTableRowDashboard extends DBTableRow {
     public function saveCopy()
     {
         $DashboardCopy = new self();
-        $tables_to_duplicate = explode(',', $this->list_of_table_ids);
+        $tables_to_duplicate = explode(',', (string) $this->list_of_table_ids);
         $new_tables_written = array();
 
         if ($tables_to_duplicate !== "") {
@@ -192,7 +192,7 @@ class DBTableRowDashboard extends DBTableRow {
     public function delete()
     {
         // Delete all the subtables and the dashboard itself.
-        foreach (explode(',', $this->list_of_table_ids) as $dashboardtable_id) {
+        foreach (explode(',', (string) $this->list_of_table_ids) as $dashboardtable_id) {
             $DashboardTable = new DBTableRowDashboardTable();
             if ($DashboardTable->getRecordById($dashboardtable_id)) {
                 $DashboardTable->delete();

@@ -136,8 +136,8 @@ class DashController extends DBControllerActionAbstract
                     } else {
                         $this->navigator->jumpToView(null, null, array('dashboard_id' => $this->params['selectdashboard_id']));
                     }
-                case isset($this->params['btnOnChange']) && explode(':', $this->params['btnOnChange'])[0]=='import_column_notes':
-                    $orph_dashboardtable_id = explode(':', $this->params['btnOnChange'])[1];
+                case isset($this->params['btnOnChange']) && explode(':', (string) $this->params['btnOnChange'])[0]=='import_column_notes':
+                    $orph_dashboardtable_id = explode(':', (string) $this->params['btnOnChange'])[1];
                     DBTableRowDashboardColumnNote::mergeOrphanColumnNotes($orph_dashboardtable_id, $this->params['dashboardtable_id'][$orph_dashboardtable_id]);
                     $this->navigator->jumpToView();
                 case isset($this->params['btnCopyDashboard']):

@@ -670,7 +670,7 @@ class EventStream {
     {
         $baseUrl = getAbsoluteBaseUrl();
         $thumbs = $files = array();
-        foreach (explode(';', $documents_packed) as $document_packed) {
+        foreach (explode(';', (string) $documents_packed) as $document_packed) {
             list($document_id,$document_filesize,$document_displayed_filename,$document_stored_filename,$document_stored_path,$document_file_type,$document_thumb_exists) = explode(',', $document_packed);
             $document_stored_filename = hextobin($document_stored_filename); // we had to store this earlier for safety
             $document_displayed_filename = hextobin($document_displayed_filename); // we had to store this earlier for safety
@@ -779,7 +779,7 @@ class EventStream {
             if (in_array($line['event_type_id'], array('ET_PARTREF','ET_PROCREF'))) {
                 if ($line['comments_packed']) {
                     $subcomments_html .= '<div class="bd-event-subcomments-container"><ul class="bd-event-subcomments">';
-                    foreach (explode('|', $line['comments_packed']) as $subcomment) {
+                    foreach (explode('|', (string) ($line['comments_packed'] ?? '')) as $subcomment) {
                         list($user_id,$comment_added,$comment_text,$subdocuments_packed) = explode('&', $subcomment);
                         $subdatetime = time_to_bulletdate(strtotime($comment_added));
                         $comment_text = hextobin($comment_text); // we had packed this earlier for safety
@@ -852,7 +852,7 @@ class EventStream {
     {
         $baseUrl = getAbsoluteBaseUrl();
         $items = array();
-        foreach (explode(';', $documents_packed) as $document_packed) {
+        foreach (explode(';', (string) $documents_packed) as $document_packed) {
             list($document_id,$document_filesize,$document_displayed_filename,$document_stored_filename,$document_stored_path,$document_file_type,$document_thumb_exists) = explode(',', $document_packed);
             $document_stored_filename = hextobin($document_stored_filename); // we had to store this earlier for safety
             $document_displayed_filename = hextobin($document_displayed_filename); // we had to store this earlier for safety

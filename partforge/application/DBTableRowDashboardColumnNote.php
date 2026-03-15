@@ -85,7 +85,7 @@ class DBTableRowDashboardColumnNote extends DBTableRow {
         $our_user_id = $_SESSION['account']->user_id;
         $records = DbSchema::getInstance()->getRecords('', "SELECT GROUP_CONCAT(list_of_table_ids) pub_table_ids FROM dashboard WHERE is_public = 1");
         $record = reset($records);
-        $pub_table_ids_array = explode(',', $record['pub_table_ids']);
+        $pub_table_ids_array = explode(',', (string) ($record['pub_table_ids'] ?? ''));
         $records = DbSchema::getInstance()->getRecords('dashboardtable_id', "SELECT DISTINCT dashboardcolumnnote.dashboardtable_id,
                     dashboardcolumnnote.user_id, dashboardtable.title, user.first_name, user.last_name, dashboardtable.user_id as table_user_id,
                     typeversion.type_description
@@ -202,7 +202,7 @@ class DBTableRowDashboardColumnNote extends DBTableRow {
                 $targettables = array();
                 foreach ($non_orph_block as $non_orph_dashboardtable_id => $non_orph_notes) {
                     if ($orph_notes['typeobject_id'] == $non_orph_notes['typeobject_id']) {
-                        $dashboard_text = in_array($non_orph_dashboardtable_id, explode(',', $dashboard->list_of_table_ids)) ? ' on this dashboard' : ' on another dashboard';
+                        $dashboard_text = in_array($non_orph_dashboardtable_id, explode(',', (string) $dashboard->list_of_table_ids)) ? ' on this dashboard' : ' on another dashboard';
                         $targettables[$non_orph_dashboardtable_id] = ' into My Notes in existing table "'.self::shortTableName($non_orph_notes).'"'.$dashboard_text;
                     }
                 }

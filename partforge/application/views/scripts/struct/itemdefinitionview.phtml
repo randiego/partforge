@@ -173,7 +173,7 @@ if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 
     $listing_return_url = $this->navigator->getCurrentViewUrl('partlistview');
 
     $copyparts = array();
-    foreach (explode('|', $this->dbtable->type_part_number) as $pn) {
+    foreach (explode('|', (string) $this->dbtable->type_part_number) as $pn) {
         $copyparts[] = $pn.'-COPY';
     }
     $copypart = implode('|', $copyparts);
