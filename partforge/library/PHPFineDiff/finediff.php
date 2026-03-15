@@ -82,6 +82,8 @@ abstract class FineDiffOp {
 	}
 
 class FineDiffDeleteOp extends FineDiffOp {
+	private $fromLen;
+
 	public function __construct($len) {
 		$this->fromLen = $len;
 		}
@@ -100,6 +102,8 @@ class FineDiffDeleteOp extends FineDiffOp {
 	}
 
 class FineDiffInsertOp extends FineDiffOp {
+	private $text;
+
 	public function __construct($text) {
 		$this->text = $text;
 		}
@@ -122,6 +126,9 @@ class FineDiffInsertOp extends FineDiffOp {
 	}
 
 class FineDiffReplaceOp extends FineDiffOp {
+	private $fromLen;
+	private $text;
+
 	public function __construct($fromLen, $text) {
 		$this->fromLen = $fromLen;
 		$this->text = $text;
@@ -151,6 +158,8 @@ class FineDiffReplaceOp extends FineDiffOp {
 	}
 
 class FineDiffCopyOp extends FineDiffOp {
+	private $len;
+
 	public function __construct($len) {
 		$this->len = $len;
 		}
@@ -179,13 +188,13 @@ class FineDiffCopyOp extends FineDiffOp {
 class FineDiffOps {
 	public function appendOpcode($opcode, $from, $from_offset, $from_len) {
 		if ( $opcode === 'c' ) {
-			$edits[] = new FineDiffCopyOp($from_len);
+			$this->edits[] = new FineDiffCopyOp($from_len);
 			}
 		else if ( $opcode === 'd' ) {
-			$edits[] = new FineDiffDeleteOp($from_len);
+			$this->edits[] = new FineDiffDeleteOp($from_len);
 			}
 		else /* if ( $opcode === 'i' ) */ {
-			$edits[] = new FineDiffInsertOp(substr($from, $from_offset, $from_len));
+			$this->edits[] = new FineDiffInsertOp(substr($from, $from_offset, $from_len));
 			}
 		}
 	public $edits = array();
@@ -198,6 +207,12 @@ class FineDiffOps {
 *
 */
 class FineDiff {
+	private $granularityStack = array();
+	private $edits = array();
+	private $from_text = '';
+	private $last_edit = false;
+	private $stackpointer = 0;
+	private $from_offset = 0;
 
 	/**------------------------------------------------------------------------
 	*
@@ -685,4 +700,3 @@ class FineDiff {
 			}
 		}
 	}
-

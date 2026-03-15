@@ -26,6 +26,7 @@
 class DBEditViewItemVersion extends DBEditView {
 
     public $error_msg_array = array();
+    public $version_edit_mode = '';
 
     public function fetchTableHtml($join_name, $target, $fields_to_remove = array())
     {

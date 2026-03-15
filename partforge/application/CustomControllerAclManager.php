@@ -28,6 +28,7 @@ class CustomControllerAclManager extends Zend_Controller_Plugin_Abstract
     private $_defaultContoller = 'user';
     private $_defaultAction = 'login';
     private $_defaultModule = '';
+    protected $acl;
 
     public function __construct(Zend_Acl $acl_in)
     {

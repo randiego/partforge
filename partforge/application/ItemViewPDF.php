@@ -46,6 +46,7 @@ class ItemViewPDF extends TCPDF {
     protected $_h2; // text spacing
     protected $_myfont;
     protected $_current_header;
+    protected $file_id = '';
 
     public function __construct()
     {
@@ -404,7 +405,6 @@ class ItemViewPDF extends TCPDF {
         $this->_w2 = 146; // should be page width -2*cmargin
         $this->_h1 = 7;
         $this->_h2 = 4.4;
-        $this->cMargin = 2;
         $this->SetCellPaddings(2.0, 0.0, 2.0);
         $this->_current_header = '';
         $this->SetDisplayMode('default', 'continuous');  // makes it nicer to scroll through a multipage PDF.

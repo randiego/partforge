@@ -26,6 +26,7 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
 {
     public $params;
     protected $_redirector = null;
+    protected $navigator;
 
     public function init()
     {

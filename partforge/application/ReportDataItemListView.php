@@ -45,6 +45,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
     private $_is_public_dashboard = false;
     private $_user_records = array();
     private $_dash_comments_limit;
+    private $all_fields = array();
 
     /**
      * If $output_all_versions is true, then there is 1 output row per itemversion_id.  If false, then 1 output row per itemobject_id.
