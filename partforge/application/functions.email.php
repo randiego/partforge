@@ -1,7 +1,8 @@
 <?php
 
-require_once(dirname(__FILE__).'/../library/phpmailer/class.phpmailer.php');
-require_once(dirname(__FILE__).'/../library/phpmailer/class.smtp.php');
+require_once(dirname(__FILE__).'/../library/phpmailer/src/PHPMailer.php');
+require_once(dirname(__FILE__).'/../library/phpmailer/src/SMTP.php');
+require_once(dirname(__FILE__).'/../library/phpmailer/src/Exception.php');
 
 class Email {
     var $PHPMailer;
@@ -9,7 +10,7 @@ class Email {
     public function __construct($to, $toname, $from, $fromname, $cc, $bcc, $subject, $message, $auto_set_reply_to = true)
     {
 
-        $this->PHPMailer = new PHPMailer();
+        $this->PHPMailer = new PHPMailer\PHPMailer\PHPMailer();
         $this->PHPMailer->CharSet = 'utf-8';
 
         if (!empty(Zend_Registry::get('config')->phpmailer_host)) {
