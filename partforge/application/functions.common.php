@@ -416,7 +416,8 @@ class UrlCallRegistry {
                 $request->setParamSources(array());             // instead of current getvars
                 Zend_Controller_Front::getInstance()->getRouter()->route($request);
                 $jump_to_params = array();
-                parse_str(parse_url($path['return_url'], PHP_URL_QUERY), $jump_to_params);
+                $query_part_url = parse_url($path['return_url'], PHP_URL_QUERY) ?? '';
+                parse_str($query_part_url, $jump_to_params);
                 $jump_to_params = array_merge($jump_to_params, $request->getParams());
                 $matchagain = true;
                 foreach ($path['conditions'] as $field => $value) {

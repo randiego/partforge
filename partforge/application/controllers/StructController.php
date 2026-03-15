@@ -552,7 +552,7 @@ class StructController extends DBControllerActionAbstract
                 } else { // btnSaveBeforeSubEdit
                     // see if there are any undefined initialization parameters that can be defined now
                     $sub_params = array();
-                    parse_str($this->params['sub_edit_params'], $sub_params);
+                    parse_str($this->params['sub_edit_params'] ?? '', $sub_params);
                     if (!empty($sub_params['initialize']) && is_array($sub_params['initialize'])) {
                         foreach ($sub_params['initialize'] as $field => $value) {
                             // if the value is a string that starts with $ then initialize it to $dbtable->{$value}
@@ -570,7 +570,7 @@ class StructController extends DBControllerActionAbstract
                 }
             case (isset($this->params['btnOnChange']) && ($this->params['btnOnChange'] == 'componentselectchange')):
                 $sub_params = array();
-                parse_str($this->params['onChangeParams'], $sub_params);
+                parse_str($this->params['onChangeParams'] ?? '', $sub_params);
                 $form_placeholder = array();
                 if (!empty($sub_params['component_name'])) {
                     $form_placeholder['last_changed_component'] = $sub_params['component_name'];

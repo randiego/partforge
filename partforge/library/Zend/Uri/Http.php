@@ -686,6 +686,7 @@ class Zend_Uri_Http extends Zend_Uri
             // If it is a string, make sure it is valid. If not parse and encode it
             $query = (string) $query;
             if ($this->validateQuery($query) === false) {
+                $queryArray = [];
                 parse_str($query, $queryArray);
                 $query = http_build_query($queryArray, '', '&');
             }

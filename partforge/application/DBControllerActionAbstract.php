@@ -378,7 +378,7 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
                 } else { // btnSaveBeforeSubEdit
                     // see if there are any undefined initialization parameters that can be defined now
                     $sub_params = array();
-                    parse_str($this->params['sub_edit_params'], $sub_params);
+                    parse_str($this->params['sub_edit_params'] ?? '', $sub_params);
                     if (!empty($sub_params['initialize']) && is_array($sub_params['initialize'])) {
                         foreach ($sub_params['initialize'] as $field => $value) {
                             // if the value is a string that starts with $ then initialize it to $dbtable->{$value}
@@ -398,7 +398,7 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
                 $this->navigator->returnFromCall();
             case !empty($this->params['btnSubEditParams']):
                 $sub_params = array();
-                parse_str($this->params['btnSubEditParams'], $sub_params); // get params for jumping to the subtable editing
+                parse_str($this->params['btnSubEditParams'] ?? '', $sub_params); // get params for jumping to the subtable editing
                 /*
                   see if there are any undefined initialization parameters.  These indicate that we have an unsaved parent
                   that needs to be saved before proceeding.
@@ -487,7 +487,7 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
                 $this->navigator->jumpToView();
             case (isset($this->params['btnOnChange']) && ($this->params['btnOnChange'] == 'sort_order')):
                 $sub_params = array();
-                parse_str($this->params['onChangeParams'], $sub_params);
+                parse_str($this->params['onChangeParams'] ?? '', $sub_params);
                 if (!empty($sub_params['tablename'])) {
                     $RowObj = DbSchema::getInstance()->dbTableRowObjectFactory($sub_params['tablename'], false, $sub_params['parentindex']);
                     if ($RowObj->hasDedicatedSortOrderField()) {
