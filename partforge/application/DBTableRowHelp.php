@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2025 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2026 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -69,7 +69,7 @@ class DBTableRowHelp extends \DBTableRow {
             $initialize['table_name'] = '';
             $linkparams = array('help_id' => $Help->help_id, 'table' => 'help', 'initialize' => $initialize);
             if (!is_null($Navigator)) {
-                $linkparams['return_url'] = self_url().'?'.$_SERVER['QUERY_STRING'];
+                $linkparams['return_url'] = self_url().'?'.server_var('QUERY_STRING', '');
             }
             $links[] = linkify(\UrlCallRegistry::formatViewUrl('editview', 'help', $linkparams), "Edit Help", 'Edit the help page', 'minibutton2');
             if (is_numeric($Help->help_id)) {

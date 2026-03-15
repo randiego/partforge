@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2026 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -140,7 +140,8 @@ class MyUploadHandler extends UploadHandler
     public function delete($print_response = true)
     {
         $this->db_document_table = new DBTableRowDocument();
-        if ($this->db_document_table->getRecordById($_GET['document_id'])) {
+        $document_id = get_var('document_id');
+        if ($document_id !== null && $this->db_document_table->getRecordById($document_id)) {
             $success = $this->db_document_table->unlinkAssociatedFiles();
             if ($success) {
                 $this->db_comment_table->document_ids = array_diff($this->db_comment_table->document_ids, array($this->db_document_table->document_id));

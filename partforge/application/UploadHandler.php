@@ -39,9 +39,10 @@ class UploadHandler
 
     public function __construct($options = null, $initialize = true)
     {
+        $script_filename = (string) server_var('SCRIPT_FILENAME', '');
         $this->options = array(
             'script_url' => $this->get_full_url().'/',
-            'upload_dir' => dirname($_SERVER['SCRIPT_FILENAME']).'/files/',
+            'upload_dir' => dirname($script_filename).'/files/',
             'upload_url' => $this->get_full_url().'/files/',
             'user_dirs' => false,
             'mkdir_mode' => 0755,
@@ -98,7 +99,7 @@ class UploadHandler
 
     protected function initialize()
     {
-        switch ($_SERVER['REQUEST_METHOD']) {
+        switch ((string) server_var('REQUEST_METHOD', '')) {
             case 'OPTIONS':
             case 'HEAD':
                 $this->head();
@@ -121,14 +122,18 @@ class UploadHandler
 
     protected function get_full_url()
     {
-        $https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+        $https = !empty(server_var('HTTPS')) && server_var('HTTPS') !== 'off';
+        $http_host = server_var('HTTP_HOST', '');
+        $server_name = server_var('SERVER_NAME', '');
+        $server_port = (string) server_var('SERVER_PORT', '');
+        $script_name = (string) server_var('SCRIPT_NAME', '');
+        $remote_user = (string) server_var('REMOTE_USER', '');
         return
             ($https ? 'https://' : 'http://').
-            (!empty($_SERVER['REMOTE_USER']) ? $_SERVER['REMOTE_USER'].'@' : '').
-            (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : ($_SERVER['SERVER_NAME'].
-            ($https && $_SERVER['SERVER_PORT'] === 443 ||
-            $_SERVER['SERVER_PORT'] === 80 ? '' : ':'.$_SERVER['SERVER_PORT']))).
-            substr($_SERVER['SCRIPT_NAME'], 0, strrpos($_SERVER['SCRIPT_NAME'], '/'));
+            (!empty($remote_user) ? $remote_user.'@' : '').
+            (!empty($http_host) ? $http_host : ($server_name.
+            (($https && $server_port === '443') || $server_port === '80' ? '' : ':'.$server_port))).
+            substr($script_name, 0, strrpos($script_name, '/'));
     }
 
     protected function get_user_id()
@@ -201,6 +206,9 @@ class UploadHandler
 
     protected function is_valid_file_object($file_name)
     {
+        if (!is_string($file_name) || $file_name === '') {
+            return false;
+        }
         $file_path = $this->get_upload_path($file_name);
         if (is_file($file_path) && $file_name[0] !== '.') {
             return true;
@@ -343,7 +351,10 @@ class UploadHandler
 
     function get_config_bytes($val)
     {
-        $val = trim($val);
+        $val = trim((string) $val);
+        if ($val === '') {
+            return 0;
+        }
         $last = strtolower($val[strlen($val)-1]);
         $numval = substr($val, 0, strlen($val)-1);
         switch ($last) {
@@ -363,7 +374,7 @@ class UploadHandler
             $file->error = $this->get_error_message($error);
             return false;
         }
-        $content_length = $this->fix_integer_overflow(intval($_SERVER['CONTENT_LENGTH']));
+        $content_length = $this->fix_integer_overflow((int) server_var('CONTENT_LENGTH', 0));
         if ($content_length > $this->get_config_bytes(ini_get('post_max_size'))) {
             $file->error = $this->get_error_message('post_max_size');
             return false;
@@ -605,14 +616,14 @@ class UploadHandler
     {
         if ($print_response) {
             $json = json_encode($content);
-            $redirect = isset($_REQUEST['redirect']) ?
-                stripslashes($_REQUEST['redirect']) : null;
+            $redirect = request_var('redirect') !== null ?
+                stripslashes((string) request_var('redirect')) : null;
             if ($redirect) {
                 $this->header('Location: '.sprintf($redirect, rawurlencode($json)));
                 return;
             }
             $this->head();
-            if (isset($_SERVER['HTTP_CONTENT_RANGE'])) {
+            if (server_var('HTTP_CONTENT_RANGE') !== null) {
                 $files = isset($content[$this->options['param_name']]) ?
                     $content[$this->options['param_name']] : null;
                 if ($files && is_array($files) && is_object($files[0]) && $files[0]->size) {
@@ -626,12 +637,14 @@ class UploadHandler
 
     protected function get_version_param()
     {
-        return isset($_GET['version']) ? basename(stripslashes($_GET['version'])) : null;
+        $version = get_var('version');
+        return ($version !== null) ? basename(stripslashes((string) $version)) : null;
     }
 
     protected function get_file_name_param()
     {
-        return isset($_GET['file']) ? basename(stripslashes($_GET['file'])) : null;
+        $file = get_var('file');
+        return ($file !== null) ? basename(stripslashes((string) $file)) : null;
     }
 
     protected function get_file_type($file_path)
@@ -680,8 +693,9 @@ class UploadHandler
     protected function send_content_type_header()
     {
         $this->header('Vary: Accept');
-        if (isset($_SERVER['HTTP_ACCEPT']) &&
-            (strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false)) {
+        $http_accept = (string) server_var('HTTP_ACCEPT', '');
+        if ($http_accept !== '' &&
+            (strpos($http_accept, 'application/json') !== false)) {
             $this->header('Content-Type: application/json');
         } else {
             $this->header('Content-Type: text/plain');
@@ -714,7 +728,7 @@ class UploadHandler
 
     public function get($print_response = true)
     {
-        if ($print_response && isset($_GET['download'])) {
+        if ($print_response && get_var('download') !== null) {
             return $this->download();
         }
         $file_name = $this->get_file_name_param();
@@ -732,22 +746,24 @@ class UploadHandler
 
     public function post($print_response = true)
     {
-        if (isset($_REQUEST['_method']) && $_REQUEST['_method'] === 'DELETE') {
+        if (request_var('_method') === 'DELETE') {
             return $this->delete($print_response);
         }
         $upload = isset($_FILES[$this->options['param_name']]) ?
             $_FILES[$this->options['param_name']] : null;
         // Parse the Content-Disposition header, if available:
-        $file_name = isset($_SERVER['HTTP_CONTENT_DISPOSITION']) ?
+        $content_disposition = server_var('HTTP_CONTENT_DISPOSITION');
+        $file_name = $content_disposition !== null ?
             rawurldecode(preg_replace(
                 '/(^[^"]+")|("$)/',
                 '',
-                $_SERVER['HTTP_CONTENT_DISPOSITION']
+                $content_disposition
             )) : null;
         // Parse the Content-Range header, which has the following form:
         // Content-Range: bytes 0-524287/2000000
-        $content_range = isset($_SERVER['HTTP_CONTENT_RANGE']) ?
-            preg_split('/[^0-9]+/', $_SERVER['HTTP_CONTENT_RANGE']) : null;
+        $http_content_range = server_var('HTTP_CONTENT_RANGE');
+        $content_range = $http_content_range !== null ?
+            preg_split('/[^0-9]+/', $http_content_range) : null;
         $size =  $content_range ? $content_range[3] : null;
         $files = array();
         if ($upload && is_array($upload['tmp_name'])) {
@@ -772,9 +788,9 @@ class UploadHandler
                 $file_name ? $file_name : (isset($upload['name']) ?
                         $upload['name'] : null),
                 $size ? $size : (isset($upload['size']) ?
-                        $upload['size'] : $_SERVER['CONTENT_LENGTH']),
+                        $upload['size'] : server_var('CONTENT_LENGTH', 0)),
                 isset($upload['type']) ?
-                        $upload['type'] : $_SERVER['CONTENT_TYPE'],
+                        $upload['type'] : server_var('CONTENT_TYPE', ''),
                 isset($upload['error']) ? $upload['error'] : null,
                 null,
                 $content_range
@@ -790,7 +806,7 @@ class UploadHandler
     {
         $file_name = $this->get_file_name_param();
         $file_path = $this->get_upload_path($file_name);
-        $success = is_file($file_path) && $file_name[0] !== '.' && unlink($file_path);
+        $success = !empty($file_name) && is_file($file_path) && $file_name[0] !== '.' && unlink($file_path);
         if ($success) {
             foreach ($this->options['image_versions'] as $version => $options) {
                 if (!empty($version)) {

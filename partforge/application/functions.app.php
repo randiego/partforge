@@ -191,9 +191,10 @@ class LoginStatus {
     {
         $error_reporting = error_reporting(error_reporting() ^ E_NOTICE);  // we don't want to see the inevitable notice here
         $this->_logincookie = array();
-        if (!empty($_COOKIE[self::LOGINCOOKIE])) {
-            $unser = unserialize($_COOKIE[self::LOGINCOOKIE]);
-            if ($unser !== false) {
+        $login_cookie = cookie_var(self::LOGINCOOKIE);
+        if (!empty($login_cookie)) {
+            $unser = unserialize($login_cookie, array('allowed_classes' => false));
+            if (is_array($unser)) {
                 $this->_logincookie = $unser;
             }
         }
@@ -320,7 +321,7 @@ function logout_if_session_timed_out()
     $config = Zend_Registry::get('config');
     $last_page_fetch = isset($_SESSION['last_page_fetch_time']) ? $_SESSION['last_page_fetch_time'] : 0;
     $_SESSION['last_page_fetch_time'] = script_time();
-    $ignore_timeout = isset($_REQUEST['no_timeout']) && ($_REQUEST['no_timeout']==1);
+    $ignore_timeout = request_var('no_timeout')==1;
     $activity_timeout = ($_SESSION['account']->getRole()=='DataTerminal') ? $config->activity_timeout_terminal_user : $config->activity_timeout;
     if (LoginStatus::getInstance()->isValidUser() && (script_time() > $activity_timeout + $last_page_fetch) && !$ignore_timeout) {
         LoginStatus::getInstance()->setValidUser(false);
@@ -804,7 +805,7 @@ function format_application_id($application_id)
 function fetchPageBannerDiv()
 {
     $html = '';
-    $html .= isset($_GET['msgi']) ? '<div class="pageBannerDiv yellow">'.$_SESSION['msg'].'</div>' : (isset($_GET['msge']) ? '<div class="pageBannerDiv">'.$_SESSION['msg'].'</div>' : '');
+    $html .= get_var('msgi') !== null ? '<div class="pageBannerDiv yellow">'.$_SESSION['msg'].'</div>' : (get_var('msge') !== null ? '<div class="pageBannerDiv">'.$_SESSION['msg'].'</div>' : '');
     $banner_array = Zend_Registry::get('config')->banner_array->toArray();
     if (is_array($banner_array)) {
         foreach ($banner_array as $banner_html) {

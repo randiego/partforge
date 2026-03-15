@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2021 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2026 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -89,7 +89,7 @@ class CustomControllerAclManager extends Zend_Controller_Plugin_Abstract
             if ($login_status->isValidUser()) {
                 // this is where we should silently declaire an error since we are trying to go someplace invalid
                 $msg = 'User: '.$_SESSION['account']->login_id."\r\n".
-                       'Request URI: '.$_SERVER['REQUEST_URI']."\r\n";
+                       'Request URI: '.server_var('REQUEST_URI', '')."\r\n";
                 logerror("Invalid Page Fetch Attempt:\r\n".$msg);
                 $_SESSION['msg'] = 'Invalid Page Request';
                 spawnurl($_SESSION['account']->defaultLoginUrl(array('msge' => 1)));

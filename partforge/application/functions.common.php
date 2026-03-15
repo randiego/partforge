@@ -117,7 +117,32 @@ function generateRandomString($length = 32)
 
 function is_self_reference($url)
 {
-    return ($url == self_url().'?'.$_SERVER['QUERY_STRING']);
+    return ($url == self_url().'?'.server_var('QUERY_STRING', ''));
+}
+
+function get_var($key, $default = null)
+{
+    return isset($_GET[$key]) ? $_GET[$key] : $default;
+}
+
+function post_var($key, $default = null)
+{
+    return isset($_POST[$key]) ? $_POST[$key] : $default;
+}
+
+function request_var($key, $default = null)
+{
+    return isset($_REQUEST[$key]) ? $_REQUEST[$key] : $default;
+}
+
+function server_var($key, $default = null)
+{
+    return isset($_SERVER[$key]) ? $_SERVER[$key] : $default;
+}
+
+function cookie_var($key, $default = null)
+{
+    return isset($_COOKIE[$key]) ? $_COOKIE[$key] : $default;
 }
 
 /*
@@ -419,10 +444,10 @@ class UrlCallRegistry {
 function self_url($scheme = '', $host = '')
 {
     if (!$scheme) {
-        $scheme = isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS']=='on') ? 'https' : 'http';
+        $scheme = (server_var('HTTPS', '')=='on') ? 'https' : 'http';
     }
     if (!$host) {
-        $host = $_SERVER['HTTP_HOST'];
+        $host = server_var('HTTP_HOST', '');
     }
 
     $request = Zend_Controller_Front::getInstance()->getRequest();
