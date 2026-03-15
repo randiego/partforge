@@ -47,7 +47,7 @@ class DBTableRowComment extends DBTableRow {
         $can_edit = false;
         $can_deleteblocked = false;
         $can_delete = false;
-        $inside_grace_period = strtotime($comment_added) + $config->delete_grace_in_sec > script_time();
+        $inside_grace_period = strtotime((string) $comment_added) + $config->delete_grace_in_sec > script_time();
         if (($_SESSION['account']->getRole() == 'Admin')) {
             $can_edit = true;
 

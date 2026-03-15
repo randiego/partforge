@@ -69,7 +69,7 @@ class MaintenanceTaskRunner {
             $interval = $scheduled_task['interval'];
             $run = false;
             if (isset($task_log[$name])) {
-                $last_run = strtotime($task_log[$name]['tl_last_run']);
+                $last_run = strtotime((string) $task_log[$name]['tl_last_run']);
                 if (script_time() - $last_run > $interval) {
                     $run = true;
                 }

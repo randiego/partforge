@@ -43,7 +43,7 @@ class DBTableRowWhatsNewUser extends DBTableRow {
         $show = false;
         $update_count = !LoginStatus::getInstance()->returnLoginExists();
         // this makes the window show only between the date_added (one day earlier actually) and the expiration.
-        if ((script_time() < strtotime($date_added) + 3600*24*$expires_in_day) && (strtotime($date_added) > strtotime($_SESSION['account']->account_created)) && (script_time() > strtotime($date_added) - 24*3600)) {
+        if ((script_time() < strtotime((string) $date_added) + 3600*24*$expires_in_day) && (strtotime((string) $date_added) > strtotime((string) $_SESSION['account']->account_created)) && (script_time() > strtotime((string) $date_added) - 24*3600)) {
             $Tip = new self();
             if ($Tip->getRecordByKeyAndUser($key, $_SESSION['account']->user_id)) {
                 if (($Tip->view_count <= $max_shows) && !$Tip->hide) {

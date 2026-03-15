@@ -152,8 +152,8 @@ class ReportDataCommentListView extends ReportDataWithCategory {
         list($comment_html,$dummy) = EventStream::textToHtmlWithEmbeddedCodes($record['comment_text'], $navigator, 'ET_COM', false, false);
         $detail_out['comment_text'] = '<div class="excerpt" style="display: block; width:400px; max-width:400px;">'.$comment_html.'</div>';
 
-        $detail_out['comment_added'] = empty($record['comment_added']) ? '' : date('M j, Y G:i', strtotime($record['comment_added']));
-        $detail_out['procedure_date'] = (empty($record['procedure_date']) || !$record['is_user_procedure']) ? '' : linkify( $edit_url, date('M j, Y G:i', strtotime($record['procedure_date'])), 'View');
+        $detail_out['comment_added'] = empty($record['comment_added']) ? '' : date('M j, Y G:i', strtotime((string) $record['comment_added']));
+        $detail_out['procedure_date'] = (empty($record['procedure_date']) || !$record['is_user_procedure']) ? '' : linkify( $edit_url, date('M j, Y G:i', strtotime((string) $record['procedure_date'])), 'View');
 
 
         if ($record['documents_packed']) {
@@ -165,7 +165,7 @@ class ReportDataCommentListView extends ReportDataWithCategory {
         }
         $detail_out['documents_packed'] = $documents_html;
         $detail_out['tr_class'] .= DBTableRow::wasItemTouchedRecently('itemversion'.$record['typeobject_id'], $record['cached_current_itemversion_id']) ? ' '.$this->last_select_class : '';
-        $recently_changed_row = script_time() - strtotime($record['last_change_date']) < $this->_recent_row_age;
+        $recently_changed_row = script_time() - strtotime((string) $record['last_change_date']) < $this->_recent_row_age;
         if ($recently_changed_row) {
             $detail_out['tr_class'] .= ' recently_changed_row';
         }

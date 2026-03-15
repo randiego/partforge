@@ -193,7 +193,11 @@ class LoginStatus {
         $this->_logincookie = array();
         $login_cookie = cookie_var(self::LOGINCOOKIE);
         if (!empty($login_cookie)) {
-            $unser = unserialize($login_cookie, array('allowed_classes' => false));
+            set_error_handler(function ($severity, $message) {
+                return (strpos($message, 'unserialize()') !== false);
+            }, E_WARNING);
+            $unser = unserialize((string) $login_cookie, array('allowed_classes' => false));
+            restore_error_handler();
             if (is_array($unser)) {
                 $this->_logincookie = $unser;
             }
@@ -275,7 +279,7 @@ function date_compare($a, $b)
     if ($a->$DATEFIELD == $b->$DATEFIELD) {
         return 0;
     }
-    return (strtotime($a->$DATEFIELD) < strtotime($b->$DATEFIELD)) ? -1 : 1;
+    return (strtotime((string) $a->$DATEFIELD) < strtotime((string) $b->$DATEFIELD)) ? -1 : 1;
 }
 
 function sort_by_date_property(&$array, $fieldname)
@@ -308,7 +312,7 @@ function fetch_date_text($date_in, $useparens = true, $showtime = false)
     }
     $today = date($fmt, script_time());
     $yesterday = date($fmt, script_time()-24*3600);
-    $date_text = date($fmt, strtotime($date_in));
+    $date_text = date($fmt, strtotime((string) $date_in));
     if ($useparens) {
         $date_text .= ($date_text==$today) ? ' (today)' : '';
         $date_text .= ($date_text==$yesterday) ? ' (yesterday)' : '';
@@ -794,7 +798,7 @@ function fetch_edit_page($title, $html)
 
 function format_date_MjY($str, $empty_text = '')
 {
-    return $str ? date("M j, Y", strtotime($str)) : $empty_text;
+    return $str ? date("M j, Y", strtotime((string) $str)) : $empty_text;
 }
 
 function format_application_id($application_id)
@@ -967,7 +971,7 @@ function fetch_event_log_header_html($clear_url)
         $html_msg .= '<div id="eventlog"><h1>Notifications from Background Processing</h1>
             <p><ul>';
         foreach ($records as $record) {
-            $html_msg .= '<li><span>'.date('M j, Y', strtotime($record['event_log_date_added'])).':</span>'.text_to_unwrappedhtml($record['event_log_text']).'</li>';
+            $html_msg .= '<li><span>'.date('M j, Y', strtotime((string) $record['event_log_date_added'])).':</span>'.text_to_unwrappedhtml($record['event_log_text']).'</li>';
         }
         $html_msg .= '</ul></p><div>'.linkify($clear_url, 'Clear Messages', 'Clear this list of log messages').'</div></div>';
     }

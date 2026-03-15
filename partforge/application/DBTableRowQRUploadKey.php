@@ -42,7 +42,7 @@ class DBTableRowQRUploadKey extends DBTableRow {
 
     public function timeElapsed()
     {
-        return isset($this->created_on) ? script_time() - strtotime($this->created_on) : null;
+        return isset($this->created_on) ? script_time() - strtotime((string) $this->created_on) : null;
     }
 
     /**

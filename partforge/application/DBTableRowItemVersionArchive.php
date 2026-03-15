@@ -94,7 +94,7 @@ class DBTableRowItemVersionArchive extends DBTableRow {
                 if (trim($description_html)!='') {
                     $desc_arr[] = $description_html;
                 }
-                if (strtotime($ItemVersionCurr->effective_date)!=strtotime($ItemVersionArc->effective_date)) {
+                if (strtotime((string) $ItemVersionCurr->effective_date)!=strtotime((string) $ItemVersionArc->effective_date)) {
                     $desc_arr[] = 'Effective Date changed from '.$ItemVersionArc->formatPrintField('effective_date').' to '.$ItemVersionCurr->formatPrintField('effective_date');
                 }
                 DbSchema::getInstance()->mysqlQuery("UPDATE itemversionarchive SET changes_html='".addslashes(implode(', ', $desc_arr))."' WHERE itemversionarchive_id='".$arc_record['itemversionarchive_id']."'");

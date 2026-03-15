@@ -181,7 +181,7 @@ class DBTableRowSendMessage extends DBTableRow {
                                 <td style="font-family: Arial, Helvetica, sans-serif;">
                                     <p style="font-weight: bold; font-size: 15px; color: #01317E; margin: 0px; padding: 0px;">
                                     '.TextToHtml(strtoupper(DBTableRowUser::getFullName($Comment->user_id))).'</p>
-                                    <p style="margin: 0px; padding: 0px; color: #777; font-weight: bold; font-size: 11px;">'.time_to_bulletdate(strtotime($Comment->comment_added)).'</p>
+                                    <p style="margin: 0px; padding: 0px; color: #777; font-weight: bold; font-size: 11px;">'.time_to_bulletdate(strtotime((string) $Comment->comment_added)).'</p>
                                 </td>
                             </tr>
                         </table>
@@ -260,7 +260,7 @@ class DBTableRowSendMessage extends DBTableRow {
             foreach ($recipients as $recipient) {
                 $recipient_names[] = TextToHtml(DBTableRowUser::concatNames($recipient).' ('.$recipient['login_id'].')');
             }
-            $row = array('sent_on' => time_to_bulletdate(strtotime($record['sent_on']), false), 'from' => TextToHtml(strtoupper(DBTableRowUser::concatNames($record))), 'to' => $recipient_names);
+            $row = array('sent_on' => time_to_bulletdate(strtotime((string) $record['sent_on']), false), 'from' => TextToHtml(strtoupper(DBTableRowUser::concatNames($record))), 'to' => $recipient_names);
 
             $out[] = $row;
         }

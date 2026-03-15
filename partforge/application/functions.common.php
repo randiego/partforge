@@ -498,7 +498,7 @@ function spawnurl($url)
 
 function is_valid_datetime($str)
 {
-    return !is_null($str) && !((strtotime($str)==-1) || (strtotime($str)===false));
+    return !is_null($str) && !((strtotime((string) $str)==-1) || (strtotime((string) $str)===false));
 }
 
 function check_valid_nonnegative_number_params($fieldname, $param, &$errormsg)

@@ -27,14 +27,14 @@ function eventstream_cmp($a, $b)
 {
     $typeord = array('ET_CHG'=>1, 'ET_PARTREF' => 2, 'ET_PROCREF' => 3, 'ET_COM' => 4);
     $result = 0;
-    if (strtotime($a['effective_date']) < strtotime($b['effective_date'])) {
+    if (strtotime((string) $a['effective_date']) < strtotime((string) $b['effective_date'])) {
         $result = -1;
-    } elseif (strtotime($a['effective_date']) > strtotime($b['effective_date'])) {
+    } elseif (strtotime((string) $a['effective_date']) > strtotime((string) $b['effective_date'])) {
         $result = 1;
     } else {
-        if (strtotime($a['record_created']) < strtotime($b['record_created'])) {
+        if (strtotime((string) $a['record_created']) < strtotime((string) $b['record_created'])) {
             $result = -1;
-        } elseif (strtotime($a['record_created']) > strtotime($b['record_created'])) {
+        } elseif (strtotime((string) $a['record_created']) > strtotime((string) $b['record_created'])) {
             $result = 1;
         } else {
             if ($typeord[$a['event_type_id']] < $typeord[$b['event_type_id']]) {
@@ -148,7 +148,7 @@ class EventStream {
 
     public function getVersionRecords($end_date)
     {
-        $end_date_and_where = is_null($end_date) ? '' : " and (effective_date >= '".time_to_mysqldatetime(strtotime($end_date))."')";
+        $end_date_and_where = is_null($end_date) ? '' : " and (effective_date >= '".time_to_mysqldatetime(strtotime((string) $end_date))."')";
         $query = "SELECT *, (SELECT count(*) FROM itemversionarchive WHERE itemversionarchive.itemversion_id=itemversion.itemversion_id) as archive_count,
 		(SELECT min(original_record_created) FROM itemversionarchive WHERE itemversionarchive.itemversion_id=itemversion.itemversion_id) as oldest_record_created
 		FROM itemversion WHERE itemobject_id='{$this->_itemobject_id}' {$end_date_and_where} ORDER BY effective_date";
@@ -160,14 +160,14 @@ class EventStream {
         $count = 0;
 
         // version
-        $end_date_and_where = is_null($end_date) ? '' : " and (effective_date >= '".time_to_mysqldatetime(strtotime($end_date))."')";
+        $end_date_and_where = is_null($end_date) ? '' : " and (effective_date >= '".time_to_mysqldatetime(strtotime((string) $end_date))."')";
         $query = "SELECT count(*) as record_count FROM itemversion WHERE itemobject_id='{$this->_itemobject_id}' {$end_date_and_where}";
         $records = DbSchema::getInstance()->getRecords('', $query);
         $record = reset($records);
         $count += $record['record_count'];
 
         // get itemversion records that include us as components.  Include comments and documents as well.
-        $end_date_and_where = is_null($end_date) ? '' : " and (iv_them.effective_date >= '".time_to_mysqldatetime(strtotime($end_date))."')";
+        $end_date_and_where = is_null($end_date) ? '' : " and (iv_them.effective_date >= '".time_to_mysqldatetime(strtotime((string) $end_date))."')";
         $query = "SELECT count(*) as record_count FROM itemcomponent
 					LEFT JOIN itemversion AS iv_them ON iv_them.itemversion_id=itemcomponent.belongs_to_itemversion_id
 					WHERE itemcomponent.has_an_itemobject_id='{$this->_itemobject_id}' {$end_date_and_where}";
@@ -176,7 +176,7 @@ class EventStream {
         $count += $record['record_count'];
 
         // comments
-        $end_date_and_where = is_null($end_date) ? '' : " and (comment.comment_added >= '".time_to_mysqldatetime(strtotime($end_date))."')";
+        $end_date_and_where = is_null($end_date) ? '' : " and (comment.comment_added >= '".time_to_mysqldatetime(strtotime((string) $end_date))."')";
         $query = "SELECT count(*) as record_count FROM comment WHERE is_fieldcomment=0 and itemobject_id='{$this->_itemobject_id}' {$end_date_and_where}";
         $records = DbSchema::getInstance()->getRecords('', $query);
         $record = reset($records);
@@ -206,7 +206,7 @@ class EventStream {
             // get itemversion record
             $ItemVersion = DbSchema::getInstance()->getItemVersionCachedRecordById($itemversion_id);
             $fieldchanges = $ItemVersion->itemDifferencesFrom($PreviousItemVersion, false, true);
-            $datestr = date('M j, Y', strtotime($ItemVersion->effective_date));
+            $datestr = date('M j, Y', strtotime((string) $ItemVersion->effective_date));
             foreach ($fieldchanges as $fieldname => $value) {
                 if (!isset($out[$fieldname])) {
                     $out[$fieldname] = array(array($value,$itemversion_id, $ItemVersion->effective_date));
@@ -239,7 +239,7 @@ class EventStream {
         end($singlefieldhistory);     // which is the last element?
         $lastindex = key($singlefieldhistory);
         foreach ($singlefieldhistory as $index => $change) {
-            $fmtdate = linkify('#', date('M j, Y', strtotime($change[2])), "Scroll to Version", 'paren', "scrollRightSideToVersionId($change[1])");
+            $fmtdate = linkify('#', date('M j, Y', strtotime((string) $change[2])), "Scroll to Version", 'paren', "scrollRightSideToVersionId($change[1])");
             $formattedchange = ($index==$lastindex) && (substr($change[0], 0, 6)=='set to') ?  'last set '.$fmtdate : $change[0].' on '.$fmtdate;
             $html .= '<span class="paren"><br />'.$formattedchange.'</span>';
         }
@@ -257,7 +257,7 @@ class EventStream {
         /*
          * create array entries in the eventstream.  We start with all the versions of this item object.
          */
-        $end_date_and_where = is_null($end_date) ? '' : " and (effective_date >= '".time_to_mysqldatetime(strtotime($end_date))."')";
+        $end_date_and_where = is_null($end_date) ? '' : " and (effective_date >= '".time_to_mysqldatetime(strtotime((string) $end_date))."')";
         $query = "SELECT *, (SELECT count(*) FROM itemversionarchive WHERE itemversionarchive.itemversion_id=itemversion.itemversion_id) as archive_count,
 				(SELECT min(original_record_created) FROM itemversionarchive WHERE itemversionarchive.itemversion_id=itemversion.itemversion_id) as oldest_record_created
 				FROM itemversion WHERE itemobject_id='{$this->_itemobject_id}' {$end_date_and_where} ORDER BY effective_date";
@@ -314,7 +314,7 @@ class EventStream {
         */
 
         // get itemversion records that include us as components.  Include comments and documents as well.
-        $end_date_and_where = is_null($end_date) ? '' : " and (iv_them.effective_date >= '".time_to_mysqldatetime(strtotime($end_date))."')";
+        $end_date_and_where = is_null($end_date) ? '' : " and (iv_them.effective_date >= '".time_to_mysqldatetime(strtotime((string) $end_date))."')";
         $query = "
 
 				SELECT
@@ -354,7 +354,7 @@ class EventStream {
             $itemevent['this_itemversion_id'] = $itemversion_id;
             $itemevent['this_itemobject_id'] = $ItemVersion->itemobject_id;
             $itemevent['this_typeobject_id'] = $ItemVersion->tv__typeobject_id;
-            if ($ItemVersion->is_user_procedure && !$config->show_old_proc_version_in_eventstream && (strtotime($ItemVersion->io__cached_first_ver_date)!=strtotime($ItemVersion->effective_date))) {
+            if ($ItemVersion->is_user_procedure && !$config->show_old_proc_version_in_eventstream && (strtotime((string) $ItemVersion->io__cached_first_ver_date)!=strtotime((string) $ItemVersion->effective_date))) {
                 $itemevent['effective_date'] = $ItemVersion->io__cached_first_ver_date;
                 $itemevent['actual_effective_date'] = $ItemVersion->effective_date;
             } else {
@@ -384,7 +384,7 @@ class EventStream {
             // the 3rd || handles left over entries let through by the query when we want to remove older entries ($end_date not null)
             $hide_this_entry = (!$ItemVersion->isCurrentVersion() && $ItemVersion->is_user_procedure && !$config->show_old_proc_version_in_eventstream)
                                 || (!$ItemVersion->isCurrentVersion() && !$ItemVersion->is_user_procedure && !$config->show_old_part_version_in_eventstream)
-                                || (!is_null($end_date) && (strtotime( $itemevent['effective_date']) < strtotime($end_date) ));
+                                || (!is_null($end_date) && (strtotime((string) $itemevent['effective_date']) < strtotime((string) $end_date) ));
             if (!$hide_this_entry) {
                 $out[] = $arr;
             }
@@ -394,7 +394,7 @@ class EventStream {
 
 
         // add comments
-        $end_date_and_where = is_null($end_date) ? '' : " and (comment.comment_added >= '".time_to_mysqldatetime(strtotime($end_date))."')";
+        $end_date_and_where = is_null($end_date) ? '' : " and (comment.comment_added >= '".time_to_mysqldatetime(strtotime((string) $end_date))."')";
         $query = "
 
 				SELECT comment.*, (SELECT GROUP_CONCAT(
@@ -702,8 +702,8 @@ class EventStream {
     public static function isWeirdRecordCreatedDate($record)
     {
         $one_hour = 3600;
-        return (strtotime($record['record_created']) + $one_hour < strtotime($record['effective_date']))
-                        || (strtotime($record['record_created']) - 25*$one_hour > strtotime($record['effective_date']));
+        return (strtotime((string) $record['record_created']) + $one_hour < strtotime((string) $record['effective_date']))
+                        || (strtotime((string) $record['record_created']) - 25*$one_hour > strtotime((string) $record['effective_date']));
     }
 
     /**
@@ -730,7 +730,7 @@ class EventStream {
         }
 
         foreach ($lines as $line_idx => $line) {
-            $datetime = time_to_bulletdate(strtotime($line['effective_date']));
+            $datetime = time_to_bulletdate(strtotime((string) $line['effective_date']));
             $select_radio_html = '';
             $edit_buttons_html = '';
             $documents_html = '';
@@ -748,7 +748,7 @@ class EventStream {
                     $editing_msg = 'Edited '.linkify('#', ($line['archive_count']==1 ? 'Once' : $line['archive_count'].' Times'), 'show the changes made to this version...', 'unversioned_pop_link').'<div class="unversioned_pop_div" id="unversioned_pop_'.$this_itemversion_id.'" title="Unversioned Changes" style="display: none;"></div>';
                 } else if (self::isWeirdRecordCreatedDate($line)) {
                     // there are not changes, but we should at least say something about the odd date
-                    $editing_msg = 'Added: '.time_to_bulletdate(strtotime($line['record_created']), false);
+                    $editing_msg = 'Added: '.time_to_bulletdate(strtotime((string) $line['record_created']), false);
                 }
                 if ($editing_msg && empty($line['indented_component_name'])) {
                     $alt_edit_date_html = '<div class="bd-dateline-edited">('.$editing_msg.')</div>';
@@ -764,7 +764,7 @@ class EventStream {
                     $documents_html = '';
                 }
                 if (self::isWeirdRecordCreatedDate($line)) {
-                    $alt_edit_date_html = '<div class="bd-dateline-edited">(Added: '.time_to_bulletdate(strtotime($line['record_created']), false).')</div>';
+                    $alt_edit_date_html = '<div class="bd-dateline-edited">(Added: '.time_to_bulletdate(strtotime((string) $line['record_created']), false).')</div>';
                 }
                 $edit_buttons_html = '<div class="bd-edit">'.implode('', $line['edit_links']).'</div>';
 
@@ -781,7 +781,7 @@ class EventStream {
                     $subcomments_html .= '<div class="bd-event-subcomments-container"><ul class="bd-event-subcomments">';
                     foreach (explode('|', (string) ($line['comments_packed'] ?? '')) as $subcomment) {
                         list($user_id,$comment_added,$comment_text,$subdocuments_packed) = explode('&', $subcomment);
-                        $subdatetime = time_to_bulletdate(strtotime($comment_added));
+                        $subdatetime = time_to_bulletdate(strtotime((string) $comment_added));
                         $comment_text = hextobin($comment_text); // we had packed this earlier for safety
                         list($comment_html,$comment_text_array) = EventStream::textToHtmlWithEmbeddedCodes($comment_text, $navigator, $line['event_type_id'], false, false);
                         $subcomments_html .= '<li class="bd-event-subcomment">
@@ -804,7 +804,7 @@ class EventStream {
                 // if this is a procedure
                 $editing_msg = '';
                 if (isset($line['actual_effective_date'])) {
-                    $editing_msg = 'Edit: '.time_to_bulletdate(strtotime($line['actual_effective_date']), false);
+                    $editing_msg = 'Edit: '.time_to_bulletdate(strtotime((string) $line['actual_effective_date']), false);
                 }
                 if ($editing_msg && empty($line['indented_component_name'])) {
                     $alt_edit_date_html = '<div class="bd-dateline-edited">('.$editing_msg.')</div>';
@@ -875,7 +875,7 @@ class EventStream {
         $event_type_to_class = array('ET_CHG' => 'bd-type-change', 'ET_PROCREF' => 'bd-type-link-proc', 'ET_PARTREF' => 'bd-type-link-part', 'ET_COM' => 'bd-type-comment');
         $layout_rows = array();
         foreach ($lines as $line) {
-            $datetime = time_to_bulletdate(strtotime($line['effective_date']), false);
+            $datetime = time_to_bulletdate(strtotime((string) $line['effective_date']), false);
             $documents_html = '';
             $procedure_disposition_html = '';
 
@@ -900,7 +900,7 @@ class EventStream {
                 // if this is a procedure
                 $editing_msg = '';
                 if (isset($line['actual_effective_date'])) {
-                    $editing_msg = 'Edit: '.time_to_bulletdate(strtotime($line['actual_effective_date']), false);
+                    $editing_msg = 'Edit: '.time_to_bulletdate(strtotime((string) $line['actual_effective_date']), false);
                 }
             }
 
@@ -1097,12 +1097,12 @@ class EventStream {
                         // if this is a procedure
                         $alt_edit_date_html = '';
                         if (isset($reference['actual_effective_date'])) {
-                            $alt_edit_date_html = '<div class="bd-dateline-edited">(Edit: '.time_to_bulletdate(strtotime($reference['actual_effective_date']), false).')</div>';
+                            $alt_edit_date_html = '<div class="bd-dateline-edited">(Edit: '.time_to_bulletdate(strtotime((string) $reference['actual_effective_date']), false).')</div>';
                         }
                         if ($showlinks) {
-                            $row['Date'] = linkify($item['url'], time_to_bulletdate(strtotime($reference['effective_date']), false)).$alt_edit_date_html;
+                            $row['Date'] = linkify($item['url'], time_to_bulletdate(strtotime((string) $reference['effective_date']), false)).$alt_edit_date_html;
                         } else {
-                            $row['Date'] = time_to_bulletdate(strtotime($reference['effective_date']), false).$alt_edit_date_html;
+                            $row['Date'] = time_to_bulletdate(strtotime((string) $reference['effective_date']), false).$alt_edit_date_html;
                         }
                         foreach ($item['features'] as $feature) {
                             $feat[] = $feature['name'].':&nbsp;<b>'.$feature['value'].'</b>';
@@ -1242,9 +1242,9 @@ class EventStream {
 
     static public function getEarliestDateOfHistory($ItemVersion, $months_param)
     {
-        $effective_date_exists = ($ItemVersion->effective_date && (strtotime($ItemVersion->effective_date) != -1));
+        $effective_date_exists = ($ItemVersion->effective_date && (strtotime((string) $ItemVersion->effective_date) != -1));
         $months_in_seconds = $months_param*30*24*3600;
-        return time_to_mysqldatetime($effective_date_exists ? strtotime($ItemVersion->effective_date) - $months_in_seconds : script_time() - $months_in_seconds);
+        return time_to_mysqldatetime($effective_date_exists ? strtotime((string) $ItemVersion->effective_date) - $months_in_seconds : script_time() - $months_in_seconds);
     }
 
 }

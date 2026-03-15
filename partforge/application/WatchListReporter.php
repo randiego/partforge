@@ -56,7 +56,7 @@ class WatchListReporter {
             // select change dates >= getPreference('lastFollowNotifyTimeDateAndHHMM') or if not exists, then for the last 24 hours.
             $last_time_str = DBTableRowUser::getUserPreference($user_id, 'lastFollowNotifyTimeDateAndHHMM');
             // in case there was no last time, or there is something wrong with that time or too long ago, fake one...
-            $start_time = is_null($last_time_str) || !strtotime($last_time_str) || (strtotime($last_time_str) < script_time() - 48*3600 ) ? script_time() - 24*3600 : strtotime($last_time_str);
+            $start_time = is_null($last_time_str) || !strtotime((string) $last_time_str) || (strtotime((string) $last_time_str) < script_time() - 48*3600 ) ? script_time() - 24*3600 : strtotime((string) $last_time_str);
             $end_time = script_time();
 
             // select all from changelog where in list.  (this query almost identical to just going to the Watching tab.)
@@ -232,7 +232,7 @@ class WatchListReporter {
 
             $procedure_date = '';
             if (!is_null($record['procedure_date'])) {
-                $procedure_date = linkify(formatAbsoluteLocatorUrl($loc_parts[0], $loc_parts[1]), date('M j, Y G:i', strtotime($record['procedure_date'])));
+                $procedure_date = linkify(formatAbsoluteLocatorUrl($loc_parts[0], $loc_parts[1]), date('M j, Y G:i', strtotime((string) $record['procedure_date'])));
             }
 
             $item_serial_number = '';
@@ -247,7 +247,7 @@ class WatchListReporter {
 
             $html .= '
 				<tr>
-				<td style="border: 1px solid #ccc;">'.date('D G:i', strtotime($record['changed_on'])).'</td>
+				<td style="border: 1px solid #ccc;">'.date('D G:i', strtotime((string) $record['changed_on'])).'</td>
 				<td style="border: 1px solid #ccc;">'.TextToHtml($record['full_name']).'</td>
 				<td style="border: 1px solid #ccc;"><div style="display: block; width:400px; max-width:400px;">'.TextToHtml($record['change_description']).'</div></td>
 				<td style="border: 1px solid #ccc;">'.$item_name.$item_disposition.'</td>

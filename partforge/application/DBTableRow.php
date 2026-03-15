@@ -257,7 +257,7 @@ class DBTableRow extends TableRow {
         }
 
         if (!isset($this->_fieldtypes['record_created']) || empty($this->record_created)
-             || (strtotime($this->record_created) + $config->delete_grace_in_sec > script_time()) || AdminSettings::getInstance()->delete_override) {
+             || (strtotime((string) $this->record_created) + $config->delete_grace_in_sec > script_time()) || AdminSettings::getInstance()->delete_override) {
             $actions['delete'] = array('buttonname' => 'Delete', 'privilege' => 'delete', 'confirm' => 'Are you sure you want to delete this?');
         } else {
             $actions['delete'] = array('buttonname' => 'Delete (Blocked)', 'privilege' => 'delete', 'alert' => 'This record is older than '.(integer)($config->delete_grace_in_sec/3600).' hours.  If you want to delete it, you must go to the Settings menu and enable Delete Override.');

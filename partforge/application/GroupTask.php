@@ -212,7 +212,7 @@ class GroupTask {
         $notified_users = DbSchema::getInstance()->getRecords('assigned_to_task_id', "SELECT * FROM assigned_to_task WHERE (group_task_id='{$this->record->group_task_id}') and (notified_on IS NOT NULL) ORDER BY notified_on desc");
         if (count($notified_users) > 0) {
             $notified_user = reset($notified_users);
-            if (strtotime($notified_user['notified_on']) < script_time() - $this->wait_for_each_person_sec) {
+            if (strtotime((string) $notified_user['notified_on']) < script_time() - $this->wait_for_each_person_sec) {
                 $waited_long_enough = true;
             }
         } else {
@@ -246,7 +246,7 @@ class GroupTask {
                     $Assigned = new DBTableRow('assigned_to_task');
                     $Assigned->assign($notified_user);
                     $last_notice = $Assigned->reminded_on ? $Assigned->reminded_on : $Assigned->notified_on;
-                    if (script_time() > strtotime($last_notice) + $this->wait_before_reminder_sec) {
+                    if (script_time() > strtotime((string) $last_notice) + $this->wait_before_reminder_sec) {
                         $Assigned->reminded_on = time_to_mysqldatetime(script_time());
                         $Assigned->save(array('reminded_on'));
                         $tmp = array();

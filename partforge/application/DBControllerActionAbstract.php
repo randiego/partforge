@@ -46,7 +46,7 @@ abstract class DBControllerActionAbstract extends Zend_Controller_Action
         // if cron is not running, we try to service it here.  A mutex of somesort here would be ideal.  If unlucky, two processes might run this at the same time.
         $last_task_run = getGlobal('last_task_run');
         $last_chance_task_interval = 600; // seconds be longer than standard cron interval servicing cron/servicetasks
-        if (( is_null($last_task_run) || script_time() > strtotime($last_task_run) + $last_chance_task_interval) && $config->fake_cron_service) {
+        if (( is_null($last_task_run) || script_time() > strtotime((string) $last_task_run) + $last_chance_task_interval) && $config->fake_cron_service) {
             // now we check to see if DB version is OK because we can't do much without the right DB version
             if (Zend_Registry::get('config')->databaseversion == getGlobal('databaseversion')) {
                 setGlobal('last_task_run', time_to_mysqldatetime(script_time()));

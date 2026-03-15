@@ -79,7 +79,7 @@ class ImportStrategyObjects {
 
         if ($fp = fopen($pcfile, "r")) {
             if (!feof($fp)) {
-                $this->input_column_names = fgetcsv($fp, $maxlinelen, $delimiter);
+                $this->input_column_names = fgetcsv($fp, $maxlinelen, $delimiter, '"', '\\');
                 if (is_array($this->input_column_names)) {
                     foreach ($this->input_column_names as $idx => $dn) {
                             $this->input_column_names[$idx] = trim(strtoupper($dn));
@@ -113,7 +113,7 @@ class ImportStrategyObjects {
                     if (!$serious_errors) {
                         $this->importInitialize();
                         while (!feof($fp)) {
-                            $data = fgetcsv($fp, $maxlinelen, $delimiter);
+                            $data = fgetcsv($fp, $maxlinelen, $delimiter, '"', '\\');
                             if (is_array($data)) {
                                 $record = array();
                                 foreach ($this->_col_num as $fieldname => $columnnum) {
@@ -406,7 +406,7 @@ class ImportStrategyObjects {
 
             if (count($errormsg) == 0) {
 
-                $same_effective_date = ($ItemVersion->user_id == $user_id) && ( (is_null($ItemVersion->effective_date) ? 0 : strtotime($ItemVersion->effective_date)) == (is_null($effective_date) ? 0 : strtotime($effective_date)));
+                $same_effective_date = ($ItemVersion->user_id == $user_id) && ( (is_null($ItemVersion->effective_date) ? 0 : strtotime((string) $ItemVersion->effective_date)) == (is_null($effective_date) ? 0 : strtotime((string) $effective_date)));
 
                 if ($user_id) {
                     $ItemVersion->user_id = $user_id;
@@ -429,7 +429,7 @@ class ImportStrategyObjects {
                 $has_changes = $ItemVersion->checkDifferencesFrom($PreviousItemVersion);
                 $PreviousItemVersion->effective_date = $hold_effective_date;
                 if ((count($errormsg) == 0) && !$simulate_only) {
-                    if (!$has_changes && strtotime($ItemVersion->effective_date)<strtotime($PreviousItemVersion->effective_date)) {
+                    if (!$has_changes && strtotime((string) $ItemVersion->effective_date)<strtotime((string) $PreviousItemVersion->effective_date)) {
                         $ItemVersion->save(array(), true, $ItemVersion->user_id);  // save the same version only with the earlier date.
                     } else if ($has_changes) {
                         if ($same_effective_date && !$made_change_to_set_field) {

@@ -823,7 +823,7 @@ class StructController extends DBControllerActionAbstract
             $tmpdircode = $Pdf->addTemporaryStorage($dbtable->itemversion_id);
             $Pdf->dbtable = $dbtable;
             $Pdf->buildDocument($queryvars);
-            $filesuff = $dbtable->hasASerialNumber() ? $dbtable->item_serial_number : time_to_mysqldatetime(strtotime($dbtable->effective_date));
+            $filesuff = $dbtable->hasASerialNumber() ? $dbtable->item_serial_number : time_to_mysqldatetime(strtotime((string) $dbtable->effective_date));
             $Pdf->Output(make_filename_safe('ItemView_Nested_'.$dbtable->part_number.'_'.$filesuff).'.pdf', 'D');
             // Output destroys the object, so we need to do the following statically
             \App\ItemViewNestedPDF::deleteTemporaryStorage($tmpdircode);

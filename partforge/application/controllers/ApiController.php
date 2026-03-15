@@ -136,8 +136,8 @@ class ApiController extends Zend_Controller_Action
         $typeobject_id_set = isset($this->params['typeobject_id']) ? "('".implode("','", explode(',', addslashes($this->params['typeobject_id'])))."')" : null;
         $user_id_set = isset($this->params['user_id']) ? "('".implode("','", explode(',', addslashes($this->params['user_id'])))."')" : null;
         $login_id_set = isset($this->params['login_id']) ? "('".implode("','", explode(',', addslashes($this->params['login_id'])))."')" : null;
-        $from_time = isset($this->params['from']) ? strtotime($this->params['from']) : 0;
-        $to_time = isset($this->params['to']) ? strtotime($this->params['to']) : 0;
+        $from_time = isset($this->params['from']) ? strtotime((string) $this->params['from']) : 0;
+        $to_time = isset($this->params['to']) ? strtotime((string) $this->params['to']) : 0;
         $limit = isset($this->params['limit']) ? (is_numeric($this->params['limit']) ? addslashes($this->params['limit']) : null) : null;
         $change_code_set = null;
         if (isset($this->params['change_code'])) {

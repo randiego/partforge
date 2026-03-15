@@ -436,7 +436,7 @@ return false;
     public function canIEditMyOwnVersion($user_id, $proxy_user_id, $record_created_str)
     {
         $config = Zend_Registry::get('config');
-        $inside_grace_period = strtotime($record_created_str) + $config->delete_grace_in_sec > script_time();
+        $inside_grace_period = strtotime((string) $record_created_str) + $config->delete_grace_in_sec > script_time();
         $can_edit = false;
         if ((Zend_Registry::get('customAcl')->isAllowed($this->getRole(), 'table:itemversion', 'edit')
                 && ($this->user_id == $user_id) && $inside_grace_period)) {

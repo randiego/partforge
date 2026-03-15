@@ -209,10 +209,10 @@ class ReportDataChangeLog extends ReportDataWithCategory {
         }
         $detail_out['change_code_name'] = '<div style="display: block; width:400px; max-width:400px;">'.$detail_out['change_code_name'].'</div>';
 
-        $detail_out['changed_on'] = empty($record['changed_on']) ? '' : date('M j, Y G:i', strtotime($record['changed_on']));
+        $detail_out['changed_on'] = empty($record['changed_on']) ? '' : date('M j, Y G:i', strtotime((string) $record['changed_on']));
 
 
-        $detail_out['procedure_date'] = (empty($record['procedure_date']) || !$record['is_user_procedure']) ? '' : linkify( $edit_url, date('M j, Y G:i', strtotime($record['procedure_date'])), 'View');
+        $detail_out['procedure_date'] = (empty($record['procedure_date']) || !$record['is_user_procedure']) ? '' : linkify( $edit_url, date('M j, Y G:i', strtotime((string) $record['procedure_date'])), 'View');
         $detail_out['item_serial_number'] = (empty($record['item_serial_number']) || $record['is_user_procedure']) ? '' : linkify( $edit_url, $record['item_serial_number'], 'View');
 
         if ($record['locator_prefix']=='tv') {

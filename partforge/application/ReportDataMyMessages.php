@@ -130,7 +130,7 @@ class ReportDataMyMessages extends ReportDataWithCategory {
             $detail_out[$fieldname] = TextToHtml($record[$fieldname]);
         }
 
-        $detail_out['sent_on'] = empty($record['sent_on']) ? '' : date('M j, Y G:i', strtotime($record['sent_on']));
+        $detail_out['sent_on'] = empty($record['sent_on']) ? '' : date('M j, Y G:i', strtotime((string) $record['sent_on']));
         $detail_out['to_user_names'] = '<div class="excerpt" style="display: block; max-width:150px;">'.$record['to_user_names'].'</div>';
 
         $view_url = Zend_Controller_Front::getInstance()->getRequest()->getBaseUrl().$record['url'];

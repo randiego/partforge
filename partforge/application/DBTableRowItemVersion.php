@@ -210,9 +210,9 @@ class DBTableRowItemVersion extends DBTableRow {
         $is_null_str = (($var==='') || is_null($var));
         $type = isset($fieldtype['type']) ? $fieldtype['type'] : '';
         if ($type == 'datetime') {
-            $lit = !$is_null_str ? time_to_mysqldatetime(strtotime($var)) : null;
+            $lit = !$is_null_str ? time_to_mysqldatetime(strtotime((string) $var)) : null;
         } else if ($type == 'date') {
-            $lit = !$is_null_str ? time_to_mysqldate(strtotime($var)) : null;
+            $lit = !$is_null_str ? time_to_mysqldate(strtotime((string) $var)) : null;
         } else if ($type == 'int') {
             $lit = !$is_null_str ? (is_numeric($var) ? round($var) : $var) : null;
         } else if (in_array($type, array('float','calculated'))) {
@@ -406,7 +406,7 @@ class DBTableRowItemVersion extends DBTableRow {
 					");
             if (!empty($records)) {
                 $time = $records[0]['max_date'];
-                return strtotime($time);
+                return strtotime((string) $time);
             }
         }
         return $latest_time;
@@ -419,7 +419,7 @@ class DBTableRowItemVersion extends DBTableRow {
     public function ensureEffectiveDateValid()
     {
         $latest_component_date = $this->getLatestOfComponentCreatedDates();
-        if ($this->effective_date && (strtotime($this->effective_date) != -1) && $latest_component_date && ($latest_component_date > strtotime($this->effective_date))) {
+        if ($this->effective_date && (strtotime((string) $this->effective_date) != -1) && $latest_component_date && ($latest_component_date > strtotime((string) $this->effective_date))) {
             $this->effective_date = date("m/d/Y H:i", $latest_component_date);
         }
     }
@@ -435,7 +435,7 @@ class DBTableRowItemVersion extends DBTableRow {
         list($this_item_data,$fieldnames_converted)     = $this->propertyFieldsToItemData();
         list($compare_item_data,$fieldnames_converted)  = $CompareItem->propertyFieldsToItemData();
 
-        if ( ((is_null($this->effective_date) ? 0 : strtotime($this->effective_date))!=(is_null($CompareItem->effective_date) ? 0 : strtotime($CompareItem->effective_date))) 
+        if ( ((is_null($this->effective_date) ? 0 : strtotime((string) $this->effective_date))!=(is_null($CompareItem->effective_date) ? 0 : strtotime((string) $CompareItem->effective_date))) 
             || ($this->partnumber_alias!=$CompareItem->partnumber_alias) || ($this->item_serial_number!=$CompareItem->item_serial_number) || ($this->disposition!=$CompareItem->disposition) || ($this_item_data!=$compare_item_data)
             || ($this->typeversion_id!=$CompareItem->typeversion_id)
             || (count($this->getCurrentlySetComponentValues())!=count($CompareItem->getCurrentlySetComponentValues()))
@@ -488,13 +488,13 @@ class DBTableRowItemVersion extends DBTableRow {
             $description_html = $arc_record['changes_html'];
             if ($is_last_record) {
                 $original_entry = array(
-                        'date' => time_to_bulletdate(strtotime($arc_record['original_record_created']), false),
+                        'date' => time_to_bulletdate(strtotime((string) $arc_record['original_record_created']), false),
                         'name' => TextToHtml(strtoupper(DBTableRowUser::getFullName($arc_record['cached_user_id']))),
                         'differences' => 'New Version',
                 );
             }
             $out[] = array(
-                    'date' => time_to_bulletdate(strtotime($curr_record_created), false),
+                    'date' => time_to_bulletdate(strtotime((string) $curr_record_created), false),
                     'name' => TextToHtml(strtoupper(DBTableRowUser::getFullName($curr_user_id))),
                     'differences' => $description_html,
                     );
@@ -1097,7 +1097,7 @@ class DBTableRowItemVersion extends DBTableRow {
      */
     static public function getRecordsBySerialNumbers($serial_number, $typeversion_id, $effective_date = null)
     {
-        $date_where = is_null($effective_date) ? '(1=1)' : "(aa_iv.effective_date<='".time_to_mysqldatetime(strtotime($effective_date))."')";
+        $date_where = is_null($effective_date) ? '(1=1)' : "(aa_iv.effective_date<='".time_to_mysqldatetime(strtotime((string) $effective_date))."')";
         $records = DbSchema::getInstance()->getRecords('',
                 "SELECT cc_iv.*
 		FROM itemversion cc_iv
@@ -1173,7 +1173,7 @@ class DBTableRowItemVersion extends DBTableRow {
         				WHERE (itemobject.itemobject_id='{$this->itemobject_id}') LIMIT 1");
             if (count($records)>0) {
                 $record = reset($records);
-                if (!is_null($this->effective_date) && !is_null($record['current_effective_date']) && (strtotime($this->effective_date) <strtotime($record['current_effective_date']))
+                if (!is_null($this->effective_date) && !is_null($record['current_effective_date']) && (strtotime((string) $this->effective_date) <strtotime((string) $record['current_effective_date']))
                         && ($this->itemversion_id != $record['itemversion_id'])) {
                     $saving_an_older_version = true;
                 }
@@ -1214,7 +1214,7 @@ class DBTableRowItemVersion extends DBTableRow {
     public function existsDuplicateEffectiveDate($effective_date)
     {
 
-        $effective_date = time_to_mysqldatetime(strtotime($effective_date));
+        $effective_date = time_to_mysqldatetime(strtotime((string) $effective_date));
         $records = $this->_dbschema->getRecords('', "
         			SELECT other_iv.itemversion_id
         			FROM itemversion as other_iv
@@ -1364,7 +1364,7 @@ class DBTableRowItemVersion extends DBTableRow {
 
         // check to make sure we are not saving a duplicate effective date
         if (in_array('effective_date', $fieldnames)) {
-            if ($this->effective_date && (strtotime($this->effective_date) != -1) && $this->existsDuplicateEffectiveDate($this->effective_date)) {
+            if ($this->effective_date && (strtotime((string) $this->effective_date) != -1) && $this->existsDuplicateEffectiveDate($this->effective_date)) {
                 $errormsg['effective_date'] = 'The effective date ('.$this->effective_date.') is exactly the same as another exsting version.  You must use a different date (even if only 1 minute different).';
                 unset($fieldnames[array_search('effective_date', $fieldnames)]);
             }
@@ -1795,7 +1795,7 @@ class DBTableRowItemVersion extends DBTableRow {
     {
         $the_itemversion_id = null;
         if (!is_null($effective_date)) {
-            $effective_date = time_to_mysqldatetime(strtotime($effective_date));
+            $effective_date = time_to_mysqldatetime(strtotime((string) $effective_date));
             $records = DbSchema::getInstance()->getRecords('', "SELECT itemversion_id from itemversion
        					WHERE itemobject_id='{$itemobject_id}'
        					and effective_date=(select MAX(effective_date) from itemversion where itemobject_id='{$itemobject_id}' and effective_date<='{$effective_date}')
@@ -1903,7 +1903,7 @@ class DBTableRowItemVersion extends DBTableRow {
 
     public function shortName()
     {
-        return $this->hasASerialNumber() ?  $this->item_serial_number : date('m/d/Y H:i', strtotime($this->effective_date));
+        return $this->hasASerialNumber() ?  $this->item_serial_number : date('m/d/Y H:i', strtotime((string) $this->effective_date));
     }
 
     /**
@@ -1947,7 +1947,7 @@ class DBTableRowItemVersion extends DBTableRow {
              *  Finally we want to add in the currently set itemversion_id to make sure we have that covered.
          */
         $fieldtype = $this->getFieldType($fieldname);
-        $effective_date = is_valid_datetime($effective_date) ?  time_to_mysqldatetime(strtotime($effective_date)) : null;
+        $effective_date = is_valid_datetime($effective_date) ?  time_to_mysqldatetime(strtotime((string) $effective_date)) : null;
 
         /*
              * Gets all itemversion records with effective dates before $effective_date and matching the
@@ -2005,7 +2005,7 @@ class DBTableRowItemVersion extends DBTableRow {
             $type_desc = $show_types && (count($fieldtype['can_have_typeobject_id']) > 1) ? ' ['.$record['part_description'].']' : '';
             if ($record['is_user_procedure']) {
                 if (($record['self_count'] > 0) || !$only_self_ref_proc) {
-                    $out[$record['itemobject_id']] = date("m/d/Y H:i", strtotime($record['effective_date'])).$type_desc.($record['disposition'] ? ' ('.$record['disposition'].')' : '');
+                    $out[$record['itemobject_id']] = date("m/d/Y H:i", strtotime((string) $record['effective_date'])).$type_desc.($record['disposition'] ? ' ('.$record['disposition'].')' : '');
                 }
             } else {
                 $used_on_arr = $record['used_on_io'] ? explode(';', $record['used_on_io']) : array();
@@ -2350,20 +2350,20 @@ class DBTableRowItemVersion extends DBTableRow {
                     if ($value == '0000-00-00 00:00:00') {  // equivalent of null in mysql
                         $value = '';
                     }
-                    $current_effective_date_set = ($value && (strtotime($value) != -1));
+                    $current_effective_date_set = ($value && (strtotime((string) $value) != -1));
                     $latest_effective_date = $this->getLatestOfComponentCreatedDates();
 
                     $now_btn = !$value ? '&nbsp<a class="minibutton2" id="effectiveDateNow" title="insert current time">now</a>' : '';
                     $date_warn_html = '';
                     if ($latest_effective_date!=null) {
-                        if ($current_effective_date_set && ($latest_effective_date>strtotime($value))) {
+                        if ($current_effective_date_set && ($latest_effective_date>strtotime((string) $value))) {
                             $date_warn_html .= '<div style="margin-top:4px;"><span class="paren_red">Must be '.date("m/d/Y H:i", $latest_effective_date)." or later. Check Component Create Dates.</span></div>";
                         } else {
                             $date_warn_html .= '<div style="margin-top:4px;"><span class="paren">Must be '.date("m/d/Y H:i", $latest_effective_date)." or later</span></div>";
                         }
                     }
 
-                    return '<div><INPUT class="inputboxclass" TYPE="text" NAME="'.$fieldname.'" VALUE="'.($current_effective_date_set ? date('m/d/Y H:i', strtotime($value)) : $value).'" SIZE="20" MAXLENGTH="24"'.$attributes.'>'.$now_btn.'</div>'.$date_warn_html;
+                    return '<div><INPUT class="inputboxclass" TYPE="text" NAME="'.$fieldname.'" VALUE="'.($current_effective_date_set ? date('m/d/Y H:i', strtotime((string) $value)) : $value).'" SIZE="20" MAXLENGTH="24"'.$attributes.'>'.$now_btn.'</div>'.$date_warn_html;
                 } else {
                     return parent::formatInputTag($fieldname, $display_options);
                 }
@@ -2521,8 +2521,8 @@ class DBTableRowItemVersion extends DBTableRow {
     public function formatEffectiveDatePrintField($is_html)
     {
         $value = $this->effective_date;
-        $fmt_date = ($value && (strtotime($value) != -1)) ? date('M j, Y G:i', strtotime($value)) : $value;
-        $fmt_created = date('M j, Y G:i', strtotime($this->createdOnDate()));
+        $fmt_date = ($value && (strtotime((string) $value) != -1)) ? date('M j, Y G:i', strtotime((string) $value)) : $value;
+        $fmt_created = date('M j, Y G:i', strtotime((string) $this->createdOnDate()));
         $is_only_version = $fmt_date==$fmt_created;
         if ($is_html && $this->isCurrentVersion()) {
             if ($this->is_user_procedure) {
@@ -2654,7 +2654,7 @@ class DBTableRowItemVersion extends DBTableRow {
                     case 'disposition':
                         if ($is_html && $value) {
                             $arr = $this->getDispositionDetails();
-                            $last_changed_by_html = !empty($arr) ? '<br /><span style="font-style:italic;" class="nm">by '.TextToHtml(strtoupper(DBTableRowUser::concatNames($arr))).'</span><br /><span style="font-style:italic;" class="tm">'.date('M j, Y G:i', strtotime($arr['effective_date'])).'</span>' : '';
+                            $last_changed_by_html = !empty($arr) ? '<br /><span style="font-style:italic;" class="nm">by '.TextToHtml(strtoupper(DBTableRowUser::concatNames($arr))).'</span><br /><span style="font-style:italic;" class="tm">'.date('M j, Y G:i', strtotime((string) $arr['effective_date'])).'</span>' : '';
                             $out = '<div class="ds">'.self::renderDisposition($fieldtype, $value).$last_changed_by_html.'</div>';
                         } else {
                             $out = $value;
@@ -2675,10 +2675,10 @@ class DBTableRowItemVersion extends DBTableRow {
                         $TV->getRecordById($this->typeversion_id);
                         if ($is_html) {
                             $obs = $TV->isObsolete() ? '<div style="line-height:2.0em;"><span class="disposition Obsolete">Obsolete</span><div>' : '';
-                            $out = '<div class="pn">'.TextToHtml($this->part_number).'<br /><span class="tm">'.date('M j, Y G:i', strtotime($TV->effective_date)).'</span>'.$obs.'</div>';
+                            $out = '<div class="pn">'.TextToHtml($this->part_number).'<br /><span class="tm">'.date('M j, Y G:i', strtotime((string) $TV->effective_date)).'</span>'.$obs.'</div>';
                         } else {
                             $obs = $TV->isObsolete() ? ' [Obsolete]' : '';
-                            $out = $this->part_number.' ('.date('M j, Y G:i', strtotime($TV->effective_date)).')'.$obs;
+                            $out = $this->part_number.' ('.date('M j, Y G:i', strtotime((string) $TV->effective_date)).')'.$obs;
                         }
                         if ($is_html && Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'struct', 'partlistview') && ($this->_navigator instanceof UrlCallRegistry)) {
                             $jump_url = UrlCallRegistry::formatViewUrl('itemdefinitionview', 'struct', array('typeversion_id' => $this->typeversion_id, 'resetview' => 1));
@@ -2758,8 +2758,8 @@ class DBTableRowItemVersion extends DBTableRow {
 
         $can_deleteblocked = false;
         $can_delete = false;
-        $time = strtotime($record_created);
-        $inside_grace_period = strtotime($record_created) + $config->delete_grace_in_sec > script_time();
+        $time = strtotime((string) $record_created);
+        $inside_grace_period = strtotime((string) $record_created) + $config->delete_grace_in_sec > script_time();
         if (($_SESSION['account']->getRole() == 'Admin')) {
             if ($inside_grace_period) {
                 $can_delete = true;
@@ -2782,7 +2782,7 @@ class DBTableRowItemVersion extends DBTableRow {
         $allow_new_version = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'ui:itemedit', $is_a_procedure ? 'new_proc_version' : 'new_part_version');
         $allow_edit_version = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'ui:itemedit', $is_a_procedure ? 'edit_proc_version' : 'edit_part_version');
         $allowed_to_alter_old_versions = Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 'ui:itemedit', 'can_edit_old_versions');
-        $is_old_version = strtotime($record_created) < script_time() - Zend_Registry::get('config')->edit_grace_in_sec;
+        $is_old_version = strtotime((string) $record_created) < script_time() - Zend_Registry::get('config')->edit_grace_in_sec;
         $show_edit_version_button = ($allow_edit_version && (!$is_old_version || $allowed_to_alter_old_versions));
         if ($_SESSION['account']->canIEditMyOwnVersion($user_id, $proxy_user_id, $record_created)) {
             $show_edit_version_button = true;
@@ -2824,14 +2824,14 @@ class DBTableRowItemVersion extends DBTableRow {
      */
     public function lastChangedBy()
     {
-        if (!$this->io__cached_last_comment_date || (strtotime($this->io__cached_last_comment_date) <= strtotime($this->effective_date))) {
-            if (!$this->io__cached_last_ref_date || (strtotime($this->io__cached_last_ref_date) <= strtotime($this->effective_date))) {
+        if (!$this->io__cached_last_comment_date || (strtotime((string) $this->io__cached_last_comment_date) <= strtotime((string) $this->effective_date))) {
+            if (!$this->io__cached_last_ref_date || (strtotime((string) $this->io__cached_last_ref_date) <= strtotime((string) $this->effective_date))) {
                 return DBTableRowUser::getFullName($this->user_id);
             } else {
                 return $this->io__cached_last_ref_person;
             }
         } else {
-            if (!$this->io__cached_last_ref_date || (strtotime($this->io__cached_last_ref_date) <= strtotime($this->io__cached_last_comment_date))) {
+            if (!$this->io__cached_last_ref_date || (strtotime((string) $this->io__cached_last_ref_date) <= strtotime((string) $this->io__cached_last_comment_date))) {
                 return $this->io__cached_last_comment_person;
             } else {
                 return $this->io__cached_last_ref_person;
@@ -3077,9 +3077,9 @@ class DBTableRowItemVersion extends DBTableRow {
      */
     public function getTotalMonthsOfHistory()
     {
-        $effective_date_exists = ($this->effective_date && (strtotime($this->effective_date) != -1));
-        $most_recent_time = $effective_date_exists ? strtotime($this->effective_date) : script_time();
-        $create_time = strtotime($this->createdOnDate());
+        $effective_date_exists = ($this->effective_date && (strtotime((string) $this->effective_date) != -1));
+        $most_recent_time = $effective_date_exists ? strtotime((string) $this->effective_date) : script_time();
+        $create_time = strtotime((string) $this->createdOnDate());
         return ($most_recent_time - $create_time)/(30*24*3600);
     }
 

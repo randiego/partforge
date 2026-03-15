@@ -41,7 +41,7 @@ if (count($candidatetypes)>0) {
 				foreach($cantmoverecords as $cantmoverecord) {
 					$IV = new DBTableRowItemVersion();
 					$IV->getRecordById($cantmoverecord['itemversion_id']);
-					$items[] = linkify($IV->absoluteUrl(),$IV->getCoreDescription()).' ('.time_to_bulletdate(strtotime($IV->effective_date),false).')'; 
+					$items[] = linkify($IV->absoluteUrl(),$IV->getCoreDescription()).' ('.time_to_bulletdate(strtotime((string) $IV->effective_date),false).')'; 
 				}
 				$html .= '<p class="errorred">'.implode('<br /> ',$items).'</p>';
 			} else {
@@ -52,7 +52,7 @@ if (count($candidatetypes)>0) {
 				foreach($previewrecords as $previewrecord) {
 					$IV = new DBTableRowItemVersion();
 					$IV->getRecordById($previewrecord['itemversion_id']);
-					$link = linkify($IV->absoluteUrl(),$IV->getCoreDescription()).' ('.time_to_bulletdate(strtotime($IV->effective_date),false).')';
+					$link = linkify($IV->absoluteUrl(),$IV->getCoreDescription()).' ('.time_to_bulletdate(strtotime((string) $IV->effective_date),false).')';
 					if ($previewrecord['sourcecount']==1) {
 						$itemstomove[] = $link;
 					}

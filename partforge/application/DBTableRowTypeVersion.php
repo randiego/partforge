@@ -62,9 +62,9 @@ class DBTableRowTypeVersion extends DBTableRow {
     {
         $newtag = $this->isCurrentVersion() ? ', Current' : (($this->versionstatus=='D') ? ', Draft' : (($this->versionstatus=='R') ? ', Review' : ''));
         if (AdminSettings::getInstance()->use_any_typeversion_id) {
-            return self::formatPartNumberDescription($this->type_part_number).' ('.date('M j, Y G:i', strtotime($this->effective_date)).')'.$newtag;
+            return self::formatPartNumberDescription($this->type_part_number).' ('.date('M j, Y G:i', strtotime((string) $this->effective_date)).')'.$newtag;
         } else {
-            return date('M j, Y G:i', strtotime($this->effective_date)).$newtag;
+            return date('M j, Y G:i', strtotime((string) $this->effective_date)).$newtag;
         }
     }
 
@@ -240,7 +240,7 @@ class DBTableRowTypeVersion extends DBTableRow {
     {
         $the_typeversion_id = null;
         if (!is_null($effective_date)) {
-            $effective_date = time_to_mysqldatetime(strtotime($effective_date));
+            $effective_date = time_to_mysqldatetime(strtotime((string) $effective_date));
             $records = $this->_dbschema->getRecords('', "SELECT typeversion_id from typeversion
         				WHERE typeobject_id='".addslashes($typeobject_id)."'
         				and versionstatus='A' and effective_date=(select MAX(effective_date) from typeversion where typeobject_id='".addslashes($typeobject_id)."' and effective_date<='{$effective_date}')
@@ -1262,7 +1262,7 @@ class DBTableRowTypeVersion extends DBTableRow {
     {
         $can_deleteblocked = false;
         $can_delete = false;
-        $time = strtotime($this->record_created);
+        $time = strtotime((string) $this->record_created);
         $inside_grace_period = $time + Zend_Registry::get('config')->delete_grace_in_sec > script_time();
         $is_draft = $this->versionstatus=='D';
         if (($_SESSION['account']->getRole() == 'Admin')) {

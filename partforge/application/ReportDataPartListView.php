@@ -125,7 +125,7 @@ class ReportDataPartListView extends ReportDataWithCategory {
 			$detail_out[$fieldname] = isset($record[$fieldname]) ? TextToHtml($record[$fieldname]) : null;
 		}
 		
-		$detail_out['tv__record_modified'] = empty($record['tv__record_modified']) ? '' : date('M j, Y G:i',strtotime($record['tv__record_modified']));
+		$detail_out['tv__record_modified'] = empty($record['tv__record_modified']) ? '' : date('M j, Y G:i',strtotime((string) $record['tv__record_modified']));
 		
 		$list_url =  DBTableRowTypeVersion::getListViewAbsoluteUrl($record['tv__typeobject_id'],$_SESSION['account']->getPreference('chkShowProcMatrix'));
 		$detail_out['item_count'] = linkify($list_url,$record['item_count'],'List all items of this type');
@@ -152,7 +152,7 @@ class ReportDataPartListView extends ReportDataWithCategory {
 		}
 		
 		$detail_out['tr_class'] .= DBTableRow::wasItemTouchedRecently('typeversion', $record['tv__typeversion_id']) ? ' '.$this->last_select_class : '';
-		$recently_changed_row = script_time() - strtotime($record['tv__record_modified']) < $this->_recent_row_age;
+		$recently_changed_row = script_time() - strtotime((string) $record['tv__record_modified']) < $this->_recent_row_age;
 		if ($recently_changed_row) {
 			$detail_out['tr_class'] .= ' recently_changed_row';
 			$detail_out['td_class']['tv__record_modified'] = 'em';

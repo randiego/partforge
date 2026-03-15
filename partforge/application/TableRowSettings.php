@@ -74,7 +74,7 @@ class TableRowSettings extends TableRow {
     {
         $Obj = new self();
         $Obj->loadGlobals();
-        if ($Obj->banner_text && $Obj->banner_show_time && $Obj->banner_hide_time && (strtotime($Obj->banner_show_time) <= script_time()) && (strtotime($Obj->banner_hide_time) >= script_time())) {
+        if ($Obj->banner_text && $Obj->banner_show_time && $Obj->banner_hide_time && (strtotime((string) $Obj->banner_show_time) <= script_time()) && (strtotime((string) $Obj->banner_hide_time) >= script_time())) {
             return $Obj->banner_text;
         }
         return '';
@@ -86,7 +86,7 @@ class TableRowSettings extends TableRow {
         if (trim($this->banner_text)) {
             $this->validateFields(array('banner_text','banner_show_time','banner_hide_time'), $errormsg);
             if (count($errormsg)==0) {
-                if (strtotime($this->banner_show_time) > strtotime($this->banner_hide_time)) {
+                if (strtotime((string) $this->banner_show_time) > strtotime((string) $this->banner_hide_time)) {
                     $errormsg[] = 'Show time cannot be later than hide time.';
                 }
             }
@@ -98,14 +98,14 @@ class TableRowSettings extends TableRow {
     {
         $msg = array();
         if (trim($this->banner_text)) {
-            if (strtotime($this->banner_hide_time) < script_time()) {
+            if (strtotime((string) $this->banner_hide_time) < script_time()) {
                 $msg[] = 'Banner no longer showing.';
             }
-            if (strtotime($this->banner_show_time) > script_time()) {
-                $msg[] = 'Banner will be shown in '.time_difference_str(strtotime($this->banner_show_time) - script_time()).'.';
+            if (strtotime((string) $this->banner_show_time) > script_time()) {
+                $msg[] = 'Banner will be shown in '.time_difference_str(strtotime((string) $this->banner_show_time) - script_time()).'.';
             }
             if ($this->getBannerText()) {
-                $msg[] = 'Banner is showing for the next '.time_difference_str(strtotime($this->banner_hide_time) - script_time()).'.';
+                $msg[] = 'Banner is showing for the next '.time_difference_str(strtotime((string) $this->banner_hide_time) - script_time()).'.';
             }
         }
         return implode(' ', $msg);

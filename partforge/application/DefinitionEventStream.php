@@ -26,14 +26,14 @@
 function defeventstream_cmp($a, $b)
 {
     $typeord = array('ET_CHG'=>1, 'ET_PARTREF' => 2, 'ET_PROCREF' => 3, 'ET_COM' => 4);
-    if (strtotime($a['effective_date']) < strtotime($b['effective_date'])) {
+    if (strtotime((string) $a['effective_date']) < strtotime((string) $b['effective_date'])) {
         return -1;
-    } elseif (strtotime($a['effective_date']) > strtotime($b['effective_date'])) {
+    } elseif (strtotime((string) $a['effective_date']) > strtotime((string) $b['effective_date'])) {
         return 1;
     } else {
-        if (strtotime($a['record_created']) < strtotime($b['record_created'])) {
+        if (strtotime((string) $a['record_created']) < strtotime((string) $b['record_created'])) {
             return -1;
-        } elseif (strtotime($a['record_created']) > strtotime($b['record_created'])) {
+        } elseif (strtotime((string) $a['record_created']) > strtotime((string) $b['record_created'])) {
             return 1;
         } else {
             if ($typeord[$a['event_type_id']] < $typeord[$b['event_type_id']]) {
@@ -196,7 +196,7 @@ class DefinitionEventStream {
         $layout_rows = array();
 
         foreach ($lines as $line_idx => $line) {
-            $datetime = time_to_bulletdate(strtotime($line['effective_date']));
+            $datetime = time_to_bulletdate(strtotime((string) $line['effective_date']));
             $select_radio_html = '';
             $edit_buttons_html = '';
             $documents_html = '';
@@ -215,12 +215,12 @@ class DefinitionEventStream {
                 $edit_buttons_html = '<div class="bd-edit">'.implode('', $line['edit_links']).'</div>';
                 $one_hour = 3600;
                 // if entering a date in the future, that's weird.  If entering a date more than one day past, that's weird too.
-                $is_weird_record_modified_date = (strtotime($line['record_modified']) + $one_hour < strtotime($line['effective_date']))
-                     || (strtotime($line['record_modified']) - 25*$one_hour > strtotime($line['effective_date']));
+                $is_weird_record_modified_date = (strtotime((string) $line['record_modified']) + $one_hour < strtotime((string) $line['effective_date']))
+                     || (strtotime((string) $line['record_modified']) - 25*$one_hour > strtotime((string) $line['effective_date']));
                 $editing_msg = '';
                 if ($is_weird_record_modified_date) {
                     // there are not changes, but we should at least say something about the odd date
-                    $editing_msg = ''.time_to_bulletdate(strtotime($line['record_modified']), false);
+                    $editing_msg = ''.time_to_bulletdate(strtotime((string) $line['record_modified']), false);
                 }
                 if ($editing_msg) {
                     $alt_edit_date_html = '<div class="bd-dateline-edited">('.$editing_msg.')</div>';
@@ -243,7 +243,7 @@ class DefinitionEventStream {
                     $documents_html = '';
                 }
                 if (EventStream::isWeirdRecordCreatedDate($line)) {
-                    $alt_edit_date_html = '<div class="bd-dateline-edited">(Added: '.time_to_bulletdate(strtotime($line['record_created']), false).')</div>';
+                    $alt_edit_date_html = '<div class="bd-dateline-edited">(Added: '.time_to_bulletdate(strtotime((string) $line['record_created']), false).')</div>';
                 }
                 $edit_buttons_html = '<div class="bd-edit">'.implode('', $line['edit_links']).'</div>';
 
@@ -279,7 +279,7 @@ class DefinitionEventStream {
     {
         $layout_rows = array();
         foreach ($lines as $line) {
-            $datetime = time_to_bulletdate(strtotime($line['effective_date']), false);
+            $datetime = time_to_bulletdate(strtotime((string) $line['effective_date']), false);
             $documents_html = '';
             if ($line['event_type_id']=='ET_COM') {
                 if ($line['documents_packed']) {

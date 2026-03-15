@@ -307,7 +307,7 @@ foreach ($records as $record) {
     }
     $count = DBTableRowTypeVersion::getNumberOfItemsForTypeVersion($record['typeversion_id']);
     $counttxt = ($count==0 && $record['versionstatus']!='A') ? '' : ($count==1 ? ' ('.$count.' item)' : ' ('.$count.' items)');
-    $datetime = date('D', strtotime($record['effective_date'])).' '.date('M j, Y', strtotime($record['effective_date'])).' - '.date('G:i', strtotime($record['effective_date'])).$txt.$counttxt;
+    $datetime = date('D', strtotime((string) $record['effective_date'])).' '.date('M j, Y', strtotime((string) $record['effective_date'])).' - '.date('G:i', strtotime((string) $record['effective_date'])).$txt.$counttxt;
     $jump_url = $this->navigator->getCurrentViewUrl(null, null, array('typeversion_id' => $record['typeversion_id']));
     if ($record['typeversion_id']==$this->dbtable->typeversion_id) {
         $current_url = $jump_url;

@@ -348,7 +348,7 @@ class ItemViewPDF extends TCPDF {
                 foreach ($references as $reference) {
                     $feat = array();
                     foreach ($reference['event_description_array'] as $iv => $item) {
-                        $user_time = '<b>'.time_to_bulletdate(strtotime($reference['effective_date']), false).'</b>';
+                        $user_time = '<b>'.time_to_bulletdate(strtotime((string) $reference['effective_date']), false).'</b>';
                         foreach ($item['features'] as $feature) {
                             $feat[] = self::formatFeaturedFieldforPdf($feature['name'], $feature['value']);
                         }

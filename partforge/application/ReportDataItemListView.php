@@ -665,13 +665,13 @@ class ReportDataItemListView extends ReportDataWithCategory {
             $detail_out['used_on'] = implode(', ', $wu_links);
         }
 
-        $last_change_date_str = date('M j, Y G:i', strtotime($record['last_change_date']));
-        $first_ref_date_str = date('M j, Y G:i', strtotime($record['first_ref_date']));
+        $last_change_date_str = date('M j, Y G:i', strtotime((string) $record['last_change_date']));
+        $first_ref_date_str = date('M j, Y G:i', strtotime((string) $record['first_ref_date']));
         $detail_out['last_change_date'] = empty($record['last_change_date']) ? '' : $last_change_date_str;
         $detail_out['first_ref_date'] = empty($record['first_ref_date']) ? '' : ($this->is_user_procedure ? linkify($edit_url, $first_ref_date_str, 'View') : $first_ref_date_str);
 
         // used for the csv export of all versions
-        $detail_out['iv__effective_date'] = empty($record['iv__effective_date']) ? '' : date('M j, Y G:i', strtotime($record['iv__effective_date']));
+        $detail_out['iv__effective_date'] = empty($record['iv__effective_date']) ? '' : date('M j, Y G:i', strtotime((string) $record['iv__effective_date']));
 
         $record_is_not_selected_category = ($this->view_category!='*') && ($this->view_category!=$record['typeobject_id']);
 
@@ -736,7 +736,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
                     }
                     $matrix_query_params['itemobject_id'] = $proc_io;
                     $edit_url = $navigator->getCurrentViewUrl('itemview', 'struct', $matrix_query_params);
-                    $title = date('M j, Y G:i', strtotime($proc_effective_date)).' - '.(isset($this->fields[$key]['display']) ? $this->fields[$key]['display'] : '');
+                    $title = date('M j, Y G:i', strtotime((string) $proc_effective_date)).' - '.(isset($this->fields[$key]['display']) ? $this->fields[$key]['display'] : '');
                     $out[$key][] = linkify($edit_url, DBTableRowItemVersion::renderDisposition($this->dbtable->getFieldType('iv__disposition'), $proc_disposition, true, '<span class="disposition Black">No Disposition</span>'), $title);
                 }
             }
@@ -759,7 +759,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
         }
 
         $detail_out['tr_class'] .= DBTableRow::wasItemTouchedRecently('itemversion'.$record['typeobject_id'], $record['iv__itemversion_id']) ? ' '.$this->last_select_class : '';
-        $recently_changed_row = script_time() - strtotime($record['last_change_date']) < $this->_recent_row_age;
+        $recently_changed_row = script_time() - strtotime((string) $record['last_change_date']) < $this->_recent_row_age;
         if ($recently_changed_row) {
             $detail_out['tr_class'] .= ' recently_changed_row';
             $detail_out['td_class']['last_change_date'] = 'em';
@@ -797,7 +797,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
                 }
                 foreach ($comments_arr as $bare_idx => $subcomment) {
                     list($comment_id, $user_id, $comment_added, $comment_text, $subdocuments_packed) = explode('&', $subcomment);
-                    $subdatetime = time_to_bulletdate(strtotime($comment_added));
+                    $subdatetime = time_to_bulletdate(strtotime((string) $comment_added));
                     $comment_text = hextobin($comment_text); // we had packed this earlier for safety
                     list($comment_html,$comment_text_array) = EventStream::textToHtmlWithEmbeddedCodes($comment_text, $navigator, 'ET_COM', false, false);
                     if ($is_first) {

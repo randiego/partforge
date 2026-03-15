@@ -448,12 +448,12 @@ class TableRow {
             if ($value == '0000-00-00') {  // equivalent of null in mysql
                 $value = '';
             }
-                return '<INPUT class="inputboxclass jq_datepicker" TYPE="text" NAME="'.$fieldname.'" VALUE="'.(($value && (strtotime($value) != -1)) ? date('m/d/Y', strtotime($value)) : $value).'" SIZE="12" MAXLENGTH="20"'.$attributes.'>';
+                return '<INPUT class="inputboxclass jq_datepicker" TYPE="text" NAME="'.$fieldname.'" VALUE="'.(($value && (strtotime((string) $value) != -1)) ? date('m/d/Y', strtotime((string) $value)) : $value).'" SIZE="12" MAXLENGTH="20"'.$attributes.'>';
         } else if ($type == 'datetime') {
             if ($value == '0000-00-00 00:00:00') {  // equivalent of null in mysql
                 $value = '';
             }
-                return '<INPUT class="inputboxclass jq_datetimepicker" TYPE="text" NAME="'.$fieldname.'" VALUE="'.(($value && (strtotime($value) != -1)) ? date('m/d/Y H:i', strtotime($value)) : $value).'" SIZE="20" MAXLENGTH="24"'.$attributes.'>';
+                return '<INPUT class="inputboxclass jq_datetimepicker" TYPE="text" NAME="'.$fieldname.'" VALUE="'.(($value && (strtotime((string) $value) != -1)) ? date('m/d/Y H:i', strtotime((string) $value)) : $value).'" SIZE="20" MAXLENGTH="24"'.$attributes.'>';
         } else {
             if (in_array($type, array('float','calculated'))) {
                 $length = DEFAULT_FLOAT_WIDTH;
@@ -517,9 +517,9 @@ class TableRow {
         } else if ($type == 'boolean') { // a boolean
             return is_null($value) || ($value==='') ? '' : ($value ? 'Yes' : 'No');
         } else if ($type == 'datetime') {
-            return ($value && (strtotime($value) != -1)) ? date('m/d/Y G:i', strtotime($value)) : $value;
+            return ($value && (strtotime((string) $value) != -1)) ? date('m/d/Y G:i', strtotime((string) $value)) : $value;
         } else if ($type == 'date') {
-            return ($value && (strtotime($value) != -1)) ? date('m/d/Y', strtotime($value)) : $value;
+            return ($value && (strtotime((string) $value) != -1)) ? date('m/d/Y', strtotime((string) $value)) : $value;
         } else {
             // $value can have html embedded in it. If we're outputting to html we escape html so it is not active in the webpage.
             return $is_html ? nl2br(EventStream::embeddedLinksToHtmlTags(TextToHtml($value))) : $value;
@@ -578,7 +578,7 @@ class TableRow {
     {
         $value = $this->{$fieldname};
         if (($value!=='') && !is_null($value) && in_array($this->_fieldtypes[$fieldname]['type'], array('date','datetime'))) {
-            $value = strtotime($value);
+            $value = strtotime((string) $value);
         }
         // This creates a string version of the number than never has an e or E in it. The EvalMath function can't handle scientific notation.
         return is_numeric($value) ? number_format($value, 20, ".", "") : null;

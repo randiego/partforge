@@ -291,7 +291,7 @@ class DBTableRowItemObject extends DBTableRow {
         $records = DbSchema::getInstance()->getRecords('itemobject_id', $query);
         $expiration_date = script_time() - Zend_Registry::get('config')->validation_cache_max_age*24*3600;
         foreach ($records as $itemobject_id => $record) {
-            if ($record['validation_cache_is_valid'] && (!$always_recheck_errors) && $record['validated_on'] && (strtotime($record['validated_on']) > $expiration_date)) {
+            if ($record['validation_cache_is_valid'] && (!$always_recheck_errors) && $record['validated_on'] && (strtotime((string) $record['validated_on']) > $expiration_date)) {
                 $error_counts[$itemobject_id] = $record['cached_has_validation_errors'];
                 $depths[$itemobject_id] = $record['cached_depth'];
             } else {
@@ -349,7 +349,7 @@ class DBTableRowItemObject extends DBTableRow {
         setGlobal('validation_cache_records_revalidated', count($records));
         if (count($records) > 0) {
             $last_record = end($records);
-            $cache_age = (script_time() - strtotime($last_record['validated_on']))/24/3600;
+            $cache_age = (script_time() - strtotime((string) $last_record['validated_on']))/24/3600;
             setGlobal('validation_cache_age_days', $cache_age);
         }
         $itemobject_ids = array_keys($records);

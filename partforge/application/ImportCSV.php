@@ -75,7 +75,7 @@ class ImportCSV {
 
         if ($fp = fopen($pcfile, "r")) {
             if (!feof($fp)) {
-                $this->input_column_names = fgetcsv($fp, $maxlinelen, $delimiter);
+                $this->input_column_names = fgetcsv($fp, $maxlinelen, $delimiter, '"', '\\');
                 if (is_array($this->input_column_names)) {
                     foreach ($this->input_column_names as $idx => $dn) {
                             $this->input_column_names[$idx] = trim(strtoupper($dn));
@@ -109,7 +109,7 @@ class ImportCSV {
                     if (!$this->_fatal_errors) {
                         $this->importInitialize();
                         while (!feof($fp)) {
-                            $data = fgetcsv($fp, $maxlinelen, $delimiter);
+                            $data = fgetcsv($fp, $maxlinelen, $delimiter, '"', '\\');
                             if (is_array($data)) {
                                 $record = array();
                                 foreach ($this->_col_num as $fieldname => $columnnum) {

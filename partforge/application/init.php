@@ -103,7 +103,7 @@ if (!$config['db_params']['ro_username']) {
     $config['db_params']['ro_password'] = $config['db_params']['password'];
 }
 
-$script_time = (isset($config['fake_date']) && $config['fake_date']) ? strtotime($config['fake_date']) : time();
+$script_time = (isset($config['fake_date']) && $config['fake_date']) ? strtotime((string) $config['fake_date']) : time();
 Zend_Registry::set('script_time', $script_time);
 
 if ($config['lockout_all_users']) {

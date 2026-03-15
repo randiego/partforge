@@ -142,9 +142,9 @@ class ReportDataChangeSubscription extends ReportDataWithCategory {
         }
         $detail_out['change_code_name'] = isset($detail_out['change_code_name']) ? '<div style="display: block; width:400px; max-width:400px;">'.$detail_out['change_code_name'].'</div>' : '';
 
-        $detail_out['changed_on'] = empty($record['changed_on']) ? '' : date('M j, Y G:i', strtotime($record['changed_on']));
+        $detail_out['changed_on'] = empty($record['changed_on']) ? '' : date('M j, Y G:i', strtotime((string) $record['changed_on']));
 
-        $detail_out['procedure_date'] = !empty($record['procedure_date']) ? linkify( $edit_url, date('M j, Y G:i', strtotime($record['procedure_date'])), 'View') : ($record['is_user_procedure'] ? '*' : '');
+        $detail_out['procedure_date'] = !empty($record['procedure_date']) ? linkify( $edit_url, date('M j, Y G:i', strtotime((string) $record['procedure_date'])), 'View') : ($record['is_user_procedure'] ? '*' : '');
         $detail_out['item_serial_number'] = !empty($record['item_serial_number']) ? linkify( $edit_url, $record['item_serial_number'], 'View') : (!$record['is_user_procedure'] ? '*' : '');
 
         if ($record['locator_prefix']=='tv') {
