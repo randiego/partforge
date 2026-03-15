@@ -328,7 +328,7 @@ class SerialNumberWithSimplePrefix extends SerialNumberType {
 	public function validateEnteredSerialNumber($item_serial_number, &$errormsg) {
 		list($format, $check, $parse) = $this->convertToExpressions();
 		if (!empty($check)) {
-			$matchreturn = preg_match($check,$item_serial_number);
+			$matchreturn = is_null($item_serial_number) ? false : preg_match($check, $item_serial_number);
 			if ($matchreturn===false) {
 				$errormsg['item_serial_number'] = 'Something wrong with the serial number checker.';
 			} else if ($matchreturn===0) {

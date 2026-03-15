@@ -195,6 +195,7 @@ abstract class Zend_Service_Technorati_ResultSet implements SeekableIterator
      *
      * @return  int
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return $this->_currentIndex;

@@ -326,6 +326,7 @@ abstract class Zend_Pdf_Action extends Zend_Pdf_Target implements RecursiveItera
      *
      * @return Zend_Pdf_Action
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return current($this->next);
@@ -336,6 +337,7 @@ abstract class Zend_Pdf_Action extends Zend_Pdf_Target implements RecursiveItera
      *
      * @return integer
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return key($this->next);

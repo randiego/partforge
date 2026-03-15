@@ -106,6 +106,7 @@ class Zend_Service_Amazon_ResultSet implements SeekableIterator
      *
      * @return Zend_Service_Amazon_Item
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return new Zend_Service_Amazon_Item($this->_results->item($this->_currentIndex));
@@ -116,6 +117,7 @@ class Zend_Service_Amazon_ResultSet implements SeekableIterator
      *
      * @return int
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return $this->_currentIndex;

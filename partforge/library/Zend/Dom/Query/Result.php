@@ -144,6 +144,7 @@ class Zend_Dom_Query_Result implements Iterator,Countable
      *
      * @return DOMElement
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return $this->_nodeList->item($this->_position);
@@ -154,6 +155,7 @@ class Zend_Dom_Query_Result implements Iterator,Countable
      *
      * @return int
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return $this->_position;

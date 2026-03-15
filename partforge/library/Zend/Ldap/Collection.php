@@ -121,6 +121,7 @@ class Zend_Ldap_Collection implements Iterator, Countable
      * @return array
      * @throws Zend_Ldap_Exception
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         if (!array_key_exists($this->_currentNumber, $this->_cache))
@@ -148,6 +149,7 @@ class Zend_Ldap_Collection implements Iterator, Countable
      *
      * @return int
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return $this->_currentNumber;

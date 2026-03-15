@@ -141,6 +141,7 @@ class Zend_Ldap_Collection_Iterator_Default implements Zend_Ldap_Collection_Iter
      * @return array
      * @throws Zend_Ldap_Exception
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         if (!is_resource($this->_current) || !is_string($this->_currentDn)) return null;
@@ -167,6 +168,7 @@ class Zend_Ldap_Collection_Iterator_Default implements Zend_Ldap_Collection_Iter
      *
      * @return int
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return $this->_currentDn;

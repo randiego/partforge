@@ -120,6 +120,7 @@ class Zend_Mail_Storage_Folder implements RecursiveIterator
      *
      * @return string key/local name of current element
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return key($this->_folders);
@@ -130,6 +131,7 @@ class Zend_Mail_Storage_Folder implements RecursiveIterator
      *
      * @return Zend_Mail_Storage_Folder current folder
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return current($this->_folders);

@@ -315,6 +315,7 @@ class Zend_Tool_Project_Profile_Resource_Container implements RecursiveIterator,
      *
      * @return Zend_Tool_Project_Profile_Resource
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return current($this->_subResources);
@@ -325,6 +326,7 @@ class Zend_Tool_Project_Profile_Resource_Container implements RecursiveIterator,
      *
      * @return int
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return key($this->_subResources);

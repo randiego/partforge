@@ -431,6 +431,7 @@ class Zend_Dojo_Data implements ArrayAccess,Iterator,Countable
      * @param  string|int $offset
      * @return array
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         return $this->getItem($offset);
@@ -464,6 +465,7 @@ class Zend_Dojo_Data implements ArrayAccess,Iterator,Countable
      *
      * @return array
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return current($this->_items);
@@ -474,6 +476,7 @@ class Zend_Dojo_Data implements ArrayAccess,Iterator,Countable
      *
      * @return string|int
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return key($this->_items);

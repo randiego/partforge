@@ -863,7 +863,7 @@ class ReportDataItemListView extends ReportDataWithCategory {
 
         if ($this->_show_used_on) {
             $wu_links = array();
-            foreach (explode(';', $record['used_on_packed']) as $wu) {
+            foreach (is_null($record['used_on_packed']) ? array() : explode(';', $record['used_on_packed']) as $wu) {
                 $fields = explode(',', $wu);
                 if (count($fields)==4) {
                     list($wu_itemobject_id, $wu_hex_item_serial_number, $wu_partnumber_alias, $wu_hex_type_description) = $fields;

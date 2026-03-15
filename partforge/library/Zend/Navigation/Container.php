@@ -389,6 +389,7 @@ abstract class Zend_Navigation_Container implements RecursiveIterator, Countable
      * @return Zend_Navigation_Page       current page or null
      * @throws Zend_Navigation_Exception  if the index is invalid
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         $this->_sort();
@@ -412,6 +413,7 @@ abstract class Zend_Navigation_Container implements RecursiveIterator, Countable
      *
      * @return string  hash code of current page
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         $this->_sort();

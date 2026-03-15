@@ -71,6 +71,7 @@ class Zend_Ldap_Node_ChildrenIterator implements Iterator, Countable, RecursiveI
      *
      * @return Zend_Ldap_Node
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return current($this->_data);
@@ -82,6 +83,7 @@ class Zend_Ldap_Node_ChildrenIterator implements Iterator, Countable, RecursiveI
      *
      * @return string
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return key($this->_data);
@@ -152,6 +154,7 @@ class Zend_Ldap_Node_ChildrenIterator implements Iterator, Countable, RecursiveI
      * @param  string $rdn
      * @return Zend_Ldap_node
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($rdn)
     {
         if ($this->offsetExists($rdn)) {

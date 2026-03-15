@@ -990,6 +990,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
      *
      * @return Zend_Form_Element
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         $this->_sort();
@@ -1003,6 +1004,7 @@ class Zend_Form_DisplayGroup implements Iterator,Countable
      *
      * @return string
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         $this->_sort();

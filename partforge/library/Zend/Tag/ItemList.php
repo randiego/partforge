@@ -138,6 +138,7 @@ class Zend_Tag_ItemList implements Countable, SeekableIterator, ArrayAccess
      *
      * @return mixed
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return current($this->_items);
@@ -158,6 +159,7 @@ class Zend_Tag_ItemList implements Countable, SeekableIterator, ArrayAccess
      *
      * @return mixed
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return key($this->_items);
@@ -199,6 +201,7 @@ class Zend_Tag_ItemList implements Countable, SeekableIterator, ArrayAccess
      * @param  mixed $offset
      * @return Zend_Tag_Taggable
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset) {
         return $this->_items[$offset];
     }

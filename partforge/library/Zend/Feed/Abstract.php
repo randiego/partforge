@@ -192,6 +192,7 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
      *
      * @return mixed The current row, or null if no rows.
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return new $this->_entryClassName(
@@ -205,6 +206,7 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
      *
      * @return mixed The current row number (starts at 0), or NULL if no rows
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return $this->_entryIndex;

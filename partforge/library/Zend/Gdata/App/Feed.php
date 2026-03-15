@@ -149,6 +149,7 @@ class Zend_Gdata_App_Feed extends Zend_Gdata_App_FeedSourceParent
      *
      * @return mixed The current row, or null if no rows.
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return $this->_entry[$this->_entryIndex];
@@ -159,6 +160,7 @@ class Zend_Gdata_App_Feed extends Zend_Gdata_App_FeedSourceParent
      *
      * @return mixed The current row number (starts at 0), or NULL if no rows
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return $this->_entryIndex;
@@ -239,6 +241,7 @@ class Zend_Gdata_App_Feed extends Zend_Gdata_App_FeedSourceParent
      * @param int $key The index to get
      * @param Zend_Gdata_App_Entry $value The value to set
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($key)
     {
         if (array_key_exists($key, $this->_entry)) {

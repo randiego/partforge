@@ -220,6 +220,7 @@ class Zend_Server_Definition implements Countable, Iterator
      *
      * @return mixed
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         return current($this->_methods);
@@ -230,6 +231,7 @@ class Zend_Server_Definition implements Countable, Iterator
      *
      * @return int|string
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return key($this->_methods);

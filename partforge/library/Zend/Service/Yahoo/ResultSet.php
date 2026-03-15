@@ -121,6 +121,7 @@ class Zend_Service_Yahoo_ResultSet implements SeekableIterator
      * @throws Zend_Service_Exception
      * @return Zend_Service_Yahoo_Result
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         /**
@@ -137,6 +138,7 @@ class Zend_Service_Yahoo_ResultSet implements SeekableIterator
      *
      * @return int
      */
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return $this->_currentIndex;
