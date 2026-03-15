@@ -260,7 +260,8 @@ class UploadHandler
 
     public static function create_scaled_image_core($file_name, $options, $file_path, $new_file_path)
     {
-        list($img_width, $img_height) = @getimagesize($file_path);
+        $gt = @getimagesize($file_path);
+        list($img_width, $img_height) = is_array($gt) ? $gt : array(0, 0);
         if (!$img_width || !$img_height) {
             return false;
         }
@@ -323,8 +324,10 @@ class UploadHandler
                 $img_height
         ) && $write_image($new_img, $new_file_path, $image_quality);
         // Free up memory (imagedestroy does not delete files):
-        @imagedestroy($src_img);
-        @imagedestroy($new_img);
+        if (PHP_VERSION_ID < 80000) {
+            @imagedestroy($src_img);
+            @imagedestroy($new_img);
+        }
         return $success;
     }
 
@@ -406,8 +409,12 @@ class UploadHandler
             $file->error = $this->get_error_message('max_number_of_files');
             return false;
         }
-        list($img_width, $img_height) = @getimagesize($uploaded_file);
-        if (is_int($img_width)) {
+        $gt = @getimagesize($uploaded_file);
+        if (is_array($gt)) {
+                list($img_width, $img_height) = $gt;
+        }
+        if (is_array($gt) && is_int($img_width)) {
+            list($img_width, $img_height) = $gt;
             if ($this->options['max_width'] && $img_width > $this->options['max_width']) {
                 $file->error = $this->get_error_message('max_width');
                 return false;
@@ -524,7 +531,9 @@ class UploadHandler
         }
         $success = imagejpeg($image, $file_path);
         // Free up memory (imagedestroy does not delete files):
-        @imagedestroy($image);
+        if (PHP_VERSION_ID < 80000) {
+            @imagedestroy($image);
+        }
         return $success;
     }
 

@@ -82,7 +82,7 @@ class DBTableRowComment extends DBTableRow {
             $actions['delete'] = array('buttonname' => 'Delete', 'privilege' => 'delete', 'confirm' => 'Are you sure you want to delete this?');
         }
         if ($can_deleteblocked) {
-            $actions['delete'] = array('buttonname' => 'Delete (Blocked)', 'privilege' => 'delete', 'alert' => 'This record is older than '.(integer)($config->delete_grace_in_sec/3600).' hours.  If you want to delete it, you must go to the Settings menu and enable Delete Override.');
+            $actions['delete'] = array('buttonname' => 'Delete (Blocked)', 'privilege' => 'delete', 'alert' => 'This record is older than '.(int)($config->delete_grace_in_sec/3600).' hours.  If you want to delete it, you must go to the Settings menu and enable Delete Override.');
         }
 
         return $actions;

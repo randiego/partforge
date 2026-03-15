@@ -28,7 +28,7 @@ class TableRowSettings extends TableRow {
     public function __construct()
     {
         parent::__construct();
-        $this->setFieldTypeParams('delete_override', 'boolean', '', false, 'Delete Override', 'Temporarily re-enables the delete button for older records.  The delete button is usually disabled after '.(integer)(Zend_Registry::get('config')->delete_grace_in_sec/3600).' hours for archival records.');
+        $this->setFieldTypeParams('delete_override', 'boolean', '', false, 'Delete Override', 'Temporarily re-enables the delete button for older records.  The delete button is usually disabled after '.(int)(Zend_Registry::get('config')->delete_grace_in_sec/3600).' hours for archival records.');
         $this->setFieldTypeParams('edit_help', 'boolean', '', false, 'Edit Help Pages', 'Temporarily enables creation and editing of help pages.');
         $this->setFieldTypeParams('edit_comment_data', 'boolean', '', false, 'Edit Comment Data', 'Temporarily allows editing of itemobject_id in the edit comment view.');
         $this->setFieldTypeParams('use_any_typeversion_id', 'boolean', '', false, 'Change Type Version Id to Anything', 'Temporarily allows editing of typeversion_id to any possible value instead of the usual selection of different versions of the same typeobject.');

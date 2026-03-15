@@ -504,7 +504,7 @@ class TableRow {
                     $value_array = getSortOrderArray($fieldname, $this);
                     break;
             }
-            $outval = isset($value_array[$value]) ? $value_array[$value] : null;
+            $outval = !is_null($value) && isset($value_array[$value]) ? $value_array[$value] : null;
             return $is_html ? TextToHtml($outval) : $outval;
         } elseif ($type=='multiple') { // this is a multiple select (more than one at a time)
             $select_values = parseSelectValues($fieldname, $this);

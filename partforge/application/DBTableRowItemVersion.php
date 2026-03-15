@@ -218,7 +218,7 @@ class DBTableRowItemVersion extends DBTableRow {
         } else if (in_array($type, array('float','calculated'))) {
             $lit = !$is_null_str ? (is_numeric($var) ? (float) $var : $var) : null;
         } else if ($type == 'boolean') {
-            $lit = !$is_null_str ? (boolean) $var : null;
+            $lit = !$is_null_str ? (bool) $var : null;
         } else if (is_array($var)) {
             $lit = serialize($var);
         } else {
@@ -2796,7 +2796,7 @@ class DBTableRowItemVersion extends DBTableRow {
             $actions['delete'] = array('buttonname' => 'Delete', 'privilege' => 'delete', 'confirm' => 'Are you sure you want to delete this?');
         }
         if ($can_deleteblocked) {
-            $actions['delete'] = array('buttonname' => 'Delete (Blocked)', 'privilege' => 'delete', 'alert' => 'This record is older than '.(integer)($config->delete_grace_in_sec/3600).' hours.  If you want to delete it, you must go to the Settings menu and enable Delete Override.');
+            $actions['delete'] = array('buttonname' => 'Delete (Blocked)', 'privilege' => 'delete', 'alert' => 'This record is older than '.(int)($config->delete_grace_in_sec/3600).' hours.  If you want to delete it, you must go to the Settings menu and enable Delete Override.');
         }
 
 

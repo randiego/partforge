@@ -7437,12 +7437,16 @@ class TCPDF {
 					}
 				}
 				imagepng($imgalpha, $tempfile_alpha);
-				imagedestroy($imgalpha);
+				if (PHP_VERSION_ID < 80000) {
+					imagedestroy($imgalpha);
+				}
 				// extract image without alpha channel
 				$imgplain = imagecreatetruecolor($wpx, $hpx);
 				imagecopy($imgplain, $img, 0, 0, 0, 0, $wpx, $hpx);
 				imagepng($imgplain, $tempfile_plain);
-				imagedestroy($imgplain);
+				if (PHP_VERSION_ID < 80000) {
+					imagedestroy($imgplain);
+				}
 				$parsed = true;
 			} catch (Exception $e) {
 				// GD fails
@@ -7884,7 +7888,8 @@ class TCPDF {
 	 * @since 4.5.016 (2009-02-24)
 	 */
 	public function _destroy($destroyall=false, $preserve_objcopy=false) {
-		if (isset(self::$cleaned_ids[$this->file_id])) {
+		$file_id_key = isset($this->file_id) ? $this->file_id : '';
+		if (isset(self::$cleaned_ids[$file_id_key])) {
 			$destroyall = false;
 		}
 		if ($destroyall AND !$preserve_objcopy && isset($this->file_id)) {

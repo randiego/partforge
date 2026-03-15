@@ -184,7 +184,7 @@ if (Zend_Registry::get('customAcl')->isAllowed($_SESSION['account']->getRole(), 
         if ($auth['can_delete']) {
             $detailslinks->add_item( $this->navigator->getCurrentHandlerUrl('btnDeleteVersion', null, null, array('table' => 'typeversion','typeversion_id' => $this->dbtable->typeversion_id, 'return_url' => $listing_return_url, 'resetview' => 1, 'save_as_new' => 1)), 'Delete', 'Delete this type version.  (You are allowed to do this because there are no items that use this definition.)', 'return confirm(\'This deletes this version of this definition.  If this is the only version, the entire definition will be permanently deleted.  You are allowed to do this because there are no items that use this definition.  Continue?\');');
         } else if ($auth['can_deleteblocked']) {
-            $msg = 'This record is older than '.(integer)(Zend_Registry::get('config')->delete_grace_in_sec/3600).' hours.  If you want to delete it, you must go to the Settings menu and enable Delete Override.';
+            $msg = 'This record is older than '.(int)(Zend_Registry::get('config')->delete_grace_in_sec/3600).' hours.  If you want to delete it, you must go to the Settings menu and enable Delete Override.';
             $detailslinks->add_item( '#', 'Delete (blocked)', $msg, 'return alert(\''.$msg.'\'); return false;');
         }
     }
