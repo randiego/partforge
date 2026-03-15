@@ -14,18 +14,28 @@
  *
  * @category   Zend
  * @package    Zend
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Exception.php 16541 2009-07-07 06:59:03Z bkarwin $
+ * @version    $Id$
  */
-
 
 /**
- * @category   Zend
- * @package    Zend
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
- * @license    http://framework.zend.com/license/new-bsd     New BSD License
- */
+* @category   Zend
+* @package    Zend
+* @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+* @license    http://framework.zend.com/license/new-bsd     New BSD License
+*/
 class Zend_Exception extends Exception
-{}
-
+{
+    /**
+     * Construct the exception
+     *
+     * @param  string $msg
+     * @param  int $code
+     * @return void
+     */
+    public function __construct($msg = '', $code = 0, ?\Throwable $previous = null)
+    {
+        parent::__construct($msg, (int) $code, $previous);
+    }
+}

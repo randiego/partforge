@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Ldap
  * @subpackage Filter
- * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Logical.php 17829 2009-08-26 15:07:10Z sgehrig $
+ * @version    $Id$
  */
 
 /**
@@ -35,13 +35,13 @@ require_once 'Zend/Ldap/Filter/String.php';
  * @category   Zend
  * @package    Zend_Ldap
  * @subpackage Filter
- * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Ldap_Filter_Logical extends Zend_Ldap_Filter_Abstract
 {
-    const TYPE_AND = '&';
-    const TYPE_OR  = '|';
+    public const TYPE_AND = '&';
+    public const TYPE_OR  = '|';
 
     /**
      * All the sub-filters for this grouping filter.

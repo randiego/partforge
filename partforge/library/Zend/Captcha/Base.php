@@ -15,14 +15,14 @@
  * @category   Zend
  * @package    Zend_Captcha
  * @subpackage Adapter
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-/** Zend_Captcha_Adapter */
+/** @see Zend_Captcha_Adapter */
 require_once 'Zend/Captcha/Adapter.php';
 
-/** Zend_Validate_Abstract */
+/** @see Zend_Validate_Abstract */
 require_once 'Zend/Validate/Abstract.php';
 
 /**
@@ -33,9 +33,9 @@ require_once 'Zend/Validate/Abstract.php';
  * @category   Zend
  * @package    Zend_Captcha
  * @subpackage Adapter
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Base.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 abstract class Zend_Captcha_Base extends Zend_Validate_Abstract implements Zend_Captcha_Adapter
 {
@@ -53,16 +53,16 @@ abstract class Zend_Captcha_Base extends Zend_Validate_Abstract implements Zend_
      *
      * @var array
      */
-    protected $_options = array();
+    protected $_options = [];
 
     /**
      * Options to skip when processing options
      * @var array
      */
-    protected $_skipOptions = array(
+    protected $_skipOptions = [
         'options',
         'config',
-    );
+    ];
 
     /**
      * Get name
@@ -78,6 +78,7 @@ abstract class Zend_Captcha_Base extends Zend_Validate_Abstract implements Zend_
      * Set name
      *
      * @param string $name
+     * @return Zend_Captcha_Adapter
      */
     public function setName($name)
     {
@@ -89,7 +90,6 @@ abstract class Zend_Captcha_Base extends Zend_Validate_Abstract implements Zend_
      * Constructor
      *
      * @param  array|Zend_Config $options
-     * @return void
      */
     public function __construct($options = null)
     {
@@ -131,7 +131,7 @@ abstract class Zend_Captcha_Base extends Zend_Validate_Abstract implements Zend_
      * Set object state from options array
      *
      * @param  array $options
-     * @return Zend_Form_Element
+     * @return Zend_Captcha_Base
      */
     public function setOptions($options = null)
     {

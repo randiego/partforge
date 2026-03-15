@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Log
  * @subpackage Writer
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Firebug.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /** Zend_Log */
@@ -38,47 +38,62 @@ require_once 'Zend/Wildfire/Plugin/FirePhp.php';
  * @category   Zend
  * @package    Zend_Log
  * @subpackage Writer
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Log_Writer_Firebug extends Zend_Log_Writer_Abstract
 {
-
     /**
      * Maps logging priorities to logging display styles
+     *
      * @var array
      */
-    protected $_priorityStyles = array(Zend_Log::EMERG  => Zend_Wildfire_Plugin_FirePhp::ERROR,
+    protected $_priorityStyles = [Zend_Log::EMERG  => Zend_Wildfire_Plugin_FirePhp::ERROR,
                                        Zend_Log::ALERT  => Zend_Wildfire_Plugin_FirePhp::ERROR,
                                        Zend_Log::CRIT   => Zend_Wildfire_Plugin_FirePhp::ERROR,
                                        Zend_Log::ERR    => Zend_Wildfire_Plugin_FirePhp::ERROR,
                                        Zend_Log::WARN   => Zend_Wildfire_Plugin_FirePhp::WARN,
                                        Zend_Log::NOTICE => Zend_Wildfire_Plugin_FirePhp::INFO,
                                        Zend_Log::INFO   => Zend_Wildfire_Plugin_FirePhp::INFO,
-                                       Zend_Log::DEBUG  => Zend_Wildfire_Plugin_FirePhp::LOG);
+                                       Zend_Log::DEBUG  => Zend_Wildfire_Plugin_FirePhp::LOG];
 
     /**
      * The default logging style for un-mapped priorities
+     *
      * @var string
      */
     protected $_defaultPriorityStyle = Zend_Wildfire_Plugin_FirePhp::LOG;
 
     /**
      * Flag indicating whether the log writer is enabled
+     *
      * @var boolean
      */
     protected $_enabled = true;
 
     /**
      * Class constructor
+     *
+     * @return void
      */
     public function __construct()
     {
-        if (php_sapi_name()=='cli') {
+        if (php_sapi_name() == 'cli') {
             $this->setEnabled(false);
         }
 
         $this->_formatter = new Zend_Log_Formatter_Firebug();
+    }
+
+    /**
+     * Create a new instance of Zend_Log_Writer_Firebug
+     *
+     * @param  array|Zend_Config $config
+     * @return Zend_Log_Writer_Firebug
+     */
+    static public function factory($config)
+    {
+        return new self();
     }
 
     /**
@@ -183,6 +198,7 @@ class Zend_Log_Writer_Firebug extends Zend_Log_Writer_Abstract
         Zend_Wildfire_Plugin_FirePhp::getInstance()->send($message,
                                                           $label,
                                                           $type,
-                                                          array('traceOffset'=>6));
+                                                          ['traceOffset'=>4,
+                                                                'fixZendLogOffsetIfApplicable'=>true]);
     }
 }

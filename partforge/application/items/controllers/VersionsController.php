@@ -3,7 +3,7 @@
  *
  * PartForge Enterprise Groupware for recording parts and assemblies by serial number and version along with associated test data and comments.
  *
- * Copyright (C) 2013-2020 Randall C. Black <randy@blacksdesign.com>
+ * Copyright (C) 2013-2026 Randall C. Black <randy@blacksdesign.com>
  *
  * This file is part of PartForge
  *
@@ -83,6 +83,11 @@ class Items_VersionsController extends RestControllerActionAbstract
         }
     }
 
+    public function headAction()
+    {
+        return $this->getAction(true);
+    }
+
     /*
      * GET /items/versions/12
     *
@@ -102,7 +107,7 @@ class Items_VersionsController extends RestControllerActionAbstract
     *
     */
 
-    public function getAction()
+    public function getAction($headers_only = false)
     {
         $use_internal_names = isset($this->params['use_internal_names']) && ($this->params['use_internal_names']=='1');
         $fmt = isset($this->params['fmt']) ? $this->params['fmt'] : 'nested';

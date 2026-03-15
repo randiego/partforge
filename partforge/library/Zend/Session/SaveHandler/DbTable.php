@@ -15,9 +15,9 @@
  *
  * @category   Zend
  * @package    Zend_Session
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: DbTable.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /**
@@ -46,29 +46,29 @@ require_once 'Zend/Config.php';
  * @category   Zend
  * @package    Zend_Session
  * @subpackage SaveHandler
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Session_SaveHandler_DbTable
     extends Zend_Db_Table_Abstract
     implements Zend_Session_SaveHandler_Interface
 {
-    const PRIMARY_ASSIGNMENT                   = 'primaryAssignment';
-    const PRIMARY_ASSIGNMENT_SESSION_SAVE_PATH = 'sessionSavePath';
-    const PRIMARY_ASSIGNMENT_SESSION_NAME      = 'sessionName';
-    const PRIMARY_ASSIGNMENT_SESSION_ID        = 'sessionId';
+    public const PRIMARY_ASSIGNMENT                   = 'primaryAssignment';
+    public const PRIMARY_ASSIGNMENT_SESSION_SAVE_PATH = 'sessionSavePath';
+    public const PRIMARY_ASSIGNMENT_SESSION_NAME      = 'sessionName';
+    public const PRIMARY_ASSIGNMENT_SESSION_ID        = 'sessionId';
 
-    const MODIFIED_COLUMN   = 'modifiedColumn';
-    const LIFETIME_COLUMN   = 'lifetimeColumn';
-    const DATA_COLUMN       = 'dataColumn';
+    public const MODIFIED_COLUMN   = 'modifiedColumn';
+    public const LIFETIME_COLUMN   = 'lifetimeColumn';
+    public const DATA_COLUMN       = 'dataColumn';
 
-    const LIFETIME          = 'lifetime';
-    const OVERRIDE_LIFETIME = 'overrideLifetime';
+    public const LIFETIME          = 'lifetime';
+    public const OVERRIDE_LIFETIME = 'overrideLifetime';
 
-    const PRIMARY_TYPE_NUM         = 'PRIMARY_TYPE_NUM';
-    const PRIMARY_TYPE_PRIMARYNUM  = 'PRIMARY_TYPE_PRIMARYNUM';
-    const PRIMARY_TYPE_ASSOC       = 'PRIMARY_TYPE_ASSOC';
-    const PRIMARY_TYPE_WHERECLAUSE = 'PRIMARY_TYPE_WHERECLAUSE';
+    public const PRIMARY_TYPE_NUM         = 'PRIMARY_TYPE_NUM';
+    public const PRIMARY_TYPE_PRIMARYNUM  = 'PRIMARY_TYPE_PRIMARYNUM';
+    public const PRIMARY_TYPE_ASSOC       = 'PRIMARY_TYPE_ASSOC';
+    public const PRIMARY_TYPE_WHERECLAUSE = 'PRIMARY_TYPE_WHERECLAUSE';
 
     /**
      * Session table primary key value assignment
@@ -224,7 +224,8 @@ class Zend_Session_SaveHandler_DbTable
      *
      * @param int $lifetime
      * @param boolean $overrideLifetime (optional)
-     * @return Zend_Session_SaveHandler_DbTable
+     * @return $this
+     * @throws Zend_Session_SaveHandler_Exception
      */
     public function setLifetime($lifetime, $overrideLifetime = null)
     {
@@ -234,7 +235,9 @@ class Zend_Session_SaveHandler_DbTable
              */
             require_once 'Zend/Session/SaveHandler/Exception.php';
             throw new Zend_Session_SaveHandler_Exception();
-        } else if (empty($lifetime)) {
+        }
+
+        if (empty($lifetime)) {
             $this->_lifetime = (int) ini_get('session.gc_maxlifetime');
         } else {
             $this->_lifetime = (int) $lifetime;
@@ -261,11 +264,11 @@ class Zend_Session_SaveHandler_DbTable
      * Set whether or not the lifetime of an existing session should be overridden
      *
      * @param boolean $overrideLifetime
-     * @return Zend_Session_SaveHandler_DbTable
+     * @return $this
      */
     public function setOverrideLifetime($overrideLifetime)
     {
-        $this->_overrideLifetime = (boolean) $overrideLifetime;
+        $this->_overrideLifetime = (bool) $overrideLifetime;
 
         return $this;
     }
@@ -315,7 +318,7 @@ class Zend_Session_SaveHandler_DbTable
     {
         $return = '';
 
-        $rows = call_user_func_array(array(&$this, 'find'), $this->_getPrimary($id));
+        $rows = call_user_func_array([&$this, 'find'], $this->_getPrimary($id));
 
         if (count($rows)) {
             if ($this->_getExpirationTime($row = $rows->current()) > time()) {
@@ -337,28 +340,24 @@ class Zend_Session_SaveHandler_DbTable
      */
     public function write($id, $data)
     {
-        $return = false;
+        $data = [$this->_modifiedColumn => time(),
+                      $this->_dataColumn     => (string) $data];
 
-        $data = array($this->_modifiedColumn => time(),
-                      $this->_dataColumn     => (string) $data);
-
-        $rows = call_user_func_array(array(&$this, 'find'), $this->_getPrimary($id));
+        $rows = call_user_func_array([&$this, 'find'], $this->_getPrimary($id));
 
         if (count($rows)) {
             $data[$this->_lifetimeColumn] = $this->_getLifetime($rows->current());
-
-            if ($this->update($data, $this->_getPrimary($id, self::PRIMARY_TYPE_WHERECLAUSE))) {
-                $return = true;
-            }
+            $this->update($data, $this->_getPrimary($id, self::PRIMARY_TYPE_WHERECLAUSE));
+            return true;
         } else {
             $data[$this->_lifetimeColumn] = $this->_lifetime;
 
             if ($this->insert(array_merge($this->_getPrimary($id, self::PRIMARY_TYPE_ASSOC), $data))) {
-                $return = true;
+                return true;
             }
         }
 
-        return $return;
+        return false;
     }
 
     /**
@@ -369,13 +368,8 @@ class Zend_Session_SaveHandler_DbTable
      */
     public function destroy($id)
     {
-        $return = false;
-
-        if ($this->delete($this->_getPrimary($id, self::PRIMARY_TYPE_WHERECLAUSE))) {
-            $return = true;
-        }
-
-        return $return;
+        $this->delete($this->_getPrimary($id, self::PRIMARY_TYPE_WHERECLAUSE));
+        return true; //always return true, since if nothing can be deleted, it is already deleted and thats OK.
     }
 
     /**
@@ -386,8 +380,8 @@ class Zend_Session_SaveHandler_DbTable
      */
     public function gc($maxlifetime)
     {
-        $this->delete($this->getAdapter()->quoteIdentifier($this->_modifiedColumn) . ' + '
-                    . $this->getAdapter()->quoteIdentifier($this->_lifetimeColumn) . ' < '
+        $this->delete($this->getAdapter()->quoteIdentifier($this->_modifiedColumn, true) . ' + '
+                    . $this->getAdapter()->quoteIdentifier($this->_lifetimeColumn, true) . ' < '
                     . $this->getAdapter()->quote(time()));
 
         return true;
@@ -439,9 +433,9 @@ class Zend_Session_SaveHandler_DbTable
     protected function _setupPrimaryAssignment()
     {
         if ($this->_primaryAssignment === null) {
-            $this->_primaryAssignment = array(1 => self::PRIMARY_ASSIGNMENT_SESSION_ID);
+            $this->_primaryAssignment = [1 => self::PRIMARY_ASSIGNMENT_SESSION_ID];
         } else if (!is_array($this->_primaryAssignment)) {
-            $this->_primaryAssignment = array(1 => (string) $this->_primaryAssignment);
+            $this->_primaryAssignment = [1 => (string) $this->_primaryAssignment];
         } else if (isset($this->_primaryAssignment[0])) {
             array_unshift($this->_primaryAssignment, null);
 
@@ -522,7 +516,7 @@ class Zend_Session_SaveHandler_DbTable
             $type = self::PRIMARY_TYPE_NUM;
         }
 
-        $primaryArray = array();
+        $primaryArray = [];
 
         foreach ($this->_primary as $index => $primary) {
             switch ($this->_primaryAssignment[$index]) {
@@ -548,7 +542,7 @@ class Zend_Session_SaveHandler_DbTable
                     $primaryArray[$primary] = $value;
                     break;
                 case self::PRIMARY_TYPE_WHERECLAUSE:
-                    $primaryArray[] = $this->getAdapter()->quoteIdentifier($primary) . ' = '
+                    $primaryArray[] = $this->getAdapter()->quoteIdentifier($primary, true) . ' = '
                                     . $this->getAdapter()->quote($value);
                     break;
                 case self::PRIMARY_TYPE_NUM:

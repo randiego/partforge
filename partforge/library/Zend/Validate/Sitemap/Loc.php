@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Validate
  * @subpackage Sitemap
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Loc.php 16971 2009-07-22 18:05:45Z mikaelkael $
+ * @version    $Id$
  */
 
 /**
@@ -38,7 +38,7 @@ require_once 'Zend/Uri.php';
  * @category   Zend
  * @package    Zend_Validate
  * @subpackage Sitemap
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Validate_Sitemap_Loc extends Zend_Validate_Abstract
@@ -47,16 +47,18 @@ class Zend_Validate_Sitemap_Loc extends Zend_Validate_Abstract
      * Validation key for not valid
      *
      */
-    const NOT_VALID = 'invalidSitemapLoc';
+    public const NOT_VALID = 'sitemapLocNotValid';
+    public const INVALID   = 'sitemapLocInvalid';
 
     /**
      * Validation failure message template definitions
      *
      * @var array
      */
-    protected $_messageTemplates = array(
+    protected $_messageTemplates = [
         self::NOT_VALID => "'%value%' is not a valid sitemap location",
-    );
+        self::INVALID   => "Invalid type given. String expected",
+    ];
 
     /**
      * Validates if a string is valid as a sitemap location
@@ -68,12 +70,18 @@ class Zend_Validate_Sitemap_Loc extends Zend_Validate_Abstract
      */
     public function isValid($value)
     {
-        $this->_setValue($value);
-
         if (!is_string($value)) {
+            $this->_error(self::INVALID);
             return false;
         }
 
-        return Zend_Uri::check($value);
+        $this->_setValue($value);
+        $result = Zend_Uri::check($value);
+        if ($result !== true) {
+            $this->_error(self::NOT_VALID);
+            return false;
+        }
+
+        return true;
     }
 }

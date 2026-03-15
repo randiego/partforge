@@ -16,9 +16,9 @@
  * @category   Zend
  * @package    Zend_Gdata
  * @subpackage App
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: App.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /**
@@ -42,6 +42,14 @@ require_once 'Zend/Version.php';
 require_once 'Zend/Gdata/App/MediaSource.php';
 
 /**
+ * Zend_Uri/Http
+ */
+require_once 'Zend/Uri/Http.php';
+
+/** @see Zend_Xml_Security */
+require_once 'Zend/Xml/Security.php';
+
+/**
  * Provides Atom Publishing Protocol (APP) functionality.  This class and all
  * other components of Zend_Gdata_App are designed to work independently from
  * other Zend_Gdata components in order to interact with generic APP services.
@@ -49,7 +57,7 @@ require_once 'Zend/Gdata/App/MediaSource.php';
  * @category   Zend
  * @package    Zend_Gdata
  * @subpackage App
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Gdata_App
@@ -59,13 +67,13 @@ class Zend_Gdata_App
       *
       * @see _majorProtocolVersion
       */
-    const DEFAULT_MAJOR_PROTOCOL_VERSION = 1;
+    public const DEFAULT_MAJOR_PROTOCOL_VERSION = 1;
 
     /** Default minor protocol version.
       *
       * @see _minorProtocolVersion
       */
-    const DEFAULT_MINOR_PROTOCOL_VERSION = null;
+    public const DEFAULT_MINOR_PROTOCOL_VERSION = null;
 
     /**
      * Client object used to communicate
@@ -115,9 +123,9 @@ class Zend_Gdata_App
      *
      * @var array
      */
-    protected $_registeredPackages = array(
+    protected $_registeredPackages = [
             'Zend_Gdata_App_Extension',
-            'Zend_Gdata_App');
+            'Zend_Gdata_App'];
 
     /**
      * Maximum number of redirects to follow during HTTP operations
@@ -235,7 +243,7 @@ class Zend_Gdata_App
      *
      * @param Zend_Http_Client $client The client to use for communication
      * @throws Zend_Gdata_App_HttpException
-     * @return Zend_Gdata_App Provides a fluent interface
+     * @return $this
      */
     public function setHttpClient($client,
         $applicationId = 'MyCompany-MyApp-1.0')
@@ -251,12 +259,12 @@ class Zend_Gdata_App
         $userAgent = $applicationId . ' Zend_Framework_Gdata/' .
             Zend_Version::VERSION;
         $client->setHeaders('User-Agent', $userAgent);
-        $client->setConfig(array(
+        $client->setConfig([
             'strictredirects' => true
-            )
+            ]
         );
         $this->_httpClient = $client;
-        Zend_Gdata::setStaticHttpClient($client);
+        self::setStaticHttpClient($client);
         return $this;
     }
 
@@ -285,9 +293,9 @@ class Zend_Gdata_App
             $client = new Zend_Http_Client();
             $userAgent = 'Zend_Framework_Gdata/' . Zend_Version::VERSION;
             $client->setHeaders('User-Agent', $userAgent);
-            $client->setConfig(array(
+            $client->setConfig([
                 'strictredirects' => true
-                )
+                ]
             );
             self::$_staticHttpClient = $client;
         }
@@ -482,14 +490,14 @@ class Zend_Gdata_App
      */
     public function prepareRequest($method,
                                    $url = null,
-                                   $headers = array(),
+                                   $headers = [],
                                    $data = null,
                                    $contentTypeOverride = null)
     {
         // As a convenience, if $headers is null, we'll convert it back to
         // an empty array.
         if ($headers === null) {
-            $headers = array();
+            $headers = [];
         }
 
         $rawData = null;
@@ -566,9 +574,9 @@ class Zend_Gdata_App
             $finalContentType = $contentTypeOverride;
         }
 
-        return array('method' => $method, 'url' => $url,
+        return ['method' => $method, 'url' => $url,
             'data' => $rawData, 'headers' => $headers,
-            'contentType' => $finalContentType);
+            'contentType' => $finalContentType];
     }
 
     /**
@@ -594,7 +602,7 @@ class Zend_Gdata_App
             $remainingRedirects = self::getMaxRedirects();
         }
         if ($headers === null) {
-            $headers = array();
+            $headers = [];
         }
         // Append a Gdata version header if protocol v2 or higher is in use.
         // (Protocol v1 does not use this header.)
@@ -634,14 +642,23 @@ class Zend_Gdata_App
 
         // Make sure the HTTP client object is 'clean' before making a request
         // In addition to standard headers to reset via resetParameters(),
-        // also reset the Slug header
+        // also reset the Slug and If-Match headers
         $this->_httpClient->resetParameters();
-        $this->_httpClient->setHeaders('Slug', null);
+        $this->_httpClient->setHeaders(['Slug', 'If-Match']);
 
         // Set the params for the new request to be performed
         $this->_httpClient->setHeaders($headers);
-        $this->_httpClient->setUri($url);
-        $this->_httpClient->setConfig(array('maxredirects' => 0));
+        require_once 'Zend/Uri/Http.php';
+        $uri = Zend_Uri_Http::fromString($url);
+        preg_match("/^(.*?)(\?.*)?$/", $url, $matches);
+        $this->_httpClient->setUri($matches[1]);
+        $queryArray = $uri->getQueryAsArray();
+        foreach ($queryArray as $name => $value) {
+            $this->_httpClient->setParameterGet($name, $value);
+        }
+
+
+        $this->_httpClient->setConfig(['maxredirects' => 0]);
 
         // Set the proper adapter if we are handling a streaming upload
         $usingMimeStream = false;
@@ -710,14 +727,14 @@ class Zend_Gdata_App
      * @param  string $uri
      * @param  Zend_Http_Client $client The client used for communication
      * @param  string $className The class which is used as the return type
+     * @param  bool $useObjectMapping Enable/disable the use of XML to object mapping.
      * @throws Zend_Gdata_App_Exception
-     * @return string|Zend_Gdata_App_Feed Returns string only if the object
-     *                                    mapping has been disabled explicitly
-     *                                    by passing false to the
-     *                                    useObjectMapping() function.
+     * @return string|Zend_Gdata_App_Feed Returns string only if the fourth
+     *                                    parameter ($useObjectMapping) is set
+     *                                    to false.
      */
     public static function import($uri, $client = null,
-        $className='Zend_Gdata_App_Feed')
+        $className='Zend_Gdata_App_Feed', $useObjectMapping = true)
     {
         $app = new Zend_Gdata_App($client);
         $requestData = $app->prepareRequest('GET', $uri);
@@ -725,7 +742,7 @@ class Zend_Gdata_App
             $requestData['method'], $requestData['url']);
 
         $feedContent = $response->getBody();
-        if (!$this->_useObjectMapping) {
+        if (false === $useObjectMapping) {
             return $feedContent;
         }
         $feed = self::importString($feedContent, $className);
@@ -749,7 +766,7 @@ class Zend_Gdata_App
      *                                    useObjectMapping() function.
      */
     public function importUrl($url, $className='Zend_Gdata_App_Feed',
-        $extraHeaders = array())
+        $extraHeaders = [])
     {
         $response = $this->get($url, $extraHeaders);
 
@@ -800,23 +817,28 @@ class Zend_Gdata_App
         $className='Zend_Gdata_App_Feed', $majorProtocolVersion = null,
         $minorProtocolVersion = null)
     {
-        // Load the feed as an XML DOMDocument object
-        @ini_set('track_errors', 1);
-        $doc = new DOMDocument();
-        $success = @$doc->loadXML($string);
-        @ini_restore('track_errors');
+        if (!class_exists($className, false)) {
+          require_once 'Zend/Loader.php';
+          @Zend_Loader::loadClass($className);
+        }
 
-        if (!$success) {
+        // Load the feed as an XML DOMDocument object
+        $doc = new DOMDocument();
+        $doc = @Zend_Xml_Security::scan($string, $doc);
+
+        if (!$doc) {
+            $err = error_get_last();
+            $phpErrormsg = $err['message'];
             require_once 'Zend/Gdata/App/Exception.php';
             throw new Zend_Gdata_App_Exception(
-                "DOMDocument cannot parse XML: $php_errormsg");
+                "DOMDocument cannot parse XML: $phpErrormsg");
         }
 
         $feed = new $className();
         $feed->setMajorProtocolVersion($majorProtocolVersion);
         $feed->setMinorProtocolVersion($minorProtocolVersion);
         $feed->transferFromXML($string);
-        $feed->setHttpClient(self::getstaticHttpClient());
+        $feed->setHttpClient(self::getStaticHttpClient());
         return $feed;
     }
 
@@ -833,13 +855,13 @@ class Zend_Gdata_App
     public static function importFile($filename,
             $className='Zend_Gdata_App_Feed', $useIncludePath = false)
     {
-        @ini_set('track_errors', 1);
         $feed = @file_get_contents($filename, $useIncludePath);
-        @ini_restore('track_errors');
         if ($feed === false) {
+            $err = error_get_last();
+            $phpErrormsg = $err['message'];
             require_once 'Zend/Gdata/App/Exception.php';
             throw new Zend_Gdata_App_Exception(
-                "File could not be loaded: $php_errormsg");
+                "File could not be loaded: $phpErrormsg");
         }
         return self::importString($feed, $className);
     }
@@ -853,7 +875,7 @@ class Zend_Gdata_App
      * @throws Zend_Gdata_App_HttpException
      * @return Zend_Http_Response
      */
-    public function get($uri, $extraHeaders = array())
+    public function get($uri, $extraHeaders = [])
     {
         $requestData = $this->prepareRequest('GET', $uri, $extraHeaders);
         return $this->performHttpRequest(
@@ -925,7 +947,7 @@ class Zend_Gdata_App
         if (is_string($data)) {
             $requestData = $this->prepareRequest('DELETE', $data);
         } else {
-            $headers = array();
+            $headers = [];
 
             $requestData = $this->prepareRequest(
                 'DELETE', null, $headers, $data);
@@ -951,12 +973,17 @@ class Zend_Gdata_App
      *         insertion.
      */
     public function insertEntry($data, $uri, $className='Zend_Gdata_App_Entry',
-        $extraHeaders = array())
+        $extraHeaders = [])
     {
+        if (!class_exists($className, false)) {
+          require_once 'Zend/Loader.php';
+          @Zend_Loader::loadClass($className);
+        }
+
         $response = $this->post($data, $uri, null, null, $extraHeaders);
 
         $returnEntry = new $className($response->getBody());
-        $returnEntry->setHttpClient(self::getstaticHttpClient());
+        $returnEntry->setHttpClient(self::getStaticHttpClient());
 
         $etag = $response->getHeader('ETag');
         if ($etag !== null) {
@@ -970,9 +997,9 @@ class Zend_Gdata_App
      * Update an entry
      *
      * @param mixed $data Zend_Gdata_App_Entry or XML (w/ID and link rel='edit')
-     * @param string|null The URI to send requests to, or null if $data
+     * @param string|null $uri The URI to send requests to, or null if $data
      *        contains the URI.
-     * @param string|null The name of the class that should be deserialized
+     * @param string|null $className The name of the class that should be deserialized
      *        from the server response. If null, then 'Zend_Gdata_App_Entry'
      *        will be used.
      * @param array $extraHeaders Extra headers to add to the request, as an
@@ -981,7 +1008,7 @@ class Zend_Gdata_App
      * @throws Zend_Gdata_App_Exception
      */
     public function updateEntry($data, $uri = null, $className = null,
-        $extraHeaders = array())
+        $extraHeaders = [])
     {
         if ($className === null && $data instanceof Zend_Gdata_App_Entry) {
             $className = get_class($data);
@@ -989,9 +1016,14 @@ class Zend_Gdata_App
             $className = 'Zend_Gdata_App_Entry';
         }
 
+        if (!class_exists($className, false)) {
+          require_once 'Zend/Loader.php';
+          @Zend_Loader::loadClass($className);
+        }
+
         $response = $this->put($data, $uri, null, null, $extraHeaders);
         $returnEntry = new $className($response->getBody());
-        $returnEntry->setHttpClient(self::getstaticHttpClient());
+        $returnEntry->setHttpClient(self::getStaticHttpClient());
 
         $etag = $response->getHeader('ETag');
         if ($etag !== null) {
@@ -1031,6 +1063,9 @@ class Zend_Gdata_App
                      break;
                  } catch (Zend_Exception $e) {
                      // package wasn't here- continue searching
+                 } catch (ErrorException $e) {
+                     // package wasn't here- continue searching
+                     // @see ZF-7013 and ZF-11959
                  }
             }
             if ($foundClassName != null) {
@@ -1049,11 +1084,11 @@ class Zend_Gdata_App
             } else {
                 require_once 'Zend/Gdata/App/Exception.php';
                 throw new Zend_Gdata_App_Exception(
-                        "Unable to find '${class}' in registered packages");
+                        "Unable to find '{$class}' in registered packages");
             }
         } else {
             require_once 'Zend/Gdata/App/Exception.php';
-            throw new Zend_Gdata_App_Exception("No such method ${method}");
+            throw new Zend_Gdata_App_Exception("No such method {$method}");
         }
     }
 
@@ -1063,8 +1098,8 @@ class Zend_Gdata_App
      * significant amount of time to complete. In some cases this may cause
      * execution to timeout without proper precautions in place.
      *
-     * @param $feed The feed to iterate through.
-     * @return mixed A new feed of the same type as the one originally
+     * @param object $feed The feed to iterate through.
+     * @return object A new feed of the same type as the one originally
      *          passed in, containing all relevent entries.
      */
     public function retrieveAllEntriesForFeed($feed) {
@@ -1093,14 +1128,14 @@ class Zend_Gdata_App
      * NOTE: This will not work if you have customized the adapter
      * already to use a proxy server or other interface.
      *
-     * @param $logfile The logfile to use when logging the requests
+     * @param string $logfile The logfile to use when logging the requests
      */
     public function enableRequestDebugLogging($logfile)
     {
-        $this->_httpClient->setConfig(array(
+        $this->_httpClient->setConfig([
             'adapter' => 'Zend_Gdata_App_LoggingHttpClientAdapterSocket',
             'logfile' => $logfile
-            ));
+            ]);
     }
 
     /**

@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: FormErrors.php 16541 2009-07-07 06:59:03Z bkarwin $
+ * @version    $Id$
  */
 
 /**
@@ -32,7 +32,7 @@ require_once 'Zend/View/Helper/FormElement.php';
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_View_Helper_FormErrors extends Zend_View_Helper_FormElement
@@ -57,7 +57,7 @@ class Zend_View_Helper_FormErrors extends Zend_View_Helper_FormElement
      * @param  array $options
      * @return string
      */
-    public function formErrors($errors, array $options = null)
+    public function formErrors($errors, ?array $options = null)
     {
         $escape = true;
         if (isset($options['escape'])) {
@@ -67,6 +67,16 @@ class Zend_View_Helper_FormErrors extends Zend_View_Helper_FormElement
 
         if (empty($options['class'])) {
             $options['class'] = 'errors';
+        }
+
+        if (isset($options['elementStart'])) {
+            $this->setElementStart($options['elementStart']);
+        }
+        if (isset($options['elementEnd'])) {
+            $this->setElementEnd($options['elementEnd']);
+        }
+        if (isset($options['elementSeparator'])) {
+            $this->setElementSeparator($options['elementSeparator']);
         }
 
         $start = $this->getElementStart();
@@ -81,11 +91,9 @@ class Zend_View_Helper_FormErrors extends Zend_View_Helper_FormElement
             }
         }
 
-        $html  = $start
+        return $start
                . implode($this->getElementSeparator(), (array) $errors)
                . $this->getElementEnd();
-
-        return $html;
     }
 
     /**

@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Pdf
  * @subpackage Actions
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Action.php 16978 2009-07-22 19:59:40Z alexander $
+ * @version    $Id$
  */
 
 /** Internally used classes */
@@ -30,7 +30,7 @@ require_once 'Zend/Pdf/Element.php';
  * @todo implement lazy resource loading so resources will be really loaded at access time
  *
  * @package    Zend_Pdf
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Pdf_NameTree implements ArrayAccess, Iterator, Countable
@@ -41,12 +41,12 @@ class Zend_Pdf_NameTree implements ArrayAccess, Iterator, Countable
      *
      * @var array
      */
-    protected $_items = array();
+    protected $_items = [];
 
     /**
      * Object constructor
      *
-     * @param $rootDictionary root of name dictionary
+     * @param Zend_Pdf_Element $rootDictionary root of name dictionary
      */
     public function __construct(Zend_Pdf_Element $rootDictionary)
     {
@@ -55,16 +55,16 @@ class Zend_Pdf_NameTree implements ArrayAccess, Iterator, Countable
             throw new Zend_Pdf_Exception('Name tree root must be a dictionary.');
         }
 
-        $intermediateNodes = array();
-        $leafNodes         = array();
+        $intermediateNodes = [];
+        $leafNodes         = [];
         if ($rootDictionary->Kids !== null) {
             $intermediateNodes[] = $rootDictionary;
         } else {
             $leafNodes[] = $rootDictionary;
         }
 
-        while (count($intermediateNodes) != 0) {
-            $newIntermediateNodes = array();
+        while (count($intermediateNodes) !== 0) {
+            $newIntermediateNodes = [];
             foreach ($intermediateNodes as $node) {
                 foreach ($node->Kids->items as $childNode) {
                     if ($childNode->Kids !== null) {
@@ -92,9 +92,10 @@ class Zend_Pdf_NameTree implements ArrayAccess, Iterator, Countable
     }
 
 
-    public function next(): void
+    #[\ReturnTypeWillChange]
+    public function next()
     {
-        next($this->_items);
+        return next($this->_items);
     }
 
 
@@ -105,7 +106,8 @@ class Zend_Pdf_NameTree implements ArrayAccess, Iterator, Countable
     }
 
 
-    public function valid(): bool {
+    public function valid(): bool
+    {
         return current($this->_items)!==false;
     }
 
@@ -147,7 +149,7 @@ class Zend_Pdf_NameTree implements ArrayAccess, Iterator, Countable
 
     public function clear()
     {
-        $this->_items = array();
+        $this->_items = [];
     }
 
     public function count(): int

@@ -15,16 +15,16 @@
  * @category   Zend
  * @package    Zend_Controller
  * @subpackage Zend_Controller_Action
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Interface.php 16541 2009-07-07 06:59:03Z bkarwin $
+ * @version    $Id$
  */
 
 /**
  * @category   Zend
  * @package    Zend_Controller
  * @subpackage Zend_Controller_Action
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 interface Zend_Controller_Action_Interface
@@ -57,7 +57,7 @@ interface Zend_Controller_Action_Interface
      */
     public function __construct(Zend_Controller_Request_Abstract $request,
                                 Zend_Controller_Response_Abstract $response,
-                                array $invokeArgs = array());
+                                array $invokeArgs = []);
 
     /**
      * Dispatch the requested action

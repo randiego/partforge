@@ -15,9 +15,9 @@
  *
  * @category   Zend
  * @package    Zend_Session
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Abstract.php 16210 2009-06-21 19:22:17Z thomas $
+ * @version    $Id$
  * @since      Preview Release 0.2
  */
 
@@ -27,7 +27,7 @@
  *
  * @category   Zend
  * @package    Zend_Session
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Session_Abstract
@@ -52,21 +52,21 @@ abstract class Zend_Session_Abstract
      *
      * @var array
      */
-    protected static $_expiringData = array();
+    protected static $_expiringData = [];
 
 
     /**
      * Error message thrown when an action requires modification,
      * but current Zend_Session has been marked as read-only.
      */
-    const _THROW_NOT_WRITABLE_MSG = 'Zend_Session is currently marked as read-only.';
+    public const _THROW_NOT_WRITABLE_MSG = 'Zend_Session is currently marked as read-only.';
 
 
     /**
      * Error message thrown when an action requires reading session data,
      * but current Zend_Session is not marked as readable.
      */
-    const _THROW_NOT_READABLE_MSG = 'Zend_Session is not marked as readable.';
+    public const _THROW_NOT_READABLE_MSG = 'Zend_Session is not marked as readable.';
 
 
     /**
@@ -120,7 +120,7 @@ abstract class Zend_Session_Abstract
             unset(self::$_expiringData[$namespace]);
         } else {
             unset($_SESSION[$namespace][$name]);
-            unset(self::$_expiringData[$namespace]);
+            unset(self::$_expiringData[$namespace][$name]);
         }
 
         // if we remove the last value, remove namespace.
@@ -172,14 +172,14 @@ abstract class Zend_Session_Abstract
      *
      * @param string $namespace
      * @param string $name
-     * @return mixed
+     * @return array
      */
     protected static function _namespaceGetAll($namespace)
     {
         $currentData  = (isset($_SESSION[$namespace]) && is_array($_SESSION[$namespace])) ?
-            $_SESSION[$namespace] : array();
+            $_SESSION[$namespace] : [];
         $expiringData = (isset(self::$_expiringData[$namespace]) && is_array(self::$_expiringData[$namespace])) ?
-            self::$_expiringData[$namespace] : array();
+            self::$_expiringData[$namespace] : [];
         return array_merge($currentData, $expiringData);
     }
 }

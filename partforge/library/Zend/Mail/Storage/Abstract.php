@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Mail
  * @subpackage Storage
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Abstract.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 
@@ -25,7 +25,7 @@
  * @category   Zend
  * @package    Zend_Mail
  * @subpackage Storage
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Mail_Storage_Abstract implements Countable, ArrayAccess, SeekableIterator
@@ -34,12 +34,12 @@ abstract class Zend_Mail_Storage_Abstract implements Countable, ArrayAccess, See
      * class capabilities with default values
      * @var array
      */
-    protected $_has = array('uniqueid'  => true,
+    protected $_has = ['uniqueid'  => true,
                             'delete'    => false,
                             'create'    => false,
                             'top'       => false,
                             'fetchPart' => true,
-                            'flags'     => false);
+                            'flags'     => false];
 
     /**
      * current iteration position
@@ -76,6 +76,7 @@ abstract class Zend_Mail_Storage_Abstract implements Countable, ArrayAccess, See
     {
         if (strpos($var, 'has') === 0) {
             $var = strtolower(substr($var, 3));
+
             return isset($this->_has[$var]) ? $this->_has[$var] : null;
         }
 
@@ -119,7 +120,7 @@ abstract class Zend_Mail_Storage_Abstract implements Countable, ArrayAccess, See
     /**
      * Get a message with headers and body
      *
-     * @param  $id int number of message
+     * @param int $id number of message
      * @return Zend_Mail_Message
      */
     abstract public function getMessage($id);
@@ -274,11 +275,12 @@ abstract class Zend_Mail_Storage_Abstract implements Countable, ArrayAccess, See
       * ArrayAccess::offsetUnset()
       *
       * @param    int   $id
-      * @return   boolean success
+      * @return   boolean|null success
       */
-     public function offsetUnset($id): void
+     #[\ReturnTypeWillChange]
+     public function offsetUnset($id)
      {
-        $this->removeMessage($id);
+        return $this->removeMessage($id);
      }
 
 

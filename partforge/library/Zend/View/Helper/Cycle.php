@@ -15,8 +15,8 @@
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: Cycle.php 17449 2009-08-08 08:10:25Z yoshida@zend.co.jp $
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @version    $Id$
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -25,7 +25,7 @@
  *
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_View_Helper_Cycle implements Iterator
@@ -35,21 +35,21 @@ class Zend_View_Helper_Cycle implements Iterator
      * Default name
      * @var string
      */
-    const DEFAULT_NAME = 'default';
+    public const DEFAULT_NAME = 'default';
 
     /**
      * Pointers
      *
      * @var array
      */
-    protected $_pointers = array(self::DEFAULT_NAME =>-1) ;
+    protected $_pointers = [self::DEFAULT_NAME =>-1] ;
 
     /**
      * Array of values
      *
      * @var array
      */
-    protected $_data = array(self::DEFAULT_NAME=>array());
+    protected $_data = [self::DEFAULT_NAME=>[]];
 
     /**
      * Actual name of cycle
@@ -65,7 +65,7 @@ class Zend_View_Helper_Cycle implements Iterator
      * @param string $name
      * @return Zend_View_Helper_Cycle
      */
-    public function cycle(array $data = array(), $name = self::DEFAULT_NAME)
+    public function cycle(array $data = [], $name = self::DEFAULT_NAME)
     {
         if(!empty($data))
            $this->_data[$name] = $data;
@@ -92,7 +92,7 @@ class Zend_View_Helper_Cycle implements Iterator
     /**
      * Sets actual name of cycle
      *
-     * @param $name
+     * @param string $name
      * @return Zend_View_Helper_Cycle
      */
     public function setName($name = self::DEFAULT_NAME)
@@ -100,7 +100,7 @@ class Zend_View_Helper_Cycle implements Iterator
        $this->_name = $name;
 
        if(!isset($this->_data[$this->_name]))
-         $this->_data[$this->_name] = array();
+         $this->_data[$this->_name] = [];
 
        if(!isset($this->_pointers[$this->_name]))
          $this->rewind();
@@ -111,7 +111,6 @@ class Zend_View_Helper_Cycle implements Iterator
     /**
      * Gets actual name of cycle
      *
-     * @param $name
      * @return string
      */
     public function getName()
@@ -155,13 +154,15 @@ class Zend_View_Helper_Cycle implements Iterator
      *
      * @return Zend_View_Helper_Cycle
      */
-    public function next(): void
+    #[\ReturnTypeWillChange]
+    public function next()
     {
         $count = count($this->_data[$this->_name]);
         if ($this->_pointers[$this->_name] == ($count - 1))
             $this->_pointers[$this->_name] = 0;
         else
             $this->_pointers[$this->_name] = ++$this->_pointers[$this->_name];
+        return $this;
     }
 
     /**
@@ -198,9 +199,11 @@ class Zend_View_Helper_Cycle implements Iterator
      *
      * @return Zend_View_Helper_Cycle
      */
-    public function rewind(): void
+    #[\ReturnTypeWillChange]
+    public function rewind()
     {
         $this->_pointers[$this->_name] = -1;
+        return $this;
     }
 
     /**

@@ -14,9 +14,9 @@
  *
  * @category  Zend
  * @package   Zend_Measure
- * @copyright Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd     New BSD License
- * @version   $Id: Lightness.php 16220 2009-06-21 19:49:21Z thomas $
+ * @version   $Id$
  */
 
 /**
@@ -31,50 +31,50 @@ require_once 'Zend/Locale.php';
  * @category   Zend
  * @package    Zend_Measure
  * @subpackage Zend_Measure_Lightness
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Measure_Lightness extends Zend_Measure_Abstract
 {
-    const STANDARD = 'CANDELA_PER_SQUARE_METER';
+    public const STANDARD = 'CANDELA_PER_SQUARE_METER';
 
-    const APOSTILB                          = 'APOSTILB';
-    const BLONDEL                           = 'BLONDEL';
-    const CANDELA_PER_SQUARE_CENTIMETER     = 'CANDELA_PER_SQUARE_CENTIMETER';
-    const CANDELA_PER_SQUARE_FOOT           = 'CANDELA_PER_SQUARE_FOOT';
-    const CANDELA_PER_SQUARE_INCH           = 'CANDELA_PER_SQUARE_INCH';
-    const CANDELA_PER_SQUARE_METER          = 'CANDELA_PER_SQUARE_METER';
-    const FOOTLAMBERT                       = 'FOOTLAMBERT';
-    const KILOCANDELA_PER_SQUARE_CENTIMETER = 'KILOCANDELA_PER_SQUARE_CENTIMETER';
-    const KILOCANDELA_PER_SQUARE_FOOT       = 'KILOCANDELA_PER_SQUARE_FOOT';
-    const KILOCANDELA_PER_SQUARE_INCH       = 'KILOCANDELA_PER_SQUARE_INCH';
-    const KILOCANDELA_PER_SQUARE_METER      = 'KILOCANDELA_PER_SQUARE_METER';
-    const LAMBERT                           = 'LAMBERT';
-    const MILLILAMBERT                      = 'MILLILAMBERT';
-    const NIT                               = 'NIT';
-    const STILB                             = 'STILB';
+    public const APOSTILB                          = 'APOSTILB';
+    public const BLONDEL                           = 'BLONDEL';
+    public const CANDELA_PER_SQUARE_CENTIMETER     = 'CANDELA_PER_SQUARE_CENTIMETER';
+    public const CANDELA_PER_SQUARE_FOOT           = 'CANDELA_PER_SQUARE_FOOT';
+    public const CANDELA_PER_SQUARE_INCH           = 'CANDELA_PER_SQUARE_INCH';
+    public const CANDELA_PER_SQUARE_METER          = 'CANDELA_PER_SQUARE_METER';
+    public const FOOTLAMBERT                       = 'FOOTLAMBERT';
+    public const KILOCANDELA_PER_SQUARE_CENTIMETER = 'KILOCANDELA_PER_SQUARE_CENTIMETER';
+    public const KILOCANDELA_PER_SQUARE_FOOT       = 'KILOCANDELA_PER_SQUARE_FOOT';
+    public const KILOCANDELA_PER_SQUARE_INCH       = 'KILOCANDELA_PER_SQUARE_INCH';
+    public const KILOCANDELA_PER_SQUARE_METER      = 'KILOCANDELA_PER_SQUARE_METER';
+    public const LAMBERT                           = 'LAMBERT';
+    public const MILLILAMBERT                      = 'MILLILAMBERT';
+    public const NIT                               = 'NIT';
+    public const STILB                             = 'STILB';
 
     /**
      * Calculations for all lightness units
      *
      * @var array
      */
-    protected $_units = array(
-        'APOSTILB'                      => array('0.31830989',   'asb'),
-        'BLONDEL'                       => array('0.31830989',   'blondel'),
-        'CANDELA_PER_SQUARE_CENTIMETER' => array('10000',        'cd/cm²'),
-        'CANDELA_PER_SQUARE_FOOT'       => array('10.76391',     'cd/ft²'),
-        'CANDELA_PER_SQUARE_INCH'       => array('1550.00304',   'cd/in²'),
-        'CANDELA_PER_SQUARE_METER'      => array('1',            'cd/m²'),
-        'FOOTLAMBERT'                   => array('3.4262591',    'ftL'),
-        'KILOCANDELA_PER_SQUARE_CENTIMETER' => array('10000000', 'kcd/cm²'),
-        'KILOCANDELA_PER_SQUARE_FOOT'   => array('10763.91',     'kcd/ft²'),
-        'KILOCANDELA_PER_SQUARE_INCH'   => array('1550003.04',   'kcd/in²'),
-        'KILOCANDELA_PER_SQUARE_METER'  => array('1000',         'kcd/m²'),
-        'LAMBERT'                       => array('3183.0989',    'L'),
-        'MILLILAMBERT'                  => array('3.1830989',    'mL'),
-        'NIT'                           => array('1',            'nt'),
-        'STILB'                         => array('10000',        'sb'),
+    protected $_units = [
+        'APOSTILB'                      => ['0.31830989',   'asb'],
+        'BLONDEL'                       => ['0.31830989',   'blondel'],
+        'CANDELA_PER_SQUARE_CENTIMETER' => ['10000',        'cd/cm²'],
+        'CANDELA_PER_SQUARE_FOOT'       => ['10.76391',     'cd/ft²'],
+        'CANDELA_PER_SQUARE_INCH'       => ['1550.00304',   'cd/in²'],
+        'CANDELA_PER_SQUARE_METER'      => ['1',            'cd/m²'],
+        'FOOTLAMBERT'                   => ['3.4262591',    'ftL'],
+        'KILOCANDELA_PER_SQUARE_CENTIMETER' => ['10000000', 'kcd/cm²'],
+        'KILOCANDELA_PER_SQUARE_FOOT'   => ['10763.91',     'kcd/ft²'],
+        'KILOCANDELA_PER_SQUARE_INCH'   => ['1550003.04',   'kcd/in²'],
+        'KILOCANDELA_PER_SQUARE_METER'  => ['1000',         'kcd/m²'],
+        'LAMBERT'                       => ['3183.0989',    'L'],
+        'MILLILAMBERT'                  => ['3.1830989',    'mL'],
+        'NIT'                           => ['1',            'nt'],
+        'STILB'                         => ['10000',        'sb'],
         'STANDARD'                      => 'CANDELA_PER_SQUARE_METER'
-    );
+    ];
 }

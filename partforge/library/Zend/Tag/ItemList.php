@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Tag
  * @subpackage ItemList
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: ItemList.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /**
@@ -28,7 +28,7 @@ require_once 'Zend/Tag/Taggable.php';
 /**
  * @category   Zend
  * @package    Zend_Tag
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Tag_ItemList implements Countable, SeekableIterator, ArrayAccess
@@ -38,7 +38,7 @@ class Zend_Tag_ItemList implements Countable, SeekableIterator, ArrayAccess
      *
      * @var array
      */
-    protected $_items = array();
+    protected $_items = [];
 
     /**
      * Count all items
@@ -91,7 +91,7 @@ class Zend_Tag_ItemList implements Countable, SeekableIterator, ArrayAccess
             // Calculate the thresholds
             $steps      = count($values);
             $delta      = ($maxWeight - $minWeight) / ($steps - 1);
-            $thresholds = array();
+            $thresholds = [];
 
             for ($i = 0; $i < $steps; $i++) {
                 $thresholds[$i] = floor(100 * log(($minWeight + $i * $delta) + 2));
@@ -149,15 +149,16 @@ class Zend_Tag_ItemList implements Countable, SeekableIterator, ArrayAccess
      *
      * @return mixed
      */
-    public function next(): void
+    #[\ReturnTypeWillChange]
+    public function next()
     {
-        next($this->_items);
+        return next($this->_items);
     }
 
     /**
      * Return the key of the current element
      *
-     * @return mixed
+     * @return int|string|null
      */
     #[\ReturnTypeWillChange]
     public function key()

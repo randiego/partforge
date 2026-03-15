@@ -14,7 +14,7 @@
  *
  * @category   Zend
  * @package    Zend_Dom
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -24,9 +24,9 @@
  * @package    Zend_Dom
  * @subpackage Query
  * @uses       Iterator
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Result.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 class Zend_Dom_Query_Result implements Iterator,Countable
 {
@@ -76,7 +76,6 @@ class Zend_Dom_Query_Result implements Iterator,Countable
      * @param  string|array $xpathQuery
      * @param  DOMDocument $document
      * @param  DOMNodeList $nodeList
-     * @return void
      */
     public function  __construct($cssQuery, $xpathQuery, DOMDocument $document, DOMNodeList $nodeList)
     {
@@ -119,11 +118,13 @@ class Zend_Dom_Query_Result implements Iterator,Countable
     /**
      * Iterator: rewind to first element
      *
-     * @return void
+     * @return DOMNode|null
      */
-    public function rewind(): void
+    #[\ReturnTypeWillChange]
+    public function rewind()
     {
         $this->_position = 0;
+        return $this->_nodeList->item(0);
     }
 
     /**
@@ -142,7 +143,7 @@ class Zend_Dom_Query_Result implements Iterator,Countable
     /**
      * Iterator: return current element
      *
-     * @return DOMElement
+     * @return DOMNode|null
      */
     #[\ReturnTypeWillChange]
     public function current()
@@ -164,11 +165,13 @@ class Zend_Dom_Query_Result implements Iterator,Countable
     /**
      * Iterator: move to next element
      *
-     * @return void
+     * @return DOMNode|null
      */
-    public function next(): void
+    #[\ReturnTypeWillChange]
+    public function next()
     {
         ++$this->_position;
+        return $this->_nodeList->item($this->_position);
     }
 
     /**

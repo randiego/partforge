@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Db
  * @subpackage Statement
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Pdo.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /**
@@ -34,7 +34,7 @@ require_once 'Zend/Db/Statement.php';
  * @category   Zend
  * @package    Zend_Db
  * @subpackage Statement
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggregate
@@ -111,7 +111,7 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
                     $type = PDO::PARAM_STR;
                 }
             }
-            return $this->_stmt->bindParam($parameter, $variable, $type, $length, $options);
+            return $this->_stmt->bindParam($parameter, $variable, $type, (int) $length, $options);
         } catch (PDOException $e) {
             require_once 'Zend/Db/Statement/Exception.php';
             throw new Zend_Db_Statement_Exception($e->getMessage(), $e->getCode(), $e);
@@ -221,7 +221,7 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      * @return bool
      * @throws Zend_Db_Statement_Exception
      */
-    public function _execute(array $params = null)
+    public function _execute(?array $params = null)
     {
         try {
             if ($params !== null) {
@@ -231,7 +231,8 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
             }
         } catch (PDOException $e) {
             require_once 'Zend/Db/Statement/Exception.php';
-            throw new Zend_Db_Statement_Exception($e->getMessage(), $e->getCode(), $e);
+            $message = sprintf('%s, query was: %s', $e->getMessage(), $this->_stmt->queryString);
+            throw new Zend_Db_Statement_Exception($message, (int) $e->getCode(), $e);
         }
     }
 
@@ -244,7 +245,7 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      * @return mixed Array, object, or scalar depending on fetch mode.
      * @throws Zend_Db_Statement_Exception
      */
-    public function fetch($style = null, $cursor = null, $offset = null)
+    public function fetch($style = null, $cursor = \PDO::FETCH_ORI_NEXT, $offset = 0)
     {
         if ($style === null) {
             $style = $this->_fetchMode;
@@ -262,7 +263,8 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      *
      * @return IteratorIterator
      */
-    public function getIterator(): Traversable
+    #[\ReturnTypeWillChange]
+    public function getIterator(): \Traversable
     {
         return new IteratorIterator($this->_stmt);
     }
@@ -320,7 +322,7 @@ class Zend_Db_Statement_Pdo extends Zend_Db_Statement implements IteratorAggrega
      * @return mixed One object instance of the specified class.
      * @throws Zend_Db_Statement_Exception
      */
-    public function fetchObject($class = 'stdClass', array $config = array())
+    public function fetchObject($class = 'stdClass', array $config = [])
     {
         try {
             return $this->_stmt->fetchObject($class, $config);

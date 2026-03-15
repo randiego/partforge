@@ -14,16 +14,16 @@
  *
  * @category   Zend
  * @package    Zend_Reflection
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Property.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /**
  * @todo       implement line numbers
  * @category   Zend
  * @package    Zend_Reflection
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Reflection_Property extends ReflectionProperty
@@ -33,7 +33,7 @@ class Zend_Reflection_Property extends ReflectionProperty
      *
      * @return Zend_Reflection_Class
      */
-    public function getDeclaringClass($reflectionClass = 'Zend_Reflection_Class')
+    public function getDeclaringClass($reflectionClass = 'Zend_Reflection_Class'): \ReflectionClass
     {
         $phpReflection  = parent::getDeclaringClass();
         $zendReflection = new $reflectionClass($phpReflection->getName());
@@ -51,6 +51,7 @@ class Zend_Reflection_Property extends ReflectionProperty
      * @param  string $reflectionClass
      * @return Zend_Reflection_Docblock|false False if no docblock defined
      */
+    #[\ReturnTypeWillChange]
     public function getDocComment($reflectionClass = 'Zend_Reflection_Docblock')
     {
         $docblock = parent::getDocComment();

@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Tool
  * @subpackage Framework
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Abstract.php 19145 2009-11-20 22:08:36Z beberlei $
+ * @version    $Id$
  */
 
 /**
@@ -25,13 +25,19 @@
  */
 require_once 'Zend/Tool/Framework/Registry/EnabledInterface.php';
 
+require_once 'Zend/Tool/Framework/Loader/Interface.php';
+require_once 'Zend/Tool/Framework/Manifest/Interface.php';
+require_once 'Zend/Tool/Framework/Provider/Interface.php';
+
+
 /**
  * @category   Zend
  * @package    Zend_Tool
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-abstract class Zend_Tool_Framework_Loader_Abstract implements Zend_Tool_Framework_Registry_EnabledInterface
+abstract class Zend_Tool_Framework_Loader_Abstract
+    implements Zend_Tool_Framework_Loader_Interface, Zend_Tool_Framework_Registry_EnabledInterface
 {
     /**
      * @var Zend_Tool_Framework_Repository_Interface
@@ -41,12 +47,12 @@ abstract class Zend_Tool_Framework_Loader_Abstract implements Zend_Tool_Framewor
     /**
      * @var array
      */
-    private $_retrievedFiles = array();
+    private $_retrievedFiles = [];
 
     /**
      * @var array
      */
-    private $_loadedClasses  = array();
+    private $_loadedClasses  = [];
 
     /**
      * _getFiles
@@ -75,12 +81,16 @@ abstract class Zend_Tool_Framework_Loader_Abstract implements Zend_Tool_Framewor
     public function load()
     {
         $this->_retrievedFiles = $this->getRetrievedFiles();
-        $this->_loadedClasses  = array();
+        $this->_loadedClasses  = [];
 
-        $manifestRegistry = $this->_registry->getManifestRepository();
-        $providerRegistry = $this->_registry->getProviderRepository();
+        $manifestRepository = $this->_registry->getManifestRepository();
+        $providerRepository = $this->_registry->getProviderRepository();
 
-        $loadedClasses = array();
+        $loadedClasses = [];
+
+        $newLevel = (defined('E_STRICT') && version_compare(PHP_VERSION, '8.4.0', '<'))
+            ? (E_ALL | ~E_STRICT)
+            : E_ALL;
 
         // loop through files and find the classes declared by loading the file
         foreach ($this->_retrievedFiles as $file) {
@@ -89,7 +99,7 @@ abstract class Zend_Tool_Framework_Loader_Abstract implements Zend_Tool_Framewor
             }
 
             $classesLoadedBefore = get_declared_classes();
-            $oldLevel = error_reporting(E_ALL | ~E_STRICT); // remove strict so that other packages wont throw warnings
+            $oldLevel = error_reporting($newLevel); // remove strict so that other packages wont throw warnings
             // should we lint the files here? i think so
             include_once $file;
             error_reporting($oldLevel); // restore old error level
@@ -105,15 +115,15 @@ abstract class Zend_Tool_Framework_Loader_Abstract implements Zend_Tool_Framewor
             if ($reflectionClass->implementsInterface('Zend_Tool_Framework_Manifest_Interface')
                 && !$reflectionClass->isAbstract())
             {
-                $manifestRegistry->addManifest($reflectionClass->newInstance());
+                $manifestRepository->addManifest($reflectionClass->newInstance());
                 $this->_loadedClasses[] = $loadedClass;
             }
 
             if ($reflectionClass->implementsInterface('Zend_Tool_Framework_Provider_Interface')
                 && !$reflectionClass->isAbstract()
-                && !$providerRegistry->hasProvider($reflectionClass->getName(), false))
+                && !$providerRepository->hasProvider($reflectionClass->getName(), false))
             {
-                $providerRegistry->addProvider($reflectionClass->newInstance());
+                $providerRepository->addProvider($reflectionClass->newInstance());
                 $this->_loadedClasses[] = $loadedClass;
             }
 

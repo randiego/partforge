@@ -14,15 +14,15 @@
  *
  * @category   Zend
  * @package    Zend_Controller
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Http.php 19077 2009-11-20 00:29:56Z matthew $
+ * @version    $Id$
  */
 
-/** Zend_Controller_Request_Abstract */
+/** @see Zend_Controller_Request_Abstract */
 require_once 'Zend/Controller/Request/Abstract.php';
 
-/** Zend_Uri */
+/** @see Zend_Uri */
 require_once 'Zend/Uri.php';
 
 /**
@@ -40,19 +40,19 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
      * Scheme for http
      *
      */
-    const SCHEME_HTTP  = 'http';
+    public const SCHEME_HTTP  = 'http';
 
     /**
      * Scheme for https
      *
      */
-    const SCHEME_HTTPS = 'https';
+    public const SCHEME_HTTPS = 'https';
 
     /**
      * Allowed parameter sources
      * @var array
      */
-    protected $_paramSources = array('_GET', '_POST');
+    protected $_paramSources = ['_GET', '_POST'];
 
     /**
      * REQUEST_URI
@@ -82,7 +82,7 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
      * Instance parameters
      * @var array
      */
-    protected $_params = array();
+    protected $_params = [];
 
     /**
      * Raw request body
@@ -94,7 +94,7 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
      * Alias keys for request parameters
      * @var array
      */
-    protected $_aliases = array();
+    protected $_aliases = [];
 
     /**
      * Constructor
@@ -244,7 +244,7 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
      *
      * @param  string|array $spec
      * @param  null|mixed $value
-     * @return Zend_Controller_Request_Http
+     * @return $this
      */
     public function setQuery($spec, $value = null)
     {
@@ -271,6 +271,8 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
      * @param string $key
      * @param mixed $default Default value to use if key not found
      * @return mixed Returns null if key does not exist
+     *
+     * @phpstan-return ($key is null ? array<string, mixed> : mixed)
      */
     public function getQuery($key = null, $default = null)
     {
@@ -286,7 +288,7 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
      *
      * @param  string|array $spec
      * @param  null|mixed $value
-     * @return Zend_Controller_Request_Http
+     * @return $this
      */
     public function setPost($spec, $value = null)
     {
@@ -313,6 +315,8 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
      * @param string $key
      * @param mixed $default Default value to use if key not found
      * @return mixed Returns null if key does not exist
+     *
+     * @phpstan-return ($key is null ? array<string, mixed> : mixed)
      */
     public function getPost($key = null, $default = null)
     {
@@ -332,6 +336,8 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
      * @param string $key
      * @param mixed $default Default value to use if key not found
      * @return mixed Returns null if key does not exist
+     *
+     * @phpstan-return ($key is null ? array<string, mixed> : mixed)
      */
     public function getCookie($key = null, $default = null)
     {
@@ -350,6 +356,8 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
      * @param string $key
      * @param mixed $default Default value to use if key not found
      * @return mixed Returns null if key does not exist
+     *
+     * @phpstan-return ($key is null ? array<string, mixed> : mixed)
      */
     public function getServer($key = null, $default = null)
     {
@@ -368,6 +376,8 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
      * @param string $key
      * @param mixed $default Default value to use if key not found
      * @return mixed Returns null if key does not exist
+     *
+     * @phpstan-return ($key is null ? array<string, mixed> : mixed)
      */
     public function getEnv($key = null, $default = null)
     {
@@ -382,15 +392,19 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
      * Set the REQUEST_URI on which the instance operates
      *
      * If no request URI is passed, uses the value in $_SERVER['REQUEST_URI'],
-     * $_SERVER['HTTP_X_REWRITE_URL'], or $_SERVER['ORIG_PATH_INFO'] + $_SERVER['QUERY_STRING'].
+     *  or $_SERVER['ORIG_PATH_INFO'] + $_SERVER['QUERY_STRING'].
      *
      * @param string $requestUri
-     * @return Zend_Controller_Request_Http
+     * @return $this
      */
     public function setRequestUri($requestUri = null)
     {
         if ($requestUri === null) {
-            if (isset($_SERVER['HTTP_X_REWRITE_URL'])) { // check this first so IIS will catch
+            if (isset($_SERVER['HTTP_X_ORIGINAL_URL'])) {
+                // IIS with Microsoft Rewrite Module
+                $requestUri = $_SERVER['HTTP_X_ORIGINAL_URL'];
+            } elseif (isset($_SERVER['HTTP_X_REWRITE_URL'])) {
+                // IIS with ISAPI_Rewrite
                 $requestUri = $_SERVER['HTTP_X_REWRITE_URL'];
             } elseif (
                 // IIS7 with URL Rewrite: make sure we get the unencoded url (double slash problem)
@@ -398,7 +412,7 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
                 && $_SERVER['IIS_WasUrlRewritten'] == '1'
                 && isset($_SERVER['UNENCODED_URL'])
                 && $_SERVER['UNENCODED_URL'] != ''
-                ) {
+            ) {
                 $requestUri = $_SERVER['UNENCODED_URL'];
             } elseif (isset($_SERVER['REQUEST_URI'])) {
                 $requestUri = $_SERVER['REQUEST_URI'];
@@ -464,7 +478,7 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
      * ORIG_SCRIPT_NAME in its determination.
      *
      * @param mixed $baseUrl
-     * @return Zend_Controller_Request_Http
+     * @return $this
      */
     public function setBaseUrl($baseUrl = null)
     {
@@ -499,7 +513,7 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
             }
 
             // Does the baseUrl have anything in common with the request_uri?
-            $requestUri = $this->getRequestUri();
+            $requestUri = (string) $this->getRequestUri();
 
             if (0 === strpos($requestUri, $baseUrl)) {
                 // full $baseUrl matches
@@ -513,8 +527,13 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
                 return $this;
             }
 
+            $truncatedRequestUri = $requestUri;
+            if (($pos = strpos($requestUri, '?')) !== false) {
+                $truncatedRequestUri = substr($requestUri, 0, $pos);
+            }
+
             $basename = basename($baseUrl);
-            if (empty($basename) || !strpos($requestUri, $basename)) {
+            if (empty($basename) || !strpos($truncatedRequestUri, $basename)) {
                 // no match whatsoever; set it blank
                 $this->_baseUrl = '';
                 return $this;
@@ -540,20 +559,20 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
      *
      * @return string
      */
-    public function getBaseUrl()
+    public function getBaseUrl($raw = false)
     {
         if (null === $this->_baseUrl) {
             $this->setBaseUrl();
         }
 
-        return $this->_baseUrl;
+        return (($raw == false) ? urldecode($this->_baseUrl) : $this->_baseUrl);
     }
 
     /**
      * Set the base path for the URL
      *
      * @param string|null $basePath
-     * @return Zend_Controller_Request_Http
+     * @return $this
      */
     public function setBasePath($basePath = null)
     {
@@ -602,12 +621,14 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
      * Set the PATH_INFO string
      *
      * @param string|null $pathInfo
-     * @return Zend_Controller_Request_Http
+     * @return $this
      */
     public function setPathInfo($pathInfo = null)
     {
         if ($pathInfo === null) {
-            $baseUrl = $this->getBaseUrl();
+            $baseUrl = $this->getBaseUrl(); // this actually calls setBaseUrl() & setRequestUri()
+            $baseUrlRaw = $this->getBaseUrl(false);
+            $baseUrlEncoded = urlencode($baseUrlRaw);
 
             if (null === ($requestUri = $this->getRequestUri())) {
                 return $this;
@@ -618,14 +639,20 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
                 $requestUri = substr($requestUri, 0, $pos);
             }
 
-            if ((null !== $baseUrl)
-                && (false === ($pathInfo = substr($requestUri, strlen($baseUrl)))))
-            {
-                // If substr() returns false then PATH_INFO is set to an empty string
-                $pathInfo = '';
-            } elseif (null === $baseUrl) {
+            if (!empty($baseUrl) || !empty($baseUrlRaw)) {
+                if (strpos($requestUri, $baseUrl) === 0) {
+                    $pathInfo = substr($requestUri, strlen($baseUrl));
+                } elseif (strpos($requestUri, $baseUrlRaw) === 0) {
+                    $pathInfo = substr($requestUri, strlen($baseUrlRaw));
+                } elseif (strpos($requestUri, $baseUrlEncoded) === 0) {
+                    $pathInfo = substr($requestUri, strlen($baseUrlEncoded));
+                } else {
+                    $pathInfo = $requestUri;
+                }
+            } else {
                 $pathInfo = $requestUri;
             }
+
         }
 
         $this->_pathInfo = (string) $pathInfo;
@@ -654,9 +681,9 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
      * Can be empty array, or contain one or more of '_GET' or '_POST'.
      *
      * @param  array $paramSoures
-     * @return Zend_Controller_Request_Http
+     * @return $this
      */
-    public function setParamSources(array $paramSources = array())
+    public function setParamSources(array $paramSources = [])
     {
         $this->_paramSources = $paramSources;
         return $this;
@@ -680,7 +707,7 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
      *
      * @param mixed $key
      * @param mixed $value
-     * @return Zend_Controller_Request_Http
+     * @return $this
      */
     public function setParam($key, $value)
     {
@@ -753,7 +780,7 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
      * using the keys specified in the array.
      *
      * @param array $params
-     * @return Zend_Controller_Request_Http
+     * @return $this
      */
     public function setParams(array $params)
     {
@@ -771,7 +798,7 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
      *
      * @param string $name
      * @param string $target
-     * @return Zend_Controller_Request_Http
+     * @return $this
      */
     public function setAlias($name, $target)
     {
@@ -901,6 +928,20 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
     }
 
     /**
+     * Was the request made by PATCH?
+     *
+     * @return boolean
+     */
+    public function isPatch()
+    {
+        if ('PATCH' == $this->getMethod()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Is the request a Javascript XMLHttpRequest?
      *
      * Should work with Prototype/Script.aculo.us, possibly others.
@@ -915,7 +956,7 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
     /**
      * Is this a Flash request?
      *
-     * @return bool
+     * @return boolean
      */
     public function isFlashRequest()
     {
@@ -969,8 +1010,18 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
         }
 
         // Try to get it from the $_SERVER array first
-        $temp = 'HTTP_' . strtoupper(str_replace('-', '_', $header));
-        if (!empty($_SERVER[$temp])) {
+        $temp = strtoupper(str_replace('-', '_', $header));
+        if (isset($_SERVER['HTTP_' . $temp])) {
+            return $_SERVER['HTTP_' . $temp];
+        }
+
+        /*
+         * Try to get it from the $_SERVER array on POST request or CGI environment
+         * @see https://www.ietf.org/rfc/rfc3875 (4.1.2. and 4.1.3.)
+         */
+        if (isset($_SERVER[$temp])
+            && in_array($temp, ['CONTENT_TYPE', 'CONTENT_LENGTH'])
+        ) {
             return $_SERVER[$temp];
         }
 
@@ -978,8 +1029,14 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
         // Apache
         if (function_exists('apache_request_headers')) {
             $headers = apache_request_headers();
-            if (!empty($headers[$header])) {
+            if (isset($headers[$header])) {
                 return $headers[$header];
+            }
+            $header = strtolower($header);
+            foreach ($headers as $key => $value) {
+                if (strtolower($key) == $header) {
+                    return $value;
+                }
             }
         }
 
@@ -1016,16 +1073,22 @@ class Zend_Controller_Request_Http extends Zend_Controller_Request_Abstract
         $name   = $this->getServer('SERVER_NAME');
         $port   = $this->getServer('SERVER_PORT');
 
+        if(null === $name) {
+            return '';
+        }
+
         if (($scheme == self::SCHEME_HTTP && $port == 80) || ($scheme == self::SCHEME_HTTPS && $port == 443)) {
             return $name;
-        } else {
-            return $name . ':' . $port;
         }
+
+        return $name . ':' . $port;
+
     }
 
     /**
      * Get the client's IP addres
      *
+     * @param  boolean $checkProxy
      * @return string
      */
     public function getClientIp($checkProxy = true)

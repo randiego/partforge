@@ -14,16 +14,16 @@
  *
  * @category   Zend
  * @package    Zend_Dojo
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: BuildLayer.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /**
  * Dojo module layer and custom build profile generation support
  *
  * @package    Zend_Dojo
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Dojo_BuildLayer
@@ -66,20 +66,20 @@ class Zend_Dojo_BuildLayer
      * Build profile options
      * @var array
      */
-    protected $_profileOptions = array(
+    protected $_profileOptions = [
         'action'        => 'release',
         'optimize'      => 'shrinksafe',
         'layerOptimize' => 'shrinksafe',
         'copyTests'     => false,
         'loader'        => 'default',
         'cssOptimize'   => 'comments',
-    );
+    ];
 
     /**
      * Associative array of module/path pairs for the build profile
      * @var array
      */
-    protected $_profilePrefixes = array();
+    protected $_profilePrefixes = [];
 
     /**
      * Zend_View reference
@@ -374,7 +374,7 @@ class Zend_Dojo_BuildLayer
      */
     public function clearProfileOptions()
     {
-        $this->_profileOptions = array();
+        $this->_profileOptions = [];
         return $this;
     }
 
@@ -392,7 +392,7 @@ class Zend_Dojo_BuildLayer
         if (null === $path) {
             $path = '../' . $prefix;
         }
-        $this->_profilePrefixes[$prefix] = array($prefix, $path);
+        $this->_profilePrefixes[$prefix] = [$prefix, $path];
         return $this;
     }
 
@@ -497,11 +497,11 @@ class Zend_Dojo_BuildLayer
         }
 
         $profile = $profileOptions;
-        $profile['layers'] = array(array(
-            'name' => $layerScriptPath,
-            'layerDependencies' => array(),
-            'dependencies' => array($layerName),
-        ));
+        $profile['layers'] = [[
+            'name'              => $layerScriptPath,
+            'layerDependencies' => [],
+            'dependencies'      => [$layerName],
+        ]];
         $profile['prefixes'] = array_values($profilePrefixes);
 
         return 'dependencies = ' . $this->_filterJsonProfileToJavascript($profile) . ';';
@@ -511,7 +511,7 @@ class Zend_Dojo_BuildLayer
      * Retrieve module prefix
      *
      * @param  string $module
-     * @return void
+     * @return string
      */
     protected function _getPrefix($module)
     {
@@ -529,7 +529,7 @@ class Zend_Dojo_BuildLayer
     {
         require_once 'Zend/Json.php';
         $profile = Zend_Json::encode($profile);
-        $profile = preg_replace('/"([^"]*)":/', '$1:', $profile);
+        $profile = trim($profile, '"');
         $profile = preg_replace('/' . preg_quote('\\') . '/', '', $profile);
         return $profile;
     }

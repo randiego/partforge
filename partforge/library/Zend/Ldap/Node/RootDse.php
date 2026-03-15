@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Ldap
  * @subpackage RootDSE
- * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: RootDse.php 17829 2009-08-26 15:07:10Z sgehrig $
+ * @version    $Id$
  */
 
 /**
@@ -31,15 +31,15 @@ require_once 'Zend/Ldap/Node/Abstract.php';
  * @category   Zend
  * @package    Zend_Ldap
  * @subpackage RootDSE
- * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Ldap_Node_RootDse extends Zend_Ldap_Node_Abstract
 {
-    const SERVER_TYPE_GENERIC         = 1;
-    const SERVER_TYPE_OPENLDAP        = 2;
-    const SERVER_TYPE_ACTIVEDIRECTORY = 3;
-    const SERVER_TYPE_EDIRECTORY      = 4;
+    public const SERVER_TYPE_GENERIC         = 1;
+    public const SERVER_TYPE_OPENLDAP        = 2;
+    public const SERVER_TYPE_ACTIVEDIRECTORY = 3;
+    public const SERVER_TYPE_EDIRECTORY      = 4;
 
     /**
      * Factory method to create the RootDSE.
@@ -51,7 +51,7 @@ class Zend_Ldap_Node_RootDse extends Zend_Ldap_Node_Abstract
     public static function create(Zend_Ldap $ldap)
     {
         $dn = Zend_Ldap_Dn::fromString('');
-        $data = $ldap->getEntry($dn, array('*', '+'), true);
+        $data = $ldap->getEntry($dn, ['*', '+'], true);
         if (isset($data['domainfunctionality'])) {
             /**
              * @see Zend_Ldap_Node_RootDse_ActiveDirectory

@@ -51,6 +51,11 @@ class Types_VersionsController extends RestControllerActionAbstract
     }
 
 
+    public function headAction()
+    {
+        return $this->getAction(true);
+    }
+
    /*
     * GET /types/versions/12
     *
@@ -69,7 +74,9 @@ class Types_VersionsController extends RestControllerActionAbstract
     *   max_depth=n is the maximum recursion level into component definitions for building return dictionary.  default is 0 which stops after first level.
     *
     */
-    public function getAction()
+
+
+    public function getAction($headers_only = false)
     {
         $fmt = isset($this->params['fmt']) ? $this->params['fmt'] : 'nested';
         $max_depth = isset($this->params['max_depth']) ? (is_numeric($this->params['max_depth']) ? $this->params['max_depth'] : 0) : 0;

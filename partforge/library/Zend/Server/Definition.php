@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Server
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Definition.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /**
@@ -25,7 +25,7 @@
  * @todo       Implement iterator
  * @category   Zend
  * @package    Zend_Server
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Server_Definition implements Countable, Iterator
@@ -33,7 +33,7 @@ class Zend_Server_Definition implements Countable, Iterator
     /**
      * @var array Array of Zend_Server_Method_Definition objects
      */
-    protected $_methods = array();
+    protected $_methods = [];
 
     /**
      * @var bool Whether or not overwriting existing methods is allowed
@@ -57,7 +57,7 @@ class Zend_Server_Definition implements Countable, Iterator
      * Set flag indicating whether or not overwriting existing methods is allowed
      *
      * @param mixed $flag
-     * @return void
+     * @return Zend_Server_Definition
      */
     public function setOverwriteExistingMethods($flag)
     {
@@ -187,7 +187,7 @@ class Zend_Server_Definition implements Countable, Iterator
      */
     public function clearMethods()
     {
-        $this->_methods = array();
+        $this->_methods = [];
         return $this;
     }
 
@@ -198,7 +198,7 @@ class Zend_Server_Definition implements Countable, Iterator
      */
     public function toArray()
     {
-        $methods = array();
+        $methods = [];
         foreach ($this->getMethods() as $key => $method) {
             $methods[$key] = $method->toArray();
         }
@@ -242,9 +242,10 @@ class Zend_Server_Definition implements Countable, Iterator
      *
      * @return void
      */
-    public function next(): void
+    #[\ReturnTypeWillChange]
+    public function next()
     {
-        next($this->_methods);
+        return next($this->_methods);
     }
 
     /**
@@ -252,9 +253,10 @@ class Zend_Server_Definition implements Countable, Iterator
      *
      * @return void
      */
-    public function rewind(): void
+    #[\ReturnTypeWillChange]
+    public function rewind()
     {
-        reset($this->_methods);
+        return reset($this->_methods);
     }
 
     /**

@@ -16,9 +16,9 @@
  * @category   Zend
  * @package    Zend_Gdata
  * @subpackage Geo
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Geo.php 16971 2009-07-22 18:05:45Z mikaelkael $
+ * @version    $Id$
  */
 
 /**
@@ -36,7 +36,7 @@ require_once 'Zend/Gdata.php';
  * @category   Zend
  * @package    Zend_Gdata
  * @subpackage Geo
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Gdata_Geo extends Zend_Gdata
@@ -47,10 +47,10 @@ class Zend_Gdata_Geo extends Zend_Gdata
      *
      * @var array
      */
-    public static $namespaces = array(
-        array('georss', 'http://www.georss.org/georss', 1, 0),
-        array('gml', 'http://www.opengis.net/gml', 1, 0)
-    );
+    public static $namespaces = [
+        ['georss', 'http://www.georss.org/georss', 1, 0],
+        ['gml', 'http://www.opengis.net/gml', 1, 0]
+    ];
 
 
     /**

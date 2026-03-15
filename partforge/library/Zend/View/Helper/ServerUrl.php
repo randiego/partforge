@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: ServerUrl.php 16971 2009-07-22 18:05:45Z mikaelkael $
+ * @version    $Id$
  */
 
 /**
@@ -26,7 +26,7 @@
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_View_Helper_ServerUrl
@@ -52,9 +52,14 @@ class Zend_View_Helper_ServerUrl
      */
     public function __construct()
     {
-        if (isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] === true)) {
-            $scheme = 'https';
-        } else {
+        switch (true) {
+            case (isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] === true)):
+            case (isset($_SERVER['HTTP_SCHEME']) && ($_SERVER['HTTP_SCHEME'] == 'https')):
+            case (isset($_SERVER['SERVER_PORT']) && ($_SERVER['SERVER_PORT'] == 443)):
+            case (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && ($_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')):
+                $scheme = 'https';
+                break;
+            default:
             $scheme = 'http';
         }
         $this->setScheme($scheme);
@@ -112,7 +117,7 @@ class Zend_View_Helper_ServerUrl
      * Sets host
      *
      * @param  string $host                new host
-     * @return Zend_View_Helper_ServerUrl  fluent interface, returns self
+     * @return $this
      */
     public function setHost($host)
     {
@@ -134,7 +139,7 @@ class Zend_View_Helper_ServerUrl
      * Sets scheme (typically http or https)
      *
      * @param  string $scheme              new scheme (typically http or https)
-     * @return Zend_View_Helper_ServerUrl  fluent interface, returns self
+     * @return $this
      */
     public function setScheme($scheme)
     {

@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Search_Lucene
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: LockManager.php 16971 2009-07-22 18:05:45Z mikaelkael $
+ * @version    $Id$
  */
 
 /** Zend_Search_Lucene_Storage_Directory */
@@ -30,7 +30,7 @@ require_once 'Zend/Search/Lucene/Storage/File.php';
  *
  * @category   Zend
  * @package    Zend_Search_Lucene
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Search_Lucene_LockManager
@@ -38,10 +38,10 @@ class Zend_Search_Lucene_LockManager
     /**
      * consts for name of file to show lock status
      */
-    const WRITE_LOCK_FILE                = 'write.lock.file';
-    const READ_LOCK_FILE                 = 'read.lock.file';
-    const READ_LOCK_PROCESSING_LOCK_FILE = 'read-lock-processing.lock.file';
-    const OPTIMIZATION_LOCK_FILE         = 'optimization.lock.file';
+    public const WRITE_LOCK_FILE                = 'write.lock.file';
+    public const READ_LOCK_FILE                 = 'read.lock.file';
+    public const READ_LOCK_PROCESSING_LOCK_FILE = 'read-lock-processing.lock.file';
+    public const OPTIMIZATION_LOCK_FILE         = 'optimization.lock.file';
 
     /**
      * Obtain exclusive write lock on the index
@@ -211,7 +211,7 @@ class Zend_Search_Lucene_LockManager
      * Returns lock object on success and false otherwise (doesn't block execution)
      *
      * @param Zend_Search_Lucene_Storage_Directory $lockDirectory
-     * @return mixed
+     * @return false|Zend_Search_Lucene_Storage_File
      */
     public static function obtainOptimizationLock(Zend_Search_Lucene_Storage_Directory $lockDirectory)
     {

@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Tool
  * @subpackage Framework
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Repository.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /**
@@ -33,7 +33,7 @@ require_once 'Zend/Tool/Framework/Registry/EnabledInterface.php';
 /**
  * @category   Zend
  * @package    Zend_Tool
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Tool_Framework_Provider_Repository
@@ -53,23 +53,23 @@ class Zend_Tool_Framework_Provider_Repository
     /**
      * @var Zend_Tool_Framework_Provider_Interface[]
      */
-    protected $_unprocessedProviders = array();
+    protected $_unprocessedProviders = [];
 
     /**
      * @var Zend_Tool_Framework_Provider_Signature[]
      */
-    protected $_providerSignatures = array();
+    protected $_providerSignatures = [];
 
     /**
      * @var array Array of Zend_Tool_Framework_Provider_Inteface
      */
-    protected $_providers = array();
+    protected $_providers = [];
 
     /**
      * setRegistry()
      *
      * @param Zend_Tool_Framework_Registry_Interface $registry
-     * @return unknown
+     * @return Zend_Tool_Framework_Provider_Repository
      */
     public function setRegistry(Zend_Tool_Framework_Registry_Interface $registry)
     {
@@ -80,8 +80,8 @@ class Zend_Tool_Framework_Provider_Repository
     /**
      * Set the ProcessOnAdd flag
      *
-     * @param unknown_type $processOnAdd
-     * @return unknown
+     * @param bool $processOnAdd
+     * @return Zend_Tool_Framework_Provider_Repository
      */
     public function setProcessOnAdd($processOnAdd = true)
     {
@@ -160,7 +160,12 @@ class Zend_Tool_Framework_Provider_Repository
     {
 
         // process all providers in the unprocessedProviders array
-        foreach ($this->_unprocessedProviders as $providerName => $provider) {
+        //foreach ($this->_unprocessedProviders as $providerName => $provider) {
+        reset($this->_unprocessedProviders);
+        while ($this->_unprocessedProviders) {
+
+            $providerName = key($this->_unprocessedProviders);
+            $provider = array_shift($this->_unprocessedProviders);
 
             // create a signature for the provided provider
             $providerSignature = new Zend_Tool_Framework_Provider_Signature($provider);
@@ -178,8 +183,10 @@ class Zend_Tool_Framework_Provider_Repository
             $this->_providerSignatures[$providerName] = $providerSignature;
             $this->_providers[$providerName]          = $providerSignature->getProvider();
 
-            // remove from unprocessed array
-            unset($this->_unprocessedProviders[$providerName]);
+            if ($provider instanceof Zend_Tool_Framework_Provider_Initializable) {
+                $provider->initialize();
+            }
+
         }
 
     }
@@ -241,7 +248,8 @@ class Zend_Tool_Framework_Provider_Repository
      *
      * @return ArrayIterator
      */
-    public function getIterator(): Traversable
+    #[\ReturnTypeWillChange]
+    public function getIterator(): \Traversable
     {
         return new ArrayIterator($this->getProviders());
     }
@@ -255,7 +263,10 @@ class Zend_Tool_Framework_Provider_Repository
     protected function _parseName(Zend_Tool_Framework_Provider_Interface $provider)
     {
         $className = get_class($provider);
-        $providerName = substr($className, strrpos($className, '_')+1);
+        $providerName = $className;
+        if (strpos($providerName, '_') !== false) {
+            $providerName = substr($providerName, strrpos($providerName, '_')+1);
+        }
         if (substr($providerName, -8) == 'Provider') {
             $providerName = substr($providerName, 0, strlen($providerName)-8);
         }

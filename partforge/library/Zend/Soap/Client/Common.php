@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Soap
  * @subpackage Client
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Common.php 16971 2009-07-22 18:05:45Z mikaelkael $
+ * @version    $Id$
  */
 
 
@@ -40,7 +40,7 @@ class Zend_Soap_Client_Common extends SoapClient
     /**
      * Common Soap Client constructor
      *
-     * @param callback $doRequestMethod
+     * @param callable $doRequestMethod
      * @param string $wsdl
      * @param array $options
      */
@@ -62,6 +62,7 @@ class Zend_Soap_Client_Common extends SoapClient
      * @param int    $one_way
      * @return mixed
      */
+    #[\ReturnTypeWillChange]
     function __doRequest($request, $location, $action, $version, $one_way = null)
     {
         if ($one_way === null) {

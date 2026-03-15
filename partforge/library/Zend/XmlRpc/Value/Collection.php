@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_XmlRpc
  * @subpackage Value
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Collection.php 17786 2009-08-23 22:26:33Z lars $
+ * @version    $Id$
  */
 
 
@@ -31,7 +31,7 @@ require_once 'Zend/XmlRpc/Value.php';
  * @category   Zend
  * @package    Zend_XmlRpc
  * @subpackage Value
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_XmlRpc_Value_Collection extends Zend_XmlRpc_Value
@@ -59,13 +59,13 @@ abstract class Zend_XmlRpc_Value_Collection extends Zend_XmlRpc_Value
     /**
      * Return the value of this object, convert the XML-RPC native collection values into a PHP array
      *
-     * @return arary
+     * @return array
      */
     public function getValue()
     {
         $values = (array)$this->_value;
         foreach ($values as $key => $value) {
-            /* @var $value Zend_XmlRpc_Value */
+            /* @var Zend_XmlRpc_Value $value */
             $values[$key] = $value->getValue();
         }
         return $values;

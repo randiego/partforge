@@ -46,6 +46,11 @@ class Types_ObjectsController extends RestControllerActionAbstract
         $this->view->typeobject_ids = extract_column($records, 'typeobject_id');
     }
 
+    public function headAction()
+    {
+        return $this->getAction(true);
+    }
+
    /*
     * GET /types/objects/1
     *
@@ -61,7 +66,7 @@ class Types_ObjectsController extends RestControllerActionAbstract
     *
     */
 
-    public function getAction()
+    public function getAction($isHead = false)
     {
         $fmt = isset($this->params['fmt']) ? $this->params['fmt'] : 'nested';
         $max_depth = isset($this->params['max_depth']) ? (is_numeric($this->params['max_depth']) ? $this->params['max_depth'] : 0) : 0;

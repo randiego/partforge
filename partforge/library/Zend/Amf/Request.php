@@ -14,24 +14,24 @@
  *
  * @category   Zend
  * @package    Zend_Amf
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Request.php 16971 2009-07-22 18:05:45Z mikaelkael $
+ * @version    $Id$
  */
 
-/** Zend_Amf_Parse_InputStream */
+/** @see Zend_Amf_Parse_InputStream */
 require_once 'Zend/Amf/Parse/InputStream.php';
 
-/** Zend_Amf_Parse_Amf0_Deserializer */
+/** @see Zend_Amf_Parse_Amf0_Deserializer */
 require_once 'Zend/Amf/Parse/Amf0/Deserializer.php';
 
-/** Zend_Amf_Constants */
+/** @see Zend_Amf_Constants */
 require_once 'Zend/Amf/Constants.php';
 
-/** Zend_Amf_Value_MessageHeader */
+/** @see Zend_Amf_Value_MessageHeader */
 require_once 'Zend/Amf/Value/MessageHeader.php';
 
-/** Zend_Amf_Value_MessageBody */
+/** @see Zend_Amf_Value_MessageBody */
 require_once 'Zend/Amf/Value/MessageBody.php';
 
 /**
@@ -40,7 +40,7 @@ require_once 'Zend/Amf/Value/MessageBody.php';
  *
  * @todo       Currently not checking if the object needs to be Type Mapped to a server object.
  * @package    Zend_Amf
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Amf_Request
@@ -53,12 +53,12 @@ class Zend_Amf_Request
     /**
      * @var array Message bodies
      */
-    protected $_bodies = array();
+    protected $_bodies = [];
 
     /**
      * @var array Message headers
      */
-    protected $_headers = array();
+    protected $_headers = [];
 
     /**
      * @var int Message encoding to use for objects in response
@@ -98,7 +98,7 @@ class Zend_Amf_Request
     /**
      * Takes the raw AMF input stream and converts it into valid PHP objects
      *
-     * @param  Zend_Amf_Parse_InputStream
+     * @param  Zend_Amf_Parse_InputStream $stream
      * @return Zend_Amf_Request
      */
     public function readMessage(Zend_Amf_Parse_InputStream $stream)
@@ -112,8 +112,8 @@ class Zend_Amf_Request
             throw new Zend_Amf_Exception('Unknown Player Version ' . $clientVersion);
         }
 
-        $this->_bodies  = array();
-        $this->_headers = array();
+        $this->_bodies  = [];
+        $this->_headers = [];
         $headerCount    = $stream->readInt();
 
         // Iterate through the AMF envelope header
@@ -143,7 +143,7 @@ class Zend_Amf_Request
      */
     public function readHeader()
     {
-        $name     = $this->_inputStream->readUTF();
+        $name     = $this->_inputStream->readUtf();
         $mustRead = (bool)$this->_inputStream->readByte();
         $length   = $this->_inputStream->readLong();
 
@@ -151,11 +151,10 @@ class Zend_Amf_Request
             $data = $this->_deserializer->readTypeMarker();
         } catch (Exception $e) {
             require_once 'Zend/Amf/Exception.php';
-            throw new Zend_Amf_Exception('Unable to parse ' . $name . ' header data: ' . $e->getMessage() . ' '. $e->getLine());
+            throw new Zend_Amf_Exception('Unable to parse ' . $name . ' header data: ' . $e->getMessage() . ' '. $e->getLine(), 0, $e);
         }
 
-        $header = new Zend_Amf_Value_MessageHeader($name, $mustRead, $data, $length);
-        return $header;
+        return new Zend_Amf_Value_MessageHeader($name, $mustRead, $data, $length);
     }
 
     /**
@@ -165,15 +164,15 @@ class Zend_Amf_Request
      */
     public function readBody()
     {
-        $targetURI   = $this->_inputStream->readUTF();
-        $responseURI = $this->_inputStream->readUTF();
+        $targetURI   = $this->_inputStream->readUtf();
+        $responseURI = $this->_inputStream->readUtf();
         $length      = $this->_inputStream->readLong();
 
         try {
             $data = $this->_deserializer->readTypeMarker();
         } catch (Exception $e) {
             require_once 'Zend/Amf/Exception.php';
-            throw new Zend_Amf_Exception('Unable to parse ' . $targetURI . ' body data ' . $e->getMessage());
+            throw new Zend_Amf_Exception('Unable to parse ' . $targetURI . ' body data ' . $e->getMessage(), 0, $e);
         }
 
         // Check for AMF3 objectEncoding
@@ -191,8 +190,7 @@ class Zend_Amf_Request
             $this->_objectEncoding = Zend_Amf_Constants::AMF3_OBJECT_ENCODING;
         }
 
-        $body = new Zend_Amf_Value_MessageBody($targetURI, $responseURI, $data);
-        return $body;
+        return new Zend_Amf_Value_MessageBody($targetURI, $responseURI, $data);
     }
 
     /**

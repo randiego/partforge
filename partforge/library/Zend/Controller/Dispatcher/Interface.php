@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Controller
  * @subpackage Dispatcher
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Interface.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /**
@@ -33,7 +33,7 @@ require_once 'Zend/Controller/Response/Abstract.php';
 /**
  * @package    Zend_Controller
  * @subpackage Dispatcher
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 interface Zend_Controller_Dispatcher_Interface
@@ -118,7 +118,7 @@ interface Zend_Controller_Dispatcher_Interface
      * only that parameter; if an array of parameter names is provided, clears
      * each.
      *
-     * @param null|string|array single key or array of keys for params to clear
+     * @param null|string|array $name single key or array of keys for params to clear
      * @return Zend_Controller_Dispatcher_Interface
      */
     public function clearParams($name = null);
@@ -129,7 +129,7 @@ interface Zend_Controller_Dispatcher_Interface
      * @param Zend_Controller_Response_Abstract|null $response
      * @return void
      */
-    public function setResponse(Zend_Controller_Response_Abstract $response = null);
+    public function setResponse(?Zend_Controller_Response_Abstract $response = null);
 
     /**
      * Retrieve the response object, if any

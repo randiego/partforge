@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Pdf
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Cmyk.php 18993 2009-11-15 17:09:16Z alexander $
+ * @version    $Id$
  */
 
 /** Internally used classes */
@@ -31,7 +31,7 @@ require_once 'Zend/Pdf/Color.php';
  *
  * @category   Zend
  * @package    Zend_Pdf
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Pdf_Color_Cmyk extends Zend_Pdf_Color
@@ -120,7 +120,7 @@ class Zend_Pdf_Color_Cmyk extends Zend_Pdf_Color
      */
     public function getComponents()
     {
-        return array($this->_c->value, $this->_m->value, $this->_y->value, $this->_k->value);
+        return [$this->_c->value, $this->_m->value, $this->_y->value, $this->_k->value];
     }
 }
 

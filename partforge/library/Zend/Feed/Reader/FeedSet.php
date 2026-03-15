@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Feed_Reader
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: FeedSet.php 19105 2009-11-20 17:13:54Z padraic $
+ * @version    $Id$
  */
 
 /**
@@ -32,7 +32,7 @@ require_once 'Zend/Uri.php';
 /**
  * @category   Zend
  * @package    Zend_Feed_Reader
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Feed_Reader_FeedSet extends ArrayObject
@@ -74,21 +74,21 @@ class Zend_Feed_Reader_FeedSet extends ArrayObject
             } elseif(!isset($this->rdf) && $link->getAttribute('type') == 'application/rdf+xml') {
                 $this->rdf = $this->_absolutiseUri(trim($link->getAttribute('href')), $uri);
             }
-            $this[] = new self(array(
+            $this[] = new self([
                 'rel' => 'alternate',
                 'type' => $link->getAttribute('type'),
                 'href' => $this->_absolutiseUri(trim($link->getAttribute('href')), $uri),
-            ));
+            ]);
         }
     }
-    
+
     /**
      *  Attempt to turn a relative URI into an absolute URI
      */
     protected function _absolutiseUri($link, $uri = null)
     {
         if (!Zend_Uri::check($link)) {
-            if (!is_null($uri)) {
+            if ($uri !== null) {
                 $uri = Zend_Uri::factory($uri);
 
                 if ($link[0] !== '/') {
@@ -103,14 +103,14 @@ class Zend_Feed_Reader_FeedSet extends ArrayObject
         }
         return $link;
     }
-    
+
     /**
      *  Canonicalize relative path
      */
     protected function _canonicalizePath($path)
     {
         $parts = array_filter(explode('/', $path));
-        $absolutes = array();
+        $absolutes = [];
         foreach ($parts as $part) {
             if ('.' == $part) {
                 continue;

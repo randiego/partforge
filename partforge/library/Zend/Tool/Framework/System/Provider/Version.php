@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Tool
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Version.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 require_once 'Zend/Tool/Framework/Registry.php';
@@ -28,7 +28,7 @@ require_once 'Zend/Version.php';
  *
  * @category   Zend
  * @package    Zend_Tool
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Tool_Framework_System_Provider_Version
@@ -40,11 +40,11 @@ class Zend_Tool_Framework_System_Provider_Version
      */
     protected $_registry = null;
 
-    const MODE_MAJOR = 'major';
-    const MODE_MINOR = 'minor';
-    const MODE_MINI  = 'mini';
+    public const MODE_MAJOR = 'major';
+    public const MODE_MINOR = 'minor';
+    public const MODE_MINI  = 'mini';
 
-    protected $_specialties = array('MajorPart', 'MinorPart', 'MiniPart');
+    protected $_specialties = ['MajorPart', 'MinorPart', 'MiniPart'];
 
     public function setRegistry(Zend_Tool_Framework_Registry_Interface $registry)
     {
@@ -56,7 +56,7 @@ class Zend_Tool_Framework_System_Provider_Version
      * Show Action
      *
      * @param string $mode The mode switch can be one of: major, minor, or mini (default)
-     * @param bool $nameincluded
+     * @param bool $nameIncluded
      */
     public function show($mode = self::MODE_MINI, $nameIncluded = true)
     {
@@ -105,7 +105,7 @@ class Zend_Tool_Framework_System_Provider_Version
     protected function _splitVersion()
     {
         list($major, $minor, $mini) = explode('.', Zend_Version::VERSION);
-        return array('major' => $major, 'minor' => $minor, 'mini' => $mini);
+        return ['major' => $major, 'minor' => $minor, 'mini' => $mini];
     }
 
 }

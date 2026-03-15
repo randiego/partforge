@@ -16,9 +16,9 @@
  * @category   Zend
  * @package    Zend_Gdata
  * @subpackage Gdata
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: ClientLogin.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /**
@@ -39,7 +39,7 @@ require_once 'Zend/Version.php';
  * @category   Zend
  * @package    Zend_Gdata
  * @subpackage Gdata
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Gdata_ClientLogin
@@ -49,13 +49,13 @@ class Zend_Gdata_ClientLogin
      * The Google client login URI
      *
      */
-    const CLIENTLOGIN_URI = 'https://www.google.com/accounts/ClientLogin';
+    public const CLIENTLOGIN_URI = 'https://www.google.com/accounts/ClientLogin';
 
     /**
      * The default 'source' parameter to send to Google
      *
      */
-    const DEFAULT_SOURCE = 'Zend-ZendFramework';
+    public const DEFAULT_SOURCE = 'Zend-ZendFramework';
 
     /**
      * Set Google authentication credentials.
@@ -105,11 +105,11 @@ class Zend_Gdata_ClientLogin
         // Build the HTTP client for authentication
         $client->setUri($loginUri);
         $useragent = $source . ' Zend_Framework_Gdata/' . Zend_Version::VERSION;
-        $client->setConfig(array(
+        $client->setConfig([
                 'maxredirects'    => 0,
                 'strictredirects' => true,
                 'useragent' => $useragent
-            )
+            ]
         );
         $client->setParameterPost('accountType', $accountType);
         $client->setParameterPost('Email', (string) $email);
@@ -143,7 +143,7 @@ class Zend_Gdata_ClientLogin
         ob_end_clean();
 
         // Parse Google's response
-        $goog_resp = array();
+        $goog_resp = [];
         foreach (explode("\n", $response->getBody()) as $l) {
             $l = chop($l);
             if ($l) {
@@ -155,10 +155,10 @@ class Zend_Gdata_ClientLogin
         if ($response->getStatus() == 200) {
             $client->setClientLoginToken($goog_resp['Auth']);
             $useragent = $source . ' Zend_Framework_Gdata/' . Zend_Version::VERSION;
-            $client->setConfig(array(
+            $client->setConfig([
                     'strictredirects' => true,
                     'useragent' => $useragent
-                )
+                ]
             );
             return $client;
 

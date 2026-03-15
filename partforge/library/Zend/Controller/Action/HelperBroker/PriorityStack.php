@@ -15,23 +15,23 @@
  * @category   Zend
  * @package    Zend_Controller
  * @subpackage Zend_Controller_Action
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: PriorityStack.php 17947 2009-09-02 03:58:21Z yoshida@zend.co.jp $
+ * @version    $Id$
  */
 
 /**
  * @category   Zend
  * @package    Zend_Controller
  * @subpackage Zend_Controller_Action
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Controller_Action_HelperBroker_PriorityStack implements IteratorAggregate, ArrayAccess, Countable
 {
 
-    protected $_helpersByPriority = array();
-    protected $_helpersByNameRef  = array();
+    protected $_helpersByPriority = [];
+    protected $_helpersByNameRef  = [];
     protected $_nextDefaultPriority = 1;
 
     /**
@@ -53,7 +53,7 @@ class Zend_Controller_Action_HelperBroker_PriorityStack implements IteratorAggre
      * Magic property overloading for returning if helper is set by name
      *
      * @param string $helperName    The helper name
-     * @return Zend_Controller_Action_Helper_Abstract
+     * @return bool
      */
     public function __isset($helperName)
     {
@@ -64,7 +64,7 @@ class Zend_Controller_Action_HelperBroker_PriorityStack implements IteratorAggre
      * Magic property overloading for unsetting if helper is exists by name
      *
      * @param string $helperName    The helper name
-     * @return Zend_Controller_Action_Helper_Abstract
+     * @return Zend_Controller_Action_HelperBroker_PriorityStack
      */
     public function __unset($helperName)
     {
@@ -75,7 +75,7 @@ class Zend_Controller_Action_HelperBroker_PriorityStack implements IteratorAggre
      * push helper onto the stack
      *
      * @param Zend_Controller_Action_Helper_Abstract $helper
-     * @return Zend_Controller_Action_HelperBroker_PriorityStack
+     * @return $this
      */
     public function push(Zend_Controller_Action_Helper_Abstract $helper)
     {
@@ -86,9 +86,10 @@ class Zend_Controller_Action_HelperBroker_PriorityStack implements IteratorAggre
     /**
      * Return something iterable
      *
-     * @return array
+     * @return ArrayObject
      */
-    public function getIterator(): Traversable
+    #[\ReturnTypeWillChange]
+    public function getIterator(): \Traversable
     {
         return new ArrayObject($this->_helpersByPriority);
     }
@@ -97,7 +98,7 @@ class Zend_Controller_Action_HelperBroker_PriorityStack implements IteratorAggre
      * offsetExists()
      *
      * @param int|string $priorityOrHelperName
-     * @return Zend_Controller_Action_HelperBroker_PriorityStack
+     * @return bool
      */
     public function offsetExists($priorityOrHelperName): bool
     {
@@ -136,7 +137,8 @@ class Zend_Controller_Action_HelperBroker_PriorityStack implements IteratorAggre
      * @param Zend_Controller_Action_Helper_Abstract $helper
      * @return Zend_Controller_Action_HelperBroker_PriorityStack
      */
-    public function offsetSet($priority, $helper): void
+    #[\ReturnTypeWillChange]
+    public function offsetSet($priority, $helper)
     {
         $priority = (int) $priority;
 
@@ -164,6 +166,7 @@ class Zend_Controller_Action_HelperBroker_PriorityStack implements IteratorAggre
         }
 
         krsort($this->_helpersByPriority);  // always make sure priority and LIFO are both enforced
+        return $this;
     }
 
     /**
@@ -172,7 +175,8 @@ class Zend_Controller_Action_HelperBroker_PriorityStack implements IteratorAggre
      * @param int|string $priorityOrHelperName Priority integer or the helper name
      * @return Zend_Controller_Action_HelperBroker_PriorityStack
      */
-    public function offsetUnset($priorityOrHelperName): void
+    #[\ReturnTypeWillChange]
+    public function offsetUnset($priorityOrHelperName)
     {
         if (!$this->offsetExists($priorityOrHelperName)) {
             require_once 'Zend/Controller/Action/Exception.php';
@@ -190,6 +194,7 @@ class Zend_Controller_Action_HelperBroker_PriorityStack implements IteratorAggre
 
         unset($this->_helpersByNameRef[$helperName]);
         unset($this->_helpersByPriority[$priority]);
+        return $this;
     }
 
     /**

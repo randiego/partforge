@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Db
  * @subpackage Statement
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Oci.php 16971 2009-07-22 18:05:45Z mikaelkael $
+ * @version    $Id$
  */
 
 /**
@@ -34,7 +34,7 @@ require_once 'Zend/Db/Statement/Pdo.php';
  * @category   Zend
  * @package    Zend_Db
  * @subpackage Statement
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Db_Statement_Pdo_Oci extends Zend_Db_Statement_Pdo
@@ -55,7 +55,7 @@ class Zend_Db_Statement_Pdo_Oci extends Zend_Db_Statement_Pdo
     public function fetchAll($style = null, $col = null)
     {
         $data = parent::fetchAll($style, $col);
-        $results = array();
+        $results = [];
         $remove = $this->_adapter->foldCase('zend_db_rownum');
 
         foreach ($data as $row) {
@@ -65,5 +65,27 @@ class Zend_Db_Statement_Pdo_Oci extends Zend_Db_Statement_Pdo
             $results[] = $row;
         }
         return $results;
+    }
+
+
+    /**
+     * Fetches a row from the result set.
+     *
+     * @param int $style  OPTIONAL Fetch mode for this fetch operation.
+     * @param int $cursor OPTIONAL Absolute, relative, or other.
+     * @param int $offset OPTIONAL Number for absolute or relative cursors.
+     * @return mixed Array, object, or scalar depending on fetch mode.
+     * @throws Zend_Db_Statement_Exception
+     */
+    public function fetch($style = null, $cursor = null, $offset = null)
+    {
+        $row = parent::fetch($style, $cursor, $offset);
+
+        $remove = $this->_adapter->foldCase('zend_db_rownum');
+        if (is_array($row) && array_key_exists($remove, $row)) {
+            unset($row[$remove]);
+        }
+
+        return $row;
     }
 }

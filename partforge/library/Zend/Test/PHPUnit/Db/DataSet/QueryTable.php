@@ -15,15 +15,10 @@
  * @category   Zend
  * @package    Zend_Test
  * @subpackage PHPUnit
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: QueryTable.php 17117 2009-07-26 09:41:26Z beberlei $
+ * @version    $Id$
  */
-
-
-require_once "PHPUnit/Extensions/Database/DataSet/QueryTable.php";
-
-require_once "PHPUnit/Extensions/Database/DB/IDatabaseConnection.php";
 
 /**
  * Represent a PHPUnit Database Extension table with Queries using a Zend_Db adapter for assertion against other tables.
@@ -32,7 +27,7 @@ require_once "PHPUnit/Extensions/Database/DB/IDatabaseConnection.php";
  * @category   Zend
  * @package    Zend_Test
  * @subpackage PHPUnit
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Test_PHPUnit_Db_DataSet_QueryTable extends PHPUnit_Extensions_Database_DataSet_QueryTable
@@ -40,9 +35,10 @@ class Zend_Test_PHPUnit_Db_DataSet_QueryTable extends PHPUnit_Extensions_Databas
     /**
      * Creates a new database query table object.
      *
-     * @param string $table_name
-     * @param string $query
+     * @param string                                             $tableName
+     * @param string                                             $query
      * @param PHPUnit_Extensions_Database_DB_IDatabaseConnection $databaseConnection
+     * @throws Zend_Test_PHPUnit_Db_Exception
      */
     public function __construct($tableName, $query, PHPUnit_Extensions_Database_DB_IDatabaseConnection $databaseConnection)
     {
@@ -74,7 +70,7 @@ class Zend_Test_PHPUnit_Db_DataSet_QueryTable extends PHPUnit_Extensions_Databas
         if ($this->tableMetaData === NULL)
         {
             $this->loadData();
-            $keys = array();
+            $keys = [];
             if(count($this->data) > 0) {
                 $keys = array_keys($this->data[0]);
             }

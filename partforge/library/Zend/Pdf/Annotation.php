@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Pdf
  * @subpackage Annotation
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id:
+ * @version    $Id$
  */
 
 /** Internally used classes */
@@ -32,7 +32,7 @@ require_once 'Zend/Pdf/Element.php';
  *
  * @package    Zend_Pdf
  * @subpackage Annotation
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Pdf_Annotation
@@ -206,7 +206,7 @@ abstract class Zend_Pdf_Annotation
             throw new Zend_Pdf_Exception('\'Rect\' dictionary entry is required.');
         }
 
-        if (count($this->_annotationDictionary->Rect->items) != 4 ||
+        if (count($this->_annotationDictionary->Rect->items) !== 4 ||
             $this->_annotationDictionary->Rect->items[0]->getType() != Zend_Pdf_Element::TYPE_NUMERIC ||
             $this->_annotationDictionary->Rect->items[1]->getType() != Zend_Pdf_Element::TYPE_NUMERIC ||
             $this->_annotationDictionary->Rect->items[2]->getType() != Zend_Pdf_Element::TYPE_NUMERIC ||
@@ -219,13 +219,12 @@ abstract class Zend_Pdf_Annotation
     /**
      * Load Annotation object from a specified resource
      *
+     * @param Zend_Pdf_Element $resource
+     * @return void
      * @internal
-     * @param $destinationArray
-     * @return Zend_Pdf_Annotation
      */
     public static function load(Zend_Pdf_Element $resource)
     {
         /** @todo implementation */
     }
 }
-

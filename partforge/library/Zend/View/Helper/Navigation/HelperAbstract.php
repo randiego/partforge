@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: HelperAbstract.php 16971 2009-07-22 18:05:45Z mikaelkael $
+ * @version    $Id$
  */
 
 /**
@@ -36,7 +36,7 @@ require_once 'Zend/View/Helper/HtmlElement.php';
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_View_Helper_Navigation_HelperAbstract
@@ -70,6 +70,27 @@ abstract class Zend_View_Helper_Navigation_HelperAbstract
      * @var string
      */
     protected $_indent = '';
+
+    /**
+     * Whether HTML/XML output should be formatted
+     *
+     * @var bool
+     */
+    protected $_formatOutput = true;
+
+    /**
+     * Prefix for IDs when they are normalized
+     *
+     * @var string|null
+     */
+    protected $_prefixForId = null;
+
+    /**
+     * Skip current prefix for IDs when they are normalized (flag)
+     *
+     * @var bool
+     */
+    protected $_skipPrefixForId = false;
 
     /**
      * Translator
@@ -141,10 +162,10 @@ abstract class Zend_View_Helper_Navigation_HelperAbstract
      *                                                     Default is null,
      *                                                     meaning container
      *                                                     will be reset.
-     * @return Zend_View_Helper_Navigation_HelperAbstract  fluent interface,
+     * @return $this
      *                                                     returns self
      */
-    public function setContainer(Zend_Navigation_Container $container = null)
+    public function setContainer(?Zend_Navigation_Container $container = null)
     {
         $this->_container = $container;
         return $this;
@@ -192,7 +213,7 @@ abstract class Zend_View_Helper_Navigation_HelperAbstract
      *                                                     depth. Default is
      *                                                     null, which sets
      *                                                     no minimum depth.
-     * @return Zend_View_Helper_Navigation_HelperAbstract  fluent interface,
+     * @return $this
      *                                                     returns self
      */
     public function setMinDepth($minDepth = null)
@@ -225,7 +246,7 @@ abstract class Zend_View_Helper_Navigation_HelperAbstract
      *                                                     depth. Default is
      *                                                     null, which sets no
      *                                                     maximum depth.
-     * @return Zend_View_Helper_Navigation_HelperAbstract  fluent interface,
+     * @return $this
      *                                                     returns self
      */
     public function setMaxDepth($maxDepth = null)
@@ -254,7 +275,7 @@ abstract class Zend_View_Helper_Navigation_HelperAbstract
      *
      * @param  string|int $indent                          indentation string or
      *                                                     number of spaces
-     * @return Zend_View_Helper_Navigation_HelperAbstract  fluent interface,
+     * @return $this
      *                                                     returns self
      */
     public function setIndent($indent)
@@ -264,13 +285,105 @@ abstract class Zend_View_Helper_Navigation_HelperAbstract
     }
 
     /**
-     * Returns indentation
+     * Returns indentation (format output is respected)
      *
-     * @return string
+     * @return string   indentation string or an empty string
      */
     public function getIndent()
     {
+        if (false === $this->getFormatOutput()) {
+            return '';
+        }
+
         return $this->_indent;
+    }
+
+    /**
+     * Returns the EOL character (format output is respected)
+     *
+     * @see self::EOL
+     * @see getFormatOutput()
+     *
+     * @return string       standard EOL charater or an empty string
+     */
+    public function getEOL()
+    {
+        if (false === $this->getFormatOutput()) {
+            return '';
+        }
+
+        return self::EOL;
+    }
+
+    /**
+     * Sets whether HTML/XML output should be formatted
+     *
+     * @param  bool $formatOutput                   [optional] whether output
+     *                                              should be formatted. Default
+     *                                              is true.
+     *
+     * @return $this
+     *                                              self
+     */
+    public function setFormatOutput($formatOutput = true)
+    {
+        $this->_formatOutput = (bool)$formatOutput;
+
+        return $this;
+    }
+
+    /**
+     * Returns whether HTML/XML output should be formatted
+     *
+     * @return bool  whether HTML/XML output should be formatted
+     */
+    public function getFormatOutput()
+    {
+        return $this->_formatOutput;
+    }
+
+    /**
+     * Sets prefix for IDs when they are normalized
+     *
+     * @param   string $prefix                              Prefix for IDs
+     * @return $this
+     */
+    public function setPrefixForId($prefix)
+    {
+        if (is_string($prefix)) {
+            $this->_prefixForId = trim($prefix);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Returns prefix for IDs when they are normalized
+     *
+     * @return string   Prefix for
+     */
+    public function getPrefixForId()
+    {
+        if (null === $this->_prefixForId) {
+            $prefix             = get_class($this);
+            $this->_prefixForId = strtolower(
+                    trim(substr($prefix, strrpos($prefix, '_')), '_')
+                ) . '-';
+        }
+
+        return $this->_prefixForId;
+    }
+
+    /**
+     * Skip the current prefix for IDs when they are normalized
+     *
+     * @param  bool $flag
+     * @return $this
+     */
+    public function skipPrefixForId($flag = true)
+    {
+        $this->_skipPrefixForId = (bool) $flag;
+        return $this;
     }
 
     /**
@@ -286,7 +399,7 @@ abstract class Zend_View_Helper_Navigation_HelperAbstract
      *                                                     or null. Default is
      *                                                     null, which sets no
      *                                                     translator.
-     * @return Zend_View_Helper_Navigation_HelperAbstract  fluent interface,
+     * @return $this
      *                                                     returns self
      */
     public function setTranslator($translator = null)
@@ -327,10 +440,9 @@ abstract class Zend_View_Helper_Navigation_HelperAbstract
      *
      * @param  Zend_Acl $acl                               [optional] ACL object.
      *                                                     Default is null.
-     * @return Zend_View_Helper_Navigation_HelperAbstract  fluent interface,
-     *                                                     returns self
+     * @return $this
      */
-    public function setAcl(Zend_Acl $acl = null)
+    public function setAcl(?Zend_Acl $acl = null)
     {
         $this->_acl = $acl;
         return $this;
@@ -366,8 +478,7 @@ abstract class Zend_View_Helper_Navigation_HelperAbstract
      *                                                     null, which will set
      *                                                     no role.
      * @throws Zend_View_Exception                         if $role is invalid
-     * @return Zend_View_Helper_Navigation_HelperAbstract  fluent interface,
-     *                                                     returns self
+     * @return $this
      */
     public function setRole($role = null)
     {
@@ -376,10 +487,13 @@ abstract class Zend_View_Helper_Navigation_HelperAbstract
             $this->_role = $role;
         } else {
             require_once 'Zend/View/Exception.php';
-            throw new Zend_View_Exception(sprintf(
-                    '$role must be a string, null, or an instance of ' .
-                            'Zend_Acl_Role_Interface; %s given',
-                    gettype($role)));
+            $e = new Zend_View_Exception(sprintf(
+                '$role must be a string, null, or an instance of '
+                .  'Zend_Acl_Role_Interface; %s given',
+                gettype($role)
+            ));
+            $e->setView($this->view);
+            throw $e;
         }
 
         return $this;
@@ -410,8 +524,7 @@ abstract class Zend_View_Helper_Navigation_HelperAbstract
      * @param  bool $useAcl                                [optional] whether ACL
      *                                                     should be used.
      *                                                     Default is true.
-     * @return Zend_View_Helper_Navigation_HelperAbstract  fluent interface,
-     *                                                     returns self
+     * @return $this
      */
     public function setUseAcl($useAcl = true)
     {
@@ -445,8 +558,7 @@ abstract class Zend_View_Helper_Navigation_HelperAbstract
      * Render invisible items?
      *
      * @param  bool $renderInvisible                       [optional] boolean flag
-     * @return Zend_View_Helper_Navigation_HelperAbstract  fluent interface
-     *                                                     returns self
+     * @return $this
      */
     public function setRenderInvisible($renderInvisible = true)
     {
@@ -462,8 +574,7 @@ abstract class Zend_View_Helper_Navigation_HelperAbstract
      * @param  bool $useTranslator                         [optional] whether
      *                                                     translator should be
      *                                                     used. Default is true.
-     * @return Zend_View_Helper_Navigation_HelperAbstract  fluent interface,
-     *                                                     returns self
+     * @return $this
      */
     public function setUseTranslator($useTranslator = true)
     {
@@ -493,10 +604,10 @@ abstract class Zend_View_Helper_Navigation_HelperAbstract
      * @return mixed                      returns what the container returns
      * @throws Zend_Navigation_Exception  if method does not exist in container
      */
-    public function __call($method, array $arguments = array())
+    public function __call($method, array $arguments = [])
     {
         return call_user_func_array(
-                array($this->getContainer(), $method),
+                [$this->getContainer(), $method],
                 $arguments);
     }
 
@@ -590,9 +701,9 @@ abstract class Zend_View_Helper_Navigation_HelperAbstract
         }
 
         if ($found) {
-            return array('page' => $found, 'depth' => $foundDepth);
+            return ['page' => $found, 'depth' => $foundDepth];
         } else {
-            return array();
+            return [];
         }
     }
 
@@ -666,12 +777,15 @@ abstract class Zend_View_Helper_Navigation_HelperAbstract
         }
 
         // get attribs for anchor element
-        $attribs = array(
-            'id'     => $page->getId(),
-            'title'  => $title,
-            'class'  => $page->getClass(),
-            'href'   => $page->getHref(),
-            'target' => $page->getTarget()
+        $attribs = array_merge(
+            [
+                'id'     => $page->getId(),
+                'title'  => $title,
+                'class'  => $page->getClass(),
+                'href'   => $page->getHref(),
+                'target' => $page->getTarget()
+            ],
+            $page->getCustomHtmlAttribs()
         );
 
         return '<a' . $this->_htmlAttribs($attribs) . '>'
@@ -797,17 +911,22 @@ abstract class Zend_View_Helper_Navigation_HelperAbstract
     /**
      * Normalize an ID
      *
-     * Overrides {@link Zend_View_Helper_HtmlElement::_normalizeId()}.
+     * Extends {@link Zend_View_Helper_HtmlElement::_normalizeId()}.
      *
-     * @param  string $value
-     * @return string
+     * @param  string $value    ID
+     * @return string           Normalized ID
      */
     protected function _normalizeId($value)
     {
-        $prefix = get_class($this);
-        $prefix = strtolower(trim(substr($prefix, strrpos($prefix, '_')), '_'));
+        if (false === $this->_skipPrefixForId) {
+            $prefix = $this->getPrefixForId();
 
-        return $prefix . '-' . $value;
+            if (strlen($prefix)) {
+                return $prefix . $value;
+            }
+        }
+
+        return parent::_normalizeId($value);
     }
 
     // Static methods:
@@ -819,7 +938,7 @@ abstract class Zend_View_Helper_Navigation_HelperAbstract
      *                        sets no ACL object.
      * @return void
      */
-    public static function setDefaultAcl(Zend_Acl $acl = null)
+    public static function setDefaultAcl(?Zend_Acl $acl = null)
     {
         self::$_defaultAcl = $acl;
     }
@@ -828,7 +947,7 @@ abstract class Zend_View_Helper_Navigation_HelperAbstract
      * Sets default ACL role(s) to use when iterating pages if not explicitly
      * set later with {@link setRole()}
      *
-     * @param  midex $role               [optional] role to set. Expects null,
+     * @param  mixed $role               [optional] role to set. Expects null,
      *                                   string, or an instance of
      *                                   {@link Zend_Acl_Role_Interface}.
      *                                   Default is null, which sets no default
@@ -845,7 +964,8 @@ abstract class Zend_View_Helper_Navigation_HelperAbstract
         } else {
             require_once 'Zend/View/Exception.php';
             throw new Zend_View_Exception(
-                    '$role must be null|string|Zend_Acl_Role_Interface');
+                '$role must be null|string|Zend_Acl_Role_Interface'
+            );
         }
     }
 }

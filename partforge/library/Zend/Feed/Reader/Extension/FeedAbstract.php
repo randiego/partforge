@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Feed_Reader
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: FeedAbstract.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /**
@@ -38,7 +38,7 @@ require_once 'Zend/Feed/Reader/Entry/Rss.php';
 /**
  * @category   Zend
  * @package    Zend_Feed_Reader
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Feed_Reader_Extension_FeedAbstract
@@ -48,7 +48,7 @@ abstract class Zend_Feed_Reader_Extension_FeedAbstract
      *
      * @var array
      */
-    protected $_data = array();
+    protected $_data = [];
 
     /**
      * Parsed feed data in the shape of a DOMDocument
@@ -78,7 +78,7 @@ abstract class Zend_Feed_Reader_Extension_FeedAbstract
      * @param  string $type Feed type
      * @return void
      */
-    public function __construct(DomDocument $dom, $type = null, DOMXPath $xpath = null)
+    public function __construct(DOMDocument $dom, $type = null, ?DOMXPath $xpath = null)
     {
         $this->_domDocument = $dom;
 
@@ -114,8 +114,7 @@ abstract class Zend_Feed_Reader_Extension_FeedAbstract
      */
     public function getEncoding()
     {
-        $assumed = $this->getDomDocument()->encoding;
-        return $assumed;
+        return $this->getDomDocument()->encoding;
     }
 
     /**
@@ -139,7 +138,30 @@ abstract class Zend_Feed_Reader_Extension_FeedAbstract
         return $this->_data;
     }
 
-        /**
+    /**
+     * Set the XPath query
+     *
+     * @param  DOMXPath $xpath
+     * @return Zend_Feed_Reader_Extension_FeedAbstract
+     */
+    public function setXpath(DOMXPath $xpath)
+    {
+        $this->_xpath = $xpath;
+        $this->_registerNamespaces();
+        return $this;
+    }
+
+    /**
+     * Get the DOMXPath object
+     *
+     * @return DOMXPath|null
+     */
+    public function getXpath()
+    {
+        return $this->_xpath;
+    }
+
+    /**
      * Get the XPath prefix
      *
      * @return string
@@ -152,7 +174,7 @@ abstract class Zend_Feed_Reader_Extension_FeedAbstract
     /**
      * Set the XPath prefix
      *
-     * @return Zend_Feed_Reader_Feed_Atom
+     * @return void
      */
     public function setXpathPrefix($prefix)
     {

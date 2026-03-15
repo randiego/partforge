@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Pdf
  * @subpackage Fonts
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Cmap.php 18993 2009-11-15 17:09:16Z alexander $
+ * @version    $Id$
  */
 
 
@@ -47,7 +47,7 @@
  *
  * @package    Zend_Pdf
  * @subpackage Fonts
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Pdf_Cmap
@@ -60,48 +60,48 @@ abstract class Zend_Pdf_Cmap
     /**
      * Byte Encoding character map table type.
      */
-    const TYPE_BYTE_ENCODING = 0x00;
+    public const TYPE_BYTE_ENCODING = 0x00;
 
     /**
      * High Byte Mapping character map table type.
      */
-    const TYPE_HIGH_BYTE_MAPPING = 0x02;
+    public const TYPE_HIGH_BYTE_MAPPING = 0x02;
 
     /**
      * Segment Value to Delta Mapping character map table type.
      */
-    const TYPE_SEGMENT_TO_DELTA = 0x04;
+    public const TYPE_SEGMENT_TO_DELTA = 0x04;
 
     /**
      * Trimmed Table character map table type.
      */
-    const TYPE_TRIMMED_TABLE = 0x06;
+    public const TYPE_TRIMMED_TABLE = 0x06;
 
     /**
      * Mixed Coverage character map table type.
      */
-    const TYPE_MIXED_COVERAGE = 0x08;
+    public const TYPE_MIXED_COVERAGE = 0x08;
 
     /**
      * Trimmed Array character map table type.
      */
-    const TYPE_TRIMMED_ARRAY = 0x0a;
+    public const TYPE_TRIMMED_ARRAY = 0x0a;
 
     /**
      * Segmented Coverage character map table type.
      */
-    const TYPE_SEGMENTED_COVERAGE = 0x0c;
+    public const TYPE_SEGMENTED_COVERAGE = 0x0c;
 
     /**
      * Static Byte Encoding character map table type. Variant of
      * {@link TYPE_BYTEENCODING}.
      */
-    const TYPE_BYTE_ENCODING_STATIC = 0xf1;
+    public const TYPE_BYTE_ENCODING_STATIC = 0xf1;
 
     /**
      * Unknown character map table type.
      */
-    const TYPE_UNKNOWN = 0xff;
+    public const TYPE_UNKNOWN = 0xff;
 
 
   /* Special Glyph Names */
@@ -109,7 +109,7 @@ abstract class Zend_Pdf_Cmap
     /**
      * Glyph representing missing characters.
      */
-    const MISSING_CHARACTER_GLYPH = 0x00;
+    public const MISSING_CHARACTER_GLYPH = 0x00;
 
 
 
@@ -274,12 +274,15 @@ abstract class Zend_Pdf_Cmap
             throw new Zend_Pdf_Exception("Index out of range: $index",
                                          Zend_Pdf_Exception::INDEX_OUT_OF_RANGE);
         }
+
         $number = ord($data[$index]);
+
         if (($number & 0x80) == 0x80) {    // negative
             $number = ~((((~ $number) & 0xff) << 8) | ((~ ord($data[++$index])) & 0xff));
         } else {
             $number = ($number << 8) | ord($data[++$index]);
         }
+
         return $number;
     }
 
@@ -301,8 +304,8 @@ abstract class Zend_Pdf_Cmap
             throw new Zend_Pdf_Exception("Index out of range: $index",
                                          Zend_Pdf_Exception::INDEX_OUT_OF_RANGE);
         }
-        $number = (ord($data[$index]) << 8) | ord($data[++$index]);
-        return $number;
+
+        return (ord($data[$index]) << 8) | ord($data[++$index]);
     }
 
     /**
@@ -328,9 +331,9 @@ abstract class Zend_Pdf_Cmap
             throw new Zend_Pdf_Exception("Index out of range: $index",
                                          Zend_Pdf_Exception::INDEX_OUT_OF_RANGE);
         }
-        $number = (ord($data[$index]) << 24) | (ord($data[++$index]) << 16) |
+
+        return (ord($data[$index]) << 24) | (ord($data[++$index]) << 16) |
                   (ord($data[++$index]) << 8) | ord($data[++$index]);
-        return $number;
     }
 
 }

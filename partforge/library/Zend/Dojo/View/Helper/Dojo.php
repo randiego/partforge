@@ -15,8 +15,8 @@
  * @category   Zend
  * @package    Zend_Dojo
  * @subpackage View
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: Dojo.php 18951 2009-11-12 16:26:19Z alexander $
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @version    $Id$
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -31,16 +31,16 @@ require_once 'Zend/Registry.php';
  *
  * @package    Zend_Dojo
  * @subpackage View
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Dojo_View_Helper_Dojo
 {
     /**#@+
-     * @const Programmatic dijit creation style constants
+     * Programmatic dijit creation style constants
      */
-    const PROGRAMMATIC_SCRIPT = 1;
-    const PROGRAMMATIC_NOSCRIPT = -1;
+    public const PROGRAMMATIC_SCRIPT = 1;
+    public const PROGRAMMATIC_NOSCRIPT = -1;
     /**#@-*/
 
     /**
@@ -114,7 +114,7 @@ class Zend_Dojo_View_Helper_Dojo
             throw new Zend_Dojo_View_Exception(sprintf('Invalid method "%s" called on dojo view helper', $method));
         }
 
-        return call_user_func_array(array($this->_container, $method), $args);
+        return call_user_func_array([$this->_container, $method], $args);
     }
 
     /**
@@ -138,7 +138,7 @@ class Zend_Dojo_View_Helper_Dojo
      */
     public static function setUseProgrammatic($style = self::PROGRAMMATIC_SCRIPT)
     {
-        if (!in_array($style, array(self::PROGRAMMATIC_SCRIPT, self::PROGRAMMATIC_NOSCRIPT))) {
+        if (!in_array($style, [self::PROGRAMMATIC_SCRIPT, self::PROGRAMMATIC_NOSCRIPT])) {
             $style = self::PROGRAMMATIC_SCRIPT;
         }
         self::$_useProgrammatic = $style;

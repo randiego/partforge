@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Db
  * @subpackage Profiler
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Profiler.php 16203 2009-06-21 18:56:17Z thomas $
+ * @version    $Id$
  */
 
 
@@ -25,7 +25,7 @@
  * @category   Zend
  * @package    Zend_Db
  * @subpackage Profiler
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Db_Profiler
@@ -34,47 +34,56 @@ class Zend_Db_Profiler
     /**
      * A connection operation or selecting a database.
      */
-    const CONNECT = 1;
+    public const CONNECT = 1;
 
     /**
      * Any general database query that does not fit into the other constants.
      */
-    const QUERY = 2;
+    public const QUERY = 2;
 
     /**
      * Adding new data to the database, such as SQL's INSERT.
      */
-    const INSERT = 4;
+    public const INSERT = 4;
 
     /**
      * Updating existing information in the database, such as SQL's UPDATE.
      *
      */
-    const UPDATE = 8;
+    public const UPDATE = 8;
 
     /**
      * An operation related to deleting data in the database,
      * such as SQL's DELETE.
      */
-    const DELETE = 16;
+    public const DELETE = 16;
 
     /**
      * Retrieving information from the database, such as SQL's SELECT.
      */
-    const SELECT = 32;
+    public const SELECT = 32;
 
     /**
      * Transactional operation, such as start transaction, commit, or rollback.
      */
-    const TRANSACTION = 64;
+    public const TRANSACTION = 64;
 
+    /**
+     * Inform that a query is stored (in case of filtering)
+     */
+    public const STORED = 'stored';
+
+    /**
+     * Inform that a query is ignored (in case of filtering)
+     */
+    public const IGNORED = 'ignored';
 
     /**
      * Array of Zend_Db_Profiler_Query objects.
      *
      * @var array
      */
-    protected $_queryProfiles = array();
+    protected $_queryProfiles = [];
 
     /**
      * Stores enabled state of the profiler.  If set to False, calls to
@@ -122,11 +131,11 @@ class Zend_Db_Profiler
      * is disabled and will not log any queries sent to it.
      *
      * @param  boolean $enable
-     * @return Zend_Db_Profiler Provides a fluent interface
+     * @return $this
      */
     public function setEnabled($enable)
     {
-        $this->_enabled = (boolean) $enable;
+        $this->_enabled = (bool) $enable;
 
         return $this;
     }
@@ -149,14 +158,14 @@ class Zend_Db_Profiler
      * elapsed time, set $minimumSeconds to null.
      *
      * @param  integer $minimumSeconds OPTIONAL
-     * @return Zend_Db_Profiler Provides a fluent interface
+     * @return $this
      */
     public function setFilterElapsedSecs($minimumSeconds = null)
     {
         if (null === $minimumSeconds) {
             $this->_filterElapsedSecs = null;
         } else {
-            $this->_filterElapsedSecs = (integer) $minimumSeconds;
+            $this->_filterElapsedSecs = (int) $minimumSeconds;
         }
 
         return $this;
@@ -180,7 +189,7 @@ class Zend_Db_Profiler
      * save all queries regardless of type, set $queryType to null.
      *
      * @param  integer $queryTypes OPTIONAL
-     * @return Zend_Db_Profiler Provides a fluent interface
+     * @return $this
      */
     public function setFilterQueryType($queryTypes = null)
     {
@@ -206,17 +215,19 @@ class Zend_Db_Profiler
      * and will even clear queries that were started and may not have
      * been marked as ended.
      *
-     * @return Zend_Db_Profiler Provides a fluent interface
+     * @return $this
      */
     public function clear()
     {
-        $this->_queryProfiles = array();
+        $this->_queryProfiles = [];
 
         return $this;
     }
 
     /**
-     * @param  integer $queryId
+     * Clone a profiler query
+     *
+     * @param  Zend_Db_Profiler_Query $query
      * @return integer or null
      */
     public function queryClone(Zend_Db_Profiler_Query $query)
@@ -278,18 +289,18 @@ class Zend_Db_Profiler
     }
 
     /**
-     * Ends a query.  Pass it the handle that was returned by queryStart().
+     * Ends a query. Pass it the handle that was returned by queryStart().
      * This will mark the query as ended and save the time.
      *
      * @param  integer $queryId
      * @throws Zend_Db_Profiler_Exception
-     * @return void
+     * @return string   Inform that a query is stored or ignored.
      */
     public function queryEnd($queryId)
     {
         // Don't do anything if the Zend_Db_Profiler is not enabled.
         if (!$this->_enabled) {
-            return;
+            return self::IGNORED;
         }
 
         // Check for a valid query handle.
@@ -321,7 +332,7 @@ class Zend_Db_Profiler
          */
         if (null !== $this->_filterElapsedSecs && $qp->getElapsedSecs() < $this->_filterElapsedSecs) {
             unset($this->_queryProfiles[$queryId]);
-            return;
+            return self::IGNORED;
         }
 
         /**
@@ -330,8 +341,10 @@ class Zend_Db_Profiler
          */
         if (null !== $this->_filterTypes && !($qp->getQueryType() & $this->_filterTypes)) {
             unset($this->_queryProfiles[$queryId]);
-            return;
+            return self::IGNORED;
         }
+
+        return self::STORED;
     }
 
     /**
@@ -369,7 +382,7 @@ class Zend_Db_Profiler
      */
     public function getQueryProfiles($queryType = null, $showUnfinished = false)
     {
-        $queryProfiles = array();
+        $queryProfiles = [];
         foreach ($this->_queryProfiles as $key => $qp) {
             if ($queryType === null) {
                 $condition = true;

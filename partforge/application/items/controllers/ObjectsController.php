@@ -65,6 +65,11 @@ class Items_ObjectsController extends RestControllerActionAbstract
         }
     }
 
+    public function headAction()
+    {
+        return $this->getAction(true);
+    }
+
     /*
      * GET /items/objects/12
     *
@@ -84,7 +89,7 @@ class Items_ObjectsController extends RestControllerActionAbstract
     *
     */
 
-    public function getAction()
+    public function getAction($headers_only = false)
     {
         $use_internal_names = isset($this->params['use_internal_names']) && ($this->params['use_internal_names']=='1');
         $fmt = isset($this->params['fmt']) ? $this->params['fmt'] : 'nested';

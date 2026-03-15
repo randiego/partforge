@@ -15,8 +15,8 @@
  *
  * @category   Zend
  * @package    Zend_TimeSync
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: TimeSync.php 16207 2009-06-21 19:17:51Z thomas $
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @version    $Id$
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -28,7 +28,7 @@ require_once 'Zend/Date.php';
 /**
  * @category   Zend
  * @package    Zend_TimeSync
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_TimeSync implements IteratorAggregate
@@ -37,14 +37,14 @@ class Zend_TimeSync implements IteratorAggregate
      * Set the default timeserver protocol to "Ntp". This will be called
      * when no protocol is specified
      */
-    const DEFAULT_PROTOCOL = 'Ntp';
+    public const DEFAULT_PROTOCOL = 'Ntp';
 
     /**
      * Contains array of timeserver objects
      *
      * @var array
      */
-    protected $_timeservers = array();
+    protected $_timeservers = [];
 
     /**
      * Holds a reference to the timeserver that is currently being used
@@ -58,10 +58,10 @@ class Zend_TimeSync implements IteratorAggregate
      *
      * @var array
      */
-    protected $_allowedSchemes = array(
+    protected $_allowedSchemes = [
         'Ntp',
         'Sntp'
-    );
+    ];
 
     /**
      * Configuration array, set using the constructor or using
@@ -69,16 +69,16 @@ class Zend_TimeSync implements IteratorAggregate
      *
      * @var array
      */
-    public static $options = array(
+    public static $options = [
         'timeout' => 1
-    );
+    ];
 
     /**
      * Zend_TimeSync constructor
      *
      * @param  string|array $target - OPTIONAL single timeserver, or an array of timeservers.
      * @param  string       $alias  - OPTIONAL an alias for this timeserver
-     * @return  object
+     * @return  void
      */
     public function __construct($target = null, $alias = null)
     {
@@ -93,7 +93,8 @@ class Zend_TimeSync implements IteratorAggregate
      *
      * @return ArrayObject
      */
-    public function getIterator(): Traversable
+    #[\ReturnTypeWillChange]
+    public function getIterator(): \Traversable
     {
         return new ArrayObject($this->_timeservers);
     }
@@ -233,7 +234,7 @@ class Zend_TimeSync implements IteratorAggregate
      * facade and will try to return the date from the first server that
      * returns a valid result.
      *
-     * @param   $locale - OPTIONAL locale
+     * @param   Zend_Locale $locale - OPTIONAL locale
      * @return  object
      * @throws  Zend_TimeSync_Exception
      */
@@ -273,10 +274,10 @@ class Zend_TimeSync implements IteratorAggregate
 
         if ($pos = strrpos($adress, ':')) {
             $posbr = strpos($adress, ']');
-            if ($posbr and ($pos > $posbr)) {
+            if ($posbr && ($pos > $posbr)) {
                 $port = substr($adress, $pos + 1);
                 $adress = substr($adress, 0, $pos);
-            } else if (!$posbr and $pos) {
+            } else if (!$posbr && $pos) {
                 $port = substr($adress, $pos + 1);
                 $adress = substr($adress, 0, $pos);
             } else {

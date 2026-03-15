@@ -16,9 +16,9 @@
  * @category   Zend
  * @package    Zend_Mail
  * @subpackage Protocol
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Smtp.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 
@@ -42,7 +42,7 @@ require_once 'Zend/Mail/Protocol/Abstract.php';
  * @category   Zend
  * @package    Zend_Mail
  * @subpackage Protocol
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
@@ -70,19 +70,10 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
      */
     protected $_sess = false;
 
-
-    /**
-     * Indicates the HELO command has been issues
-     *
-     * @var unknown_type
-     */
-    protected $_helo = false;
-
-
     /**
      * Indicates an smtp AUTH has been issued and authenticated
      *
-     * @var unknown_type
+     * @var bool
      */
     protected $_auth = false;
 
@@ -90,7 +81,7 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
     /**
      * Indicates a MAIL command has been issued
      *
-     * @var unknown_type
+     * @var bool
      */
     protected $_mail = false;
 
@@ -98,7 +89,7 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
     /**
      * Indicates one or more RCTP commands have been issued
      *
-     * @var unknown_type
+     * @var bool
      */
     protected $_rcpt = false;
 
@@ -106,7 +97,7 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
     /**
      * Indicates that DATA has been issued and sent
      *
-     * @var unknown_type
+     * @var bool|null
      */
     protected $_data = null;
 
@@ -120,7 +111,7 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
      * @return void
      * @throws Zend_Mail_Protocol_Exception
      */
-    public function __construct($host = '127.0.0.1', $port = null, array $config = array())
+    public function __construct($host = '127.0.0.1', $port = null, array $config = [])
     {
         if (isset($config['ssl'])) {
             switch (strtolower($config['ssl'])) {
@@ -153,7 +144,7 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
             }
         }
 
-        parent::__construct($host, $port);
+        parent::__construct($host, $port, $config);
     }
 
 
@@ -203,7 +194,11 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
         if ($this->_secure == 'tls') {
             $this->_send('STARTTLS');
             $this->_expect(220, 180);
-            if (!stream_socket_enable_crypto($this->_socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+            if (!stream_socket_enable_crypto(
+                $this->_socket,
+                true,
+                STREAM_CRYPTO_METHOD_TLS_CLIENT|STREAM_CRYPTO_METHOD_TLSv1_1_CLIENT|STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT|STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT
+            )) {
                 /**
                  * @see Zend_Mail_Protocol_Exception
                  */
@@ -286,7 +281,7 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
 
         // Set rcpt to true, as per 4.1.1.3 of RFC 2821
         $this->_send('RCPT TO:<' . $to . '>');
-        $this->_expect(array(250, 251), 300); // Timeout set for 5 minutes as per RFC 2821 4.5.3.2
+        $this->_expect([250, 251], 300); // Timeout set for 5 minutes as per RFC 2821 4.5.3.2
         $this->_rcpt = true;
     }
 
@@ -317,6 +312,7 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
                 // Escape lines prefixed with a '.'
                 $line = '.' . $line;
             }
+
             $this->_send($line);
         }
 
@@ -327,7 +323,7 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
 
 
     /**
-     * Issues the RSET command end validates answer
+     * Issues the RSET command and validates answer
      *
      * Can be used to restore a clean smtp communication state when a transaction has been cancelled or commencing a new transaction.
      *
@@ -337,7 +333,7 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
     {
         $this->_send('RSET');
         // MS ESMTP doesn't follow RFC, see [ZF-1377]
-        $this->_expect(array(250, 220));
+        $this->_expect([250, 220]);
 
         $this->_mail = false;
         $this->_rcpt = false;
@@ -346,7 +342,7 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
 
 
     /**
-     * Issues the NOOP command end validates answer
+     * Issues the NOOP command and validates answer
      *
      * Not used by Zend_Mail, could be used to keep a connection alive or check if it is still open.
      *
@@ -360,7 +356,7 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
 
 
     /**
-     * Issues the VRFY command end validates answer
+     * Issues the VRFY command and validates answer
      *
      * Not used by Zend_Mail.
      *
@@ -370,7 +366,7 @@ class Zend_Mail_Protocol_Smtp extends Zend_Mail_Protocol_Abstract
     public function vrfy($user)
     {
         $this->_send('VRFY ' . $user);
-        $this->_expect(array(250, 251, 252), 300); // Timeout set for 5 minutes as per RFC 2821 4.5.3.2
+        $this->_expect([250, 251, 252], 300); // Timeout set for 5 minutes as per RFC 2821 4.5.3.2
     }
 
 

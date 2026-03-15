@@ -15,7 +15,7 @@
  * @category   Zend
  * @package    Zend_Controller
  * @subpackage Plugins
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -29,9 +29,9 @@ require_once 'Zend/Controller/Plugin/Abstract.php';
  * @category   Zend
  * @package    Zend_Controller
  * @subpackage Plugins
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Layout.php 19091 2009-11-20 14:45:56Z bate $
+ * @version    $Id$
  */
 class Zend_Layout_Controller_Plugin_Layout extends Zend_Controller_Plugin_Abstract
 {
@@ -48,7 +48,7 @@ class Zend_Layout_Controller_Plugin_Layout extends Zend_Controller_Plugin_Abstra
      * @param  Zend_Layout $layout
      * @return void
      */
-    public function __construct(Zend_Layout $layout = null)
+    public function __construct(?Zend_Layout $layout = null)
     {
         if (null !== $layout) {
             $this->setLayout($layout);
@@ -92,7 +92,7 @@ class Zend_Layout_Controller_Plugin_Layout extends Zend_Controller_Plugin_Abstra
     /**
      * Retrieve layout action helper
      *
-     * @return Zend_Layout_Controller_Action_Helper_Layout
+     * @return Zend_Layout_Controller_Action_Helper_Layout|null
      */
     public function getLayoutActionHelper()
     {

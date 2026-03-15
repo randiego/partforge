@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Tool
  * @subpackage Framework
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: IncludePathLoader.php 19145 2009-11-20 22:08:36Z beberlei $
+ * @version    $Id$
  */
 
 /**
@@ -33,7 +33,7 @@ require_once 'Zend/Tool/Framework/Loader/IncludePathLoader/RecursiveFilterIterat
 /**
  * @category   Zend
  * @package    Zend_Tool
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Tool_Framework_Loader_IncludePathLoader extends Zend_Tool_Framework_Loader_Abstract
@@ -46,11 +46,12 @@ class Zend_Tool_Framework_Loader_IncludePathLoader extends Zend_Tool_Framework_L
      */
     protected function _getFiles()
     {
-        $paths = explode(PATH_SEPARATOR, get_include_path());
+        require_once 'Zend/Loader.php';
+        $paths = Zend_Loader::explodeIncludePath();
 
         // used for checking similarly named files
-        $relativeItems   = array();
-        $files           = array();
+        $relativeItems   = [];
+        $files           = [];
         $isZendTraversed = false;
 
         foreach ($paths as $path) {
@@ -123,10 +124,10 @@ class Zend_Tool_Framework_Loader_IncludePathLoader extends Zend_Tool_Framework_L
      */
     protected function _fileIsBlacklisted($file)
     {
-        $blacklist = array(
+        $blacklist = [
             "PHPUnit".DIRECTORY_SEPARATOR."Framework",
             "Zend".DIRECTORY_SEPARATOR."OpenId".DIRECTORY_SEPARATOR."Provider"
-        );
+        ];
 
         foreach($blacklist AS $blacklitedPattern) {
             if(strpos($file, $blacklitedPattern) !== false) {

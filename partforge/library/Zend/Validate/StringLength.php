@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Validate
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: StringLength.php 16223 2009-06-21 20:04:53Z thomas $
+ * @version    $Id$
  */
 
 /**
@@ -27,31 +27,31 @@ require_once 'Zend/Validate/Abstract.php';
 /**
  * @category   Zend
  * @package    Zend_Validate
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Validate_StringLength extends Zend_Validate_Abstract
 {
-    const INVALID   = 'stringLengthInvalid';
-    const TOO_SHORT = 'stringLengthTooShort';
-    const TOO_LONG  = 'stringLengthTooLong';
+    public const INVALID   = 'stringLengthInvalid';
+    public const TOO_SHORT = 'stringLengthTooShort';
+    public const TOO_LONG  = 'stringLengthTooLong';
 
     /**
      * @var array
      */
-    protected $_messageTemplates = array(
-        self::INVALID   => "Invalid type given, value should be a string",
+    protected $_messageTemplates = [
+        self::INVALID   => "Invalid type given. String expected",
         self::TOO_SHORT => "'%value%' is less than %min% characters long",
-        self::TOO_LONG  => "'%value%' is greater than %max% characters long"
-    );
+        self::TOO_LONG  => "'%value%' is more than %max% characters long",
+    ];
 
     /**
      * @var array
      */
-    protected $_messageVariables = array(
+    protected $_messageVariables = [
         'min' => '_min',
         'max' => '_max'
-    );
+    ];
 
     /**
      * Minimum length
@@ -79,15 +79,38 @@ class Zend_Validate_StringLength extends Zend_Validate_Abstract
     /**
      * Sets validator options
      *
-     * @param  integer $min
-     * @param  integer $max
-     * @return void
+     * @param integer|array|Zend_Config $options
      */
-    public function __construct($min = 0, $max = null, $encoding = null)
+    public function __construct($options = [])
     {
-        $this->setMin($min);
-        $this->setMax($max);
-        $this->setEncoding($encoding);
+        if ($options instanceof Zend_Config) {
+            $options = $options->toArray();
+        } else if (!is_array($options)) {
+            $options     = func_get_args();
+            $temp['min'] = array_shift($options);
+            if (!empty($options)) {
+                $temp['max'] = array_shift($options);
+            }
+
+            if (!empty($options)) {
+                $temp['encoding'] = array_shift($options);
+            }
+
+            $options = $temp;
+        }
+
+        if (!array_key_exists('min', $options)) {
+            $options['min'] = 0;
+        }
+
+        $this->setMin($options['min']);
+        if (array_key_exists('max', $options)) {
+            $this->setMax($options['max']);
+        }
+
+        if (array_key_exists('encoding', $options)) {
+            $this->setEncoding($options['encoding']);
+        }
     }
 
     /**
@@ -105,7 +128,7 @@ class Zend_Validate_StringLength extends Zend_Validate_Abstract
      *
      * @param  integer $min
      * @throws Zend_Validate_Exception
-     * @return Zend_Validate_StringLength Provides a fluent interface
+     * @return $this
      */
     public function setMin($min)
     {
@@ -117,7 +140,7 @@ class Zend_Validate_StringLength extends Zend_Validate_Abstract
             throw new Zend_Validate_Exception("The minimum must be less than or equal to the maximum length, but $min >"
                                             . " $this->_max");
         }
-        $this->_min = max(0, (integer) $min);
+        $this->_min = max(0, (int) $min);
         return $this;
     }
 
@@ -136,7 +159,7 @@ class Zend_Validate_StringLength extends Zend_Validate_Abstract
      *
      * @param  integer|null $max
      * @throws Zend_Validate_Exception
-     * @return Zend_Validate_StringLength Provides a fluent interface
+     * @return $this
      */
     public function setMax($max)
     {
@@ -150,7 +173,7 @@ class Zend_Validate_StringLength extends Zend_Validate_Abstract
             throw new Zend_Validate_Exception("The maximum must be greater than or equal to the minimum length, but "
                                             . "$max < $this->_min");
         } else {
-            $this->_max = (integer) $max;
+            $this->_max = (int) $max;
         }
 
         return $this;
@@ -170,21 +193,36 @@ class Zend_Validate_StringLength extends Zend_Validate_Abstract
      * Sets a new encoding to use
      *
      * @param string $encoding
+     * @throws Zend_Validate_Exception
      * @return Zend_Validate_StringLength
      */
     public function setEncoding($encoding = null)
     {
         if ($encoding !== null) {
-            $orig   = iconv_get_encoding('internal_encoding');
-            $result = iconv_set_encoding('internal_encoding', $encoding);
+            $orig = PHP_VERSION_ID < 50600
+                        ? iconv_get_encoding('internal_encoding')
+                        : ini_get('default_charset');
+            if (PHP_VERSION_ID < 50600) {
+                if ($encoding) {
+                    $result = iconv_set_encoding('internal_encoding', $encoding);
+                } else {
+                    $result = false;
+                }
+            } else {
+                ini_set('default_charset', $encoding);
+                $result = ini_get('default_charset');
+            }
             if (!$result) {
                 require_once 'Zend/Validate/Exception.php';
                 throw new Zend_Validate_Exception('Given encoding not supported on this OS!');
             }
 
-            iconv_set_encoding('internal_encoding', $orig);
+            if (PHP_VERSION_ID < 50600) {
+                iconv_set_encoding('internal_encoding', $orig);
+            } else {
+                ini_set('default_charset', $orig);
+            }
         }
-
         $this->_encoding = $encoding;
         return $this;
     }

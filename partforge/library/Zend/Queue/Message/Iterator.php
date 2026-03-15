@@ -15,16 +15,16 @@
  * @category   Zend
  * @package    Zend_Queue
  * @subpackage Message
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Iterator.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /**
  * @category   Zend
  * @package    Zend_Queue
  * @subpackage Message
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Queue_Message_Iterator implements Iterator, Countable
@@ -34,7 +34,7 @@ class Zend_Queue_Message_Iterator implements Iterator, Countable
      *
      * @var array
      */
-    protected $_data = array();
+    protected $_data = [];
 
      /**
      * Connected is true if we have a reference to a live
@@ -79,7 +79,7 @@ class Zend_Queue_Message_Iterator implements Iterator, Countable
      * @param  array $options ('queue', 'messageClass', 'data'=>array());
      * @return void
      */
-    public function __construct(array $options = array())
+    public function __construct(array $options = [])
     {
         if (isset($options['queue'])) {
             $this->_queue      = $options['queue'];
@@ -107,7 +107,7 @@ class Zend_Queue_Message_Iterator implements Iterator, Countable
         // for each of the messages
         foreach ($options['data'] as $data) {
             // construct the message parameters
-            $message = array('data' => $data);
+            $message = ['data' => $data];
 
             // If queue has not been set, then use the default.
             if (empty($message['queue'])) {
@@ -126,7 +126,7 @@ class Zend_Queue_Message_Iterator implements Iterator, Countable
      */
     public function __sleep()
     {
-        return array('_data', '_queueClass', '_messageClass', '_pointer');
+        return ['_data', '_queueClass', '_messageClass', '_pointer'];
     }
 
     /**

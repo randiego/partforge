@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Ldap
  * @subpackage Node
- * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: ChildrenIterator.php 17829 2009-08-26 15:07:10Z sgehrig $
+ * @version    $Id$
  */
 
 /**
@@ -31,7 +31,7 @@ require_once 'Zend/Ldap/Node.php';
  * @category   Zend
  * @package    Zend_Ldap
  * @subpackage Node
- * @copyright  Copyright (c) 2005-2008 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Ldap_Node_ChildrenIterator implements Iterator, Countable, RecursiveIterator, ArrayAccess
@@ -139,12 +139,13 @@ class Zend_Ldap_Node_ChildrenIterator implements Iterator, Countable, RecursiveI
      *
      * @return Zend_Ldap_Node_ChildrenIterator
      */
-    public function getChildren(): RecursiveIterator
+    public function getChildren(): ?\RecursiveIterator
     {
         if ($this->current() instanceof Zend_Ldap_Node) {
             return $this->current()->getChildren();
+        } else {
+            return null;
         }
-        return new RecursiveArrayIterator(array());
     }
 
     /**
@@ -202,7 +203,7 @@ class Zend_Ldap_Node_ChildrenIterator implements Iterator, Countable, RecursiveI
      */
     public function toArray()
     {
-        $data = array();
+        $data = [];
         foreach ($this as $rdn => $node) {
             $data[$rdn] = $node;
         }

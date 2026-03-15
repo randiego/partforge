@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Tool
  * @subpackage Framework
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Profile.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /**
@@ -38,11 +38,15 @@ require_once 'Zend/Tool/Project/Profile/Resource/Container.php';
  *
  * @category   Zend
  * @package    Zend_Tool
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Tool_Project_Profile extends Zend_Tool_Project_Profile_Resource_Container
 {
+    /**
+     * @var Zend_Tool_Project_Profile_Resource_Container
+     */
+    protected $_topResources;
 
     /**
      * @var bool
@@ -50,15 +54,10 @@ class Zend_Tool_Project_Profile extends Zend_Tool_Project_Profile_Resource_Conta
     protected static $_traverseEnabled = false;
 
     /**
-     * @var array
-     */
-    protected $_attributes = array();
-
-    /**
      * Constructor, standard usage would allow the setting of options
      *
      * @param array $options
-     * @return bool
+     * @return void
      */
     public function __construct($options = null)
     {
@@ -85,6 +84,7 @@ class Zend_Tool_Project_Profile extends Zend_Tool_Project_Profile_Resource_Conta
      *
      * @return RecursiveIteratorIterator
      */
+    #[\ReturnTypeWillChange]
     public function getIterator()
     {
         require_once 'Zend/Tool/Project/Profile/Iterator/EnabledResourceFilter.php';
@@ -211,13 +211,13 @@ class Zend_Tool_Project_Profile extends Zend_Tool_Project_Profile_Resource_Conta
     /**
      * storeToData() - create a string representation of the profile in memory
      *
-     * @return string
+     * @return string XML
      */
     public function storeToData()
     {
         $parser = new Zend_Tool_Project_Profile_FileParser_Xml();
-        $xml = $parser->serialize($this);
-        return $xml;
+
+        return $parser->serialize($this);
     }
 
     /**

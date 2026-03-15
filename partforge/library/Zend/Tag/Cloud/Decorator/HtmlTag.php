@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Tag
  * @subpackage Cloud
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: HtmlTag.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /**
@@ -31,7 +31,7 @@ require_once 'Zend/Tag/Cloud/Decorator/Tag.php';
  * @category  Zend
  * @package   Zend_Tag
  * @uses      Zend_Tag_Cloud_Decorator_Tag
- * @copyright Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Tag_Cloud_Decorator_HtmlTag extends Zend_Tag_Cloud_Decorator_Tag
@@ -45,6 +45,11 @@ class Zend_Tag_Cloud_Decorator_HtmlTag extends Zend_Tag_Cloud_Decorator_Tag
     protected $_classList = null;
 
     /**
+     * @var string Encoding to utilize
+     */
+    protected $_encoding = 'UTF-8';
+
+    /**
      * Unit for the fontsize
      *
      * @var string
@@ -56,16 +61,16 @@ class Zend_Tag_Cloud_Decorator_HtmlTag extends Zend_Tag_Cloud_Decorator_Tag
      *
      * @var array
      */
-    protected $_alloweFontSizeUnits = array('em', 'ex', 'px', 'in', 'cm', 'mm', 'pt', 'pc', '%');
+    protected $_alloweFontSizeUnits = ['em', 'ex', 'px', 'in', 'cm', 'mm', 'pt', 'pc', '%'];
 
     /**
      * List of HTML tags
      *
      * @var array
      */
-    protected $_htmlTags = array(
+    protected $_htmlTags = [
         'li'
-    );
+    ];
 
     /**
      * Maximum fontsize
@@ -89,7 +94,7 @@ class Zend_Tag_Cloud_Decorator_HtmlTag extends Zend_Tag_Cloud_Decorator_Tag
      * @throws Zend_Tag_Cloud_Decorator_Exception When the classlist contains an invalid classname
      * @return Zend_Tag_Cloud_Decorator_HtmlTag
      */
-    public function setClassList(array $classList = null)
+    public function setClassList(?array $classList = null)
     {
         if (is_array($classList)) {
             if (count($classList) === 0) {
@@ -117,6 +122,28 @@ class Zend_Tag_Cloud_Decorator_HtmlTag extends Zend_Tag_Cloud_Decorator_Tag
     public function getClassList()
     {
         return $this->_classList;
+    }
+
+    /**
+     * Get encoding
+     *
+     * @return string
+     */
+    public function getEncoding()
+    {
+         return $this->_encoding;
+    }
+
+    /**
+     * Set encoding
+     *
+     * @param  string $value
+     * @return Zend_Tag_Cloud_Decorator_HtmlTag
+     */
+    public function setEncoding($value)
+    {
+        $this->_encoding = (string) $value;
+        return $this;
     }
 
     /**
@@ -243,16 +270,17 @@ class Zend_Tag_Cloud_Decorator_HtmlTag extends Zend_Tag_Cloud_Decorator_Tag
 
         $tags->spreadWeightValues($weightValues);
 
-        $result = array();
+        $result = [];
 
+        $enc = $this->getEncoding();
         foreach ($tags as $tag) {
             if (null === ($classList = $this->getClassList())) {
                 $attribute = sprintf('style="font-size: %d%s;"', $tag->getParam('weightValue'), $this->getFontSizeUnit());
             } else {
-                $attribute = sprintf('class="%s"', htmlspecialchars($tag->getParam('weightValue')));
+                $attribute = sprintf('class="%s"', htmlspecialchars($tag->getParam('weightValue'), ENT_COMPAT, $enc));
             }
 
-            $tagHtml = sprintf('<a href="%s" %s>%s</a>', htmlSpecialChars($tag->getParam('url')), $attribute, $tag->getTitle());
+            $tagHtml = sprintf('<a href="%s" %s>%s</a>', htmlspecialchars((string) $tag->getParam('url'), ENT_COMPAT, $enc), $attribute, $tag->getTitle());
 
             foreach ($this->getHtmlTags() as $key => $data) {
                 if (is_array($data)) {
@@ -260,7 +288,7 @@ class Zend_Tag_Cloud_Decorator_HtmlTag extends Zend_Tag_Cloud_Decorator_Tag
                     $attributes = '';
 
                     foreach ($data as $param => $value) {
-                        $attributes .= ' ' . $param . '="' . htmlspecialchars($value) . '"';
+                        $attributes .= ' ' . $param . '="' . htmlspecialchars($value, ENT_COMPAT, $enc) . '"';
                     }
                 } else {
                     $htmlTag    = $data;

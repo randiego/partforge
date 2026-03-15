@@ -15,7 +15,7 @@
  * @category   Zend
  * @package    Zend_Pdf
  * @subpackage Actions
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
@@ -28,11 +28,17 @@
  *
  * @package    Zend_Pdf
  * @subpackage Outlines
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Pdf_Outline implements RecursiveIterator, Countable
 {
+    protected $_title;
+    protected $_color;
+    protected $_italic;
+    protected $_bold;
+    protected $_target;
+
     /**
      * True if outline is open.
      *
@@ -45,7 +51,7 @@ abstract class Zend_Pdf_Outline implements RecursiveIterator, Countable
      *
      * @var array
      */
-    public $childOutlines = array();
+    public $childOutlines = [];
 
 
     /**
@@ -155,19 +161,19 @@ abstract class Zend_Pdf_Outline implements RecursiveIterator, Countable
      */
     public function getOptions()
     {
-        return array('title'  => $this->_title,
+        return ['title'  => $this->_title,
                      'open'   => $this->_open,
                      'color'  => $this->_color,
                      'italic' => $this->_italic,
                      'bold'   => $this->_bold,
-                     'target' => $this->_target);
+                     'target' => $this->_target];
     }
 
     /**
      * Set outline options
      *
      * @param array $options
-     * @return Zend_Pdf_Action
+     * @return Zend_Pdf_Outline|Zend_Pdf_Outline_Loaded
      * @throws Zend_Pdf_Exception
      */
     public function setOptions(array $options)
@@ -236,8 +242,8 @@ abstract class Zend_Pdf_Outline implements RecursiveIterator, Countable
                 throw new Zend_Pdf_Exception('Outline create method takes $title (string) and $target (Zend_Pdf_Target or string) or an array as an input');
             }
 
-            return new Zend_Pdf_Outline_Created(array('title'  => $param1,
-                                                      'target' => $param2));
+            return new Zend_Pdf_Outline_Created(['title'  => $param1,
+                                                      'target' => $param2]);
         } else {
             if (!is_array($param1)  ||  $param2 !== null) {
                 require_once 'Zend/Pdf/Exception.php';
@@ -282,8 +288,8 @@ abstract class Zend_Pdf_Outline implements RecursiveIterator, Countable
     abstract public function dumpOutline(Zend_Pdf_ElementFactory_Interface $factory,
                                                                            $updateNavigation,
                                                           Zend_Pdf_Element $parent,
-                                                          Zend_Pdf_Element $prev = null,
-                                                          SplObjectStorage $processedOutlines = null);
+                                                          ?Zend_Pdf_Element $prev = null,
+                                                          ?SplObjectStorage $processedOutlines = null);
 
 
     ////////////////////////////////////////////////////////////////////////
@@ -315,17 +321,19 @@ abstract class Zend_Pdf_Outline implements RecursiveIterator, Countable
     /**
      * Go to next child
      */
-    public function next(): void
+    #[\ReturnTypeWillChange]
+    public function next()
     {
-        next($this->childOutlines);
+        return next($this->childOutlines);
     }
 
     /**
      * Rewind children
      */
-    public function rewind(): void
+    #[\ReturnTypeWillChange]
+    public function rewind()
     {
-        reset($this->childOutlines);
+        return reset($this->childOutlines);
     }
 
     /**
@@ -343,13 +351,9 @@ abstract class Zend_Pdf_Outline implements RecursiveIterator, Countable
      *
      * @return Zend_Pdf_Outline|null
      */
-    public function getChildren(): RecursiveIterator
+    public function getChildren(): ?\RecursiveIterator
     {
-        $child = current($this->childOutlines);
-        if ($child instanceof RecursiveIterator) {
-            return $child;
-        }
-        return new RecursiveArrayIterator(array());
+        return current($this->childOutlines);
     }
 
     /**

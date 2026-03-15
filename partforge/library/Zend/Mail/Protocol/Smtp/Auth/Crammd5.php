@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Mail
  * @subpackage Protocol
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Crammd5.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 
@@ -33,11 +33,21 @@ require_once 'Zend/Mail/Protocol/Smtp.php';
  * @category   Zend
  * @package    Zend_Mail
  * @subpackage Protocol
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Mail_Protocol_Smtp_Auth_Crammd5 extends Zend_Mail_Protocol_Smtp
 {
+    /**
+     * @var string
+     */
+    protected $_username;
+
+    /**
+     * @var string
+     */
+    protected $_password;
+
     /**
      * Constructor.
      *
@@ -94,15 +104,14 @@ class Zend_Mail_Protocol_Smtp_Auth_Crammd5 extends Zend_Mail_Protocol_Smtp
         if (strlen($key) > 64) {
             $key = pack('H32', md5($key));
         } elseif (strlen($key) < 64) {
-            $key = str_pad($key, $block, chr(0));
+            $key = str_pad($key, $block, "\0");
         }
 
         $k_ipad = substr($key, 0, 64) ^ str_repeat(chr(0x36), 64);
         $k_opad = substr($key, 0, 64) ^ str_repeat(chr(0x5C), 64);
 
         $inner = pack('H32', md5($k_ipad . $data));
-        $digest = md5($k_opad . $inner);
 
-        return $digest;
+        return md5($k_opad . $inner);
     }
 }

@@ -16,9 +16,9 @@
  * @category   Zend
  * @package    Zend_Gdata
  * @subpackage App
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Feed.php 16971 2009-07-22 18:05:45Z mikaelkael $
+ * @version    $Id$
  */
 
 /**
@@ -37,11 +37,11 @@ require_once 'Zend/Gdata/App/FeedSourceParent.php';
  * @category   Zend
  * @package    Zend_Gdata
  * @subpackage App
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Gdata_App_Feed extends Zend_Gdata_App_FeedSourceParent
-        implements Iterator, ArrayAccess
+        implements Iterator, ArrayAccess, Countable
 {
 
     /**
@@ -56,7 +56,7 @@ class Zend_Gdata_App_Feed extends Zend_Gdata_App_FeedSourceParent
      *
      * @var array
      */
-    protected $_entry = array();
+    protected $_entry = [];
 
     /**
      * Current location in $_entry array
@@ -158,7 +158,7 @@ class Zend_Gdata_App_Feed extends Zend_Gdata_App_FeedSourceParent
     /**
      * Required by the Iterator interface.
      *
-     * @return mixed The current row number (starts at 0), or NULL if no rows
+     * @return int The current row number (starts at 0), or NULL if no rows
      */
     #[\ReturnTypeWillChange]
     public function key()
@@ -169,7 +169,7 @@ class Zend_Gdata_App_Feed extends Zend_Gdata_App_FeedSourceParent
     /**
      * Required by the Iterator interface.
      *
-     * @return mixed The next row, or null if no more rows.
+     * @return void The next row, or null if no more rows.
      */
     public function next(): void
     {
@@ -202,7 +202,7 @@ class Zend_Gdata_App_Feed extends Zend_Gdata_App_FeedSourceParent
      * atom:feed representation
      *
      * @param array $value The array of Zend_Gdata_App_Entry elements
-     * @return Zend_Gdata_App_Feed Provides a fluent interface
+     * @return $this
      */
     public function setEntry($value)
     {
@@ -214,8 +214,8 @@ class Zend_Gdata_App_Feed extends Zend_Gdata_App_FeedSourceParent
      * Adds an entry representation to the array of entries
      * contained within this feed
      *
-     * @param Zend_Gdata_App_Entry An individual entry to add.
-     * @return Zend_Gdata_App_Feed Provides a fluent interface
+     * @param Zend_Gdata_App_Entry $value An individual entry to add.
+     * @return $this
      */
     public function addEntry($value)
     {
@@ -276,9 +276,9 @@ class Zend_Gdata_App_Feed extends Zend_Gdata_App_FeedSourceParent
    /**
      * Retrieve the next set of results from this feed.
      *
-     * @throws Zend_Gdata_App_Exception
-     * @return mixed|null Returns the next set of results as a feed of the same
+     * @return string|Zend_Gdata_App_Feed Returns the next set of results as a feed of the same
      *          class as this feed, or null if no results exist.
+     * @throws Zend_Gdata_App_Exception
      */
     public function getNextFeed()
     {
@@ -297,9 +297,9 @@ class Zend_Gdata_App_Feed extends Zend_Gdata_App_FeedSourceParent
    /**
      * Retrieve the previous set of results from this feed.
      *
-     * @throws Zend_Gdata_App_Exception
-     * @return mixed|null Returns the previous set of results as a feed of
+     * @return string|Zend_Gdata_App_Feed Returns the previous set of results as a feed of
      *          the same class as this feed, or null if no results exist.
+     * @throws Zend_Gdata_App_Exception
      */
     public function getPreviousFeed()
     {

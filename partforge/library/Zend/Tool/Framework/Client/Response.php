@@ -15,28 +15,28 @@
  * @category   Zend
  * @package    Zend_Tool
  * @subpackage Framework
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Response.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /**
  * @category   Zend
  * @package    Zend_Tool
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Tool_Framework_Client_Response
 {
     /**
-     * @var callback|null
+     * @var callable|null
      */
     protected $_callback = null;
 
     /**
      * @var array
      */
-    protected $_content = array();
+    protected $_content = [];
 
     /**
      * @var Zend_Tool_Framework_Exception
@@ -44,19 +44,19 @@ class Zend_Tool_Framework_Client_Response
     protected $_exception = null;
 
     /**
-     * @var null|array
+     * @var array
      */
-    protected $_decorators = null;
+    protected $_decorators = [];
 
     /**
      * @var array
      */
-    protected $_defaultDecoratorOptions = array();
+    protected $_defaultDecoratorOptions = [];
 
     /**
      * setContentCallback()
      *
-     * @param callback $callback
+     * @param callable $callback
      * @return Zend_Tool_Framework_Client_Response
      */
     public function setContentCallback($callback)
@@ -75,11 +75,11 @@ class Zend_Tool_Framework_Client_Response
      * @param string $content
      * @return Zend_Tool_Framework_Client_Response
      */
-    public function setContent($content, Array $decoratorOptions = array())
+    public function setContent($content, Array $decoratorOptions = [])
     {
-        $this->_applyDecorators($content, $decoratorOptions);
+        $content = $this->_applyDecorators($content, $decoratorOptions);
 
-        $this->_content = array();
+        $this->_content = [];
         $this->appendContent($content);
         return $this;
     }
@@ -90,7 +90,7 @@ class Zend_Tool_Framework_Client_Response
      * @param string $content
      * @return Zend_Tool_Framework_Client_Response
      */
-    public function appendContent($content, Array $decoratorOptions = array())
+    public function appendContent($content, Array $decoratorOptions = [])
     {
         $content = $this->_applyDecorators($content, $decoratorOptions);
 
@@ -113,7 +113,7 @@ class Zend_Tool_Framework_Client_Response
     public function setDefaultDecoratorOptions(Array $decoratorOptions, $mergeIntoExisting = false)
     {
         if ($mergeIntoExisting == false) {
-            $this->_defaultDecoratorOptions = array();
+            $this->_defaultDecoratorOptions = [];
         }
 
         $this->_defaultDecoratorOptions = array_merge($this->_defaultDecoratorOptions, $decoratorOptions);
@@ -166,7 +166,7 @@ class Zend_Tool_Framework_Client_Response
      * Add Content Decorator
      *
      * @param Zend_Tool_Framework_Client_Response_ContentDecorator_Interface $contentDecorator
-     * @return unknown
+     * @return Zend_Tool_Framework_Client_Response
      */
     public function addContentDecorator(Zend_Tool_Framework_Client_Response_ContentDecorator_Interface $contentDecorator)
     {

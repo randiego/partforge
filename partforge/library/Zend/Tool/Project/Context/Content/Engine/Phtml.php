@@ -15,7 +15,7 @@
  * @category   Zend
  * @package    Zend_Tool
  * @subpackage Framework
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
@@ -28,7 +28,7 @@
  *
  * @category   Zend
  * @package    Zend_Tool
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Tool_Project_Context_Content_Engine_Phtml
@@ -61,7 +61,7 @@ class Zend_Tool_Project_Context_Content_Engine_Phtml
      *
      * @param Zend_Tool_Project_Context_Interface  $context
      * @param string $method
-     * @return string
+     * @return false
      */
     public function hasContent(Zend_Tool_Project_Context_Interface $context, $method)
     {
@@ -81,9 +81,8 @@ class Zend_Tool_Project_Context_Content_Engine_Phtml
 
         ob_start();
         include $streamUri;
-        $content = ob_get_clean();
 
-        return $content;
+        return ob_get_clean();
     }
 
 }

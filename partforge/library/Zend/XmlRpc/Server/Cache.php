@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_XmlRpc
  * @subpackage Server
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Cache.php 16208 2009-06-21 19:19:26Z thomas $
+ * @version    $Id$
  */
 
 /** Zend_Server_Cache */
@@ -29,7 +29,7 @@ require_once 'Zend/Server/Cache.php';
  * @category   Zend
  * @package    Zend_XmlRpc
  * @subpackage Server
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_XmlRpc_Server_Cache extends Zend_Server_Cache
@@ -37,10 +37,10 @@ class Zend_XmlRpc_Server_Cache extends Zend_Server_Cache
     /**
      * @var array Skip system methods when caching XML-RPC server
      */
-    protected static $_skipMethods = array(
+    protected static $_skipMethods = [
         'system.listMethods',
         'system.methodHelp',
         'system.methodSignature',
         'system.multicall',
-    );
+    ];
 }

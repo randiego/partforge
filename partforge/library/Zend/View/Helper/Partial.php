@@ -15,8 +15,8 @@
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
- * @version    $Id: Partial.php 16222 2009-06-21 19:55:20Z thomas $
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
+ * @version    $Id$
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -28,11 +28,21 @@ require_once 'Zend/View/Helper/Abstract.php';
  *
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_View_Helper_Partial extends Zend_View_Helper_Abstract
 {
+    /**
+     * @var int
+     */
+    protected $partialCounter = 0;
+
+    /**
+     * @var int
+     */
+    protected $partialTotalCount = 0;
+
     /**
      * Variable to which object will be assigned
      * @var string
@@ -71,12 +81,18 @@ class Zend_View_Helper_Partial extends Zend_View_Helper_Abstract
         if (isset($this->partialCounter)) {
             $view->partialCounter = $this->partialCounter;
         }
+        if (isset($this->partialTotalCount)) {
+            $view->partialTotalCount = $this->partialTotalCount;
+        }
+
         if ((null !== $module) && is_string($module)) {
             require_once 'Zend/Controller/Front.php';
             $moduleDir = Zend_Controller_Front::getInstance()->getControllerDirectory($module);
             if (null === $moduleDir) {
                 require_once 'Zend/View/Helper/Partial/Exception.php';
-                throw new Zend_View_Helper_Partial_Exception('Cannot render partial; module does not exist');
+                $e = new Zend_View_Helper_Partial_Exception('Cannot render partial; module does not exist');
+                $e->setView($this->view);
+                throw $e;
             }
             $viewsDir = dirname($moduleDir) . '/views';
             $view->addBasePath($viewsDir);
@@ -94,6 +110,8 @@ class Zend_View_Helper_Partial extends Zend_View_Helper_Abstract
                     $view->assign($objectKey, $model);
                 } elseif (method_exists($model, 'toArray')) {
                     $view->assign($model->toArray());
+                } elseif (method_exists($model, 'getVars')) {
+                    $view->assign($model->getVars());
                 } else {
                     $view->assign(get_object_vars($model));
                 }

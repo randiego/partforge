@@ -15,8 +15,8 @@
  * @category   Zend
  * @package    Zend_Http
  * @subpackage Client_Adapter_Exception
- * @version    $Id: Exception.php 17118 2009-07-26 09:41:41Z shahar $
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @version    $Id$
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -29,10 +29,10 @@ require_once 'Zend/Http/Client/Exception.php';
  * @category   Zend
  * @package    Zend_Http
  * @subpackage Client_Adapter
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Http_Client_Adapter_Exception extends Zend_Http_Client_Exception
 {
-    const READ_TIMEOUT = 1000;
+    public const READ_TIMEOUT = 1000;
 }

@@ -12,9 +12,9 @@
  *
  * @category   Zend
  * @package    Zend_ProgressBar
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: ProgressBar.php 16207 2009-06-21 19:17:51Z thomas $
+ * @version    $Id$
  */
 
 /**
@@ -22,7 +22,7 @@
  *
  * @category  Zend
  * @package   Zend_ProgressBar
- * @copyright Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_ProgressBar
@@ -188,6 +188,7 @@ class Zend_ProgressBar
      * @param  string $text
      * @return void
      */
+    #[\ReturnTypeWillChange]
     public function next($diff = 1, $text = null)
     {
         $this->update(max($this->_min, min($this->_max, $this->_current + $diff)), $text);

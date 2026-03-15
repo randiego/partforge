@@ -16,9 +16,9 @@
  * @category   Zend
  * @package    Zend_Mail
  * @subpackage Protocol
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Abstract.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 
@@ -42,9 +42,9 @@ require_once 'Zend/Validate/Hostname.php';
  * @category   Zend
  * @package    Zend_Mail
  * @subpackage Protocol
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Abstract.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  * @todo Implement proxy settings
  */
 abstract class Zend_Mail_Protocol_Abstract
@@ -52,13 +52,19 @@ abstract class Zend_Mail_Protocol_Abstract
     /**
      * Mail default EOL string
      */
-    const EOL = "\r\n";
+    public const EOL = "\r\n";
 
 
     /**
      * Default timeout in seconds for initiating session
      */
-    const TIMEOUT_CONNECTION = 30;
+    public const TIMEOUT_CONNECTION = 30;
+
+    /**
+     * Maximum of the transaction log
+     * @var integer
+     */
+    protected $_maximumLog = 64;
 
 
     /**
@@ -90,6 +96,20 @@ abstract class Zend_Mail_Protocol_Abstract
 
 
     /**
+     * Indicates that verification of SSL certificate is required.
+     * @var bool
+     */
+    protected $_verifyPeer = true;
+
+
+    /**
+     * Indicates that verification of peer name is required.
+     * @var bool
+     */
+    protected $_verifyPeerName = true;
+
+
+    /**
      * Last request sent to server
      * @var string
      */
@@ -106,26 +126,28 @@ abstract class Zend_Mail_Protocol_Abstract
     /**
      * String template for parsing server responses using sscanf (default: 3 digit code and response string)
      * @var resource
+     * @deprecated Since 1.10.3
      */
     protected $_template = '%d%s';
 
 
     /**
      * Log of mail requests and server responses for a session
-     * @var string
+     * @var array
      */
-    private $_log;
+    private $_log = [];
 
 
     /**
      * Constructor.
      *
-     * @param  string  $host OPTIONAL Hostname of remote connection (default: 127.0.0.1)
-     * @param  integer $port OPTIONAL Port number (default: null)
+     * @param  string  $host   OPTIONAL Hostname of remote connection (default: 127.0.0.1)
+     * @param  integer $port   OPTIONAL Port number (default: null)
+     * @param  array   $config OPTIONAL Further parameters
      * @throws Zend_Mail_Protocol_Exception
      * @return void
      */
-    public function __construct($host = '127.0.0.1', $port = null)
+    public function __construct($host = '127.0.0.1', $port = null, array $config = [])
     {
         $this->_validHost = new Zend_Validate();
         $this->_validHost->addValidator(new Zend_Validate_Hostname(Zend_Validate_Hostname::ALLOW_ALL));
@@ -140,6 +162,13 @@ abstract class Zend_Mail_Protocol_Abstract
 
         $this->_host = $host;
         $this->_port = $port;
+
+        if (array_key_exists('verify_peer', $config)) {
+            $this->_verifyPeer = in_array(strtolower((string)$config['verify_peer']), ['true', 'yes', '1']);
+        }
+        if (array_key_exists('verify_peer_name', $config)) {
+            $this->_verifyPeerName = in_array(strtolower((string)$config['verify_peer_name']), ['true', 'yes', '1']);
+        }
     }
 
 
@@ -151,6 +180,28 @@ abstract class Zend_Mail_Protocol_Abstract
     public function __destruct()
     {
         $this->_disconnect();
+    }
+
+    /**
+     * Set the maximum log size
+     *
+     * @param integer $maximumLog Maximum log size
+     * @return void
+     */
+    public function setMaximumLog($maximumLog)
+    {
+        $this->_maximumLog = (int) $maximumLog;
+    }
+
+
+    /**
+     * Get the maximum log size
+     *
+     * @return int the maximum log size
+     */
+    public function getMaximumLog()
+    {
+        return $this->_maximumLog;
     }
 
 
@@ -191,7 +242,7 @@ abstract class Zend_Mail_Protocol_Abstract
      */
     public function getLog()
     {
-        return $this->_log;
+        return implode('', $this->_log);
     }
 
 
@@ -202,9 +253,23 @@ abstract class Zend_Mail_Protocol_Abstract
      */
     public function resetLog()
     {
-        $this->_log = '';
+        $this->_log = [];
     }
 
+    /**
+     * Add the transaction log
+     *
+     * @param  string $value new transaction
+     * @return void
+     */
+    protected function _addLog($value)
+    {
+        if ($this->_maximumLog >= 0 && count($this->_log) >= $this->_maximumLog) {
+            array_shift($this->_log);
+        }
+
+        $this->_log[] = $value;
+    }
 
     /**
      * Connect to the server using the supplied transport and target
@@ -220,8 +285,25 @@ abstract class Zend_Mail_Protocol_Abstract
         $errorNum = 0;
         $errorStr = '';
 
-        // open connection
-        $this->_socket = @stream_socket_client($remote, $errorNum, $errorStr, self::TIMEOUT_CONNECTION);
+        $context = stream_context_create();
+
+        if (($result = $this->_setStreamContextVerifyPeer($this->_verifyPeer, $context)) === false) {
+            /**
+             * @see Zend_Mail_Protocol_Exception
+             */
+            require_once 'Zend/Mail/Protocol/Exception.php';
+            throw new Zend_Mail_Protocol_Exception('Could not set stream context verify_peer value');
+        }
+
+        if (($result = $this->_setStreamContextVerifyPeerName($this->_verifyPeerName, $context)) === false) {
+            /**
+             * @see Zend_Mail_Protocol_Exception
+             */
+            require_once 'Zend/Mail/Protocol/Exception.php';
+            throw new Zend_Mail_Protocol_Exception('Could not set stream context verify_peer_name value');
+        }
+
+        $this->_socket = stream_socket_client($remote, $errorNum, $errorStr, self::TIMEOUT_CONNECTION, STREAM_CLIENT_CONNECT, $context);
 
         if ($this->_socket === false) {
             if ($errorNum == 0) {
@@ -234,7 +316,7 @@ abstract class Zend_Mail_Protocol_Abstract
             throw new Zend_Mail_Protocol_Exception($errorStr);
         }
 
-        if (($result = stream_set_timeout($this->_socket, self::TIMEOUT_CONNECTION)) === false) {
+        if (($result = $this->_setStreamTimeout(self::TIMEOUT_CONNECTION)) === false) {
             /**
              * @see Zend_Mail_Protocol_Exception
              */
@@ -264,7 +346,7 @@ abstract class Zend_Mail_Protocol_Abstract
      *
      * @param  string $request
      * @throws Zend_Mail_Protocol_Exception
-     * @return integer|boolean Number of bytes written to remote host
+     * @return integer|void Number of bytes written to remote host
      */
     protected function _send($request)
     {
@@ -281,7 +363,7 @@ abstract class Zend_Mail_Protocol_Abstract
         $result = fwrite($this->_socket, $request . self::EOL);
 
         // Save request to internal log
-        $this->_log .= $request . self::EOL;
+        $this->_addLog($request . self::EOL);
 
         if ($result === false) {
             /**
@@ -314,14 +396,14 @@ abstract class Zend_Mail_Protocol_Abstract
 
         // Adapters may wish to supply per-commend timeouts according to appropriate RFC
         if ($timeout !== null) {
-           stream_set_timeout($this->_socket, $timeout);
+            $this->_setStreamTimeout($timeout);
         }
 
         // Retrieve response
-        $reponse = fgets($this->_socket, 1024);
+        $response = fgets($this->_socket, 1024);
 
         // Save request to internal log
-        $this->_log .= $reponse;
+        $this->_addLog($response);
 
         // Check meta data to ensure connection is still valid
         $info = stream_get_meta_data($this->_socket);
@@ -334,7 +416,7 @@ abstract class Zend_Mail_Protocol_Abstract
             throw new Zend_Mail_Protocol_Exception($this->_host . ' has timed out');
         }
 
-        if ($reponse === false) {
+        if ($response === false) {
             /**
              * @see Zend_Mail_Protocol_Exception
              */
@@ -342,7 +424,7 @@ abstract class Zend_Mail_Protocol_Abstract
             throw new Zend_Mail_Protocol_Exception('Could not read from ' . $this->_host);
         }
 
-        return $reponse;
+        return $response;
     }
 
 
@@ -358,28 +440,72 @@ abstract class Zend_Mail_Protocol_Abstract
      */
     protected function _expect($code, $timeout = null)
     {
-        $this->_response = array();
-        $cmd = '';
-        $msg = '';
+        $this->_response = [];
+        $cmd  = '';
+        $more = '';
+        $msg  = '';
+        $errMsg = '';
 
         if (!is_array($code)) {
-            $code = array($code);
+            $code = [$code];
         }
 
         do {
             $this->_response[] = $result = $this->_receive($timeout);
-            sscanf($result, $this->_template, $cmd, $msg);
+            list($cmd, $more, $msg) = preg_split('/([\s-]+)/', $result, 2, PREG_SPLIT_DELIM_CAPTURE);
 
-            if ($cmd === null || !in_array($cmd, $code)) {
-                /**
-                 * @see Zend_Mail_Protocol_Exception
-                 */
-                require_once 'Zend/Mail/Protocol/Exception.php';
-                throw new Zend_Mail_Protocol_Exception($result);
+            if ($errMsg !== '') {
+                $errMsg .= ' ' . $msg;
+            } elseif ($cmd === null || !in_array($cmd, $code)) {
+                $errMsg =  $msg;
             }
 
-        } while (strpos($msg, '-') === 0); // The '-' message prefix indicates an information string instead of a response string.
+        } while (strpos($more, '-') === 0); // The '-' message prefix indicates an information string instead of a response string.
+
+        if ($errMsg !== '') {
+            /**
+             * @see Zend_Mail_Protocol_Exception
+             */
+            require_once 'Zend/Mail/Protocol/Exception.php';
+            throw new Zend_Mail_Protocol_Exception($errMsg, $cmd);
+        }
 
         return $msg;
+    }
+
+    /**
+     * Set stream timeout
+     *
+     * @param integer $timeout
+     * @param resource|null $context
+     * @return boolean
+     */
+    protected function _setStreamTimeout($timeout, $context = null)
+    {
+        return stream_set_timeout($context ?? $this->_socket, $timeout);
+    }
+    
+    /**
+     * Set stream SSL context verify_peer value
+     *
+     * @param bool $value
+     * @param resource|null $context
+     * @return boolean
+     */
+    protected function _setStreamContextVerifyPeer($value, $context = null)
+    {
+        return stream_context_set_option($context ?? $this->_socket, 'ssl', 'verify_peer', $value);
+    }
+
+    /**
+     * Set stream SSL context verify_peer_name value
+     *
+     * @param bool $value
+     * @param resource|null $context
+     * @return boolean
+     */
+    protected function _setStreamContextVerifyPeerName($value, $context = null)
+    {
+        return stream_context_set_option($context ?? $this->_socket, 'ssl', 'verify_peer_name', $value);
     }
 }

@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Acl
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Interface.php 16199 2009-06-21 18:42:43Z thomas $
+ * @version    $Id$
  */
 
 
@@ -41,7 +41,7 @@ require_once 'Zend/Acl/Resource/Interface.php';
 /**
  * @category   Zend
  * @package    Zend_Acl
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 interface Zend_Acl_Assert_Interface
@@ -59,6 +59,6 @@ interface Zend_Acl_Assert_Interface
      * @param  string                      $privilege
      * @return boolean
      */
-    public function assert(Zend_Acl $acl, Zend_Acl_Role_Interface $role = null, Zend_Acl_Resource_Interface $resource = null,
+    public function assert(Zend_Acl $acl, ?Zend_Acl_Role_Interface $role = null, ?Zend_Acl_Resource_Interface $resource = null,
                            $privilege = null);
 }

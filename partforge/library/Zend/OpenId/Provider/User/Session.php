@@ -16,9 +16,9 @@
  * @category   Zend
  * @package    Zend_OpenId
  * @subpackage Zend_OpenId_Provider
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Session.php 16212 2009-06-21 19:24:49Z thomas $
+ * @version    $Id$
  */
 
 /**
@@ -38,7 +38,7 @@ require_once "Zend/Session/Namespace.php";
  * @category   Zend
  * @package    Zend_OpenId
  * @subpackage Zend_OpenId_Provider
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_OpenId_Provider_User_Session extends Zend_OpenId_Provider_User
@@ -56,7 +56,7 @@ class Zend_OpenId_Provider_User_Session extends Zend_OpenId_Provider_User
      *
      * @param Zend_Session_Namespace $session
      */
-    public function __construct(Zend_Session_Namespace $session = null)
+    public function __construct(?Zend_Session_Namespace $session = null)
     {
         if ($session === null) {
             $this->_session = new Zend_Session_Namespace("openid");

@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Reflection
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Tag.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /** Zend_Loader */
@@ -25,7 +25,7 @@ require_once 'Zend/Loader.php';
 /**
  * @category   Zend
  * @package    Zend_Reflection
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Reflection_Docblock_Tag implements Reflector
@@ -33,10 +33,10 @@ class Zend_Reflection_Docblock_Tag implements Reflector
     /**
      * @var array Array of Class names
      */
-    protected static $_tagClasses = array(
+    protected static $_tagClasses = [
         'param'  => 'Zend_Reflection_Docblock_Tag_Param',
         'return' => 'Zend_Reflection_Docblock_Tag_Return',
-        );
+        ];
 
     /**
      * @var string
@@ -56,7 +56,7 @@ class Zend_Reflection_Docblock_Tag implements Reflector
      */
     public static function factory($tagDocblockLine)
     {
-        $matches = array();
+        $matches = [];
 
         if (!preg_match('#^@(\w+)(\s|$)#', $tagDocblockLine, $matches)) {
             require_once 'Zend/Reflection/Exception.php';
@@ -96,9 +96,7 @@ class Zend_Reflection_Docblock_Tag implements Reflector
      */
     public function __toString()
     {
-        $str = "Docblock Tag [ * @".$this->_name." ]".PHP_EOL;
-
-        return $str;
+        return "Docblock Tag [ * @".$this->_name." ]".PHP_EOL;
     }
 
     /**
@@ -109,7 +107,7 @@ class Zend_Reflection_Docblock_Tag implements Reflector
      */
     public function __construct($tagDocblockLine)
     {
-        $matches = array();
+        $matches = [];
 
         // find the line
         if (!preg_match('#^@(\w+)(?:\s+([^\s].*)|$)?#', $tagDocblockLine, $matches)) {

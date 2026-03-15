@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Pdf
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Interface.php 18993 2009-11-15 17:09:16Z alexander $
+ * @version    $Id$
  */
 
 /**
@@ -24,11 +24,18 @@
  * Responsibility is to log PDF changes
  *
  * @package    Zend_Pdf
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 interface Zend_Pdf_ElementFactory_Interface
 {
+    /**
+     * Get factory
+     *
+     * @return Zend_Pdf_ElementFactory_Interface
+     */
+    public function getFactory();
+
     /**
      * Close factory and clean-up resources
      *
@@ -89,7 +96,7 @@ interface Zend_Pdf_ElementFactory_Interface
     public function cleanEnumerationShiftCache();
 
     /**
-     * Retrive object enumeration shift.
+     * Retrieve object enumeration shift.
      *
      * @param Zend_Pdf_ElementFactory_Interface $factory
      * @return integer

@@ -15,7 +15,7 @@
  * @category   Zend
  * @package    Zend_Pdf
  * @subpackage Actions
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  * @version    $Id$
  */
@@ -38,7 +38,7 @@ require_once 'Zend/Pdf/Outline.php';
  *
  * @package    Zend_Pdf
  * @subpackage Outlines
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Pdf_Outline_Created extends Zend_Pdf_Outline
@@ -219,7 +219,7 @@ class Zend_Pdf_Outline_Created extends Zend_Pdf_Outline
      * @param array $options
      * @throws Zend_Pdf_Exception
      */
-    public function __construct($options = array())
+    public function __construct($options = [])
     {
         if (!isset($options['title'])) {
             require_once 'Zend/Pdf/Exception.php';
@@ -246,8 +246,8 @@ class Zend_Pdf_Outline_Created extends Zend_Pdf_Outline
     public function dumpOutline(Zend_Pdf_ElementFactory_Interface $factory,
                                                                   $updateNavigation,
                                                  Zend_Pdf_Element $parent,
-                                                 Zend_Pdf_Element $prev = null,
-                                                 SplObjectStorage $processedOutlines = null)
+                                                 ?Zend_Pdf_Element $prev = null,
+                                                 ?SplObjectStorage $processedOutlines = null)
     {
         if ($processedOutlines === null) {
             $processedOutlines = new SplObjectStorage();
@@ -273,9 +273,9 @@ class Zend_Pdf_Outline_Created extends Zend_Pdf_Outline
         $color = $this->getColor();
         if ($color !== null) {
             $components = $color->getComponents();
-            $colorComponentElements = array(new Zend_Pdf_Element_Numeric($components[0]),
+            $colorComponentElements = [new Zend_Pdf_Element_Numeric($components[0]),
                                             new Zend_Pdf_Element_Numeric($components[1]),
-                                            new Zend_Pdf_Element_Numeric($components[2]));
+                                            new Zend_Pdf_Element_Numeric($components[2])];
             $outlineDictionary->C = new Zend_Pdf_Element_Array($colorComponentElements);
         }
 

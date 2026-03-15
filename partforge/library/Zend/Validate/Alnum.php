@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Validate
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Alnum.php 17467 2009-08-08 18:06:55Z thomas $
+ * @version    $Id$
  */
 
 /**
@@ -27,20 +27,20 @@ require_once 'Zend/Validate/Abstract.php';
 /**
  * @category   Zend
  * @package    Zend_Validate
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Validate_Alnum extends Zend_Validate_Abstract
 {
-    const INVALID      = 'alnumInvalid';
-    const NOT_ALNUM    = 'notAlnum';
-    const STRING_EMPTY = 'stringEmpty';
+    public const INVALID      = 'alnumInvalid';
+    public const NOT_ALNUM    = 'notAlnum';
+    public const STRING_EMPTY = 'alnumStringEmpty';
 
     /**
      * Whether to allow white space characters; off by default
      *
      * @var boolean
-     * @depreciated
+     * @deprecated
      */
     public $allowWhiteSpace;
 
@@ -56,21 +56,32 @@ class Zend_Validate_Alnum extends Zend_Validate_Abstract
      *
      * @var array
      */
-    protected $_messageTemplates = array(
-        self::INVALID      => "Invalid type given, value should be float, string, or integer",
-        self::NOT_ALNUM    => "'%value%' has not only alphabetic and digit characters",
-        self::STRING_EMPTY => "'%value%' is an empty string"
-    );
+    protected $_messageTemplates = [
+        self::INVALID      => "Invalid type given. String, integer or float expected",
+        self::NOT_ALNUM    => "'%value%' contains characters which are non alphabetic and no digits",
+        self::STRING_EMPTY => "'%value%' is an empty string",
+    ];
 
     /**
      * Sets default option values for this instance
      *
-     * @param  boolean $allowWhiteSpace
-     * @return void
+     * @param boolean|Zend_Config $allowWhiteSpace
      */
     public function __construct($allowWhiteSpace = false)
     {
-        $this->allowWhiteSpace = (boolean) $allowWhiteSpace;
+        if ($allowWhiteSpace instanceof Zend_Config) {
+            $allowWhiteSpace = $allowWhiteSpace->toArray();
+        }
+
+        if (is_array($allowWhiteSpace)) {
+            if (array_key_exists('allowWhiteSpace', $allowWhiteSpace)) {
+                $allowWhiteSpace = $allowWhiteSpace['allowWhiteSpace'];
+            } else {
+                $allowWhiteSpace = false;
+            }
+        }
+
+        $this->allowWhiteSpace = (bool) $allowWhiteSpace;
     }
 
     /**
@@ -87,11 +98,11 @@ class Zend_Validate_Alnum extends Zend_Validate_Abstract
      * Sets the allowWhiteSpace option
      *
      * @param boolean $allowWhiteSpace
-     * @return Zend_Filter_Alnum Provides a fluent interface
+     * @return $this
      */
     public function setAllowWhiteSpace($allowWhiteSpace)
     {
-        $this->allowWhiteSpace = (boolean) $allowWhiteSpace;
+        $this->allowWhiteSpace = (bool) $allowWhiteSpace;
         return $this;
     }
 

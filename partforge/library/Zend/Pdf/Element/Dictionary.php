@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Pdf
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Dictionary.php 18993 2009-11-15 17:09:16Z alexander $
+ * @version    $Id$
  */
 
 
@@ -32,7 +32,7 @@ require_once 'Zend/Pdf/Element.php';
  *
  * @category   Zend
  * @package    Zend_Pdf
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Pdf_Element_Dictionary extends Zend_Pdf_Element
@@ -43,7 +43,7 @@ class Zend_Pdf_Element_Dictionary extends Zend_Pdf_Element
      *
      * @var array
      */
-    private $_items = array();
+    private $_items = [];
 
 
     /**
@@ -106,10 +106,9 @@ class Zend_Pdf_Element_Dictionary extends Zend_Pdf_Element
      */
     public function __get($item)
     {
-        $element = isset($this->_items[$item]) ? $this->_items[$item]
-                                               : null;
-
-        return $element;
+        return isset($this->_items[$item])
+            ? $this->_items[$item]
+            : null;
     }
 
     /**
@@ -168,17 +167,64 @@ class Zend_Pdf_Element_Dictionary extends Zend_Pdf_Element
         return $outStr;
     }
 
+    /**
+     * Detach PDF object from the factory (if applicable), clone it and attach to new factory.
+     *
+     * @param Zend_Pdf_ElementFactory $factory  The factory to attach
+     * @param array &$processed  List of already processed indirect objects, used to avoid objects duplication
+     * @param integer $mode  Cloning mode (defines filter for objects cloning)
+     * @returns Zend_Pdf_Element
+     * @throws Zend_Pdf_Exception
+     */
+    public function makeClone(Zend_Pdf_ElementFactory $factory, array &$processed, $mode)
+    {
+        if (isset($this->_items['Type'])) {
+            if ($this->_items['Type']->value == 'Pages') {
+                // It's a page tree node
+                // skip it and its children
+                return new Zend_Pdf_Element_Null();
+            }
+
+            if ($this->_items['Type']->value == 'Page'  &&
+                $mode == Zend_Pdf_Element::CLONE_MODE_SKIP_PAGES
+            ) {
+                // It's a page node, skip it
+                return new Zend_Pdf_Element_Null();
+            }
+        }
+
+        $newDictionary = new self();
+        foreach ($this->_items as $key => $value) {
+            $newDictionary->_items[$key] = $value->makeClone($factory, $processed, $mode);
+        }
+
+        return $newDictionary;
+    }
+
+    /**
+     * Set top level parent indirect object.
+     *
+     * @param Zend_Pdf_Element_Object $parent
+     */
+    public function setParentObject(Zend_Pdf_Element_Object $parent)
+    {
+        parent::setParentObject($parent);
+
+        foreach ($this->_items as $item) {
+            $item->setParentObject($parent);
+        }
+    }
 
     /**
      * Convert PDF element to PHP type.
      *
      * Dictionary is returned as an associative array
      *
-     * @return mixed
+     * @return array
      */
     public function toPhp()
     {
-        $phpArray = array();
+        $phpArray = [];
 
         foreach ($this->_items as $itemName => $item) {
             $phpArray[$itemName] = $item->toPhp();

@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Dojo
  * @subpackage View
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: StackContainer.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /** Zend_Dojo_View_Helper_DijitContainer */
@@ -29,7 +29,7 @@ require_once 'Zend/Dojo/View/Helper/DijitContainer.php';
  * @uses       Zend_Dojo_View_Helper_DijitContainer
  * @package    Zend_Dojo
  * @subpackage View
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
   */
 class Zend_Dojo_View_Helper_StackContainer extends Zend_Dojo_View_Helper_DijitContainer
@@ -55,7 +55,7 @@ class Zend_Dojo_View_Helper_StackContainer extends Zend_Dojo_View_Helper_DijitCo
      * @param  array $attribs HTML attributes
      * @return string
      */
-    public function stackContainer($id = null, $content = '', array $params = array(), array $attribs = array())
+    public function stackContainer($id = null, $content = '', array $params = [], array $attribs = [])
     {
         if (0 === func_num_args()) {
             return $this;

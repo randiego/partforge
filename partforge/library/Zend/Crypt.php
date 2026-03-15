@@ -14,30 +14,30 @@
  *
  * @category   Zend
  * @package    Zend_Crypt
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Crypt.php 16971 2009-07-22 18:05:45Z mikaelkael $
+ * @version    $Id$
  */
 
 /**
  * @category   Zend
  * @package    Zend_Crypt
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Crypt
 {
 
-    const TYPE_OPENSSL = 'openssl';
-    const TYPE_HASH = 'hash';
-    const TYPE_MHASH = 'mhash';
+    public const TYPE_OPENSSL = 'openssl';
+    public const TYPE_HASH = 'hash';
+    public const TYPE_MHASH = 'mhash';
 
     protected static $_type = null;
 
     /**
      * @var array
      */
-    protected static $_supportedAlgosOpenssl = array(
+    protected static $_supportedAlgosOpenssl = [
         'md2',
         'md4',
         'mdc2',
@@ -48,12 +48,12 @@ class Zend_Crypt
         'sha256',
         'sha384',
         'sha512'
-    );
+    ];
 
     /**
      * @var array
      */
-    protected static $_supportedAlgosMhash = array(
+    protected static $_supportedAlgosMhash = [
         'adler32',
         'crc32',
         'crc32b',
@@ -70,7 +70,7 @@ class Zend_Crypt
         'tiger',
         'tiger128',
         'tiger160'
-    );
+    ];
 
     /**
      * @param string $algorithm
@@ -86,7 +86,8 @@ class Zend_Crypt
         }
         self::_detectHashSupport($algorithm);
         $supportedMethod = '_digest' . ucfirst(self::$_type);
-        $result = self::$supportedMethod($algorithm, $data, $binaryOutput);
+
+        return self::$supportedMethod($algorithm, $data, $binaryOutput);
     }
 
     /**

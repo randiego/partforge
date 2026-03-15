@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Acl
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Registry.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 
@@ -29,7 +29,7 @@ require_once 'Zend/Acl/Role/Interface.php';
 /**
  * @category   Zend
  * @package    Zend_Acl
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Acl_Role_Registry
@@ -39,7 +39,7 @@ class Zend_Acl_Role_Registry
      *
      * @var array
      */
-    protected $_roles = array();
+    protected $_roles = [];
 
     /**
      * Adds a Role having an identifier unique to the registry
@@ -58,7 +58,7 @@ class Zend_Acl_Role_Registry
      * @param  Zend_Acl_Role_Interface              $role
      * @param  Zend_Acl_Role_Interface|string|array $parents
      * @throws Zend_Acl_Role_Registry_Exception
-     * @return Zend_Acl_Role_Registry Provides a fluent interface
+     * @return $this
      */
     public function add(Zend_Acl_Role_Interface $role, $parents = null)
     {
@@ -72,11 +72,11 @@ class Zend_Acl_Role_Registry
             throw new Zend_Acl_Role_Registry_Exception("Role id '$roleId' already exists in the registry");
         }
 
-        $roleParents = array();
+        $roleParents = [];
 
         if (null !== $parents) {
             if (!is_array($parents)) {
-                $parents = array($parents);
+                $parents = [$parents];
             }
             /**
              * @see Zend_Acl_Role_Registry_Exception
@@ -91,18 +91,18 @@ class Zend_Acl_Role_Registry
                     }
                     $roleParent = $this->get($roleParentId);
                 } catch (Zend_Acl_Role_Registry_Exception $e) {
-                    throw new Zend_Acl_Role_Registry_Exception("Parent Role id '$roleParentId' does not exist");
+                    throw new Zend_Acl_Role_Registry_Exception("Parent Role id '$roleParentId' does not exist", 0, $e);
                 }
                 $roleParents[$roleParentId] = $roleParent;
                 $this->_roles[$roleParentId]['children'][$roleId] = $role;
             }
         }
 
-        $this->_roles[$roleId] = array(
+        $this->_roles[$roleId] = [
             'instance' => $role,
             'parents'  => $roleParents,
-            'children' => array()
-            );
+            'children' => []
+            ];
 
         return $this;
     }
@@ -200,7 +200,7 @@ class Zend_Acl_Role_Registry
             $roleId     = $this->get($role)->getRoleId();
             $inheritId = $this->get($inherit)->getRoleId();
         } catch (Zend_Acl_Role_Registry_Exception $e) {
-            throw $e;
+            throw new Zend_Acl_Role_Registry_Exception($e->getMessage(), $e->getCode(), $e);
         }
 
         $inherits = isset($this->_roles[$roleId]['parents'][$inheritId]);
@@ -225,7 +225,7 @@ class Zend_Acl_Role_Registry
      *
      * @param  Zend_Acl_Role_Interface|string $role
      * @throws Zend_Acl_Role_Registry_Exception
-     * @return Zend_Acl_Role_Registry Provides a fluent interface
+     * @return $this
      */
     public function remove($role)
     {
@@ -236,7 +236,7 @@ class Zend_Acl_Role_Registry
         try {
             $roleId = $this->get($role)->getRoleId();
         } catch (Zend_Acl_Role_Registry_Exception $e) {
-            throw $e;
+            throw new Zend_Acl_Role_Registry_Exception($e->getMessage(), $e->getCode(), $e);
         }
 
         foreach ($this->_roles[$roleId]['children'] as $childId => $child) {
@@ -254,11 +254,11 @@ class Zend_Acl_Role_Registry
     /**
      * Removes all Roles from the registry
      *
-     * @return Zend_Acl_Role_Registry Provides a fluent interface
+     * @return $this
      */
     public function removeAll()
     {
-        $this->_roles = array();
+        $this->_roles = [];
 
         return $this;
     }

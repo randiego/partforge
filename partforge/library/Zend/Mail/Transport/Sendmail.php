@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Mail
  * @subpackage Transport
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Sendmail.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 
@@ -33,7 +33,7 @@ require_once 'Zend/Mail/Transport/Abstract.php';
  * @category   Zend
  * @package    Zend_Mail
  * @subpackage Transport
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Mail_Transport_Sendmail extends Zend_Mail_Transport_Abstract
@@ -53,23 +53,35 @@ class Zend_Mail_Transport_Sendmail extends Zend_Mail_Transport_Abstract
      */
     public $parameters;
 
-
     /**
      * EOL character string
      * @var string
      * @access public
      */
-    public $EOL = PHP_EOL;
+    public $EOL = "\r\n";
 
+    /**
+     * error information
+     * @var string
+     */
+    protected $_errstr;
 
     /**
      * Constructor.
      *
-     * @param  string $parameters OPTIONAL (Default: null)
+     * @param  string|array|Zend_Config $parameters OPTIONAL (Default: null)
      * @return void
      */
     public function __construct($parameters = null)
     {
+        if ($parameters instanceof Zend_Config) {
+            $parameters = $parameters->toArray();
+        }
+
+        if (is_array($parameters)) {
+            $parameters = implode(' ', $parameters);
+        }
+
         $this->parameters = $parameters;
     }
 
@@ -79,30 +91,90 @@ class Zend_Mail_Transport_Sendmail extends Zend_Mail_Transport_Abstract
      *
      * @access public
      * @return void
+     * @throws Zend_Mail_Transport_Exception if parameters is set
+     *         but not a string
      * @throws Zend_Mail_Transport_Exception on mail() failure
      */
     public function _sendMail()
     {
-        if ($this->parameters === null) {
-            $result = mail(
-                $this->recipients,
-                $this->_mail->getSubject(),
-                $this->body,
-                $this->header);
-        } else {
-            $result = mail(
-                $this->recipients,
-                $this->_mail->getSubject(),
-                $this->body,
-                $this->header,
-                $this->parameters);
+        $recipients = $this->recipients;
+        $subject = $this->_mail->getSubject();
+        $body = $this->body;
+        $header = $this->header;
+        $isWindowsOs = strtoupper(substr(PHP_OS, 0, 3)) == 'WIN';
+        if (PHP_VERSION_ID < 80000 && !$isWindowsOs) {
+            $recipients = str_replace("\r\n", "\n", $recipients);
+            $subject = str_replace("\r\n", "\n", $subject);
+            $body = str_replace("\r\n", "\n", $body);
+            $header = str_replace("\r\n", "\n", $header);
         }
-        if (!$result) {
+
+        if ($this->parameters === null) {
+            set_error_handler([$this, '_handleMailErrors']);
+            $result = mail(
+                $recipients,
+                $subject,
+                $body,
+                $header);
+            restore_error_handler();
+        } else {
+            if(!is_string($this->parameters)) {
+                /**
+                 * @see Zend_Mail_Transport_Exception
+                 *
+                 * Exception is thrown here because
+                 * $parameters is a public property
+                 */
+                require_once 'Zend/Mail/Transport/Exception.php';
+                throw new Zend_Mail_Transport_Exception(
+                    'Parameters were set but are not a string'
+                );
+            }
+
+            $fromEmailHeader = str_replace(' ', '', $this->parameters);
+            if (PHP_VERSION_ID < 80000 && !$isWindowsOs) {
+                $fromEmailHeader = str_replace("\r\n", "\n", $fromEmailHeader);
+            }
+            // Sanitize the From header
+            // https://github.com/Shardj/zf1-future/issues/326
+            
+            if ( empty($fromEmailHeader) === TRUE ) { // nothing to worry about
+                goto processMail;
+            }
+            
+            // now we use 2 different approaches, based ond the usage context            
+            if( substr( $fromEmailHeader, 0, 2 ) === '-f' ) {
+                
+                if(substr_count($fromEmailHeader, '"') >2) { // we are considering just usage of double-quotes
+                    throw new Zend_Mail_Transport_Exception('Potential code injection in From header');
+                }
+  
+            } else { // full email validation
+                
+                if( Zend_Validate::is($fromEmailHeader, 'EmailAddress') === FALSE ) {
+                    throw new Zend_Mail_Transport_Exception('Potential code injection in From header');
+                }                
+            }            
+            
+            processMail:
+            
+                set_error_handler([$this, '_handleMailErrors']);
+                $result = mail(
+                    $recipients,
+                    $subject,
+                    $body,
+                    $header,
+                    $fromEmailHeader);
+                restore_error_handler();
+
+        }
+
+        if ($this->_errstr !== null || !$result) {
             /**
              * @see Zend_Mail_Transport_Exception
              */
             require_once 'Zend/Mail/Transport/Exception.php';
-            throw new Zend_Mail_Transport_Exception('Unable to send mail');
+            throw new Zend_Mail_Transport_Exception('Unable to send mail. ' . $this->_errstr);
         }
     }
 
@@ -169,5 +241,20 @@ class Zend_Mail_Transport_Sendmail extends Zend_Mail_Transport_Abstract
         $this->header = rtrim($this->header);
     }
 
-}
+    /**
+     * Temporary error handler for PHP native mail().
+     *
+     * @param int    $errno
+     * @param string $errstr
+     * @param string $errfile
+     * @param string $errline
+     * @param array  $errcontext
+     * @return true
+     */
+    public function _handleMailErrors($errno, $errstr, $errfile = null, $errline = null, ?array $errcontext = null)
+    {
+        $this->_errstr = $errstr;
+        return true;
+    }
 
+}

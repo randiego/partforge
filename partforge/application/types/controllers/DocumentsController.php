@@ -26,18 +26,6 @@
 class Types_DocumentsController extends RestControllerActionAbstract
 {
 
-    /*
-     * GET /types/documents?comment_id=N&format=json
-     *
-     * Return a list of documents for the specified comment_id
-     * Input (at minimum):
-     *  comment_id
-     *
-     * Output (json):
-     *  errormessages = []
-     *  documents = []
-     */
-
     public function indexAction()
     {
         $this->noOp();
@@ -48,6 +36,18 @@ class Types_DocumentsController extends RestControllerActionAbstract
         return $this->getAction(true);
     }
 
+    /*
+    * GET /types/documents?comment_id=N&format=json
+    *
+    * Return a list of documents for the specified comment_id
+    * Input (at minimum):
+    *  comment_id
+    *
+    * Output (json):
+    *  errormessages = []
+    *  documents = []
+    */
+    
     public function getAction($headers_only = false)
     {
         $Document = new DBTableRowTypeDocument();

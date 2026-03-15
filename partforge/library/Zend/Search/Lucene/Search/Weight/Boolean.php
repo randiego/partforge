@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Search_Lucene
  * @subpackage Search
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Boolean.php 16541 2009-07-07 06:59:03Z bkarwin $
+ * @version    $Id$
  */
 
 
@@ -29,7 +29,7 @@ require_once 'Zend/Search/Lucene/Search/Weight.php';
  * @category   Zend
  * @package    Zend_Search_Lucene
  * @subpackage Search
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Search_Lucene_Search_Weight_Boolean extends Zend_Search_Lucene_Search_Weight
@@ -70,7 +70,7 @@ class Zend_Search_Lucene_Search_Weight_Boolean extends Zend_Search_Lucene_Search
     {
         $this->_query   = $query;
         $this->_reader  = $reader;
-        $this->_weights = array();
+        $this->_weights = [];
 
         $signs = $query->getSigns();
 

@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Db
  * @subpackage Profiler
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Query.php 16203 2009-06-21 18:56:17Z thomas $
+ * @version    $Id$
  */
 
 
@@ -25,7 +25,7 @@
  * @category   Zend
  * @package    Zend_Db
  * @subpackage Profiler
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Db_Profiler_Query
@@ -62,11 +62,7 @@ class Zend_Db_Profiler_Query
     /**
      * @var array
      */
-    protected $_boundParams = array();
-
-    /**
-     * @var array
-     */
+    protected $_boundParams = [];
 
     /**
      * Class constructor.  A query is about to be started, save the query text ($query) and its
@@ -90,7 +86,7 @@ class Zend_Db_Profiler_Query
      */
     public function __clone()
     {
-        $this->_boundParams = array();
+        $this->_boundParams = [];
         $this->_endedMicrotime = null;
         $this->start();
     }
@@ -194,6 +190,20 @@ class Zend_Db_Profiler_Query
         }
 
         return $this->_endedMicrotime - $this->_startedMicrotime;
+    }
+
+    /**
+     * Get the time (in seconds) when the profiler started running.
+     *
+     * @return bool|float
+     */
+    public function getStartedMicrotime()
+    {
+        if(null === $this->_startedMicrotime) {
+            return false;
+        }
+
+        return $this->_startedMicrotime;
     }
 }
 

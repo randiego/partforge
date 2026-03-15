@@ -16,9 +16,9 @@
  * @category   Zend
  * @package    Zend_Service
  * @subpackage Delicious
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: PostList.php 16211 2009-06-21 19:23:55Z thomas $
+ * @version    $Id$
  */
 
 
@@ -28,7 +28,7 @@
  * @category   Zend
  * @package    Zend_Service
  * @subpackage Delicious
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Service_Delicious_PostList implements Countable, Iterator, ArrayAccess
@@ -36,7 +36,7 @@ class Zend_Service_Delicious_PostList implements Countable, Iterator, ArrayAcces
     /**
      * @var array Array of Zend_Service_Delicious_Post
      */
-    protected $_posts = array();
+    protected $_posts = [];
 
     /**
      * @var Zend_Service_Delicious Service that has downloaded the post list
@@ -116,7 +116,7 @@ class Zend_Service_Delicious_PostList implements Countable, Iterator, ArrayAcces
         $postList = new self($this->_service);
 
         foreach ($this->_posts as $post) {
-            if (count(array_diff($tags, $post->getTags())) == 0) {
+            if (count(array_diff($tags, $post->getTags())) === 0) {
                 $postList->_addPost($post);
             }
         }
@@ -226,7 +226,6 @@ class Zend_Service_Delicious_PostList implements Countable, Iterator, ArrayAcces
     public function valid(): bool
     {
         $numItems = $this->count();
-
         if ($numItems > 0 && $this->_iteratorKey < $numItems) {
             return true;
         } else {

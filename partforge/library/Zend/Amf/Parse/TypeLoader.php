@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Amf
  * @subpackage Parse
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: TypeLoader.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /**
@@ -47,7 +47,7 @@ require_once 'Zend/Amf/Value/Messaging/RemotingMessage.php';
  * @todo       PHP 5.3 can drastically change this class w/ namespace and the new call_user_func w/ namespace
  * @package    Zend_Amf
  * @subpackage Parse
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 final class Zend_Amf_Parse_TypeLoader
@@ -60,26 +60,26 @@ final class Zend_Amf_Parse_TypeLoader
     /**
      * @var array AMF class map
      */
-    public static $classMap = array (
+    public static $classMap = [
         'flex.messaging.messages.AcknowledgeMessage' => 'Zend_Amf_Value_Messaging_AcknowledgeMessage',
-        'flex.messaging.messages.ErrorMessage'       => 'Zend_Amf_Value_Messaging_AsyncMessage',
+        'flex.messaging.messages.AsyncMessage'       => 'Zend_Amf_Value_Messaging_AsyncMessage',
         'flex.messaging.messages.CommandMessage'     => 'Zend_Amf_Value_Messaging_CommandMessage',
         'flex.messaging.messages.ErrorMessage'       => 'Zend_Amf_Value_Messaging_ErrorMessage',
         'flex.messaging.messages.RemotingMessage'    => 'Zend_Amf_Value_Messaging_RemotingMessage',
         'flex.messaging.io.ArrayCollection'          => 'Zend_Amf_Value_Messaging_ArrayCollection',
-    );
+    ];
 
     /**
      * @var array Default class map
      */
-    protected static $_defaultClassMap = array(
+    protected static $_defaultClassMap = [
         'flex.messaging.messages.AcknowledgeMessage' => 'Zend_Amf_Value_Messaging_AcknowledgeMessage',
-        'flex.messaging.messages.ErrorMessage'       => 'Zend_Amf_Value_Messaging_AsyncMessage',
+        'flex.messaging.messages.AsyncMessage'       => 'Zend_Amf_Value_Messaging_AsyncMessage',
         'flex.messaging.messages.CommandMessage'     => 'Zend_Amf_Value_Messaging_CommandMessage',
         'flex.messaging.messages.ErrorMessage'       => 'Zend_Amf_Value_Messaging_ErrorMessage',
         'flex.messaging.messages.RemotingMessage'    => 'Zend_Amf_Value_Messaging_RemotingMessage',
         'flex.messaging.io.ArrayCollection'          => 'Zend_Amf_Value_Messaging_ArrayCollection',
-    );
+    ];
 
     /**
      * @var Zend_Loader_PluginLoader_Interface
@@ -91,7 +91,7 @@ final class Zend_Amf_Parse_TypeLoader
      * Load the mapped class type into a callback.
      *
      * @param  string $className
-     * @return object|false
+     * @return array|false|string|string[]
      */
     public static function loadType($className)
     {
@@ -186,9 +186,9 @@ final class Zend_Amf_Parse_TypeLoader
     public static function getResourceParser($resource)
     {
         if(self::$_resourceLoader) {
-               $type = preg_replace("/[^A-Za-z0-9_]/", " ", get_resource_type($resource));
-               $type = str_replace(" ","", ucwords($type));
-               return self::$_resourceLoader->load($type);
+            $type = preg_replace("/[^A-Za-z0-9_]/", " ", get_resource_type($resource));
+            $type = str_replace(" ","", ucwords($type));
+            return self::$_resourceLoader->load($type);
         }
         return false;
     }
@@ -213,7 +213,7 @@ final class Zend_Amf_Parse_TypeLoader
                     throw new Zend_Amf_Exception('Can not serialize resource type: '. get_resource_type($resource));
                 }
                 $parser = new $resclass();
-                if(is_callable(array($parser, 'parse'))) {
+                if(is_callable([$parser, 'parse'])) {
                     $resource = $parser->parse($resource);
                 } else {
                     require_once 'Zend/Amf/Exception.php';
@@ -222,10 +222,10 @@ final class Zend_Amf_Parse_TypeLoader
             }
             return $resource;
         } catch(Zend_Amf_Exception $e) {
-            throw $e;
+            throw new Zend_Amf_Exception($e->getMessage(), $e->getCode(), $e);
         } catch(Exception $e) {
             require_once 'Zend/Amf/Exception.php';
-            throw new Zend_Amf_Exception('Can not serialize resource type: '. get_resource_type($resource));
+            throw new Zend_Amf_Exception('Can not serialize resource type: '. get_resource_type($resource), 0, $e);
         }
     }
 }

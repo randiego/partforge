@@ -15,18 +15,10 @@
  * @category   Zend
  * @package    Zend_Test
  * @subpackage PHPUnit
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Insert.php 16607 2009-07-09 21:51:46Z beberlei $
+ * @version    $Id$
  */
-
-require_once "PHPUnit/Extensions/Database/Operation/IDatabaseOperation.php";
-
-require_once "PHPUnit/Extensions/Database/DB/IDatabaseConnection.php";
-
-require_once "PHPUnit/Extensions/Database/DataSet/IDataSet.php";
-
-require_once "PHPUnit/Extensions/Database/Operation/Exception.php";
 
 /**
  * @see Zend_Test_PHPUnit_Db_Connection
@@ -40,7 +32,7 @@ require_once "Zend/Test/PHPUnit/Db/Connection.php";
  * @category   Zend
  * @package    Zend_Test
  * @subpackage PHPUnit
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Test_PHPUnit_Db_Operation_Insert implements PHPUnit_Extensions_Database_Operation_IDatabaseOperation
@@ -83,7 +75,7 @@ class Zend_Test_PHPUnit_Db_Operation_Insert implements PHPUnit_Extensions_Databa
      */
     protected function buildInsertValues(PHPUnit_Extensions_Database_DataSet_ITable $table, $rowNum)
     {
-        $values = array();
+        $values = [];
         foreach($table->getTableMetaData()->getColumns() as $columnName) {
             $values[$columnName] = $table->getValue($rowNum, $columnName);
         }

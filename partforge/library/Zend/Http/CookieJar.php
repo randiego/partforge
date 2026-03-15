@@ -15,8 +15,8 @@
  * @category   Zend
  * @package    Zend_Http
  * @subpackage CookieJar
- * @version    $Id: CookieJar.php 17124 2009-07-26 09:46:42Z shahar $
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @version    $Id$
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -54,7 +54,7 @@ require_once "Zend/Http/Response.php";
  * @category   Zend
  * @package    Zend_Http
  * @subpackage CookieJar
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Http_CookieJar implements Countable, IteratorAggregate
@@ -63,19 +63,26 @@ class Zend_Http_CookieJar implements Countable, IteratorAggregate
      * Return cookie(s) as a Zend_Http_Cookie object
      *
      */
-    const COOKIE_OBJECT = 0;
+    public const COOKIE_OBJECT = 0;
 
     /**
      * Return cookie(s) as a string (suitable for sending in an HTTP request)
      *
      */
-    const COOKIE_STRING_ARRAY = 1;
+    public const COOKIE_STRING_ARRAY = 1;
 
     /**
      * Return all cookies as one long string (suitable for sending in an HTTP request)
      *
      */
-    const COOKIE_STRING_CONCAT = 2;
+    public const COOKIE_STRING_CONCAT = 2;
+
+    /**
+     * Return all cookies as one long string (strict mode)
+     *  - Single space after the semi-colon separating each cookie
+     *  - Remove trailing semi-colon, if any
+     */
+    public const COOKIE_STRING_CONCAT_STRICT = 3;
 
     /**
      * Array storing cookies
@@ -94,14 +101,14 @@ class Zend_Http_CookieJar implements Countable, IteratorAggregate
      *
      * @var array
      */
-    protected $cookies = array();
+    protected $cookies = [];
 
     /**
      * The Zend_Http_Cookie array
      *
      * @var array
      */
-    protected $_rawCookies = array();
+    protected $_rawCookies = [];
 
     /**
      * Construct a new CookieJar object
@@ -116,18 +123,19 @@ class Zend_Http_CookieJar implements Countable, IteratorAggregate
      *
      * @param Zend_Http_Cookie|string $cookie
      * @param Zend_Uri_Http|string    $ref_uri Optional reference URI (for domain, path, secure)
+     * @param boolean $encodeValue
      */
-    public function addCookie($cookie, $ref_uri = null)
+    public function addCookie($cookie, $ref_uri = null, $encodeValue = true)
     {
         if (is_string($cookie)) {
-            $cookie = Zend_Http_Cookie::fromString($cookie, $ref_uri);
+            $cookie = Zend_Http_Cookie::fromString($cookie, $ref_uri, $encodeValue);
         }
 
         if ($cookie instanceof Zend_Http_Cookie) {
             $domain = $cookie->getDomain();
             $path = $cookie->getPath();
-            if (! isset($this->cookies[$domain])) $this->cookies[$domain] = array();
-            if (! isset($this->cookies[$domain][$path])) $this->cookies[$domain][$path] = array();
+            if (! isset($this->cookies[$domain])) $this->cookies[$domain] = [];
+            if (! isset($this->cookies[$domain][$path])) $this->cookies[$domain][$path] = [];
             $this->cookies[$domain][$path][$cookie->getName()] = $cookie;
             $this->_rawCookies[] = $cookie;
         } else {
@@ -142,8 +150,9 @@ class Zend_Http_CookieJar implements Countable, IteratorAggregate
      *
      * @param Zend_Http_Response $response
      * @param Zend_Uri_Http|string $ref_uri Requested URI
+     * @param boolean $encodeValue
      */
-    public function addCookiesFromResponse($response, $ref_uri)
+    public function addCookiesFromResponse($response, $ref_uri, $encodeValue = true)
     {
         if (! $response instanceof Zend_Http_Response) {
             require_once 'Zend/Http/Exception.php';
@@ -155,10 +164,10 @@ class Zend_Http_CookieJar implements Countable, IteratorAggregate
 
         if (is_array($cookie_hdrs)) {
             foreach ($cookie_hdrs as $cookie) {
-                $this->addCookie($cookie, $ref_uri);
+                $this->addCookie($cookie, $ref_uri, $encodeValue);
             }
         } elseif (is_string($cookie_hdrs)) {
-            $this->addCookie($cookie_hdrs, $ref_uri);
+            $this->addCookie($cookie_hdrs, $ref_uri, $encodeValue);
         }
     }
 
@@ -171,6 +180,9 @@ class Zend_Http_CookieJar implements Countable, IteratorAggregate
     public function getAllCookies($ret_as = self::COOKIE_OBJECT)
     {
         $cookies = $this->_flattenCookiesArray($this->cookies, $ret_as);
+        if($ret_as == self::COOKIE_STRING_CONCAT_STRICT) {
+            $cookies = rtrim(trim($cookies), ';');
+        }
         return $cookies;
     }
 
@@ -200,13 +212,16 @@ class Zend_Http_CookieJar implements Countable, IteratorAggregate
         $cookies = $this->_flattenCookiesArray($cookies, self::COOKIE_OBJECT);
 
         // Next, run Cookie->match on all cookies to check secure, time and session mathcing
-        $ret = array();
+        $ret = [];
         foreach ($cookies as $cookie)
             if ($cookie->match($uri, $matchSessionCookies, $now))
                 $ret[] = $cookie;
 
         // Now, use self::_flattenCookiesArray again - only to convert to the return format ;)
         $ret = $this->_flattenCookiesArray($ret, $ret_as);
+        if($ret_as == self::COOKIE_STRING_CONCAT_STRICT) {
+            $ret = rtrim(trim($ret), ';');
+        }
 
         return $ret;
     }
@@ -243,6 +258,10 @@ class Zend_Http_CookieJar implements Countable, IteratorAggregate
                     return $cookie;
                     break;
 
+                case self::COOKIE_STRING_CONCAT_STRICT:
+                    return rtrim(trim($cookie->__toString()), ';');
+                    break;
+
                 case self::COOKIE_STRING_ARRAY:
                 case self::COOKIE_STRING_CONCAT:
                     return $cookie->__toString();
@@ -268,9 +287,12 @@ class Zend_Http_CookieJar implements Countable, IteratorAggregate
      */
     protected function _flattenCookiesArray($ptr, $ret_as = self::COOKIE_OBJECT) {
         if (is_array($ptr)) {
-            $ret = ($ret_as == self::COOKIE_STRING_CONCAT ? '' : array());
+            $ret = ($ret_as == self::COOKIE_STRING_CONCAT || $ret_as == self::COOKIE_STRING_CONCAT_STRICT) ? '' : [];
             foreach ($ptr as $item) {
-                if ($ret_as == self::COOKIE_STRING_CONCAT) {
+                if ($ret_as == self::COOKIE_STRING_CONCAT_STRICT) {
+                    $postfix_combine = (!is_array($item) ? ' ' : '');
+                    $ret .= $this->_flattenCookiesArray($item, $ret_as) . $postfix_combine;
+                } elseif ($ret_as == self::COOKIE_STRING_CONCAT) {
                     $ret .= $this->_flattenCookiesArray($item, $ret_as);
                 } else {
                     $ret = array_merge($ret, $this->_flattenCookiesArray($item, $ret_as));
@@ -280,8 +302,11 @@ class Zend_Http_CookieJar implements Countable, IteratorAggregate
         } elseif ($ptr instanceof Zend_Http_Cookie) {
             switch ($ret_as) {
                 case self::COOKIE_STRING_ARRAY:
-                    return array($ptr->__toString());
+                    return [$ptr->__toString()];
                     break;
+
+                case self::COOKIE_STRING_CONCAT_STRICT:
+                    // break intentionally omitted
 
                 case self::COOKIE_STRING_CONCAT:
                     return $ptr->__toString();
@@ -289,7 +314,7 @@ class Zend_Http_CookieJar implements Countable, IteratorAggregate
 
                 case self::COOKIE_OBJECT:
                 default:
-                    return array($ptr);
+                    return [$ptr];
                     break;
             }
         }
@@ -305,7 +330,7 @@ class Zend_Http_CookieJar implements Countable, IteratorAggregate
      */
     protected function _matchDomain($domain)
     {
-        $ret = array();
+        $ret = [];
 
         foreach (array_keys($this->cookies) as $cdom) {
             if (Zend_Http_Cookie::matchCookieDomain($cdom, $domain)) {
@@ -325,13 +350,13 @@ class Zend_Http_CookieJar implements Countable, IteratorAggregate
      */
     protected function _matchPath($domains, $path)
     {
-        $ret = array();
+        $ret = [];
 
         foreach ($domains as $dom => $paths_array) {
             foreach (array_keys($paths_array) as $cpath) {
                 if (Zend_Http_Cookie::matchCookiePath($cpath, $path)) {
                     if (! isset($ret[$dom])) {
-                        $ret[$dom] = array();
+                        $ret[$dom] = [];
                     }
 
                     $ret[$dom][$cpath] = $paths_array[$cpath];
@@ -375,7 +400,8 @@ class Zend_Http_CookieJar implements Countable, IteratorAggregate
      *
      * @return ArrayIterator
      */
-    public function getIterator(): Traversable
+    #[\ReturnTypeWillChange]
+    public function getIterator(): \Traversable
     {
         return new ArrayIterator($this->_rawCookies);
     }
@@ -387,7 +413,7 @@ class Zend_Http_CookieJar implements Countable, IteratorAggregate
      */
     public function isEmpty()
     {
-        return count($this) == 0;
+        return count($this) === 0;
     }
 
     /**
@@ -397,7 +423,7 @@ class Zend_Http_CookieJar implements Countable, IteratorAggregate
      */
     public function reset()
     {
-        $this->cookies = $this->_rawCookies = array();
+        $this->cookies = $this->_rawCookies = [];
         return $this;
     }
 }

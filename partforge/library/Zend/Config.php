@@ -14,16 +14,16 @@
  *
  * @category   Zend
  * @package    Zend_Config
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Config.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 
 /**
  * @category   Zend
  * @package    Zend_Config
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Config implements Countable, Iterator
@@ -79,7 +79,7 @@ class Zend_Config implements Countable, Iterator
      *
      * @var array
      */
-    protected $_extends = array();
+    protected $_extends = [];
 
     /**
      * Load file error string.
@@ -104,10 +104,10 @@ class Zend_Config implements Countable, Iterator
      */
     public function __construct(array $array, $allowModifications = false)
     {
-        $this->_allowModifications = (boolean) $allowModifications;
+        $this->_allowModifications = (bool) $allowModifications;
         $this->_loadedSection = null;
         $this->_index = 0;
-        $this->_data = array();
+        $this->_data = [];
         foreach ($array as $key => $value) {
             if (is_array($value)) {
                 $this->_data[$key] = new self($value, $this->_allowModifications);
@@ -178,7 +178,7 @@ class Zend_Config implements Countable, Iterator
      */
     public function __clone()
     {
-      $array = array();
+      $array = [];
       foreach ($this->_data as $key => $value) {
           if ($value instanceof Zend_Config) {
               $array[$key] = clone $value;
@@ -196,7 +196,7 @@ class Zend_Config implements Countable, Iterator
      */
     public function toArray()
     {
-        $array = array();
+        $array = [];
         $data = $this->_data;
         foreach ($data as $key => $value) {
             if ($value instanceof Zend_Config) {
@@ -265,7 +265,7 @@ class Zend_Config implements Countable, Iterator
     /**
      * Defined by Iterator interface
      *
-     * @return mixed
+     * @return int|string|null
      */
     #[\ReturnTypeWillChange]
     public function key()
@@ -315,7 +315,7 @@ class Zend_Config implements Countable, Iterator
      */
     public function getSectionName()
     {
-        if(is_array($this->_loadedSection) && count($this->_loadedSection) == 1) {
+        if(is_array($this->_loadedSection) && count($this->_loadedSection) === 1) {
             $this->_loadedSection = $this->_loadedSection[0];
         }
         return $this->_loadedSection;
@@ -446,7 +446,7 @@ class Zend_Config implements Countable, Iterator
      * @param string $errfile
      * @param integer $errline
      */
-    protected function _loadFileErrorHandler($errno, $errstr, $errfile, $errline)
+    public function _loadFileErrorHandler($errno, $errstr, $errfile, $errline)
     {
         if ($this->_loadFileErrorStr === null) {
             $this->_loadFileErrorStr = $errstr;
@@ -455,4 +455,32 @@ class Zend_Config implements Countable, Iterator
         }
     }
 
+    /**
+     * Merge two arrays recursively, overwriting keys of the same name
+     * in $firstArray with the value in $secondArray.
+     *
+     * @param  mixed $firstArray  First array
+     * @param  mixed $secondArray Second array to merge into first array
+     * @return array
+     */
+    protected function _arrayMergeRecursive($firstArray, $secondArray)
+    {
+        if (is_array($firstArray) && is_array($secondArray)) {
+            foreach ($secondArray as $key => $value) {
+                if (isset($firstArray[$key])) {
+                    $firstArray[$key] = $this->_arrayMergeRecursive($firstArray[$key], $value);
+                } else {
+                    if ($key === 0) {
+                        $firstArray = [0 => $this->_arrayMergeRecursive($firstArray, $value)];
+                    } else {
+                        $firstArray[$key] = $value;
+                    }
+                }
+            }
+        } else {
+            $firstArray = $secondArray;
+        }
+
+        return $firstArray;
+    }
 }

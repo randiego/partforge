@@ -13,11 +13,11 @@
  * to license@zend.com so we can send you a copy immediately.
  *
  * @category   Zend
- * @package    Test
+ * @package    Zend_Test
  * @subpackage PHPUnit
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: DbAdapter.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /**
@@ -38,11 +38,10 @@ require_once 'Zend/Db/Profiler.php';
 /**
  * Testing Database Adapter which acts as a stack for SQL Results
  *
- * @uses       uses
  * @category   Zend
- * @package    package
- * @subpackage subpackage
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @package    Zend_Test
+ * @subpackage PHPUnit
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Test_DbAdapter extends Zend_Db_Adapter_Abstract
@@ -50,7 +49,7 @@ class Zend_Test_DbAdapter extends Zend_Db_Adapter_Abstract
     /**
      * @var array
      */
-    protected $_statementStack = array();
+    protected $_statementStack = [];
 
     /**
      * @var boolean
@@ -60,17 +59,22 @@ class Zend_Test_DbAdapter extends Zend_Db_Adapter_Abstract
     /**
      * @var array
      */
-    protected $_listTables = array();
+    protected $_listTables = [];
 
     /**
      * @var array
      */
-    protected $_lastInsertIdStack = array();
+    protected $_lastInsertIdStack = [];
 
     /**
      * @var array
      */
-    protected $_describeTables = array();
+    protected $_describeTables = [];
+
+    /**
+     * @var string
+     */
+    protected $_quoteIdentifierSymbol = '';
 
     /**
      * Empty constructor to make it parameterless.
@@ -107,13 +111,21 @@ class Zend_Test_DbAdapter extends Zend_Db_Adapter_Abstract
     }
 
     /**
+     * @param string $symbol
+     */
+    public function setQuoteIdentifierSymbol($symbol)
+    {
+        $this->_quoteIdentifierSymbol = $symbol;
+    }
+
+    /**
      * Returns the symbol the adapter uses for delimited identifiers.
      *
      * @return string
      */
     public function getQuoteIdentifierSymbol()
     {
-        return '';
+        return $this->_quoteIdentifierSymbol;
     }
 
     /**
@@ -180,7 +192,7 @@ class Zend_Test_DbAdapter extends Zend_Db_Adapter_Abstract
         if(isset($this->_describeTables[$tableName])) {
             return $this->_describeTables[$tableName];
         } else {
-            return array();
+            return [];
         }
     }
 

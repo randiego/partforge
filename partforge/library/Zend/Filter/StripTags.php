@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Zend Framework
  *
@@ -15,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Filter
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: StripTags.php 16870 2009-07-20 10:17:59Z mikaelkael $
+ * @version    $Id$
  */
 
 
@@ -30,7 +29,7 @@ require_once 'Zend/Filter/Interface.php';
 /**
  * @category   Zend
  * @package    Zend_Filter
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Filter_StripTags implements Zend_Filter_Interface
@@ -38,17 +37,19 @@ class Zend_Filter_StripTags implements Zend_Filter_Interface
     /**
      * Unique ID prefix used for allowing comments
      */
-    const UNIQUE_ID_PREFIX = '__Zend_Filter_StripTags__';
+    public const UNIQUE_ID_PREFIX = '__Zend_Filter_StripTags__';
 
     /**
      * Whether comments are allowed
      *
      * If false (the default), then comments are removed from the input string.
      *
-     * @var boolean
+     * This setting is now deprecated, and ignored internally.
+     *
      * @deprecated
+     * @var boolean
      */
-    public $commentsAllowed;
+    public $commentsAllowed = false;
 
     /**
      * Array of allowed tags and allowed attributes for each allowed tag
@@ -58,7 +59,7 @@ class Zend_Filter_StripTags implements Zend_Filter_Interface
      *
      * @var array
      */
-    protected $_tagsAllowed = array();
+    protected $_tagsAllowed = [];
 
     /**
      * Array of allowed attributes for all allowed tags
@@ -67,25 +68,57 @@ class Zend_Filter_StripTags implements Zend_Filter_Interface
      *
      * @var array
      */
-    protected $_attributesAllowed = array();
+    protected $_attributesAllowed = [];
 
     /**
      * Sets the filter options
+     * Allowed options are
+     *     'allowTags'     => Tags which are allowed
+     *     'allowAttribs'  => Attributes which are allowed
+     *     'allowComments' => Are comments allowed ?
      *
-     * @param  array|string $tagsAllowed
-     * @param  array|string $attributesAllowed
-     * @param  boolean      $allowComments
+     * @param  string|array|Zend_Config $options
      * @return void
      */
-    public function __construct($tagsAllowed = null, $attributesAllowed = null, $commentsAllowed = false)
+    public function __construct($options = null)
     {
-        $this->setTagsAllowed($tagsAllowed);
-        $this->setAttributesAllowed($attributesAllowed);
-        $this->setCommentsAllowed($commentsAllowed);
+        if ($options instanceof Zend_Config) {
+            $options = $options->toArray();
+        } else if ((!is_array($options)) || (is_array($options) && !array_key_exists('allowTags', $options) &&
+            !array_key_exists('allowAttribs', $options) && !array_key_exists('allowComments', $options))) {
+            $options = func_get_args();
+            $temp['allowTags'] = array_shift($options);
+            if (!empty($options)) {
+                $temp['allowAttribs'] = array_shift($options);
+            }
+
+            if (!empty($options)) {
+                $temp['allowComments'] = array_shift($options);
+            }
+
+            $options = $temp;
+        }
+
+        if (array_key_exists('allowTags', $options)) {
+            $this->setTagsAllowed($options['allowTags']);
+        }
+
+        if (array_key_exists('allowAttribs', $options)) {
+            $this->setAttributesAllowed($options['allowAttribs']);
+        }
+
+        if (array_key_exists('allowComments', $options)) {
+            $this->setCommentsAllowed($options['allowComments']);
+        }
     }
 
     /**
      * Returns the commentsAllowed option
+     *
+     * This setting is now deprecated and ignored internally.
+     *
+     * @deprecated
+     * @return bool
      */
     public function getCommentsAllowed()
     {
@@ -95,12 +128,15 @@ class Zend_Filter_StripTags implements Zend_Filter_Interface
     /**
      * Sets the commentsAllowed option
      *
-     * @param boolean $commentsAllowed
-     * @return Zend_Filter_StripTags Provides a fluent interface
+     * This setting is now deprecated and ignored internally.
+     *
+     * @deprecated
+     * @param  boolean $commentsAllowed
+     * @return $this
      */
     public function setCommentsAllowed($commentsAllowed)
     {
-       $this->commentsAllowed = (boolean) $commentsAllowed;
+       $this->commentsAllowed = (bool) $commentsAllowed;
        return $this;
     }
 
@@ -118,12 +154,12 @@ class Zend_Filter_StripTags implements Zend_Filter_Interface
      * Sets the tagsAllowed option
      *
      * @param  array|string $tagsAllowed
-     * @return Zend_Filter_StripTags Provides a fluent interface
+     * @return $this
      */
     public function setTagsAllowed($tagsAllowed)
     {
         if (!is_array($tagsAllowed)) {
-            $tagsAllowed = array($tagsAllowed);
+            $tagsAllowed = [$tagsAllowed];
         }
 
         foreach ($tagsAllowed as $index => $element) {
@@ -132,7 +168,7 @@ class Zend_Filter_StripTags implements Zend_Filter_Interface
                 // Canonicalize the tag name
                 $tagName = strtolower($element);
                 // Store the tag as allowed with no attributes
-                $this->_tagsAllowed[$tagName] = array();
+                $this->_tagsAllowed[$tagName] = [];
             }
             // Otherwise, if a tag was provided with attributes
             else if (is_string($index) && (is_array($element) || is_string($element))) {
@@ -140,10 +176,10 @@ class Zend_Filter_StripTags implements Zend_Filter_Interface
                 $tagName = strtolower($index);
                 // Canonicalize the attributes
                 if (is_string($element)) {
-                    $element = array($element);
+                    $element = [$element];
                 }
                 // Store the tag as allowed with the provided attributes
-                $this->_tagsAllowed[$tagName] = array();
+                $this->_tagsAllowed[$tagName] = [];
                 foreach ($element as $attribute) {
                     if (is_string($attribute)) {
                         // Canonicalize the attribute name
@@ -171,12 +207,12 @@ class Zend_Filter_StripTags implements Zend_Filter_Interface
      * Sets the attributesAllowed option
      *
      * @param  array|string $attributesAllowed
-     * @return Zend_Filter_StripTags Provides a fluent interface
+     * @return $this
      */
     public function setAttributesAllowed($attributesAllowed)
     {
         if (!is_array($attributesAllowed)) {
-            $attributesAllowed = array($attributesAllowed);
+            $attributesAllowed = [$attributesAllowed];
         }
 
         // Store each attribute as allowed
@@ -201,22 +237,30 @@ class Zend_Filter_StripTags implements Zend_Filter_Interface
      */
     public function filter($value)
     {
-        $valueCopy = (string) $value;
+        $value = (string) $value;
 
-        // If comments are allowed, then replace them with unique identifiers
-        if ($this->getCommentsAllowed()) {
-            preg_match_all('/<\!--.*?--\s*>/s' , (string) $valueCopy, $matches);
-            $comments = array_unique($matches[0]);
-            foreach ($comments as $k => $v) {
-                $valueCopy = str_replace($v, self::UNIQUE_ID_PREFIX . $k, $valueCopy);
+        // Strip HTML comments first
+        while (strpos($value, '<!--') !== false) {
+            $pos   = strrpos($value, '<!--');
+            $start = substr($value, 0, $pos);
+            $value = substr($value, $pos);
+
+            // If there is no comment closing tag, strip whole text
+            if (!preg_match('/--\s*>/s', $value)) {
+                $value = '';
+            } else {
+                $value = preg_replace('/<(?:!(?:--[\s\S]*?--\s*)?(>))/s', '',  $value);
             }
+
+            $value = $start . $value;
         }
 
         // Initialize accumulator for filtered data
         $dataFiltered = '';
         // Parse the input data iteratively as regular pre-tag text followed by a
         // tag; either may be empty strings
-        preg_match_all('/([^<]*)(<?[^>]*>?)/', (string) $valueCopy, $matches);
+        preg_match_all('/([^<]*)(<?[^>]*>?)/', (string) $value, $matches);
+
         // Iterate over each set of matches
         foreach ($matches[1] as $index => $preTag) {
             // If the pre-tag text is non-empty, strip any ">" characters from it
@@ -232,13 +276,6 @@ class Zend_Filter_StripTags implements Zend_Filter_Interface
             }
             // Add the filtered pre-tag text and filtered tag to the data buffer
             $dataFiltered .= $preTag . $tagFiltered;
-        }
-
-        // If comments are allowed, then replace the unique identifiers with the corresponding comments
-        if ($this->getCommentsAllowed()) {
-            foreach ($comments as $k => $v) {
-                $dataFiltered = str_replace(self::UNIQUE_ID_PREFIX . $k, $v, $dataFiltered);
-            }
         }
 
         // Return the filtered data
@@ -282,7 +319,7 @@ class Zend_Filter_StripTags implements Zend_Filter_Interface
         // If there are non-whitespace characters in the attribute string
         if (strlen($tagAttributes)) {
             // Parse iteratively for well-formed attributes
-            preg_match_all('/(\w+)\s*=\s*(?:(")(.*?)"|(\')(.*?)\')/s', $tagAttributes, $matches);
+            preg_match_all('/([\w-]+)\s*=\s*(?:(")(.*?)"|(\')(.*?)\')/s', $tagAttributes, $matches);
 
             // Initialize valid attribute accumulator
             $tagAttributes = '';
@@ -290,8 +327,8 @@ class Zend_Filter_StripTags implements Zend_Filter_Interface
             // Iterate over each matched attribute
             foreach ($matches[1] as $index => $attributeName) {
                 $attributeName      = strtolower($attributeName);
-                $attributeDelimiter = $matches[2][$index];
-                $attributeValue     = $matches[3][$index];
+                $attributeDelimiter = empty($matches[2][$index]) ? $matches[4][$index] : $matches[2][$index];
+                $attributeValue     = empty($matches[3][$index]) ? $matches[5][$index] : $matches[3][$index];
 
                 // If the attribute is not allowed, then remove it entirely
                 if (!array_key_exists($attributeName, $this->_tagsAllowed[$tagName])

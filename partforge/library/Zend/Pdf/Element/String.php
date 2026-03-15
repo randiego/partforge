@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Pdf
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: String.php 18993 2009-11-15 17:09:16Z alexander $
+ * @version    $Id$
  */
 
 
@@ -28,7 +28,7 @@ require_once 'Zend/Pdf/Element.php';
  *
  * @category   Zend
  * @package    Zend_Pdf
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Pdf_Element_String extends Zend_Pdf_Element
@@ -82,7 +82,7 @@ class Zend_Pdf_Element_String extends Zend_Pdf_Element
      */
     public static function escape($str)
     {
-        $outEntries = array();
+        $outEntries = [];
 
         foreach (str_split($str, 128) as $chunk) {
             // Collect sequence of unescaped characters
@@ -167,7 +167,7 @@ class Zend_Pdf_Element_String extends Zend_Pdf_Element
      */
     public static function unescape($str)
     {
-        $outEntries = array();
+        $outEntries = [];
 
         $offset = 0;
         while ($offset < strlen($str)) {
@@ -246,7 +246,7 @@ class Zend_Pdf_Element_String extends Zend_Pdf_Element
                                 }
                             }
 
-                            $outEntries[] = chr($nextCode);
+                            $outEntries[] = chr(octdec($nextCode));
                         } else {
                             $outEntries[] = $str[$offset];
                         }
@@ -257,7 +257,7 @@ class Zend_Pdf_Element_String extends Zend_Pdf_Element
             }
         }
 
-        return implode($outEntries);
+        return implode('', $outEntries);
     }
 
 }

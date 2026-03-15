@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Wildfire
  * @subpackage Protocol
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: JsonStream.php 16971 2009-07-22 18:05:45Z mikaelkael $
+ * @version    $Id$
  */
 
 /** Zend_Wildfire_Plugin_Interface */
@@ -35,7 +35,7 @@ require_once 'Zend/Json.php';
  * @category   Zend
  * @package    Zend_Wildfire
  * @subpackage Protocol
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Wildfire_Protocol_JsonStream
@@ -43,19 +43,19 @@ class Zend_Wildfire_Protocol_JsonStream
     /**
      * The protocol URI for this protocol
      */
-    const PROTOCOL_URI = 'http://meta.wildfirehq.org/Protocol/JsonStream/0.2';
+    public const PROTOCOL_URI = 'http://meta.wildfirehq.org/Protocol/JsonStream/0.2';
 
     /**
      * All messages to be sent.
      * @var array
      */
-    protected $_messages = array();
+    protected $_messages = [];
 
     /**
      * Plugins that are using this protocol
      * @var array
      */
-    protected $_plugins = array();
+    protected $_plugins = [];
 
     /**
      * Register a plugin that uses this protocol
@@ -83,13 +83,13 @@ class Zend_Wildfire_Protocol_JsonStream
     public function recordMessage(Zend_Wildfire_Plugin_Interface $plugin, $structure, $data)
     {
         if(!isset($this->_messages[$structure])) {
-            $this->_messages[$structure] = array();
+            $this->_messages[$structure] = [];
         }
 
         $uri = $plugin->getUri();
 
         if(!isset($this->_messages[$structure][$uri])) {
-            $this->_messages[$structure][$uri] = array();
+            $this->_messages[$structure][$uri] = [];
         }
 
         $this->_messages[$structure][$uri][] = $this->_encode($data);
@@ -127,7 +127,7 @@ class Zend_Wildfire_Protocol_JsonStream
     /**
      * Get all qued messages
      *
-     * @return mixed Returns qued messages or FALSE if no messages are qued
+     * @return array|false Returns qued messages or FALSE if no messages are qued
      */
     public function getMessages()
     {
@@ -145,14 +145,14 @@ class Zend_Wildfire_Protocol_JsonStream
      */
     protected function _encode($value)
     {
-        return Zend_Json::encode($value, true, array('silenceCyclicalExceptions'=>true));
+        return Zend_Json::encode($value, true, ['silenceCyclicalExceptions'=>true]);
     }
 
     /**
      * Retrieves all formatted data ready to be sent by the channel.
      *
      * @param Zend_Wildfire_Channel_Interface $channel The instance of the channel that will be transmitting the data
-     * @return mixed Returns the data to be sent by the channel.
+     * @return array|false Returns the data to be sent by the channel.
      * @throws Zend_Wildfire_Exception
      */
     public function getPayload(Zend_Wildfire_Channel_Interface $channel)
@@ -177,42 +177,39 @@ class Zend_Wildfire_Protocol_JsonStream
         $plugin_index = 1;
         $message_index = 1;
 
-        $payload = array();
+        $payload = [];
 
-        $payload[] = array('Protocol-'.$protocol_index, self::PROTOCOL_URI);
+        $payload[] = ['Protocol-'.$protocol_index, self::PROTOCOL_URI];
 
         foreach ($this->_messages as $structure_uri => $plugin_messages ) {
 
-            $payload[] = array($protocol_index.'-Structure-'.$structure_index, $structure_uri);
+            $payload[] = [$protocol_index.'-Structure-'.$structure_index, $structure_uri];
 
             foreach ($plugin_messages as $plugin_uri => $messages ) {
 
-                $payload[] = array($protocol_index.'-Plugin-'.$plugin_index, $plugin_uri);
+                $payload[] = [$protocol_index.'-Plugin-'.$plugin_index, $plugin_uri];
 
                 foreach ($messages as $message) {
 
                     $parts = explode("\n",chunk_split($message, 5000, "\n"));
 
-                    for ($i=0 ; $i<count($parts) ; $i++) {
-
+                    for ($i = 0 ; $i < count($parts) ; $i++) {
                         $part = $parts[$i];
+
                         if ($part) {
-
-                            $msg = '';
-
                             if (count($parts)>2) {
-                                $msg = (($i==0)?strlen($message):'')
+                                $msg = (($i === 0) ? strlen($message) : '')
                                        . '|' . $part . '|'
                                        . (($i<count($parts)-2)?'\\':'');
                             } else {
                                 $msg = strlen($part) . '|' . $part . '|';
                             }
 
-                            $payload[] = array($protocol_index . '-'
+                            $payload[] = [$protocol_index . '-'
                                                . $structure_index . '-'
                                                . $plugin_index . '-'
                                                . $message_index,
-                                               $msg);
+                                               $msg];
 
                             $message_index++;
 

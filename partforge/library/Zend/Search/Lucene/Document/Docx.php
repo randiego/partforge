@@ -15,15 +15,16 @@
  * @category   Zend
  * @package    Zend_Search_Lucene
  * @subpackage Document
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Docx.php 19035 2009-11-19 14:34:11Z alexander $
+ * @version    $Id$
  */
 
 /** Zend_Search_Lucene_Document_OpenXml */
 require_once 'Zend/Search/Lucene/Document/OpenXml.php';
 
-if (class_exists('ZipArchive', false)) {
+/** Zend_Xml_Security */
+require_once 'Zend/Xml/Security.php';
 
 /**
  * Docx document.
@@ -31,7 +32,7 @@ if (class_exists('ZipArchive', false)) {
  * @category   Zend
  * @package    Zend_Search_Lucene
  * @subpackage Document
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Search_Lucene_Document_Docx extends Zend_Search_Lucene_Document_OpenXml {
@@ -40,7 +41,7 @@ class Zend_Search_Lucene_Document_Docx extends Zend_Search_Lucene_Document_OpenX
      *
      * @var string
      */
-    const SCHEMA_WORDPROCESSINGML = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+    public const SCHEMA_WORDPROCESSINGML = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 
     /**
      * Object constructor
@@ -50,9 +51,14 @@ class Zend_Search_Lucene_Document_Docx extends Zend_Search_Lucene_Document_OpenX
      * @throws Zend_Search_Lucene_Exception
      */
     private function __construct($fileName, $storeContent) {
+        if (!class_exists('ZipArchive', false)) {
+            require_once 'Zend/Search/Lucene/Exception.php';
+            throw new Zend_Search_Lucene_Exception('MS Office documents processing functionality requires Zip extension to be loaded');
+        }
+
         // Document data holders
-        $documentBody = array();
-        $coreProperties = array();
+        $documentBody = [];
+        $coreProperties = [];
 
         // Open OpenXML package
         $package = new ZipArchive();
@@ -64,11 +70,11 @@ class Zend_Search_Lucene_Document_Docx extends Zend_Search_Lucene_Document_OpenX
             require_once 'Zend/Search/Lucene/Exception.php';
             throw new Zend_Search_Lucene_Exception('Invalid archive or corrupted .docx file.');
         }
-        $relations = simplexml_load_string($relationsXml);
+        $relations = Zend_Xml_Security::scan($relationsXml);
         foreach($relations->Relationship as $rel) {
             if ($rel ["Type"] == Zend_Search_Lucene_Document_OpenXml::SCHEMA_OFFICEDOCUMENT) {
                 // Found office document! Read in contents...
-                $contents = simplexml_load_string($package->getFromName(
+                $contents = Zend_Xml_Security::scan($package->getFromName(
                                                                 $this->absoluteZipPath(dirname($rel['Target'])
                                                               . '/'
                                                               . basename($rel['Target']))
@@ -109,23 +115,23 @@ class Zend_Search_Lucene_Document_Docx extends Zend_Search_Lucene_Document_OpenX
         $package->close();
 
         // Store filename
-        $this->addField(Zend_Search_Lucene_Field::Text('filename', $fileName, 'UTF-8'));
+        $this->addField(Zend_Search_Lucene_Field::text('filename', $fileName, 'UTF-8'));
 
         // Store contents
         if ($storeContent) {
-            $this->addField(Zend_Search_Lucene_Field::Text('body', implode('', $documentBody), 'UTF-8'));
+            $this->addField(Zend_Search_Lucene_Field::text('body', implode('', $documentBody), 'UTF-8'));
         } else {
-            $this->addField(Zend_Search_Lucene_Field::UnStored('body', implode('', $documentBody), 'UTF-8'));
+            $this->addField(Zend_Search_Lucene_Field::unStored('body', implode('', $documentBody), 'UTF-8'));
         }
 
         // Store meta data properties
         foreach ($coreProperties as $key => $value) {
-            $this->addField(Zend_Search_Lucene_Field::Text($key, $value, 'UTF-8'));
+            $this->addField(Zend_Search_Lucene_Field::text($key, $value, 'UTF-8'));
         }
 
         // Store title (if not present in meta data)
         if (! isset($coreProperties['title'])) {
-            $this->addField(Zend_Search_Lucene_Field::Text('title', $fileName, 'UTF-8'));
+            $this->addField(Zend_Search_Lucene_Field::text('title', $fileName, 'UTF-8'));
         }
     }
 
@@ -146,5 +152,3 @@ class Zend_Search_Lucene_Document_Docx extends Zend_Search_Lucene_Document_OpenX
         return new Zend_Search_Lucene_Document_Docx($fileName, $storeContent);
     }
 }
-
-} // end if (class_exists('ZipArchive'))

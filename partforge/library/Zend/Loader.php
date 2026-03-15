@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Loader
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Loader.php 16206 2009-06-21 19:15:37Z thomas $
+ * @version    $Id$
  */
 
 /**
@@ -24,7 +24,7 @@
  *
  * @category   Zend
  * @package    Zend_Loader
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Loader
@@ -51,7 +51,7 @@ class Zend_Loader
      */
     public static function loadClass($class, $dirs = null)
     {
-        if (class_exists($class, false) || interface_exists($class, false)) {
+        if (self::classExists($class)) {
             return;
         }
 
@@ -60,8 +60,8 @@ class Zend_Loader
             throw new Zend_Exception('Directory argument must be a string or an array');
         }
 
-        // autodiscover the path from the class name
-        $file = str_replace('_', DIRECTORY_SEPARATOR, $class) . '.php';
+        $file = self::standardiseFile($class);
+
         if (!empty($dirs)) {
             // use the autodiscovered path
             $dirPath = dirname($file);
@@ -79,14 +79,27 @@ class Zend_Loader
             $file = basename($file);
             self::loadFile($file, $dirs, true);
         } else {
-            self::_securityCheck($file);
-            include $file;
+            self::loadFile($file, null, true);
         }
 
-        if (!class_exists($class, false) && !interface_exists($class, false)) {
+        if (self::classNotExists($class)) {
             require_once 'Zend/Exception.php';
             throw new Zend_Exception("File \"$file\" does not exist or class \"$class\" was not found in the file");
         }
+    }
+
+    public static function classExists(string $class): bool
+    {
+        return class_exists($class, false)
+            || interface_exists($class, false)
+            || trait_exists($class, false);
+    }
+
+    public static function classNotExists(string $class): bool
+    {
+        return !class_exists($class, false)
+            && !interface_exists($class, false)
+            && !trait_exists($class, false);
     }
 
     /**
@@ -131,10 +144,20 @@ class Zend_Loader
         /**
          * Try finding for the plain filename in the include_path.
          */
+        // "@":
+        // - Avoid error-logs full of PHP Warnings due to autoloads from class-exists()-checks.
+        // - If a class does not exist that we really need, error will be thrown anyway.
+        // - Fatal errors from the included files are still thrown anyway.
+        // Since PHP 8.0 @ doesn't mute the errors, which makes for a lot of clutter on the error log when you are using class_exists() and it doesn't
+        // Added stream_resolve_include_path to avoid it.
         if ($once) {
-            include_once $filename;
+            if(stream_resolve_include_path($filename)) {
+                @include_once $filename;
+            }
         } else {
-            include $filename;
+            if(stream_resolve_include_path($filename)) {
+                @include $filename;
+            }
         }
 
         /**
@@ -162,11 +185,59 @@ class Zend_Loader
      */
     public static function isReadable($filename)
     {
-        if (!$fh = @fopen($filename, 'r', true)) {
+        if (is_readable($filename)) {
+            // Return early if the filename is readable without needing the
+            // include_path
+            return true;
+        }
+
+        if (strtoupper(substr(PHP_OS, 0, 3)) == 'WIN'
+            && preg_match('/^[a-z]:/i', $filename)
+        ) {
+            // If on windows, and path provided is clearly an absolute path,
+            // return false immediately
             return false;
         }
-        @fclose($fh);
-        return true;
+
+        foreach (self::explodeIncludePath() as $path) {
+            if ($path == '.') {
+                if (is_readable($filename)) {
+                    return true;
+                }
+                continue;
+            }
+            $file = $path . '/' . $filename;
+            if (is_readable($file)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Explode an include path into an array
+     *
+     * If no path provided, uses current include_path. Works around issues that
+     * occur when the path includes stream schemas.
+     *
+     * @param  string|null $path
+     * @return array
+     */
+    public static function explodeIncludePath($path = null)
+    {
+        if (null === $path) {
+            $path = get_include_path();
+        }
+
+        if (PATH_SEPARATOR == ':') {
+            // On *nix systems, include_paths which include paths with a stream
+            // schema cannot be safely explode'd, so we have to be a bit more
+            // intelligent in the approach.
+            $paths = preg_split('#:(?!//)#', $path);
+        } else {
+            $paths = explode(PATH_SEPARATOR, $path);
+        }
+        return $paths;
     }
 
     /**
@@ -217,7 +288,7 @@ class Zend_Loader
                 throw new Zend_Exception("The class \"$class\" does not have an autoload() method");
             }
 
-            $callback = array($class, 'autoload');
+            $callback = [$class, 'autoload'];
 
             if ($enabled) {
                 $autoloader->pushAutoloader($callback);
@@ -266,5 +337,31 @@ class Zend_Loader
         } else {
             return include $filespec ;
         }
+    }
+
+    /**
+     * Standardise the filename.
+     *
+     * Convert the supplied filename into the namespace-aware standard,
+     * based on the Framework Interop Group reference implementation:
+     * http://groups.google.com/group/php-standards/web/psr-0-final-proposal
+     *
+     * The filename must be formatted as "$file.php".
+     *
+     * @param string $file - The file name to be loaded.
+     * @return string
+     */
+    public static function standardiseFile($file)
+    {
+        $fileName = ltrim($file, '\\');
+        $file      = '';
+        $namespace = '';
+        if ($lastNsPos = strripos($fileName, '\\')) {
+            $namespace = substr($fileName, 0, $lastNsPos);
+            $fileName = substr($fileName, $lastNsPos + 1);
+            $file      = str_replace('\\', DIRECTORY_SEPARATOR, $namespace) . DIRECTORY_SEPARATOR;
+        }
+        $file .= str_replace('_', DIRECTORY_SEPARATOR, $fileName) . '.php';
+        return $file;
     }
 }

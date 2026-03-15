@@ -15,16 +15,18 @@
  * @category   Zend
  * @package    Zend_Rest
  * @subpackage Client
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Result.php 16541 2009-07-07 06:59:03Z bkarwin $
+ * @version    $Id$
  */
+
+require_once 'Zend/Xml/Security.php';
 
 /**
  * @category   Zend
  * @package    Zend_Rest
  * @subpackage Client
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Rest_Client_Result implements IteratorAggregate {
@@ -34,6 +36,12 @@ class Zend_Rest_Client_Result implements IteratorAggregate {
     protected $_sxml;
 
     /**
+     * error information
+     * @var string
+     */
+    protected $_errstr;
+
+    /**
      * Constructor
      *
      * @param string $data XML Result
@@ -41,12 +49,18 @@ class Zend_Rest_Client_Result implements IteratorAggregate {
      */
     public function __construct($data)
     {
-        set_error_handler(array($this, 'handleXmlErrors'));
-        $this->_sxml = simplexml_load_string($data);
+        set_error_handler([$this, 'handleXmlErrors']);
+        $this->_sxml = Zend_Xml_Security::scan($data);
+        restore_error_handler();
         if($this->_sxml === false) {
-            $this->handleXmlErrors(0, "An error occured while parsing the REST response with simplexml.");
-        } else {
-            restore_error_handler();
+            if ($this->_errstr === null) {
+                $message = "An error occured while parsing the REST response with simplexml.";
+            } else {
+                $message = "REST Response Error: " . $this->_errstr;
+                $this->_errstr = null;
+            }
+            require_once "Zend/Rest/Client/Result/Exception.php";
+            throw new Zend_Rest_Client_Result_Exception($message);
         }
     }
 
@@ -58,20 +72,19 @@ class Zend_Rest_Client_Result implements IteratorAggregate {
      * @param string $errfile
      * @param string $errline
      * @param array  $errcontext
-     * @throws Zend_Result_Client_Result_Exception
+     * @return true
      */
-    public function handleXmlErrors($errno, $errstr, $errfile = null, $errline = null, array $errcontext = null)
+    public function handleXmlErrors($errno, $errstr, $errfile = null, $errline = null, ?array $errcontext = null)
     {
-        restore_error_handler();
-        require_once "Zend/Rest/Client/Result/Exception.php";
-        throw new Zend_Rest_Client_Result_Exception("REST Response Error: ".$errstr);
+        $this->_errstr = $errstr;
+        return true;
     }
 
     /**
      * Casts a SimpleXMLElement to its appropriate PHP value
      *
      * @param SimpleXMLElement $value
-     * @return mixed
+     * @return string|null
      */
     public function toValue(SimpleXMLElement $value)
     {
@@ -94,13 +107,15 @@ class Zend_Rest_Client_Result implements IteratorAggregate {
         $result = $this->_sxml->xpath("//$name");
         $count  = count($result);
 
-        if ($count == 0) {
+        if ($count === 0) {
             return null;
-        } elseif ($count == 1) {
-            return $result[0];
-        } else {
-            return $result;
         }
+
+        if ($count === 1) {
+            return $result[0];
+        }
+
+        return $result;
     }
 
     /**
@@ -110,7 +125,7 @@ class Zend_Rest_Client_Result implements IteratorAggregate {
      *
      * @param string $method
      * @param array $args
-     * @return mixed
+     * @return array|string|null
      */
     public function __call($method, $args)
     {
@@ -118,7 +133,7 @@ class Zend_Rest_Client_Result implements IteratorAggregate {
             if (!is_array($value)) {
                 return $this->toValue($value);
             } else {
-                $return = array();
+                $return = [];
                 foreach ($value as $element) {
                     $return[] = $this->toValue($element);
                 }
@@ -154,9 +169,10 @@ class Zend_Rest_Client_Result implements IteratorAggregate {
     /**
      * Implement IteratorAggregate::getIterator()
      *
-     * @return SimpleXMLIterator
+     * @return bool|DomDocument|SimpleXMLElement|null
      */
-    public function getIterator(): Traversable
+    #[\ReturnTypeWillChange]
+    public function getIterator(): \Traversable
     {
         return $this->_sxml;
     }
@@ -169,6 +185,7 @@ class Zend_Rest_Client_Result implements IteratorAggregate {
     public function getStatus()
     {
         $status = $this->_sxml->xpath('//status/text()');
+        if ( !isset($status[0]) ) return false;
 
         $status = strtolower($status[0]);
 

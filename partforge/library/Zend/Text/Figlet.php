@@ -14,9 +14,9 @@
  *
  * @category  Zend
  * @package   Zend_Text_Figlet
- * @copyright Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd     New BSD License
- * @version   $Id: Figlet.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version   $Id$
  */
 
 /**
@@ -24,7 +24,7 @@
  *
  * @category  Zend
  * @package   Zend_Text_Figlet
- * @copyright Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Text_Figlet
@@ -32,46 +32,46 @@ class Zend_Text_Figlet
     /**
      * Smush2 layout modes
      */
-    const SM_EQUAL     = 0x01;
-    const SM_LOWLINE   = 0x02;
-    const SM_HIERARCHY = 0x04;
-    const SM_PAIR      = 0x08;
-    const SM_BIGX      = 0x10;
-    const SM_HARDBLANK = 0x20;
-    const SM_KERN      = 0x40;
-    const SM_SMUSH     = 0x80;
+    public const SM_EQUAL     = 0x01;
+    public const SM_LOWLINE   = 0x02;
+    public const SM_HIERARCHY = 0x04;
+    public const SM_PAIR      = 0x08;
+    public const SM_BIGX      = 0x10;
+    public const SM_HARDBLANK = 0x20;
+    public const SM_KERN      = 0x40;
+    public const SM_SMUSH     = 0x80;
 
     /**
      * Smush mode override modes
      */
-    const SMO_NO    = 0;
-    const SMO_YES   = 1;
-    const SMO_FORCE = 2;
+    public const SMO_NO    = 0;
+    public const SMO_YES   = 1;
+    public const SMO_FORCE = 2;
 
     /**
      * Justifications
      */
-    const JUSTIFICATION_LEFT   = 0;
-    const JUSTIFICATION_CENTER = 1;
-    const JUSTIFICATION_RIGHT  = 2;
+    public const JUSTIFICATION_LEFT   = 0;
+    public const JUSTIFICATION_CENTER = 1;
+    public const JUSTIFICATION_RIGHT  = 2;
 
     /**
      * Write directions
      */
-    const DIRECTION_LEFT_TO_RIGHT = 0;
-    const DIRECTION_RIGHT_TO_LEFT = 1;
+    public const DIRECTION_LEFT_TO_RIGHT = 0;
+    public const DIRECTION_RIGHT_TO_LEFT = 1;
 
     /**
      * Magic fontfile number
      */
-    const FONTFILE_MAGIC_NUMBER = 'flf2';
+    public const FONTFILE_MAGIC_NUMBER = 'flf2';
 
     /**
      * Array containing all characters of the current font
      *
      * @var array
      */
-    protected $_charList = array();
+    protected $_charList = [];
 
     /**
      * Indicates if a font was loaded yet
@@ -93,7 +93,7 @@ class Zend_Text_Figlet
      *
      * @var array
      */
-    protected $_germanChars = array(196, 214, 220, 228, 246, 252, 223);
+    protected $_germanChars = [196, 214, 220, 228, 246, 252, 223];
 
     /**
      * Output width, defaults to 80.
@@ -183,7 +183,7 @@ class Zend_Text_Figlet
      *
      * @var array
      */
-    protected $_fontOptions = array();
+    protected $_fontOptions = [];
 
     /**
      * Previous character width
@@ -260,10 +260,10 @@ class Zend_Text_Figlet
      *
      * @var array
      */
-    protected $_skipOptions = array(
+    protected $_skipOptions = [
         'options',
         'config',
-    );
+    ];
 
     /**
      * Instantiate the FIGlet with a specific font. If no font is given, the
@@ -435,7 +435,7 @@ class Zend_Text_Figlet
         }
 
         $this->_output     = '';
-        $this->_outputLine = array();
+        $this->_outputLine = [];
 
         $this->_clearLine();
 
@@ -461,7 +461,7 @@ class Zend_Text_Figlet
                     $nextChar = null;
                 }
 
-                $char = (ctype_space($nextChar)) ? "\n" : ' ';
+                $char = (ctype_space((string) $nextChar)) ? "\n" : ' ';
             }
 
             $lastCharWasEol = (ctype_space($char) && $char !== "\t" && $char !== ' ');
@@ -1089,8 +1089,8 @@ class Zend_Text_Figlet
             // Convert it if required
             if (substr($uniCode, 0, 2) === '0x') {
                 $uniCode = hexdec(substr($uniCode, 2));
-            } else if (substr($uniCode, 0, 1) === '0' and
-                       $uniCode !== '0' or
+            } else if (substr($uniCode, 0, 1) === '0' &&
+                       $uniCode !== '0' ||
                        substr($uniCode, 0, 2) === '-0') {
                 $uniCode = octdec($uniCode);
             } else {
@@ -1183,7 +1183,7 @@ class Zend_Text_Figlet
      */
     protected function _loadChar($fp)
     {
-        $char = array();
+        $char = [];
 
         for ($i = 0; $i < $this->_charHeight; $i++) {
             if (feof($fp)) {

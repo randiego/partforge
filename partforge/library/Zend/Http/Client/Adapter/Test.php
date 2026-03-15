@@ -15,8 +15,8 @@
  * @category   Zend
  * @package    Zend_Http
  * @subpackage Client_Adapter
- * @version    $Id: Test.php 17869 2009-08-28 10:37:13Z cogo $
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @version    $Id$
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -44,7 +44,7 @@ require_once 'Zend/Http/Client/Adapter/Interface.php';
  * @category   Zend
  * @package    Zend_Http
  * @subpackage Client_Adapter
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Http_Client_Adapter_Test implements Zend_Http_Client_Adapter_Interface
@@ -54,7 +54,7 @@ class Zend_Http_Client_Adapter_Test implements Zend_Http_Client_Adapter_Interfac
      *
      * @var array
      */
-    protected $config = array();
+    protected $config = [];
 
     /**
      * Buffer of responses to be returned by the read() method.  Can be
@@ -62,7 +62,7 @@ class Zend_Http_Client_Adapter_Test implements Zend_Http_Client_Adapter_Interfac
      *
      * @var array
      */
-    protected $responses = array("HTTP/1.1 400 Bad Request\r\n\r\n");
+    protected $responses = ["HTTP/1.1 400 Bad Request\r\n\r\n"];
 
     /**
      * Current position in the response buffer
@@ -72,6 +72,13 @@ class Zend_Http_Client_Adapter_Test implements Zend_Http_Client_Adapter_Interfac
     protected $responseIndex = 0;
 
     /**
+     * Wether or not the next request will fail with an exception
+     *
+     * @var boolean
+     */
+    protected $_nextRequestWillFail = false;
+
+    /**
      * Adapter constructor, currently empty. Config is set using setConfig()
      *
      */
@@ -79,11 +86,24 @@ class Zend_Http_Client_Adapter_Test implements Zend_Http_Client_Adapter_Interfac
     { }
 
     /**
+     * Set the nextRequestWillFail flag
+     *
+     * @param boolean $flag
+     * @return Zend_Http_Client_Adapter_Test
+     */
+    public function setNextRequestWillFail($flag)
+    {
+        $this->_nextRequestWillFail = (bool) $flag;
+
+        return $this;
+    }
+
+    /**
      * Set the configuration array for the adapter
      *
      * @param Zend_Config | array $config
      */
-    public function setConfig($config = array())
+    public function setConfig($config = [])
     {
         if ($config instanceof Zend_Config) {
             $config = $config->toArray();
@@ -107,10 +127,16 @@ class Zend_Http_Client_Adapter_Test implements Zend_Http_Client_Adapter_Interfac
      * @param string  $host
      * @param int     $port
      * @param boolean $secure
-     * @param int     $timeout
+     * @throws Zend_Http_Client_Adapter_Exception
      */
     public function connect($host, $port = 80, $secure = false)
-    { }
+    {
+        if ($this->_nextRequestWillFail) {
+            $this->_nextRequestWillFail = false;
+            require_once 'Zend/Http/Client/Adapter/Exception.php';
+            throw new Zend_Http_Client_Adapter_Exception('Request failed');
+        }
+    }
 
     /**
      * Send request to the remote server
@@ -122,7 +148,7 @@ class Zend_Http_Client_Adapter_Test implements Zend_Http_Client_Adapter_Interfac
      * @param string        $body
      * @return string Request as string
      */
-    public function write($method, $uri, $http_ver = '1.1', $headers = array(), $body = '')
+    public function write($method, $uri, $http_ver = '1.1', $headers = [], $body = '')
     {
         $host = $uri->getHost();
             $host = (strtolower($uri->getScheme()) == 'https' ? 'sslv2://' . $host : $host);
@@ -182,7 +208,7 @@ class Zend_Http_Client_Adapter_Test implements Zend_Http_Client_Adapter_Interfac
     /**
      * Add another response to the response buffer.
      *
-     * @param string Zend_Http_Response|$response
+     * @param string|Zend_Http_Response $response
      */
     public function addResponse($response)
     {
@@ -207,5 +233,15 @@ class Zend_Http_Client_Adapter_Test implements Zend_Http_Client_Adapter_Interfac
                 'Index out of range of response buffer size');
         }
         $this->responseIndex = $index;
+    }
+
+    /**
+     * Retrieve the array of all configuration options
+     *
+     * @return array
+     */
+    public function getConfig()
+    {
+        return $this->config;
     }
 }

@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Tag
  * @subpackage Cloud
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Cloud.php 16209 2009-06-21 19:20:34Z thomas $
+ * @version    $Id$
  */
 
 /**
@@ -25,7 +25,7 @@
  *
  * @category  Zend
  * @package   Zend_Tag
- * @copyright Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Tag_Cloud_Decorator_Cloud
@@ -35,10 +35,10 @@ abstract class Zend_Tag_Cloud_Decorator_Cloud
      *
      * @var array
      */
-    protected $_skipOptions = array(
+    protected $_skipOptions = [
         'options',
         'config',
-    );
+    ];
 
     /**
      * Create a new cloud decorator with options
@@ -60,7 +60,7 @@ abstract class Zend_Tag_Cloud_Decorator_Cloud
      * Set options from array
      *
      * @param  array $options Configuration for the decorator
-     * @return Zend_Tag_Cloud
+     * @return Zend_Tag_Cloud_Decorator_Cloud
      */
     public function setOptions(array $options)
     {

@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Pdf
  * @subpackage FileParser
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: FileParser.php 16541 2009-07-07 06:59:03Z bkarwin $
+ * @version    $Id$
  */
 
 /**
@@ -33,7 +33,7 @@
  *
  * @package    Zend_Pdf
  * @subpackage FileParser
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Pdf_FileParser
@@ -43,12 +43,12 @@ abstract class Zend_Pdf_FileParser
     /**
      * Little-endian byte order (0x04 0x03 0x02 0x01).
      */
-    const BYTE_ORDER_LITTLE_ENDIAN = 0;
+    public const BYTE_ORDER_LITTLE_ENDIAN = 0;
 
     /**
      * Big-endian byte order (0x01 0x02 0x03 0x04).
      */
-    const BYTE_ORDER_BIG_ENDIAN    = 1;
+    public const BYTE_ORDER_BIG_ENDIAN    = 1;
 
 
 
@@ -339,8 +339,8 @@ abstract class Zend_Pdf_FileParser
     public function isBitSet($bit, $bitField)
     {
         $bitMask = 1 << $bit;
-        $isSet = (($bitField & $bitMask) == $bitMask);
-        return $isSet;
+
+        return (($bitField & $bitMask) == $bitMask);
     }
 
     /**
@@ -364,13 +364,14 @@ abstract class Zend_Pdf_FileParser
                               $byteOrder = Zend_Pdf_FileParser::BYTE_ORDER_BIG_ENDIAN)
     {
         $bitsToRead = $mantissaBits + $fractionBits;
+
         if (($bitsToRead % 8) !== 0) {
             require_once 'Zend/Pdf/Exception.php';
             throw new Zend_Pdf_Exception('Fixed-point numbers are whole bytes',
                                          Zend_Pdf_Exception::BAD_FIXED_POINT_SIZE);
         }
-        $number = $this->readInt(($bitsToRead >> 3), $byteOrder) / (1 << $fractionBits);
-        return $number;
+
+        return $this->readInt(($bitsToRead >> 3), $byteOrder) / (1 << $fractionBits);
     }
 
     /**

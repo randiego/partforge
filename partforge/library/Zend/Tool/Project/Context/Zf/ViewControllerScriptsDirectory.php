@@ -15,15 +15,31 @@
  * @category   Zend
  * @package    Zend_Tool
  * @subpackage Framework
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: ViewControllerScriptsDirectory.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /**
  * @see Zend_Tool_Project_Context_Filesystem_Directory
  */
 require_once 'Zend/Tool/Project/Context/Filesystem/Directory.php';
+
+/**
+ * @see Zend_Filter
+ */
+require_once 'Zend/Filter.php';
+
+/**
+ * @see Zend_Filter_Word_CamelCaseToDash
+ */
+require_once 'Zend/Filter/Word/CamelCaseToDash.php';
+
+/**
+ * @see Zend_Filter_StringToLower
+ */
+require_once 'Zend/Filter/StringToLower.php';
+
 
 /**
  * This class is the front most class for utilizing Zend_Tool_Project
@@ -33,7 +49,7 @@ require_once 'Zend/Tool/Project/Context/Filesystem/Directory.php';
  *
  * @category   Zend
  * @package    Zend_Tool
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Tool_Project_Context_Zf_ViewControllerScriptsDirectory extends Zend_Tool_Project_Context_Filesystem_Directory
@@ -57,7 +73,7 @@ class Zend_Tool_Project_Context_Zf_ViewControllerScriptsDirectory extends Zend_T
     public function init()
     {
         $this->_forControllerName = $this->_resource->getAttribute('forControllerName');
-        $this->_filesystemName = $this->_forControllerName;
+        $this->_filesystemName = $this->_convertControllerNameToFilesystemName($this->_forControllerName);
         parent::init();
         return $this;
     }
@@ -69,9 +85,9 @@ class Zend_Tool_Project_Context_Zf_ViewControllerScriptsDirectory extends Zend_T
      */
     public function getPersistentAttributes()
     {
-        return array(
+        return [
             'forControllerName' => $this->_forControllerName
-            );
+            ];
     }
 
     /**
@@ -82,6 +98,14 @@ class Zend_Tool_Project_Context_Zf_ViewControllerScriptsDirectory extends Zend_T
     public function getName()
     {
         return 'ViewControllerScriptsDirectory';
+    }
+
+    protected function _convertControllerNameToFilesystemName($controllerName)
+    {
+        $filter = new Zend_Filter();
+        $filter->addFilter(new Zend_Filter_Word_CamelCaseToDash())
+            ->addFilter(new Zend_Filter_StringToLower());
+        return $filter->filter($controllerName);
     }
 
 }

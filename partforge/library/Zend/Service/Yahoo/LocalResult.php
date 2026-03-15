@@ -16,9 +16,9 @@
  * @category   Zend
  * @package    Zend_Service
  * @subpackage Yahoo
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: LocalResult.php 16211 2009-06-21 19:23:55Z thomas $
+ * @version    $Id$
  */
 
 
@@ -32,7 +32,7 @@ require_once 'Zend/Service/Yahoo/Result.php';
  * @category   Zend
  * @package    Zend_Service
  * @subpackage Yahoo
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Service_Yahoo_LocalResult extends Zend_Service_Yahoo_Result
@@ -116,8 +116,8 @@ class Zend_Service_Yahoo_LocalResult extends Zend_Service_Yahoo_Result
      */
     public function __construct(DOMElement $result)
     {
-        $this->_fields = array('Address','City', 'City', 'State', 'Phone', 'Rating', 'Distance', 'MapUrl',
-                               'BusinessUrl', 'BusinessClickUrl');
+        $this->_fields = ['Address','City', 'City', 'State', 'Phone', 'Rating', 'Distance', 'MapUrl',
+                               'BusinessUrl', 'BusinessClickUrl'];
 
         parent::__construct($result);
     }

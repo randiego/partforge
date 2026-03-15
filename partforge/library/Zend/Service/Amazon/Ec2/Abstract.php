@@ -15,15 +15,24 @@
  * @category   Zend
  * @package    Zend_Service_Amazon
  * @subpackage Ec2
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Abstract.php 18926 2009-11-10 19:16:03Z sidhighwind $
+ * @version    $Id$
  */
 
+/**
+ * @see Zend_Service_Amazon_Abstract
+ */
 require_once 'Zend/Service/Amazon/Abstract.php';
 
+/**
+ * @see Zend_Service_Amazon_Ec2_Response
+ */
 require_once 'Zend/Service/Amazon/Ec2/Response.php';
 
+/**
+ * @see Zend_Service_Amazon_Ec2_Exception
+ */
 require_once 'Zend/Service/Amazon/Ec2/Exception.php';
 
 /**
@@ -32,7 +41,7 @@ require_once 'Zend/Service/Amazon/Ec2/Exception.php';
  * @category   Zend
  * @package    Zend_Service_Amazon
  * @subpackage Ec2
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Service_Amazon_Ec2_Abstract extends Zend_Service_Amazon_Abstract
@@ -63,26 +72,94 @@ abstract class Zend_Service_Amazon_Ec2_Abstract extends Zend_Service_Amazon_Abst
     protected $_httpTimeout = 10;
 
     /**
+     * @var string Amazon Region
+     */
+    protected static $_defaultRegion = null;
+
+    /**
+     * @var string Amazon Region
+     */
+    protected $_region;
+
+    /**
+     * An array that contains all the valid Amazon Ec2 Regions.
+     *
+     * @var array
+     */
+    protected static $_validEc2Regions = ['eu-west-1', 'us-east-1'];
+
+    /**
+     * Create Amazon client.
+     *
+     * @param  string $access_key       Override the default Access Key
+     * @param  string $secret_key       Override the default Secret Key
+     * @param  string $region           Sets the AWS Region
+     * @return void
+     */
+    public function __construct($accessKey=null, $secretKey=null, $region=null)
+    {
+        if(!$region) {
+            $region = self::$_defaultRegion;
+        } else {
+            // make rue the region is valid
+            if(!empty($region) && !in_array(strtolower($region), self::$_validEc2Regions, true)) {
+                require_once 'Zend/Service/Amazon/Exception.php';
+                throw new Zend_Service_Amazon_Exception('Invalid Amazon Ec2 Region');
+            }
+        }
+
+        $this->_region = $region;
+
+        parent::__construct($accessKey, $secretKey);
+    }
+
+    /**
+     * Set which region you are working in.  It will append the
+     * end point automaticly
+     *
+     * @param string $region
+     */
+    public static function setRegion($region)
+    {
+        if(in_array(strtolower($region), self::$_validEc2Regions, true)) {
+            self::$_defaultRegion = $region;
+        } else {
+            require_once 'Zend/Service/Amazon/Exception.php';
+            throw new Zend_Service_Amazon_Exception('Invalid Amazon Ec2 Region');
+        }
+    }
+
+    /**
+     * Method to fetch the AWS Region
+     *
+     * @return string
+     */
+    protected function _getRegion()
+    {
+        return (!empty($this->_region)) ? $this->_region . '.' : '';
+    }
+
+    /**
      * Sends a HTTP request to the queue service using Zend_Http_Client
      *
-     * @param array $params         List of parameters to send with the request
+     * @param  array $params List of parameters to send with the request
      * @return Zend_Service_Amazon_Ec2_Response
      * @throws Zend_Service_Amazon_Ec2_Exception
      */
-    protected function sendRequest(array $params = array())
+    protected function sendRequest(array $params = [])
     {
         $url = 'https://' . $this->_getRegion() . $this->_ec2Endpoint . '/';
 
         $params = $this->addRequiredParameters($params);
 
         try {
-            /* @var $request Zend_Http_Client */
+            /* @var Zend_Http_Client $request */
             $request = self::getHttpClient();
             $request->resetParameters();
 
-            $request->setConfig(array(
+            $request->setConfig([
                 'timeout' => $this->_httpTimeout
-            ));
+            ]);
 
             $request->setUri($url);
             $request->setMethod(Zend_Http_Client::POST);
@@ -93,7 +170,7 @@ abstract class Zend_Service_Amazon_Ec2_Abstract extends Zend_Service_Amazon_Abst
 
         } catch (Zend_Http_Client_Exception $zhce) {
             $message = 'Error in request to AWS service: ' . $zhce->getMessage();
-            throw new Zend_Service_Amazon_Ec2_Exception($message, $zhce->getCode());
+            throw new Zend_Service_Amazon_Ec2_Exception($message, $zhce->getCode(), $zhce);
         }
         $response = new Zend_Service_Amazon_Ec2_Response($httpResponse);
         $this->checkForErrors($response);
@@ -161,9 +238,9 @@ abstract class Zend_Service_Amazon_Ec2_Abstract extends Zend_Service_Amazon_Abst
         uksort($paramaters, 'strcmp');
         unset($paramaters['Signature']);
 
-        $arrData = array();
+        $arrData = [];
         foreach($paramaters as $key => $value) {
-            $arrData[] = $key . '=' . str_replace("%7E", "~", urlencode($value));
+            $arrData[] = $key . '=' . str_replace("%7E", "~", rawurlencode($value));
         }
 
         $data .= implode('&', $arrData);

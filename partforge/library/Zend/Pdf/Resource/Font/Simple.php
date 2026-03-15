@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Pdf
  * @subpackage Fonts
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Simple.php 18993 2009-11-15 17:09:16Z alexander $
+ * @version    $Id$
  */
 
 
@@ -56,7 +56,7 @@ require_once 'Zend/Pdf/Resource/Font.php';
  *
  * @package    Zend_Pdf
  * @subpackage Fonts
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Pdf_Resource_Font_Simple extends Zend_Pdf_Resource_Font
@@ -173,6 +173,10 @@ abstract class Zend_Pdf_Resource_Font_Simple extends Zend_Pdf_Resource_Font
      */
     public function getCoveredPercentage($string, $charEncoding = '')
     {
+        if ($string === null || $string === '') {
+            return 0;
+        }
+
         /* Convert the string to UTF-16BE encoding so we can match the string's
          * character codes to those found in the cmap.
          */
@@ -183,6 +187,7 @@ abstract class Zend_Pdf_Resource_Font_Simple extends Zend_Pdf_Resource_Font
         }
 
         $charCount = (PHP_OS != 'AIX') ? iconv_strlen($string, 'UTF-16BE') : strlen($string);
+
         if ($charCount == 0) {
             return 0;
         }
@@ -222,7 +227,7 @@ abstract class Zend_Pdf_Resource_Font_Simple extends Zend_Pdf_Resource_Font
      */
     public function widthsForGlyphs($glyphNumbers)
     {
-        $widths = array();
+        $widths = [];
         foreach ($glyphNumbers as $key => $glyphNumber) {
             if (!isset($this->_glyphWidths[$glyphNumber])) {
                 $widths[$key] = $this->_missingGlyphWidth;
@@ -260,6 +265,10 @@ abstract class Zend_Pdf_Resource_Font_Simple extends Zend_Pdf_Resource_Font
      */
     public function encodeString($string, $charEncoding)
     {
+        if ($string === null || $string === '') {
+            return '';
+        }
+
         if (PHP_OS == 'AIX') {
             return $string; // returning here b/c AIX doesnt know what CP1252 is
         }
@@ -278,6 +287,10 @@ abstract class Zend_Pdf_Resource_Font_Simple extends Zend_Pdf_Resource_Font
      */
     public function decodeString($string, $charEncoding)
     {
+        if ($string === null || $string === '') {
+            return '';
+        }
+
         return iconv('CP1252', $charEncoding, $string);
     }
 }

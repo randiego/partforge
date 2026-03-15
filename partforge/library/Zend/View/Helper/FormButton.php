@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: FormButton.php 16541 2009-07-07 06:59:03Z bkarwin $
+ * @version    $Id$
  */
 
 
@@ -33,7 +33,7 @@ require_once 'Zend/View/Helper/FormElement.php';
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_View_Helper_FormButton extends Zend_View_Helper_FormElement
@@ -56,7 +56,7 @@ class Zend_View_Helper_FormButton extends Zend_View_Helper_FormElement
     public function formButton($name, $value = null, $attribs = null)
     {
         $info    = $this->_getInfo($name, $value, $attribs);
-        extract($info); // name, id, value, attribs, options, listsep, disable
+        extract($info); // name, id, value, attribs, options, listsep, disable, escape
 
         // Get content
         $content = '';
@@ -71,7 +71,7 @@ class Zend_View_Helper_FormButton extends Zend_View_Helper_FormElement
         $type = 'button';
         if (isset($attribs['type'])) {
             $attribs['type'] = strtolower($attribs['type']);
-            if (in_array($attribs['type'], array('submit', 'reset', 'button'))) {
+            if (in_array($attribs['type'], ['submit', 'reset', 'button'])) {
                 $type = $attribs['type'];
             }
             unset($attribs['type']);

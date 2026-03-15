@@ -15,19 +15,23 @@
  * @category   Zend
  * @package    Zend_Service_Amazon
  * @subpackage Ec2
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Region.php 16971 2009-07-22 18:05:45Z mikaelkael $
+ * @version    $Id$
  */
 
+/**
+ * @see Zend_Service_Amazon_Ec2_Abstract
+ */
 require_once 'Zend/Service/Amazon/Ec2/Abstract.php';
+
 /**
  * An Amazon EC2 interface to query which Regions your account has access to.
  *
  * @category   Zend
  * @package    Zend_Service_Amazon
  * @subpackage Ec2
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Service_Amazon_Ec2_Region extends Zend_Service_Amazon_Ec2_Abstract
@@ -42,7 +46,7 @@ class Zend_Service_Amazon_Ec2_Region extends Zend_Service_Amazon_Ec2_Abstract
      */
     public function describe($region = null)
     {
-        $params = array();
+        $params = [];
         $params['Action'] = 'DescribeRegions';
 
         if(is_array($region) && !empty($region)) {
@@ -58,9 +62,9 @@ class Zend_Service_Amazon_Ec2_Region extends Zend_Service_Amazon_Ec2_Abstract
         $xpath  = $response->getXPath();
         $nodes  = $xpath->query('//ec2:item');
 
-        $return = array();
+        $return = [];
         foreach ($nodes as $k => $node) {
-            $item = array();
+            $item = [];
             $item['regionName']   = $xpath->evaluate('string(ec2:regionName/text())', $node);
             $item['regionUrl']  = $xpath->evaluate('string(ec2:regionUrl/text())', $node);
 

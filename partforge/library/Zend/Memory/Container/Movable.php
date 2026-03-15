@@ -12,10 +12,11 @@
  * obtain it through the world-wide-web, please send an email
  * to license@zend.com so we can send you a copy immediately.
  *
+ * @category   Zend
  * @package    Zend_Memory
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Movable.php 16971 2009-07-22 18:05:45Z mikaelkael $
+ * @version    $Id$
  */
 
 /** Zend_Memory_Container */
@@ -31,7 +32,7 @@ require_once 'Zend/Memory/Value.php';
  *
  * @category   Zend
  * @package    Zend_Memory
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Memory_Container_Movable extends Zend_Memory_Container {
@@ -57,9 +58,9 @@ class Zend_Memory_Container_Movable extends Zend_Memory_Container {
     private $_value;
 
     /** Value states */
-    const LOADED   = 1;
-    const SWAPPED  = 2;
-    const LOCKED   = 4;
+    public const LOADED   = 1;
+    public const SWAPPED  = 2;
+    public const LOCKED   = 4;
 
     /**
      * Value state (LOADED/SWAPPED/LOCKED)
@@ -114,7 +115,7 @@ class Zend_Memory_Container_Movable extends Zend_Memory_Container {
     /**
      * Return true if object is locked
      *
-     * @return boolean
+     * @return int
      */
     public function isLocked()
     {
@@ -128,7 +129,7 @@ class Zend_Memory_Container_Movable extends Zend_Memory_Container {
      * Swaps objects from the bottom of loaded objects list, if necessary.
      *
      * @param string $property
-     * @return string
+     * @return Zend_Memory_Value
      * @throws Zend_Memory_Exception
      */
     public function __get($property)
@@ -261,8 +262,8 @@ class Zend_Memory_Container_Movable extends Zend_Memory_Container {
     /**
      * Check if object is marked as swapped
      *
+     * @return int
      * @internal
-     * @return boolean
      */
     public function isSwapped()
     {

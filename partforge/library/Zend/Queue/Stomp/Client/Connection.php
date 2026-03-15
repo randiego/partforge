@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Queue
  * @subpackage Stomp
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Connection.php 17241 2009-07-28 13:01:20Z matthew $
+ * @version    $Id$
  */
 
 /**
@@ -31,14 +31,14 @@ require_once 'Zend/Queue/Stomp/Client/ConnectionInterface.php';
  * @category   Zend
  * @package    Zend_Queue
  * @subpackage Stomp
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Queue_Stomp_Client_Connection
     implements Zend_Queue_Stomp_Client_ConnectionInterface
 {
-    const READ_TIMEOUT_DEFAULT_USEC = 0; // 0 microseconds
-    const READ_TIMEOUT_DEFAULT_SEC = 5; // 5 seconds
+    public const READ_TIMEOUT_DEFAULT_USEC = 0; // 0 microseconds
+    public const READ_TIMEOUT_DEFAULT_SEC = 5; // 5 seconds
 
     /**
      * Connection options
@@ -64,7 +64,7 @@ class Zend_Queue_Stomp_Client_Connection
      * @return true;
      * @throws Zend_Queue_Exception
      */
-    public function open($scheme, $host, $port, array $options = array())
+    public function open($scheme, $host, $port, array $options = [])
     {
         $str = $scheme . '://' . $host;
         $this->_socket = fsockopen($str, $port, $errno, $errstr);
@@ -145,7 +145,7 @@ class Zend_Queue_Stomp_Client_Connection
     /**
      * Write a frame to the stomp server
      *
-     * @example $response = $client->write($frame)->read();
+     * example: $response = $client->write($frame)->read();
      *
      * @param Zend_Queue_Stom_FrameInterface $frame
      * @return $this
@@ -156,7 +156,8 @@ class Zend_Queue_Stomp_Client_Connection
         $output = $frame->toFrame();
 
         $bytes = fwrite($this->_socket, $output, strlen($output));
-        if ($bytes === false || $bytes == 0) {
+
+        if ($bytes === false || $bytes === 0) {
             require_once 'Zend/Queue/Exception.php';
             throw new Zend_Queue_Exception('No bytes written');
         }
@@ -171,7 +172,7 @@ class Zend_Queue_Stomp_Client_Connection
      */
     public function canRead()
     {
-        $read   = array($this->_socket);
+        $read   = [$this->_socket];
         $write  = null;
         $except = null;
 
@@ -181,7 +182,7 @@ class Zend_Queue_Stomp_Client_Connection
             $except,
             $this->_options['timeout_sec'],
             $this->_options['timeout_usec']
-        ) == 1;
+        ) === 1;
         // see http://us.php.net/manual/en/function.stream-select.php
     }
 
@@ -213,9 +214,10 @@ class Zend_Queue_Stomp_Client_Connection
             $response .= $data;
 
             // is this \0 (prev) \n (data)? END_OF_FRAME
-            if (ord($data) == 10 && ord($prev) == 0) {
+            if (ord($data) === 10 && ord($prev) === 0) {
                 break;
             }
+
             $prev = $data;
         }
 

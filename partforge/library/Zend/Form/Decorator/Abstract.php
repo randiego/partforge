@@ -14,7 +14,7 @@
  *
  * @category   Zend
  * @package    Zend_Form
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -27,17 +27,17 @@ require_once 'Zend/Form/Decorator/Interface.php';
  * @category   Zend
  * @package    Zend_Form
  * @subpackage Decorator
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Abstract.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Interface
 {
     /**
      * Placement constants
      */
-    const APPEND  = 'APPEND';
-    const PREPEND = 'PREPEND';
+    public const APPEND  = 'APPEND';
+    public const PREPEND = 'PREPEND';
 
     /**
      * Default placement: append
@@ -54,7 +54,7 @@ abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Inter
      * Decorator options
      * @var array
      */
-    protected $_options = array();
+    protected $_options = [];
 
     /**
      * Separator between new content and old
@@ -143,7 +143,7 @@ abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Inter
      * Remove single option
      *
      * @param mixed $key
-     * @return void
+     * @return bool
      */
     public function removeOption($key)
     {
@@ -162,7 +162,7 @@ abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Inter
      */
     public function clearOptions()
     {
-        $this->_options = array();
+        $this->_options = [];
         return $this;
     }
 
@@ -244,7 +244,7 @@ abstract class Zend_Form_Decorator_Abstract implements Zend_Form_Decorator_Inter
      *
      * @param  string $content
      * @return string
-     * @throws Zend_Dorm_Decorator_Exception when unimplemented
+     * @throws Zend_Form_Decorator_Exception when unimplemented
      */
     public function render($content)
     {

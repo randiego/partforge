@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Queue
  * @subpackage Adapter
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: AdapterAbstract.php 16971 2009-07-22 18:05:45Z mikaelkael $
+ * @version    $Id$
  */
 
 /**
@@ -36,7 +36,7 @@ require_once 'Zend/Queue/Adapter/AdapterInterface.php';
  * @category   Zend
  * @package    Zend_Queue
  * @subpackage Adapter
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Queue_Adapter_AdapterAbstract
@@ -45,26 +45,26 @@ abstract class Zend_Queue_Adapter_AdapterAbstract
     /**
      * Default timeout for createQueue() function
      */
-    const CREATE_TIMEOUT_DEFAULT = 30;
+    public const CREATE_TIMEOUT_DEFAULT = 30;
 
     /**
      * Default timeout for recieve() function
      */
-    const RECEIVE_TIMEOUT_DEFAULT = 30;
+    public const RECEIVE_TIMEOUT_DEFAULT = 30;
 
     /**
      * User-provided options
      *
      * @var array
      */
-    protected $_options = array();
+    protected $_options = [];
 
     /**
      * Internal array of queues to save on lookups
      *
      * @var array
      */
-    protected $_queues = array();
+    protected $_queues = [];
 
     /**
      * Contains the Zend_Queue that this object
@@ -92,11 +92,11 @@ abstract class Zend_Queue_Adapter_AdapterAbstract
      * port           => (string) The port of the database
      *
      * @param  array|Zend_Config $config An array having configuration data
-     * @param  Zend_Queue The Zend_Queue object that created this class
+     * @param  Zend_Queue $queue The Zend_Queue object that created this class
      * @return void
      * @throws Zend_Queue_Exception
      */
-    public function __construct($options, Zend_Queue $queue = null)
+    public function __construct($options, ?Zend_Queue $queue = null)
     {
         if ($options instanceof Zend_Config) {
             $options = $options->toArray();
@@ -115,8 +115,8 @@ abstract class Zend_Queue_Adapter_AdapterAbstract
             $this->setQueue($queue);
         }
 
-        $adapterOptions = array();
-        $driverOptions  = array();
+        $adapterOptions = [];
+        $driverOptions  = [];
 
         // Normalize the options and merge with the defaults
         if (array_key_exists('options', $options)) {
@@ -147,7 +147,7 @@ abstract class Zend_Queue_Adapter_AdapterAbstract
     /**
      * get the Zend_Queue class that is attached to this object
      *
-     * @return Zend_Queue|null
+     * @return Zend_Queue_Adapter_Abstract|null
      */
     public function getQueue()
     {

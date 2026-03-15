@@ -15,11 +15,14 @@
  * @category   Zend
  * @package    Zend_Service_Amazon
  * @subpackage Ec2
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Elasticip.php 16971 2009-07-22 18:05:45Z mikaelkael $
+ * @version    $Id$
  */
 
+/**
+ * @see Zend_Service_Amazon_Ec2_Abstract
+ */
 require_once 'Zend/Service/Amazon/Ec2/Abstract.php';
 
 /**
@@ -29,7 +32,7 @@ require_once 'Zend/Service/Amazon/Ec2/Abstract.php';
  * @category   Zend
  * @package    Zend_Service_Amazon
  * @subpackage Ec2
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Service_Amazon_Ec2_Elasticip extends Zend_Service_Amazon_Ec2_Abstract
@@ -41,15 +44,14 @@ class Zend_Service_Amazon_Ec2_Elasticip extends Zend_Service_Amazon_Ec2_Abstract
      */
     public function allocate()
     {
-        $params = array();
+        $params = [];
         $params['Action'] = 'AllocateAddress';
 
         $response = $this->sendRequest($params);
 
         $xpath = $response->getXPath();
-        $ip = $xpath->evaluate('string(//ec2:publicIp/text())');
 
-        return $ip;
+        return $xpath->evaluate('string(//ec2:publicIp/text())');
     }
 
     /**
@@ -60,7 +62,7 @@ class Zend_Service_Amazon_Ec2_Elasticip extends Zend_Service_Amazon_Ec2_Abstract
      */
     public function describe($publicIp = null)
     {
-        $params = array();
+        $params = [];
         $params['Action'] = 'DescribeAddresses';
 
         if(is_array($publicIp) && !empty($publicIp)) {
@@ -76,9 +78,9 @@ class Zend_Service_Amazon_Ec2_Elasticip extends Zend_Service_Amazon_Ec2_Abstract
         $xpath  = $response->getXPath();
         $nodes  = $xpath->query('//ec2:item');
 
-        $return = array();
+        $return = [];
         foreach ($nodes as $k => $node) {
-            $item = array();
+            $item = [];
             $item['publicIp']  = $xpath->evaluate('string(ec2:publicIp/text())', $node);
             $item['instanceId']   = $xpath->evaluate('string(ec2:instanceId/text())', $node);
 
@@ -97,7 +99,7 @@ class Zend_Service_Amazon_Ec2_Elasticip extends Zend_Service_Amazon_Ec2_Abstract
      */
     public function release($publicIp)
     {
-        $params = array();
+        $params = [];
         $params['Action'] = 'ReleaseAddress';
         $params['PublicIp'] = $publicIp;
 
@@ -118,7 +120,7 @@ class Zend_Service_Amazon_Ec2_Elasticip extends Zend_Service_Amazon_Ec2_Abstract
      */
     public function associate($instanceId, $publicIp)
     {
-        $params = array();
+        $params = [];
         $params['Action'] = 'AssociateAddress';
         $params['PublicIp'] = $publicIp;
         $params['InstanceId'] = $instanceId;
@@ -140,7 +142,7 @@ class Zend_Service_Amazon_Ec2_Elasticip extends Zend_Service_Amazon_Ec2_Abstract
      */
     public function disassocate($publicIp)
     {
-        $params = array();
+        $params = [];
         $params['Action'] = 'DisssociateAddress';
         $params['PublicIp'] = $publicIp;
 

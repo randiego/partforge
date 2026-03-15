@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Service
  * @subpackage StrikeIron
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: ZipCodeInfo.php 16211 2009-06-21 19:23:55Z thomas $
+ * @version    $Id$
  */
 
 /** Zend_Service_StrikeIron_Base */
@@ -27,19 +27,19 @@ require_once 'Zend/Service/StrikeIron/Base.php';
  * @category   Zend
  * @package    Zend_Service
  * @subpackage StrikeIron
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Service_StrikeIron_ZipCodeInfo extends Zend_Service_StrikeIron_Base
 {
     /**
      * Configuration options
-     * @param array
+     * @var array
      */
-    protected $_options = array('username' => null,
+    protected $_options = ['username' => null,
                                 'password' => null,
                                 'client'   => null,
                                 'options'  => null,
                                 'headers'  => null,
-                                'wsdl'     => 'http://sdpws.strikeiron.com/zf1.StrikeIron/sdpZIPCodeInfo?WSDL');
+                                'wsdl'     => 'http://sdpws.strikeiron.com/zf1.StrikeIron/sdpZIPCodeInfo?WSDL'];
 }

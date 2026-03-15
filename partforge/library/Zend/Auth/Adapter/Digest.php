@@ -14,10 +14,10 @@
  *
  * @category   Zend
  * @package    Zend_Auth
- * @subpackage Zend_Auth_Adapter
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @subpackage Adapter
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Digest.php 16200 2009-06-21 18:50:06Z thomas $
+ * @version    $Id$
  */
 
 
@@ -30,8 +30,8 @@ require_once 'Zend/Auth/Adapter/Interface.php';
 /**
  * @category   Zend
  * @package    Zend_Auth
- * @subpackage Zend_Auth_Adapter
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @subpackage Adapter
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Auth_Adapter_Digest implements Zend_Auth_Adapter_Interface
@@ -71,11 +71,12 @@ class Zend_Auth_Adapter_Digest implements Zend_Auth_Adapter_Interface
      * @param  mixed $realm
      * @param  mixed $username
      * @param  mixed $password
-     * @return void
+     *
+     * @phpstan-ignore-next-line (constructor.unusedParameter)
      */
     public function __construct($filename = null, $realm = null, $username = null, $password = null)
     {
-        $options = array('filename', 'realm', 'username', 'password');
+        $options = ['filename', 'realm', 'username', 'password'];
         foreach ($options as $option) {
             if (null !== $$option) {
                 $methodName = 'set' . ucfirst($option);
@@ -98,7 +99,7 @@ class Zend_Auth_Adapter_Digest implements Zend_Auth_Adapter_Interface
      * Sets the filename option value
      *
      * @param  mixed $filename
-     * @return Zend_Auth_Adapter_Digest Provides a fluent interface
+     * @return $this
      */
     public function setFilename($filename)
     {
@@ -120,7 +121,7 @@ class Zend_Auth_Adapter_Digest implements Zend_Auth_Adapter_Interface
      * Sets the realm option value
      *
      * @param  mixed $realm
-     * @return Zend_Auth_Adapter_Digest Provides a fluent interface
+     * @return $this
      */
     public function setRealm($realm)
     {
@@ -142,7 +143,7 @@ class Zend_Auth_Adapter_Digest implements Zend_Auth_Adapter_Interface
      * Sets the username option value
      *
      * @param  mixed $username
-     * @return Zend_Auth_Adapter_Digest Provides a fluent interface
+     * @return $this
      */
     public function setUsername($username)
     {
@@ -164,7 +165,7 @@ class Zend_Auth_Adapter_Digest implements Zend_Auth_Adapter_Interface
      * Sets the password option value
      *
      * @param  mixed $password
-     * @return Zend_Auth_Adapter_Digest Provides a fluent interface
+     * @return $this
      */
     public function setPassword($password)
     {
@@ -180,7 +181,7 @@ class Zend_Auth_Adapter_Digest implements Zend_Auth_Adapter_Interface
      */
     public function authenticate()
     {
-        $optionsRequired = array('filename', 'realm', 'username', 'password');
+        $optionsRequired = ['filename', 'realm', 'username', 'password'];
         foreach ($optionsRequired as $optionRequired) {
             if (null === $this->{"_$optionRequired"}) {
                 /**
@@ -202,18 +203,18 @@ class Zend_Auth_Adapter_Digest implements Zend_Auth_Adapter_Interface
         $id       = "$this->_username:$this->_realm";
         $idLength = strlen($id);
 
-        $result = array(
+        $result = [
             'code'  => Zend_Auth_Result::FAILURE,
-            'identity' => array(
+            'identity' => [
                 'realm'    => $this->_realm,
                 'username' => $this->_username,
-                ),
-            'messages' => array()
-            );
+                ],
+            'messages' => []
+            ];
 
         while ($line = trim(fgets($fileHandle))) {
             if (substr($line, 0, $idLength) === $id) {
-                if (substr($line, -32) === md5("$this->_username:$this->_realm:$this->_password")) {
+                if ($this->_secureStringCompare(substr($line, -32), md5("$this->_username:$this->_realm:$this->_password"))) {
                     $result['code'] = Zend_Auth_Result::SUCCESS;
                 } else {
                     $result['code'] = Zend_Auth_Result::FAILURE_CREDENTIAL_INVALID;
@@ -226,5 +227,30 @@ class Zend_Auth_Adapter_Digest implements Zend_Auth_Adapter_Interface
         $result['code'] = Zend_Auth_Result::FAILURE_IDENTITY_NOT_FOUND;
         $result['messages'][] = "Username '$this->_username' and realm '$this->_realm' combination not found";
         return new Zend_Auth_Result($result['code'], $result['identity'], $result['messages']);
+    }
+
+    /**
+     * Securely compare two strings for equality while avoided C level memcmp()
+     * optimisations capable of leaking timing information useful to an attacker
+     * attempting to iteratively guess the unknown string (e.g. password) being
+     * compared against.
+     *
+     * @param string $a
+     * @param string $b
+     * @return bool
+     */
+    protected function _secureStringCompare($a, $b)
+    {
+        if (strlen($a) !== strlen($b)) {
+            return false;
+        }
+
+        $result = 0;
+
+        for ($i = 0; $i < strlen($a); $i++) {
+            $result |= ord($a[$i]) ^ ord($b[$i]);
+        }
+
+        return $result == 0;
     }
 }

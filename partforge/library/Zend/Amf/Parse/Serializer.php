@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Amf
  * @subpackage Parse
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Serializer.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /**
@@ -25,17 +25,24 @@
  *
  * @package    Zend_Amf
  * @subpackage Parse
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Amf_Parse_Serializer
 {
     /**
-     * Refrence to the current output stream being constructed
+     * Reference to the current output stream being constructed
      *
      * @var string
      */
     protected $_stream;
+
+    /**
+     * str* functions overloaded using mbstring.func_overload
+     *
+     * @var bool
+     */
+    protected $_mbStringFunctionsOverloaded;
 
     /**
      * Constructor
@@ -46,6 +53,7 @@ abstract class Zend_Amf_Parse_Serializer
     public function __construct(Zend_Amf_Parse_OutputStream $stream)
     {
         $this->_stream = $stream;
+        $this->_mbStringFunctionsOverloaded = function_exists('mb_strlen') && (ini_get('mbstring.func_overload') !== '') && ((int)ini_get('mbstring.func_overload') & 2);
     }
 
     /**
@@ -53,7 +61,8 @@ abstract class Zend_Amf_Parse_Serializer
      *
      * @param  mixed $content
      * @param  int $markerType
+     * @param  mixed $contentByVal
      * @return void
      */
-    public abstract function writeTypeMarker($content, $markerType=null);
+    public abstract function writeTypeMarker(&$content, $markerType = null, $contentByVal = false);
 }

@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Pdf
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Compression.php 18993 2009-11-15 17:09:16Z alexander $
+ * @version    $Id$
  */
 
 
@@ -27,7 +27,7 @@ require_once 'Zend/Pdf/Filter/Interface.php';
  * ASCII85 stream filter
  *
  * @package    Zend_Pdf
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Pdf_Filter_Compression implements Zend_Pdf_Filter_Interface
@@ -257,7 +257,7 @@ abstract class Zend_Pdf_Filter_Compression implements Zend_Pdf_Filter_Interface
 
                 case 4: // Paeth prediction
                     $lastRow    = array_fill(0, $bytesPerRow, 0);
-                    $currentRow = array();
+                    $currentRow = [];
                     for ($count = 0; $count < $rows; $count++) {
                         $output .= chr($predictor);
 
@@ -363,7 +363,7 @@ abstract class Zend_Pdf_Filter_Compression implements Zend_Pdf_Filter_Interface
                         break;
 
                     case 4: // Paeth prediction
-                        $currentRow = array();
+                        $currentRow = [];
                         for ($count2 = 0; $count2 < $bytesPerRow  &&  $offset < strlen($data); $count2++) {
                             $decodedByte = (ord($data[$offset++]) +
                                             self::_paeth($lastSample[$count2 % $bytesPerSample],

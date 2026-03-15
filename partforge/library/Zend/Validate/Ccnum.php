@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Zend Framework
  *
@@ -15,22 +14,20 @@
  *
  * @category   Zend
  * @package    Zend_Validate
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Ccnum.php 16223 2009-06-21 20:04:53Z thomas $
+ * @version    $Id$
  */
-
 
 /**
  * @see Zend_Validate_Abstract
  */
 require_once 'Zend/Validate/Abstract.php';
 
-
 /**
  * @category   Zend
  * @package    Zend_Validate
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Validate_Ccnum extends Zend_Validate_Abstract
@@ -38,12 +35,12 @@ class Zend_Validate_Ccnum extends Zend_Validate_Abstract
     /**
      * Validation failure message key for when the value is not of valid length
      */
-    const LENGTH   = 'ccnumLength';
+    public const LENGTH   = 'ccnumLength';
 
     /**
      * Validation failure message key for when the value fails the mod-10 checksum
      */
-    const CHECKSUM = 'ccnumChecksum';
+    public const CHECKSUM = 'ccnumChecksum';
 
     /**
      * Digits filter for input
@@ -57,10 +54,15 @@ class Zend_Validate_Ccnum extends Zend_Validate_Abstract
      *
      * @var array
      */
-    protected $_messageTemplates = array(
+    protected $_messageTemplates = [
         self::LENGTH   => "'%value%' must contain between 13 and 19 digits",
         self::CHECKSUM => "Luhn algorithm (mod-10 checksum) failed on '%value%'"
-    );
+    ];
+
+    public function __construct()
+    {
+        trigger_error('Using the Ccnum validator is deprecated in favor of the CreditCard validator');
+    }
 
     /**
      * Defined by Zend_Validate_Interface
@@ -107,5 +109,4 @@ class Zend_Validate_Ccnum extends Zend_Validate_Abstract
 
         return true;
     }
-
 }

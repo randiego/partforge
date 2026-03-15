@@ -14,7 +14,7 @@
  *
  * @category   Zend
  * @package    Zend_Server
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -24,8 +24,8 @@
  * @category   Zend
  * @package    Zend_Server
  * @subpackage Reflection
- * @version $Id: Node.php 16210 2009-06-21 19:22:17Z thomas $
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @version $Id$
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Server_Reflection_Node
@@ -40,7 +40,7 @@ class Zend_Server_Reflection_Node
      * Array of child nodes (if any)
      * @var array
      */
-    protected $_children = array();
+    protected $_children = [];
 
     /**
      * Parent node (if any)
@@ -55,7 +55,7 @@ class Zend_Server_Reflection_Node
      * @param Zend_Server_Reflection_Node $parent Optional
      * @return Zend_Server_Reflection_Node
      */
-    public function __construct($value, Zend_Server_Reflection_Node $parent = null)
+    public function __construct($value, ?Zend_Server_Reflection_Node $parent = null)
     {
         $this->_value = $value;
         if (null !== $parent) {
@@ -92,9 +92,7 @@ class Zend_Server_Reflection_Node
      */
     public function createChild($value)
     {
-        $child = new self($value, $this);
-
-        return $child;
+        return new self($value, $this);
     }
 
     /**
@@ -174,7 +172,7 @@ class Zend_Server_Reflection_Node
      */
     public function getEndPoints()
     {
-        $endPoints = array();
+        $endPoints = [];
         if (!$this->hasChildren()) {
             return $endPoints;
         }

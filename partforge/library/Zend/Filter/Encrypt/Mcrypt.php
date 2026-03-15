@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_Filter
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Mcrypt.php 16971 2009-07-22 18:05:45Z mikaelkael $
+ * @version    $Id$
  */
 
 /**
@@ -24,12 +24,15 @@
  */
 require_once 'Zend/Filter/Encrypt/Interface.php';
 
+/** @see Zend_Crypt_Math */
+require_once 'Zend/Crypt/Math.php';
+
 /**
  * Encryption adapter for mcrypt
  *
  * @category   Zend
  * @package    Zend_Filter
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Filter_Encrypt_Mcrypt implements Zend_Filter_Encrypt_Interface
@@ -44,7 +47,7 @@ class Zend_Filter_Encrypt_Mcrypt implements Zend_Filter_Encrypt_Interface
      *     'modedirectory' => directory where to find the mode
      * )
      */
-    protected $_encryption = array(
+    protected $_encryption = [
         'key'                 => 'ZendFramework',
         'algorithm'           => 'blowfish',
         'algorithm_directory' => '',
@@ -52,7 +55,16 @@ class Zend_Filter_Encrypt_Mcrypt implements Zend_Filter_Encrypt_Interface
         'mode_directory'      => '',
         'vector'              => null,
         'salt'                => false
-    );
+    ];
+
+    /**
+     * Internal compression
+     *
+     * @var array
+     */
+    protected $_compression;
+
+    protected static $_srandCalled = false;
 
     /**
      * Class constructor
@@ -69,10 +81,15 @@ class Zend_Filter_Encrypt_Mcrypt implements Zend_Filter_Encrypt_Interface
         if ($options instanceof Zend_Config) {
             $options = $options->toArray();
         } elseif (is_string($options)) {
-            $options = array('key' => $options);
+            $options = ['key' => $options];
         } elseif (!is_array($options)) {
             require_once 'Zend/Filter/Exception.php';
             throw new Zend_Filter_Exception('Invalid options argument provided to filter');
+        }
+
+        if (array_key_exists('compression', $options)) {
+            $this->setCompression($options['compression']);
+            unset($options['compress']);
         }
 
         $this->setEncryption($options);
@@ -92,12 +109,12 @@ class Zend_Filter_Encrypt_Mcrypt implements Zend_Filter_Encrypt_Interface
      * Sets new encryption options
      *
      * @param  string|array $options Encryption options
-     * @return Zend_Filter_File_Encryption
+     * @return Zend_Filter_Encrypt_Mcrypt
      */
     public function setEncryption($options)
     {
         if (is_string($options)) {
-            $options = array('key' => $options);
+            $options = ['key' => $options];
         }
 
         if (!is_array($options)) {
@@ -154,8 +171,14 @@ class Zend_Filter_Encrypt_Mcrypt implements Zend_Filter_Encrypt_Interface
         $cipher = $this->_openCipher();
         $size   = mcrypt_enc_get_iv_size($cipher);
         if (empty($vector)) {
-            srand();
-            $vector = mcrypt_create_iv($size, MCRYPT_RAND);
+            if (file_exists('/dev/urandom') || (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN')) {
+                $method = MCRYPT_DEV_URANDOM;
+            } elseif (file_exists('/dev/random')) {
+                $method = MCRYPT_DEV_RANDOM;
+            } else {
+                $method = MCRYPT_RAND;
+            }
+            $vector = mcrypt_create_iv($size, $method);
         } else if (strlen($vector) != $size) {
             require_once 'Zend/Filter/Exception.php';
             throw new Zend_Filter_Exception('The given vector has a wrong size for the set algorithm');
@@ -168,15 +191,48 @@ class Zend_Filter_Encrypt_Mcrypt implements Zend_Filter_Encrypt_Interface
     }
 
     /**
+     * Returns the compression
+     *
+     * @return array
+     */
+    public function getCompression()
+    {
+        return $this->_compression;
+    }
+
+    /**
+     * Sets a internal compression for values to encrypt
+     *
+     * @param string|array $compression
+     * @return Zend_Filter_Encrypt_Mcrypt
+     */
+    public function setCompression($compression)
+    {
+        if (is_string($this->_compression)) {
+            $compression = ['adapter' => $compression];
+        }
+
+        $this->_compression = $compression;
+        return $this;
+    }
+
+    /**
      * Defined by Zend_Filter_Interface
      *
-     * Encrypts the file $value with the defined settings
+     * Encrypts $value with the defined settings
      *
-     * @param  string $value Full path of file to change
-     * @return string The filename which has been set, or false when there were errors
+     * @param  string $value The content to encrypt
+     * @return string The encrypted content
      */
     public function encrypt($value)
     {
+        // compress prior to encryption
+        if (!empty($this->_compression)) {
+            require_once 'Zend/Filter/Compress.php';
+            $compress = new Zend_Filter_Compress($this->_compression);
+            $value    = $compress->filter($value);
+        }
+
         $cipher  = $this->_openCipher();
         $this->_initCipher($cipher);
         $encrypted = mcrypt_generic($cipher, $value);
@@ -189,10 +245,10 @@ class Zend_Filter_Encrypt_Mcrypt implements Zend_Filter_Encrypt_Interface
     /**
      * Defined by Zend_Filter_Interface
      *
-     * Decrypts the file $value with the defined settings
+     * Decrypts $value with the defined settings
      *
-     * @param  string $value Full path of file to change
-     * @return string The filename which has been set, or false when there were errors
+     * @param  string $value Content to decrypt
+     * @return string The decrypted content
      */
     public function decrypt($value)
     {
@@ -201,6 +257,13 @@ class Zend_Filter_Encrypt_Mcrypt implements Zend_Filter_Encrypt_Interface
         $decrypted = mdecrypt_generic($cipher, $value);
         mcrypt_generic_deinit($cipher);
         $this->_closeCipher($cipher);
+
+        // decompress after decryption
+        if (!empty($this->_compression)) {
+            require_once 'Zend/Filter/Decompress.php';
+            $decompress = new Zend_Filter_Decompress($this->_compression);
+            $decrypted  = $decompress->filter($decrypted);
+        }
 
         return $decrypted;
     }
@@ -254,8 +317,8 @@ class Zend_Filter_Encrypt_Mcrypt implements Zend_Filter_Encrypt_Interface
      * Initialises the cipher with the set key
      *
      * @param  resource $cipher
+     * @return Zend_Filter_Encrypt_Mcrypt
      * @throws
-     * @return resource
      */
     protected function _initCipher($cipher)
     {
@@ -263,7 +326,6 @@ class Zend_Filter_Encrypt_Mcrypt implements Zend_Filter_Encrypt_Interface
 
         $keysizes = mcrypt_enc_get_supported_key_sizes($cipher);
         if (empty($keysizes) || ($this->_encryption['salt'] == true)) {
-            srand();
             $keysize = mcrypt_enc_get_key_size($cipher);
             $key     = substr(md5($key), 0, $keysize);
         } else if (!in_array(strlen($key), $keysizes)) {

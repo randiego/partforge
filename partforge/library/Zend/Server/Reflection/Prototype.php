@@ -14,7 +14,7 @@
  *
  * @category   Zend
  * @package    Zend_Server
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
@@ -36,12 +36,22 @@ require_once 'Zend/Server/Reflection/Parameter.php';
  * @category   Zend
  * @package    Zend_Server
  * @subpackage Reflection
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version $Id: Prototype.php 16210 2009-06-21 19:22:17Z thomas $
+ * @version $Id$
  */
 class Zend_Server_Reflection_Prototype
 {
+    /**
+     * @var array | null
+     */
+    protected $_params;
+
+    /**
+     * @var Zend_Server_Reflection_ReturnValue
+     */
+    protected $_return;
+
     /**
      * Constructor
      *

@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Pdf
  * @subpackage Destination
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: FitBoundingBoxHorizontally.php 18993 2009-11-15 17:09:16Z alexander $
+ * @version    $Id$
  */
 
 
@@ -42,7 +42,7 @@ require_once 'Zend/Pdf/Destination/Explicit.php';
  *
  * @package    Zend_Pdf
  * @subpackage Destination
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Pdf_Destination_FitBoundingBoxHorizontally extends Zend_Pdf_Destination_Explicit
@@ -88,7 +88,7 @@ class Zend_Pdf_Destination_FitBoundingBoxHorizontally extends Zend_Pdf_Destinati
      * Set top edge of the displayed page
      *
      * @param float $top
-     * @return Zend_Pdf_Action_FitBoundingBoxHorizontally
+     * @return Zend_Pdf_Destination_FitBoundingBoxHorizontally
      */
     public function setTopEdge($top)
     {

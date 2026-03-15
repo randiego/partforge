@@ -14,10 +14,10 @@
  *
  * @category   Zend
  * @package    Zend_Auth
- * @subpackage Zend_Auth_Storage
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @subpackage Storage
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Session.php 16200 2009-06-21 18:50:06Z thomas $
+ * @version    $Id$
  */
 
 
@@ -36,8 +36,8 @@ require_once 'Zend/Session.php';
 /**
  * @category   Zend
  * @package    Zend_Auth
- * @subpackage Zend_Auth_Storage
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @subpackage Storage
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Auth_Storage_Session implements Zend_Auth_Storage_Interface
@@ -45,12 +45,12 @@ class Zend_Auth_Storage_Session implements Zend_Auth_Storage_Interface
     /**
      * Default session namespace
      */
-    const NAMESPACE_DEFAULT = 'Zend_Auth';
+    public const NAMESPACE_DEFAULT = 'Zend_Auth';
 
     /**
      * Default session object member name
      */
-    const MEMBER_DEFAULT = 'storage';
+    public const MEMBER_DEFAULT = 'storage';
 
     /**
      * Object to proxy $_SESSION storage
@@ -76,9 +76,8 @@ class Zend_Auth_Storage_Session implements Zend_Auth_Storage_Interface
     /**
      * Sets session storage options and initializes session namespace object
      *
-     * @param  mixed $namespace
-     * @param  mixed $member
-     * @return void
+     * @param mixed $namespace
+     * @param mixed $member
      */
     public function __construct($namespace = self::NAMESPACE_DEFAULT, $member = self::MEMBER_DEFAULT)
     {

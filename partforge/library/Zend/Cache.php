@@ -14,15 +14,15 @@
  *
  * @category   Zend
  * @package    Zend_Cache
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Cache.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 
 /**
  * @package    Zend_Cache
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Cache
@@ -33,46 +33,47 @@ abstract class Zend_Cache
      *
      * @var array
      */
-    public static $standardFrontends = array('Core', 'Output', 'Class', 'File', 'Function', 'Page');
+    public static $standardFrontends = ['Core', 'Output', 'Class', 'File', 'Function', 'Page'];
 
     /**
      * Standard backends
      *
      * @var array
      */
-    public static $standardBackends = array('File', 'Sqlite', 'Memcached', 'Apc', 'ZendPlatform', 'Xcache', 'TwoLevels');
+    public static $standardBackends = ['File', 'Sqlite', 'Memcached', 'Libmemcached', 'Apc', 'ZendPlatform',
+                                            'Xcache', 'TwoLevels', 'WinCache', 'ZendServer_Disk', 'ZendServer_ShMem'];
 
     /**
      * Standard backends which implement the ExtendedInterface
      *
      * @var array
      */
-    public static $standardExtendedBackends = array('File', 'Apc', 'TwoLevels', 'Memcached', 'Sqlite');
+    public static $standardExtendedBackends = ['File', 'Apc', 'TwoLevels', 'Memcached', 'Libmemcached', 'Sqlite', 'WinCache'];
 
     /**
-     * Only for backward compatibily (may be removed in next major release)
+     * Only for backward compatibility (may be removed in next major release)
      *
      * @var array
      * @deprecated
      */
-    public static $availableFrontends = array('Core', 'Output', 'Class', 'File', 'Function', 'Page');
+    public static $availableFrontends = ['Core', 'Output', 'Class', 'File', 'Function', 'Page'];
 
     /**
-     * Only for backward compatibily (may be removed in next major release)
+     * Only for backward compatibility (may be removed in next major release)
      *
      * @var array
      * @deprecated
      */
-    public static $availableBackends = array('File', 'Sqlite', 'Memcached', 'Apc', 'ZendPlatform', 'Xcache', 'TwoLevels');
+    public static $availableBackends = ['File', 'Sqlite', 'Memcached', 'Libmemcached', 'Apc', 'ZendPlatform', 'Xcache', 'WinCache', 'TwoLevels'];
 
     /**
      * Consts for clean() method
      */
-    const CLEANING_MODE_ALL              = 'all';
-    const CLEANING_MODE_OLD              = 'old';
-    const CLEANING_MODE_MATCHING_TAG     = 'matchingTag';
-    const CLEANING_MODE_NOT_MATCHING_TAG = 'notMatchingTag';
-    const CLEANING_MODE_MATCHING_ANY_TAG = 'matchingAnyTag';
+    public const CLEANING_MODE_ALL              = 'all';
+    public const CLEANING_MODE_OLD              = 'old';
+    public const CLEANING_MODE_MATCHING_TAG     = 'matchingTag';
+    public const CLEANING_MODE_NOT_MATCHING_TAG = 'notMatchingTag';
+    public const CLEANING_MODE_MATCHING_ANY_TAG = 'matchingAnyTag';
 
     /**
      * Factory
@@ -83,11 +84,11 @@ abstract class Zend_Cache
      * @param array  $backendOptions  associative array of options for the corresponding backend constructor
      * @param boolean $customFrontendNaming if true, the frontend argument is used as a complete class name ; if false, the frontend argument is used as the end of "Zend_Cache_Frontend_[...]" class name
      * @param boolean $customBackendNaming if true, the backend argument is used as a complete class name ; if false, the backend argument is used as the end of "Zend_Cache_Backend_[...]" class name
-     * @param boolean $autoload if true, there will no require_once for backend and frontend (usefull only for custom backends/frontends)
+     * @param boolean $autoload if true, there will no require_once for backend and frontend (useful only for custom backends/frontends)
      * @throws Zend_Cache_Exception
-     * @return Zend_Cache_Core|Zend_Cache_Frontend
+     * @return Zend_Cache_Core|Zend_Cache_Frontend_Output|Zend_Cache_Frontend_Class|Zend_Cache_Frontend_File|Zend_Cache_Frontend_Function|Zend_Cache_Frontend_Page
      */
-    public static function factory($frontend, $backend, $frontendOptions = array(), $backendOptions = array(), $customFrontendNaming = false, $customBackendNaming = false, $autoload = false)
+    public static function factory($frontend, $backend, $frontendOptions = [], $backendOptions = [], $customFrontendNaming = false, $customBackendNaming = false, $autoload = false)
     {
         if (is_string($backend)) {
             $backendObject = self::_makeBackend($backend, $backendOptions, $customBackendNaming, $autoload);
@@ -112,7 +113,7 @@ abstract class Zend_Cache
     }
 
     /**
-     * Frontend Constructor
+     * Backend Constructor
      *
      * @param string  $backend
      * @param array   $backendOptions
@@ -132,7 +133,7 @@ abstract class Zend_Cache
             require_once str_replace('_', DIRECTORY_SEPARATOR, $backendClass) . '.php';
         } else {
             // we use a custom backend
-            if (!preg_match('~^[\w]+$~D', $backend)) {
+            if (!preg_match('~^[\w\\\\]+$~D', $backend)) {
                 Zend_Cache::throwException("Invalid backend name [$backend]");
             }
             if (!$customBackendNaming) {
@@ -153,15 +154,15 @@ abstract class Zend_Cache
     }
 
     /**
-     * Backend Constructor
+     * Frontend Constructor
      *
      * @param string  $frontend
      * @param array   $frontendOptions
      * @param boolean $customFrontendNaming
      * @param boolean $autoload
-     * @return Zend_Cache_Core|Zend_Cache_Frontend
+     * @return Zend_Cache_Core|Zend_Cache_Frontend_Output|Zend_Cache_Frontend_Class|Zend_Cache_Frontend_File|Zend_Cache_Frontend_Function|Zend_Cache_Frontend_Page
      */
-    public static function _makeFrontend($frontend, $frontendOptions = array(), $customFrontendNaming = false, $autoload = false)
+    public static function _makeFrontend($frontend, $frontendOptions = [], $customFrontendNaming = false, $autoload = false)
     {
         if (!$customFrontendNaming) {
             $frontend = self::_normalizeName($frontend);
@@ -174,7 +175,7 @@ abstract class Zend_Cache
             require_once str_replace('_', DIRECTORY_SEPARATOR, $frontendClass) . '.php';
         } else {
             // we use a custom frontend
-            if (!preg_match('~^[\w]+$~D', $frontend)) {
+            if (!preg_match('~^[\w\\\\]+$~D', $frontend)) {
                 Zend_Cache::throwException("Invalid frontend name [$frontend]");
             }
             if (!$customFrontendNaming) {
@@ -201,11 +202,11 @@ abstract class Zend_Cache
      * @param  string $msg  Message for the exception
      * @throws Zend_Cache_Exception
      */
-    public static function throwException($msg)
+    public static function throwException($msg, ?Exception $e = null)
     {
         // For perfs reasons, we use this dynamic inclusion
         require_once 'Zend/Cache/Exception.php';
-        throw new Zend_Cache_Exception($msg);
+        throw new Zend_Cache_Exception($msg, 0, $e);
     }
 
     /**
@@ -217,9 +218,13 @@ abstract class Zend_Cache
     protected static function _normalizeName($name)
     {
         $name = ucfirst(strtolower($name));
-        $name = str_replace(array('-', '_', '.'), ' ', $name);
+        $name = str_replace(['-', '_', '.'], ' ', $name);
         $name = ucwords($name);
         $name = str_replace(' ', '', $name);
+        if (stripos($name, 'ZendServer') === 0) {
+            $name = 'ZendServer_' . substr($name, strlen('ZendServer'));
+        }
+
         return $name;
     }
 

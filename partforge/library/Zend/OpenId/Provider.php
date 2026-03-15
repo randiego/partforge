@@ -16,9 +16,9 @@
  * @category   Zend
  * @package    Zend_OpenId
  * @subpackage Zend_OpenId_Provider
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Provider.php 16212 2009-06-21 19:24:49Z thomas $
+ * @version    $Id$
  */
 
 /**
@@ -37,7 +37,7 @@ require_once "Zend/OpenId/Extension.php";
  * @category   Zend
  * @package    Zend_OpenId
  * @subpackage Zend_OpenId_Provider
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_OpenId_Provider
@@ -106,8 +106,8 @@ class Zend_OpenId_Provider
      */
     public function __construct($loginUrl = null,
                                 $trustUrl = null,
-                                Zend_OpenId_Provider_User $user = null,
-                                Zend_OpenId_Provider_Storage $storage = null,
+                                ?Zend_OpenId_Provider_User $user = null,
+                                ?Zend_OpenId_Provider_Storage $storage = null,
                                 $sessionTtl = 3600)
     {
         if ($loginUrl === null) {
@@ -201,7 +201,7 @@ class Zend_OpenId_Provider
     /**
      * Performs logout. Clears information about logged in user.
      *
-     * @return void
+     * @return bool
      */
     public function logout()
     {
@@ -262,7 +262,7 @@ class Zend_OpenId_Provider
             return false;
         }
         if ($extensions !== null) {
-            $data = array();
+            $data = [];
             Zend_OpenId_Extension::forAll($extensions, 'getTrustData', $data);
         } else {
             $data = true;
@@ -311,7 +311,7 @@ class Zend_OpenId_Provider
      * Returns list of known consumers for current logged in user or false
      * if he is not logged in.
      *
-     * @return mixed
+     * @return array|false
      */
     public function getTrustedSites()
     {
@@ -331,10 +331,10 @@ class Zend_OpenId_Provider
      * @param mixed $extensions extension object or array of extensions objects
      * @param Zend_Controller_Response_Abstract $response an optional response
      *  object to perform HTTP or HTML form redirection
-     * @return mixed
+     * @return bool|string
      */
     public function handle($params=null, $extensions=null,
-                           Zend_Controller_Response_Abstract $response = null)
+                           ?Zend_Controller_Response_Abstract $response = null)
     {
         if ($params === null) {
             if ($_SERVER["REQUEST_METHOD"] == "GET") {
@@ -389,7 +389,7 @@ class Zend_OpenId_Provider
      * if function is not supported
      *
      * @param string $func hash function (sha1 or sha256)
-     * @return mixed
+     * @return false|string
      */
     protected function _genSecret($func)
     {
@@ -414,7 +414,7 @@ class Zend_OpenId_Provider
      */
     protected function _associate($version, $params)
     {
-        $ret = array();
+        $ret = [];
 
         if ($version >= 2.0) {
             $ret['ns'] = Zend_OpenId::NS_2_0;
@@ -512,9 +512,9 @@ class Zend_OpenId_Provider
      * @return array
      */
     protected function _checkId($version, $params, $immediate, $extensions=null,
-        Zend_Controller_Response_Abstract $response = null)
+        ?Zend_Controller_Response_Abstract $response = null)
     {
-        $ret = array();
+        $ret = [];
 
         if ($version >= 2.0) {
             $ret['openid.ns'] = Zend_OpenId::NS_2_0;
@@ -533,7 +533,7 @@ class Zend_OpenId_Provider
         /* Check if user already logged in into the server */
         if (!isset($params['openid_identity']) ||
             $this->_user->getLoggedInUser() !== $params['openid_identity']) {
-            $params2 = array();
+            $params2 = [];
             foreach ($params as $key => $val) {
                 if (strpos($key, 'openid_ns_') === 0) {
                     $key = 'openid.ns.' . substr($key, strlen('openid_ns_'));
@@ -576,19 +576,19 @@ class Zend_OpenId_Provider
                 if (strpos($root, $site) === 0) {
                     $trusted = $t;
                     break;
-                } else {
-                    /* OpenID 2.0 (9.2) check for realm wild-card matching */
-                    $n = strpos($site, '://*.');
-                    if ($n != false) {
-                        $regex = '/^'
-                               . preg_quote(substr($site, 0, $n+3), '/')
-                               . '[A-Za-z1-9_\.]+?'
-                               . preg_quote(substr($site, $n+4), '/')
-                               . '/';
-                        if (preg_match($regex, $root)) {
-                            $trusted = $t;
-                            break;
-                        }
+                }
+
+                /* OpenID 2.0 (9.2) check for realm wild-card matching */
+                $n = strpos($site, '://*.');
+                if ($n != false) {
+                    $regex = '/^'
+                           . preg_quote(substr($site, 0, $n+3), '/')
+                           . '[A-Za-z1-9_\.]+?'
+                           . preg_quote(substr($site, $n+4), '/')
+                           . '/';
+                    if (preg_match($regex, $root)) {
+                        $trusted = $t;
+                        break;
                     }
                 }
             }
@@ -603,9 +603,12 @@ class Zend_OpenId_Provider
         if ($trusted === false) {
             $ret['openid.mode'] = 'cancel';
             return $ret;
-        } else if ($trusted === null) {
+        }
+
+        if ($trusted === null) {
             /* Redirect to Server Trust Screen */
-            $params2 = array();
+            $params2 = [];
+
             foreach ($params as $key => $val) {
                 if (strpos($key, 'openid_ns_') === 0) {
                     $key = 'openid.ns.' . substr($key, strlen('openid_ns_'));
@@ -643,14 +646,14 @@ class Zend_OpenId_Provider
      * @return bool
      */
     public function respondToConsumer($params, $extensions=null,
-                           Zend_Controller_Response_Abstract $response = null)
+                           ?Zend_Controller_Response_Abstract $response = null)
     {
         $version = 1.1;
         if (isset($params['openid_ns']) &&
             $params['openid_ns'] == Zend_OpenId::NS_2_0) {
             $version = 2.0;
         }
-        $ret = array();
+        $ret = [];
         if ($version >= 2.0) {
             $ret['openid.ns'] = Zend_OpenId::NS_2_0;
         }
@@ -745,7 +748,7 @@ class Zend_OpenId_Provider
      */
     protected function _checkAuthentication($version, $params)
     {
-        $ret = array();
+        $ret = [];
         if ($version >= 2.0) {
             $ret['ns'] = Zend_OpenId::NS_2_0;
         }
@@ -770,12 +773,37 @@ class Zend_OpenId_Provider
                 $data .= $params['openid_' . strtr($key,'.','_')]."\n";
             }
         }
-        if (base64_decode($params['openid_sig']) ===
-            Zend_OpenId::hashHmac($macFunc, $data, $secret)) {
+        if ($this->_secureStringCompare(base64_decode($params['openid_sig']),
+            Zend_OpenId::hashHmac($macFunc, $data, $secret))) {
             $ret['is_valid'] = 'true';
         } else {
             $ret['is_valid'] = 'false';
         }
         return $ret;
+    }
+
+    /**
+     * Securely compare two strings for equality while avoided C level memcmp()
+     * optimisations capable of leaking timing information useful to an attacker
+     * attempting to iteratively guess the unknown string (e.g. password) being
+     * compared against.
+     *
+     * @param string $a
+     * @param string $b
+     * @return bool
+     */
+    protected function _secureStringCompare($a, $b)
+    {
+        if (strlen($a) !== strlen($b)) {
+            return false;
+        }
+
+        $result = 0;
+
+        for ($i = 0; $i < strlen($a); $i++) {
+            $result |= ord($a[$i]) ^ ord($b[$i]);
+        }
+
+        return $result == 0;
     }
 }

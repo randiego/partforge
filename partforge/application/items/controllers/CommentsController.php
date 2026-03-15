@@ -86,12 +86,17 @@ class Items_CommentsController extends RestControllerActionAbstract
         }
     }
 
+    public function headAction()
+    {
+        return $this->getAction(true);
+    }
+
     /**
      * GET /items/comments/N  where N is comment_id
      *
      * @see Zend_Rest_Controller::getAction()
      */
-    public function getAction()
+    public function getAction($headers_only = false)
     {
         $Comment = new DBTableRowComment();
         if ($Comment->getRecordById($this->params['id'])) {

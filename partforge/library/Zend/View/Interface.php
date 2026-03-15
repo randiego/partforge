@@ -14,9 +14,9 @@
  *
  * @category   Zend
  * @package    Zend_View
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Interface.php 16541 2009-07-07 06:59:03Z bkarwin $
+ * @version    $Id$
  */
 
 
@@ -25,7 +25,7 @@
  *
  * @category   Zend
  * @package    Zend_View
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 interface Zend_View_Interface
@@ -44,7 +44,7 @@ interface Zend_View_Interface
     /**
      * Set the path to find the view script used by render()
      *
-     * @param string|array The directory (-ies) to set as the path. Note that
+     * @param string|array $path The directory (-ies) to set as the path. Note that
      * the concrete view implentation may not necessarily support multiple
      * directories.
      * @return void
@@ -130,7 +130,7 @@ interface Zend_View_Interface
     /**
      * Processes a view script and returns the output.
      *
-     * @param string $name The script script name to process.
+     * @param string $name The script name to process.
      * @return string The script output.
      */
     public function render($name);

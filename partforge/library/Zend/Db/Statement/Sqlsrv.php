@@ -15,8 +15,9 @@
  * @category   Zend
  * @package    Zend_Db
  * @subpackage Statement
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
+ * @version    $Id$
  */
 
 /**
@@ -30,7 +31,7 @@ require_once 'Zend/Db/Statement.php';
  * @category   Zend
  * @package    Zend_Db
  * @subpackage Statement
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Db_Statement_Sqlsrv extends Zend_Db_Statement
@@ -159,10 +160,10 @@ class Zend_Db_Statement_Sqlsrv extends Zend_Db_Statement
             return false;
         }
 
-        return array(
+        return [
             $error[0]['code'],
             $error[0]['message'],
-        );
+        ];
     }
 
 
@@ -173,7 +174,7 @@ class Zend_Db_Statement_Sqlsrv extends Zend_Db_Statement
      * @return bool
      * @throws Zend_Db_Statement_Exception
      */
-    public function _execute(array $params = null)
+    public function _execute(?array $params = null)
     {
         $connection = $this->_adapter->getConnection();
         if (!$this->_stmt) {
@@ -182,13 +183,13 @@ class Zend_Db_Statement_Sqlsrv extends Zend_Db_Statement
 
         if ($params !== null) {
             if (!is_array($params)) {
-                $params = array($params);
+                $params = [$params];
             }
             $error = false;
 
             // make all params passed by reference
-            $params_ = array();
-            $temp    = array();
+            $params_ = [];
+            $temp    = [];
             $i       = 1;
             foreach ($params as $param) {
                 $temp[$i]  = $param;
@@ -216,7 +217,7 @@ class Zend_Db_Statement_Sqlsrv extends Zend_Db_Statement
      * @param  int $style  OPTIONAL Fetch mode for this fetch operation.
      * @param  int $cursor OPTIONAL Absolute, relative, or other.
      * @param  int $offset OPTIONAL Number for absolute or relative cursors.
-     * @return mixed Array, object, or scalar depending on fetch mode.
+     * @return array|bool|object|null Array, object, or scalar depending on fetch mode.
      * @throws Zend_Db_Statement_Exception
      */
     public function fetch($style = null, $cursor = null, $offset = null)
@@ -314,10 +315,10 @@ class Zend_Db_Statement_Sqlsrv extends Zend_Db_Statement
      *
      * @param string $class  OPTIONAL Name of the class to create.
      * @param array  $config OPTIONAL Constructor arguments for the class.
-     * @return mixed One object instance of the specified class.
+     * @return false|object One object instance of the specified class.
      * @throws Zend_Db_Statement_Exception
      */
-    public function fetchObject($class = 'stdClass', array $config = array())
+    public function fetchObject($class = 'stdClass', array $config = [])
     {
         if (!$this->_stmt) {
             return false;
@@ -376,7 +377,10 @@ class Zend_Db_Statement_Sqlsrv extends Zend_Db_Statement
             throw new Zend_Db_Statement_Sqlsrv_Exception(sqlsrv_errors());
         }
 
-        //else - moved to next (or there are no more rows)
+        // reset column keys
+        $this->_keys = null;
+
+        return true;
     }
 
     /**
@@ -406,5 +410,31 @@ class Zend_Db_Statement_Sqlsrv extends Zend_Db_Statement
         }
 
         return $num_rows;
+    }
+
+    /**
+     * Returns an array containing all of the result set rows.
+     *
+     * @param int $style OPTIONAL Fetch mode.
+     * @param int $col   OPTIONAL Column number, if fetch mode is by column.
+     * @return array Collection of rows, each in a format by the fetch mode.
+     *
+     * Behaves like parent, but if limit()
+     * is used, the final result removes the extra column
+     * 'zend_db_rownum'
+     */
+    public function fetchAll($style = null, $col = null)
+    {
+        $data = parent::fetchAll($style, $col);
+        $results = [];
+        $remove = $this->_adapter->foldCase('ZEND_DB_ROWNUM');
+
+        foreach ($data as $row) {
+            if (is_array($row) && array_key_exists($remove, $row)) {
+                unset($row[$remove]);
+            }
+            $results[] = $row;
+        }
+        return $results;
     }
 }

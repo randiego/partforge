@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Breadcrumbs.php 16971 2009-07-22 18:05:45Z mikaelkael $
+ * @version    $Id$
  */
 
 /**
@@ -31,7 +31,7 @@ require_once 'Zend/View/Helper/Navigation/HelperAbstract.php';
  * @category   Zend
  * @package    Zend_View
  * @subpackage Helper
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_View_Helper_Navigation_Breadcrumbs
@@ -71,10 +71,10 @@ class Zend_View_Helper_Navigation_Breadcrumbs
      *
      * @param  Zend_Navigation_Container $container     [optional] container to
      *                                                  operate on
-     * @return Zend_View_Helper_Navigation_Breadcrumbs  fluent interface,
+     * @return $this
      *                                                  returns self
      */
-    public function breadcrumbs(Zend_Navigation_Container $container = null)
+    public function breadcrumbs(?Zend_Navigation_Container $container = null)
     {
         if (null !== $container) {
             $this->setContainer($container);
@@ -89,7 +89,7 @@ class Zend_View_Helper_Navigation_Breadcrumbs
      * Sets breadcrumb separator
      *
      * @param  string $separator                        separator string
-     * @return Zend_View_Helper_Navigation_Breadcrumbs  fluent interface,
+     * @return $this
      *                                                  returns self
      */
     public function setSeparator($separator)
@@ -116,7 +116,7 @@ class Zend_View_Helper_Navigation_Breadcrumbs
      *
      * @param  bool $linkLast                           whether last page should
      *                                                  be hyperlinked
-     * @return Zend_View_Helper_Navigation_Breadcrumbs  fluent interface,
+     * @return $this
      *                                                  returns self
      */
     public function setLinkLast($linkLast)
@@ -146,7 +146,7 @@ class Zend_View_Helper_Navigation_Breadcrumbs
      *                                                  to use, and the module
      *                                                  where the script can be
      *                                                  found.
-     * @return Zend_View_Helper_Navigation_Breadcrumbs  fluent interface,
+     * @return $this
      *                                                  returns self
      */
     public function setPartial($partial)
@@ -180,7 +180,7 @@ class Zend_View_Helper_Navigation_Breadcrumbs
      *                                               registered in the helper.
      * @return string                                helper output
      */
-    public function renderStraight(Zend_Navigation_Container $container = null)
+    public function renderStraight(?Zend_Navigation_Container $container = null)
     {
         if (null === $container) {
             $container = $this->getContainer();
@@ -247,7 +247,7 @@ class Zend_View_Helper_Navigation_Breadcrumbs
      *                                               be found.
      * @return string                                helper output
      */
-    public function renderPartial(Zend_Navigation_Container $container = null,
+    public function renderPartial(?Zend_Navigation_Container $container = null,
                                   $partial = null)
     {
         if (null === $container) {
@@ -260,12 +260,15 @@ class Zend_View_Helper_Navigation_Breadcrumbs
 
         if (empty($partial)) {
             require_once 'Zend/View/Exception.php';
-            throw new Zend_View_Exception(
-                    'Unable to render menu: No partial view script provided');
+            $e = new Zend_View_Exception(
+                'Unable to render menu: No partial view script provided'
+            );
+            $e->setView($this->view);
+            throw $e;
         }
 
         // put breadcrumb pages in model
-        $model = array('pages' => array());
+        $model = ['pages' => []];
         if ($active = $this->findActive($container)) {
             $active = $active['page'];
             $model['pages'][] = $active;
@@ -287,12 +290,16 @@ class Zend_View_Helper_Navigation_Breadcrumbs
         }
 
         if (is_array($partial)) {
-            if (count($partial) != 2) {
+            if (count($partial) !== 2) {
                 require_once 'Zend/View/Exception.php';
-                throw new Zend_View_Exception(
-                        'Unable to render menu: A view partial supplied as ' .
-                        'an array must contain two values: partial view ' .
-                        'script and module where script can be found');
+                $e = new Zend_View_Exception(
+                    'Unable to render menu: A view partial supplied as '
+                    .  'an array must contain two values: partial view '
+                    .  'script and module where script can be found'
+                );
+
+                $e->setView($this->view);
+                throw $e;
             }
 
             return $this->view->partial($partial[0], $partial[1], $model);
@@ -314,7 +321,7 @@ class Zend_View_Helper_Navigation_Breadcrumbs
      *                                               registered in the helper.
      * @return string                                helper output
      */
-    public function render(Zend_Navigation_Container $container = null)
+    public function render(?Zend_Navigation_Container $container = null)
     {
         if ($partial = $this->getPartial()) {
             return $this->renderPartial($container, $partial);

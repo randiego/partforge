@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Tool
  * @subpackage Framework
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Basic.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /**
@@ -26,19 +26,25 @@
 require_once 'Zend/Tool/Framework/Metadata/Interface.php';
 
 /**
+ * @see Zend_Tool_Framework_Metadata_Attributable
+ */
+require_once 'Zend/Tool/Framework/Metadata/Attributable.php';
+
+/**
  * @category   Zend
  * @package    Zend_Tool
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
-class Zend_Tool_Framework_Metadata_Basic implements Zend_Tool_Framework_Metadata_Interface
+class Zend_Tool_Framework_Metadata_Basic
+    implements Zend_Tool_Framework_Metadata_Interface, Zend_Tool_Framework_Metadata_Attributable
 {
 
     /**#@+
      * Search constants
      */
-    const ATTRIBUTES_ALL        = 'attributesAll';
-    const ATTRIBUTES_NO_PARENT  = 'attributesParent';
+    public const ATTRIBUTES_ALL        = 'attributesAll';
+    public const ATTRIBUTES_NO_PARENT  = 'attributesParent';
     /**#@-*/
 
     /**#@+
@@ -59,7 +65,7 @@ class Zend_Tool_Framework_Metadata_Basic implements Zend_Tool_Framework_Metadata
      *
      * @param array $options
      */
-    public function __construct(Array $options = array())
+    public function __construct(Array $options = [])
     {
         if ($options) {
             $this->setOptions($options);
@@ -110,7 +116,7 @@ class Zend_Tool_Framework_Metadata_Basic implements Zend_Tool_Framework_Metadata
     /**
      * getName()
      *
-     * @return string
+     * @return string|null
      */
     public function getName()
     {
@@ -142,7 +148,7 @@ class Zend_Tool_Framework_Metadata_Basic implements Zend_Tool_Framework_Metadata
     /**
      * setValue()
      *
-     * @param unknown_type $Value
+     * @param string $Value
      * @return Zend_Tool_Framework_Metadata_Basic
      */
     public function setValue($value)
@@ -184,7 +190,7 @@ class Zend_Tool_Framework_Metadata_Basic implements Zend_Tool_Framework_Metadata
     {
         $thisReflection = new ReflectionObject($this);
 
-        $metadataPairValues = array();
+        $metadataPairValues = [];
 
         foreach (get_object_vars($this) as $varName => $varValue) {
             if ($type == self::ATTRIBUTES_NO_PARENT && ($thisReflection->getProperty($varName)->getDeclaringClass()->getName() == 'Zend_Tool_Framework_Metadata_Basic')) {
@@ -197,7 +203,7 @@ class Zend_Tool_Framework_Metadata_Basic implements Zend_Tool_Framework_Metadata
                     $varValue = '(object)';
                 }
 
-                if (is_null($varValue)) {
+                if ($varValue === null) {
                     $varValue = '(null)';
                 }
 

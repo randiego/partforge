@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_CodeGenerator
  * @subpackage PHP
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: DefaultValue.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 /**
@@ -28,7 +28,7 @@ require_once 'Zend/CodeGenerator/Php/Abstract.php';
 /**
  * @category   Zend
  * @package    Zend_CodeGenerator
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_CodeGenerator_Php_Property_DefaultValue extends Zend_CodeGenerator_Php_Abstract
@@ -36,25 +36,25 @@ class Zend_CodeGenerator_Php_Property_DefaultValue extends Zend_CodeGenerator_Ph
     /**#@+
      * Constant values
      */
-    const TYPE_AUTO     = 'auto';
-    const TYPE_BOOLEAN  = 'boolean';
-    const TYPE_BOOL     = 'bool';
-    const TYPE_NUMBER   = 'number';
-    const TYPE_INTEGER  = 'integer';
-    const TYPE_INT      = 'int';
-    const TYPE_FLOAT    = 'float';
-    const TYPE_DOUBLE   = 'double';
-    const TYPE_STRING   = 'string';
-    const TYPE_ARRAY    = 'array';
-    const TYPE_CONSTANT = 'constant';
-    const TYPE_NULL     = 'null';
-    const TYPE_OTHER    = 'other';
+    public const TYPE_AUTO     = 'auto';
+    public const TYPE_BOOLEAN  = 'boolean';
+    public const TYPE_BOOL     = 'bool';
+    public const TYPE_NUMBER   = 'number';
+    public const TYPE_INTEGER  = 'integer';
+    public const TYPE_INT      = 'int';
+    public const TYPE_FLOAT    = 'float';
+    public const TYPE_DOUBLE   = 'double';
+    public const TYPE_STRING   = 'string';
+    public const TYPE_ARRAY    = 'array';
+    public const TYPE_CONSTANT = 'constant';
+    public const TYPE_NULL     = 'null';
+    public const TYPE_OTHER    = 'other';
     /**#@-*/
 
     /**
      * @var array of reflected constants
      */
-    protected static $_constants = array();
+    protected static $_constants = [];
 
     /**
      * @var mixed
@@ -78,7 +78,7 @@ class Zend_CodeGenerator_Php_Property_DefaultValue extends Zend_CodeGenerator_Ph
      */
     protected function _init()
     {
-        if(count(self::$_constants) == 0) {
+        if(count(self::$_constants) === 0) {
             $reflect = new ReflectionClass(get_class($this));
             self::$_constants = $reflect->getConstants();
             unset($reflect);
@@ -94,10 +94,12 @@ class Zend_CodeGenerator_Php_Property_DefaultValue extends Zend_CodeGenerator_Ph
     {
         if ($this->_type == self::TYPE_AUTO) {
             $type = $this->_getAutoDeterminedType($this->_value);
+        } else {
+            $type = $this->_type;
         }
 
         // valid types for constants
-        $scalarTypes = array(
+        $scalarTypes = [
             self::TYPE_BOOLEAN,
             self::TYPE_BOOL,
             self::TYPE_NUMBER,
@@ -108,7 +110,7 @@ class Zend_CodeGenerator_Php_Property_DefaultValue extends Zend_CodeGenerator_Ph
             self::TYPE_STRING,
             self::TYPE_CONSTANT,
             self::TYPE_NULL
-            );
+            ];
 
         return in_array($type, $scalarTypes);
     }
@@ -250,7 +252,7 @@ class Zend_CodeGenerator_Php_Property_DefaultValue extends Zend_CodeGenerator_Ph
                     );
                 foreach ($rii as $curKey => $curValue) {
                     if (!$curValue instanceof Zend_CodeGenerator_Php_Property_DefaultValue) {
-                        $curValue = new self(array('value' => $curValue));
+                        $curValue = new self(['value' => $curValue]);
                         $rii->getSubIterator()->offsetSet($curKey, $curValue);
                     }
                     $curValue->setArrayDepth($rii->getDepth());
@@ -288,7 +290,7 @@ class Zend_CodeGenerator_Php_Property_DefaultValue extends Zend_CodeGenerator_Ph
                     $curArrayMultiblock = true;
                     $output .= PHP_EOL . str_repeat($this->_indentation, $this->_arrayDepth+1);
                 }
-                $outputParts = array();
+                $outputParts = [];
                 $noKeyIndex = 0;
                 foreach ($value as $n => $v) {
                     $v->setArrayDepth($this->_arrayDepth + 1);

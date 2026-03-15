@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Search_Lucene
  * @subpackage Index
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: DocumentWriter.php 18947 2009-11-12 11:57:17Z alexander $
+ * @version    $Id$
  */
 
 /** Zend_Search_Lucene_Index_SegmentWriter */
@@ -27,7 +27,7 @@ require_once 'Zend/Search/Lucene/Index/SegmentWriter.php';
  * @category   Zend
  * @package    Zend_Search_Lucene
  * @subpackage Index
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Search_Lucene_Index_SegmentWriter_DocumentWriter extends Zend_Search_Lucene_Index_SegmentWriter
@@ -58,8 +58,8 @@ class Zend_Search_Lucene_Index_SegmentWriter_DocumentWriter extends Zend_Search_
     {
         parent::__construct($directory, $name);
 
-        $this->_termDocs       = array();
-        $this->_termDictionary = array();
+        $this->_termDocs       = [];
+        $this->_termDictionary = [];
     }
 
 
@@ -74,13 +74,12 @@ class Zend_Search_Lucene_Index_SegmentWriter_DocumentWriter extends Zend_Search_
         /** Zend_Search_Lucene_Search_Similarity */
         require_once 'Zend/Search/Lucene/Search/Similarity.php';
 
-        $storedFields = array();
-        $docNorms     = array();
+        $storedFields = [];
+        $docNorms     = [];
         $similarity   = Zend_Search_Lucene_Search_Similarity::getDefault();
 
         foreach ($document->getFieldNames() as $fieldName) {
             $field = $document->getField($fieldName);
-            $this->addField($field);
 
             if ($field->storeTermVector) {
                 /**
@@ -109,32 +108,42 @@ class Zend_Search_Lucene_Index_SegmentWriter_DocumentWriter extends Zend_Search_
                         if (!isset($this->_termDictionary[$termKey])) {
                             // New term
                             $this->_termDictionary[$termKey] = $term;
-                            $this->_termDocs[$termKey] = array();
-                            $this->_termDocs[$termKey][$this->_docCount] = array();
+                            $this->_termDocs[$termKey] = [];
+                            $this->_termDocs[$termKey][$this->_docCount] = [];
                         } else if (!isset($this->_termDocs[$termKey][$this->_docCount])) {
                             // Existing term, but new term entry
-                            $this->_termDocs[$termKey][$this->_docCount] = array();
+                            $this->_termDocs[$termKey][$this->_docCount] = [];
                         }
                         $position += $token->getPositionIncrement();
                         $this->_termDocs[$termKey][$this->_docCount][] = $position;
                     }
 
-                    $docNorms[$field->name] = chr($similarity->encodeNorm( $similarity->lengthNorm($field->name,
-                                                                                                   $tokenCounter)*
-                                                                           $document->boost*
-                                                                           $field->boost ));
+                    if ($tokenCounter == 0) {
+                        // Field contains empty value. Treat it as non-indexed and non-tokenized
+                        $field = clone($field);
+                        $field->isIndexed = $field->isTokenized = false;
+                    } else {
+                        $docNorms[$field->name] = chr($similarity->encodeNorm( $similarity->lengthNorm($field->name,
+                                                                                                       $tokenCounter)*
+                                                                               $document->boost*
+                                                                               $field->boost ));
+                    }
+                } else if (($fieldUtf8Value = $field->getUtf8Value()) == '') {
+                    // Field contains empty value. Treat it as non-indexed and non-tokenized
+                    $field = clone($field);
+                    $field->isIndexed = $field->isTokenized = false;
                 } else {
-                    $term = new Zend_Search_Lucene_Index_Term($field->getUtf8Value(), $field->name);
+                    $term = new Zend_Search_Lucene_Index_Term($fieldUtf8Value, $field->name);
                     $termKey = $term->key();
 
                     if (!isset($this->_termDictionary[$termKey])) {
                         // New term
                         $this->_termDictionary[$termKey] = $term;
-                        $this->_termDocs[$termKey] = array();
-                        $this->_termDocs[$termKey][$this->_docCount] = array();
+                        $this->_termDocs[$termKey] = [];
+                        $this->_termDocs[$termKey][$this->_docCount] = [];
                     } else if (!isset($this->_termDocs[$termKey][$this->_docCount])) {
                         // Existing term, but new term entry
-                        $this->_termDocs[$termKey][$this->_docCount] = array();
+                        $this->_termDocs[$termKey][$this->_docCount] = [];
                     }
                     $this->_termDocs[$termKey][$this->_docCount][] = 0; // position
 
@@ -147,8 +156,9 @@ class Zend_Search_Lucene_Index_SegmentWriter_DocumentWriter extends Zend_Search_
             if ($field->isStored) {
                 $storedFields[] = $field;
             }
-        }
 
+            $this->addField($field);
+        }
 
         foreach ($this->_fields as $fieldName => $field) {
             if (!$field->isIndexed) {

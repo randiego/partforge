@@ -15,11 +15,11 @@
  * @category   Zend
  * @package    Zend_Captcha
  * @subpackage Adapter
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 
-/** Zend_Captcha_Word */
+/** @see Zend_Captcha_Word */
 require_once 'Zend/Captcha/Word.php';
 
 /**
@@ -30,12 +30,35 @@ require_once 'Zend/Captcha/Word.php';
  * @category   Zend
  * @package    Zend_Captcha
  * @subpackage Adapter
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Dumb.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
 */
 class Zend_Captcha_Dumb extends Zend_Captcha_Word
 {
+    /**
+     * CAPTCHA label
+     * @type string
+     */
+    protected $_label = 'Please type this word backwards';
+
+    /**
+     * Set the label for the CAPTCHA
+     * @param string $label
+     */
+    public function setLabel($label)
+    {
+        $this->_label = $label;
+    }
+
+    /**
+     * Retrieve the label for the CAPTCHA
+     * @return string
+     */
+    public function getLabel()
+    {
+        return $this->_label;
+    }
     /**
      * Render the captcha
      *
@@ -43,9 +66,9 @@ class Zend_Captcha_Dumb extends Zend_Captcha_Word
      * @param  mixed $element
      * @return string
      */
-    public function render(Zend_View_Interface $view = null, $element = null)
+    public function render(?Zend_View_Interface $view = null, $element = null)
     {
-        return 'Please type this word backwards: <b>'
+        return $this->getLabel() . ': <b>'
              . strrev($this->getWord())
              . '</b>';
     }

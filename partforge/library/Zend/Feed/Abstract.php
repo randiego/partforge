@@ -15,9 +15,9 @@
  *
  * @category   Zend
  * @package    Zend_Feed
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Abstract.php 18951 2009-11-12 16:26:19Z alexander $
+ * @version    $Id$
  */
 
 
@@ -26,6 +26,8 @@
  */
 require_once 'Zend/Feed/Element.php';
 
+/** @see Zend_Xml_Security */
+require_once 'Zend/Xml/Security.php';
 
 /**
  * The Zend_Feed_Abstract class is an abstract class representing feeds.
@@ -37,7 +39,7 @@ require_once 'Zend/Feed/Element.php';
  *
  * @category   Zend
  * @package    Zend_Feed
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator, Countable
@@ -69,21 +71,23 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
      * @return void
      * @throws Zend_Feed_Exception If loading the feed failed.
      */
-    public function __construct($uri = null, $string = null, Zend_Feed_Builder_Interface $builder = null)
+    public function __construct($uri = null, $string = null, ?Zend_Feed_Builder_Interface $builder = null)
     {
         if ($uri !== null) {
             // Retrieve the feed via HTTP
             $client = Zend_Feed::getHttpClient();
             $client->setUri($uri);
             $response = $client->request('GET');
+
             if ($response->getStatus() !== 200) {
                 /**
                  * @see Zend_Feed_Exception
                  */
                 require_once 'Zend/Feed/Exception.php';
-                throw new Zend_Feed_Exception('Feed failed to load, got response code ' . $response->getStatus());
+                throw new Zend_Feed_Exception('Feed failed to load, got response code ' . $response->getStatus() . '; request: ' . $client->getLastRequest() . "\nresponse: " . $response->asString());
             }
-            $this->_element = $response->getBody();
+
+            $this->_element = $this->_importFeedFromString($response->getBody());
             $this->__wakeup();
         } elseif ($string !== null) {
             // Retrieve the feed from $string
@@ -109,18 +113,18 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
      */
     public function __wakeup()
     {
-        @ini_set('track_errors', 1);
         $doc = new DOMDocument;
-        $status = @$doc->loadXML($this->_element);
-        @ini_restore('track_errors');
+        $doc = @Zend_Xml_Security::scan($this->_element, $doc);
 
-        if (!$status) {
+        if (!$doc) {
+            $err = error_get_last();
+            $phpErrormsg = isset($err) ? $err['message'] : null;
             // prevent the class to generate an undefined variable notice (ZF-2590)
-            if (!isset($php_errormsg)) {
+            if (!isset($phpErrormsg)) {
                 if (function_exists('xdebug_is_enabled')) {
-                    $php_errormsg = '(error message not available, when XDebug is running)';
+                    $phpErrormsg = '(error message not available, when XDebug is running)';
                 } else {
-                    $php_errormsg = '(error message not available)';
+                    $phpErrormsg = '(error message not available)';
                 }
             }
 
@@ -128,7 +132,7 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
              * @see Zend_Feed_Exception
              */
             require_once 'Zend/Feed/Exception.php';
-            throw new Zend_Feed_Exception("DOMDocument cannot parse XML: $php_errormsg");
+            throw new Zend_Feed_Exception("DOMDocument cannot parse XML: $phpErrormsg");
         }
 
         $this->_element = $doc;
@@ -142,9 +146,9 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
      */
     public function __sleep()
     {
-        $this->_element = $this->saveXML();
+        $this->_element = $this->saveXml();
 
-        return array('_element');
+        return ['_element'];
     }
 
 
@@ -156,7 +160,7 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
      */
     protected function _buildEntryCache()
     {
-        $this->_entries = array();
+        $this->_entries = [];
         foreach ($this->_element->childNodes as $child) {
             if ($child->localName == $this->_entryElementName) {
                 $this->_entries[] = $child;
@@ -202,9 +206,7 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
 
 
     /**
-     * Required by the Iterator interface.
-     *
-     * @return mixed The current row number (starts at 0), or NULL if no rows
+     * @return int
      */
     #[\ReturnTypeWillChange]
     public function key()
@@ -214,9 +216,7 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
 
 
     /**
-     * Required by the Iterator interface.
-     *
-     * @return mixed The next row, or null if no more rows.
+     * @return void
      */
     public function next(): void
     {
@@ -258,4 +258,44 @@ abstract class Zend_Feed_Abstract extends Zend_Feed_Element implements Iterator,
      * @return void
      */
     abstract public function send();
+
+    /**
+     * Import a feed from a string
+     *
+     * Protects against XXE attack vectors.
+     *
+     * @param  string $feed
+     * @return string
+     * @throws Zend_Feed_Exception on detection of an XXE vector
+     */
+    protected function _importFeedFromString($feed)
+    {
+        if (trim($feed) == '') {
+            require_once 'Zend/Feed/Exception.php';
+            throw new Zend_Feed_Exception('Remote feed being imported'
+            . ' is an Empty string or comes from an empty HTTP response');
+        }
+        $doc = new DOMDocument;
+        $doc = Zend_Xml_Security::scan($feed, $doc);
+
+        if (!$doc) {
+            // prevent the class to generate an undefined variable notice (ZF-2590)
+            // Build error message
+            $error = libxml_get_last_error();
+            if ($error && $error->message) {
+                $errormsg = "DOMDocument cannot parse XML: {$error->message}";
+            } else {
+                $errormsg = "DOMDocument cannot parse XML";
+            }
+
+
+            /**
+             * @see Zend_Feed_Exception
+             */
+            require_once 'Zend/Feed/Exception.php';
+            throw new Zend_Feed_Exception($errormsg);
+        }
+
+        return $doc->saveXML($doc->documentElement);
+    }
 }

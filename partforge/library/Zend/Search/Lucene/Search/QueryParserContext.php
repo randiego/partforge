@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Search_Lucene
  * @subpackage Search
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: QueryParserContext.php 18954 2009-11-12 20:01:33Z alexander $
+ * @version    $Id$
  */
 
 /** Zend_Search_Lucene_Search_QueryToken */
@@ -28,7 +28,7 @@ require_once 'Zend/Search/Lucene/Search/QueryToken.php';
  * @category   Zend
  * @package    Zend_Search_Lucene
  * @subpackage Search
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Search_Lucene_Search_QueryParserContext
@@ -63,8 +63,8 @@ class Zend_Search_Lucene_Search_QueryParserContext
     /**
      * Entries grouping mode
      */
-    const GM_SIGNS   = 0;  // Signs mode: '+term1 term2 -term3 +(subquery1) -(subquery2)'
-    const GM_BOOLEAN = 1;  // Boolean operators mode: 'term1 and term2  or  (subquery1) and not (subquery2)'
+    public const GM_SIGNS   = 0;  // Signs mode: '+term1 term2 -term3 +(subquery1) -(subquery2)'
+    public const GM_BOOLEAN = 1;  // Boolean operators mode: 'term1 and term2  or  (subquery1) and not (subquery2)'
 
     /**
      * Grouping mode
@@ -79,7 +79,7 @@ class Zend_Search_Lucene_Search_QueryParserContext
      *
      * @var arrays
      */
-    private $_signs = array();
+    private $_signs = [];
 
     /**
      * Query entries
@@ -88,7 +88,7 @@ class Zend_Search_Lucene_Search_QueryParserContext
      *
      * @var array
      */
-    private $_entries = array();
+    private $_entries = [];
 
     /**
      * Query string encoding
@@ -327,7 +327,7 @@ class Zend_Search_Lucene_Search_QueryParserContext
             //                                                          $e->getMessage() . '\'.' );
             // It's query syntax error message and it should be user friendly. So FSM message is omitted
             require_once 'Zend/Search/Lucene/Search/QueryParserException.php';
-            throw new Zend_Search_Lucene_Search_QueryParserException('Boolean expression error.');
+            throw new Zend_Search_Lucene_Search_QueryParserException('Boolean expression error.', 0, $e);
         }
 
         // Remove 'only negative' conjunctions
@@ -347,10 +347,10 @@ class Zend_Search_Lucene_Search_QueryParserContext
         }
 
 
-        $subqueries = array();
+        $subqueries = [];
         foreach ($conjuctions as  $conjuction) {
             // Check, if it's a one term conjuction
-            if (count($conjuction) == 1) {
+            if (count($conjuction) === 1) {
                 $subqueries[] = $conjuction[0][0]->getQuery($this->_encoding);
             } else {
                 require_once 'Zend/Search/Lucene/Search/Query/Boolean.php';
@@ -364,12 +364,12 @@ class Zend_Search_Lucene_Search_QueryParserContext
             }
         }
 
-        if (count($subqueries) == 0) {
+        if (count($subqueries) === 0) {
             require_once 'Zend/Search/Lucene/Search/Query/Insignificant.php';
             return new Zend_Search_Lucene_Search_Query_Insignificant();
         }
 
-        if (count($subqueries) == 1) {
+        if (count($subqueries) === 1) {
             return $subqueries[0];
         }
 

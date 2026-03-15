@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_Crypt
  * @subpackage Math
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: BigInteger.php 16971 2009-07-22 18:05:45Z mikaelkael $
+ * @version    $Id$
  */
 
 /**
@@ -38,7 +38,7 @@
  *
  * @category   Zend
  * @package    Zend_Crypt
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Crypt_Math_BigInteger
@@ -61,7 +61,7 @@ class Zend_Crypt_Math_BigInteger
      */
     public function __construct($extension = null)
     {
-        if (!is_null($extension) && !in_array($extension, array('bcmath', 'gmp', 'bigint'))) {
+        if ($extension !== null && !in_array($extension, ['bcmath', 'gmp', 'bigint'])) {
             require_once('Zend/Crypt/Math/BigInteger/Exception.php');
             throw new Zend_Crypt_Math_BigInteger_Exception('Invalid extension type; please use one of bcmath, gmp or bigint');
         }
@@ -71,9 +71,10 @@ class Zend_Crypt_Math_BigInteger
     /**
      * Redirect all public method calls to the wrapped extension object.
      *
-     * @param   string $methodName
-     * @param   array $args
-     * @throws  Zend_Crypt_Math_BigInteger_Exception
+     * @param  string $methodName
+     * @param  array  $args
+     * @return mixed
+     * @throws Zend_Crypt_Math_BigInteger_Exception
      */
     public function __call($methodName, $args)
     {
@@ -81,7 +82,7 @@ class Zend_Crypt_Math_BigInteger
             require_once 'Zend/Crypt/Math/BigInteger/Exception.php';
             throw new Zend_Crypt_Math_BigInteger_Exception('invalid method call: ' . get_class($this->_math) . '::' . $methodName . '() does not exist');
         }
-        return call_user_func_array(array($this->_math, $methodName), $args);
+        return call_user_func_array([$this->_math, $methodName], $args);
     }
 
     /**
@@ -90,7 +91,7 @@ class Zend_Crypt_Math_BigInteger
      */
     protected function _loadAdapter($extension = null)
     {
-        if (is_null($extension)) {
+        if ($extension === null) {
             if (extension_loaded('gmp')) {
                 $extension = 'gmp';
             //} elseif (extension_loaded('big_int')) {
@@ -105,7 +106,7 @@ class Zend_Crypt_Math_BigInteger
         //} elseif($extension == 'bigint' && extension_loaded('big_int')) {
         //    require_once 'Zend/Crypt_Math/BigInteger/Bigint.php';
         //    $this->_math = new Zend_Crypt_Math_BigInteger_Bigint();
-        } elseif ($extension == 'bcmath') {
+        } elseif ($extension == 'bcmath' && extension_loaded('bcmath')) {
             require_once 'Zend/Crypt/Math/BigInteger/Bcmath.php';
             $this->_math = new Zend_Crypt_Math_BigInteger_Bcmath();
         } else {

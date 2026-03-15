@@ -16,9 +16,9 @@
  * @category   Zend
  * @package    Zend_Gdata
  * @subpackage Books
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Books.php 16971 2009-07-22 18:05:45Z mikaelkael $
+ * @version    $Id$
  */
 
 /**
@@ -57,25 +57,25 @@ require_once 'Zend/Gdata/Books/VolumeFeed.php';
  * @category   Zend
  * @package    Zend_Gdata
  * @subpackage Books
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Gdata_Books extends Zend_Gdata
 {
-    const VOLUME_FEED_URI = 'http://books.google.com/books/feeds/volumes';
-    const MY_LIBRARY_FEED_URI = 'http://books.google.com/books/feeds/users/me/collections/library/volumes';
-    const MY_ANNOTATION_FEED_URI = 'http://books.google.com/books/feeds/users/me/volumes';
-    const AUTH_SERVICE_NAME = 'print';
+    public const VOLUME_FEED_URI = 'https://books.google.com/books/feeds/volumes';
+    public const MY_LIBRARY_FEED_URI = 'https://books.google.com/books/feeds/users/me/collections/library/volumes';
+    public const MY_ANNOTATION_FEED_URI = 'https://books.google.com/books/feeds/users/me/volumes';
+    public const AUTH_SERVICE_NAME = 'print';
 
     /**
      * Namespaces used for Zend_Gdata_Books
      *
      * @var array
      */
-    public static $namespaces = array(
-        array('gbs', 'http://schemas.google.com/books/2008', 1, 0),
-        array('dc', 'http://purl.org/dc/terms', 1, 0)
-    );
+    public static $namespaces = [
+        ['gbs', 'http://schemas.google.com/books/2008', 1, 0],
+        ['dc', 'http://purl.org/dc/terms', 1, 0]
+    ];
 
     /**
      * Create Zend_Gdata_Books object
@@ -98,7 +98,7 @@ class Zend_Gdata_Books extends Zend_Gdata
      * @param Zend_Gdata_Query|string|null $location (optional) The URL to
      *        query or a Zend_Gdata_Query object from which a URL can be
      *        determined.
-     * @return Zend_Gdata_Books_VolumeFeed The feed of volumes found at the
+     * @return string|Zend_Gdata_App_Feed The feed of volumes found at the
      *         specified URL.
      */
     public function getVolumeFeed($location = null)
@@ -120,7 +120,7 @@ class Zend_Gdata_Books extends Zend_Gdata
      * @param Zend_Gdata_Query|string|null $location (optional) The URL to
      *        query or a Zend_Gdata_Query object from which a URL can be
      *        determined.
-     * @return Zend_Gdata_Books_VolumeEntry The feed of volumes found at the
+     * @return string|Zend_Gdata_App_Entry The feed of volumes found at the
      *         specified URL.
      */
     public function getVolumeEntry($volumeId = null, $location = null)
@@ -140,7 +140,7 @@ class Zend_Gdata_Books extends Zend_Gdata
      *
      * @param Zend_Gdata_Query|string|null $location (optional) The URL to
      *        query.
-     * @return Zend_Gdata_Books_VolumeFeed The feed of volumes found at the
+     * @return string|Zend_Gdata_App_Feed The feed of volumes found at the
      *         specified URL.
      */
     public function getUserLibraryFeed($location = null)
@@ -158,7 +158,7 @@ class Zend_Gdata_Books extends Zend_Gdata
      *
      * @param Zend_Gdata_Query|string|null $location (optional) The URL to
      *        query.
-     * @return Zend_Gdata_Books_VolumeFeed The feed of volumes found at the
+     * @return string|Zend_Gdata_App_Feed The feed of volumes found at the
      *         specified URL.
      */
     public function getUserAnnotationFeed($location = null)
@@ -177,7 +177,7 @@ class Zend_Gdata_Books extends Zend_Gdata
      * @param Zend_Gdata_Books_VolumeEntry $entry
      * @param Zend_Gdata_Query|string|null $location (optional) The URL to
      *        query
-     * @return Zend_Gdata_Books_VolumeEntry The inserted volume entry.
+     * @return Zend_Gdata_App_Entry The inserted volume entry.
      */
     public function insertVolume($entry, $location = null)
     {

@@ -15,8 +15,9 @@
  * @category   Zend
  * @package    Zend_Db
  * @subpackage Adapter
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
+ * @version    $Id$
  */
 
 /**
@@ -33,7 +34,7 @@ require_once 'Zend/Db/Statement/Sqlsrv.php';
  * @category   Zend
  * @package    Zend_Db
  * @subpackage Adapter
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
@@ -49,11 +50,11 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
      *
      * @var array
      */
-    protected $_config = array(
+    protected $_config = [
         'dbname'       => null,
         'username'     => null,
         'password'     => null,
-    );
+    ];
 
     /**
      * Last insert id from INSERT query
@@ -80,7 +81,7 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
      *
      * @var array Associative array of datatypes to values 0, 1, or 2.
      */
-    protected $_numericDataTypes = array(
+    protected $_numericDataTypes = [
         Zend_Db::INT_TYPE    => Zend_Db::INT_TYPE,
         Zend_Db::BIGINT_TYPE => Zend_Db::BIGINT_TYPE,
         Zend_Db::FLOAT_TYPE  => Zend_Db::FLOAT_TYPE,
@@ -94,7 +95,7 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
         'NUMERIC'            => Zend_Db::FLOAT_TYPE,
         'REAL'               => Zend_Db::FLOAT_TYPE,
         'SMALLMONEY'         => Zend_Db::FLOAT_TYPE,
-    );
+    ];
 
     /**
      * Default class name for a DB statement.
@@ -126,20 +127,20 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
 
         $serverName = $this->_config['host'];
         if (isset($this->_config['port'])) {
-            $port        = (integer) $this->_config['port'];
+            $port        = (int) $this->_config['port'];
             $serverName .= ', ' . $port;
         }
 
-        $connectionInfo = array(
+        $connectionInfo = [
             'Database' => $this->_config['dbname'],
-        );
+        ];
 
         if (isset($this->_config['username']) && isset($this->_config['password']))
         {
-            $connectionInfo += array(
+            $connectionInfo += [
                 'UID'      => $this->_config['username'],
                 'PWD'      => $this->_config['password'],
-            );
+            ];
         }
         // else - windows authentication
 
@@ -147,11 +148,11 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
             foreach ($this->_config['driver_options'] as $option => $value) {
                 // A value may be a constant.
                 if (is_string($value)) {
-                    $constantValue = @constant(strtoupper($value));
-                    if ($constantValue === null) {
-                        $connectionInfo[$option] = $value;
+                    $constantName = strtoupper($value);
+                    if (defined($constantName)) {
+                        $connectionInfo[$option] = constant($constantName);
                     } else {
-                        $connectionInfo[$option] = $constantValue;
+                        $connectionInfo[$option] = $value;
                     }
                 }
             }
@@ -313,6 +314,7 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
             return sprintf('%F', $value);
         }
 
+        $value = addcslashes($value, "\000\032");
         return "'" . str_replace("'", "''", $value) . "'";
     }
 
@@ -356,8 +358,8 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
     public function insert($table, array $bind)
     {
         // extract and quote col names from the array keys
-        $cols = array();
-        $vals = array();
+        $cols = [];
+        $vals = [];
         foreach ($bind as $col => $val) {
             $cols[] = $this->quoteIdentifier($col, true);
             if ($val instanceof Zend_Db_Expr) {
@@ -437,6 +439,13 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
         $stmt   = $this->query($sql);
         $result = $stmt->fetchAll(Zend_Db::FETCH_NUM);
 
+        // ZF-7698
+        $stmt->closeCursor();
+
+        if (count($result) === 0) {
+            return [];
+        }
+
         $owner           = 1;
         $table_name      = 2;
         $column_name     = 3;
@@ -457,7 +466,7 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
         $stmt       = $this->query($sql);
 
         $primaryKeysResult = $stmt->fetchAll(Zend_Db::FETCH_NUM);
-        $primaryKeyColumn  = array();
+        $primaryKeyColumn  = [];
 
         // Per http://msdn.microsoft.com/en-us/library/ms189813.aspx,
         // results from sp_keys stored procedure are:
@@ -469,7 +478,7 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
             $primaryKeyColumn[$pkeysRow[$pkey_column_name]] = $pkeysRow[$pkey_key_seq];
         }
 
-        $desc = array();
+        $desc = [];
         $p    = 1;
         foreach ($result as $key => $row) {
             $identity = false;
@@ -488,7 +497,7 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
                 $primaryPosition = null;
             }
 
-            $desc[$this->foldCase($row[$column_name])] = array(
+            $desc[$this->foldCase($row[$column_name])] = [
                 'SCHEMA_NAME'      => null, // @todo
                 'TABLE_NAME'       => $this->foldCase($row[$table_name]),
                 'COLUMN_NAME'      => $this->foldCase($row[$column_name]),
@@ -503,7 +512,7 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
                 'PRIMARY'          => $isPrimary,
                 'PRIMARY_POSITION' => $primaryPosition,
                 'IDENTITY'         => $identity,
-            );
+            ];
         }
 
         return $desc;
@@ -591,36 +600,46 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
      */
      public function limit($sql, $count, $offset = 0)
      {
-        $count = intval($count);
+        $count = (int)$count;
         if ($count <= 0) {
             require_once 'Zend/Db/Adapter/Exception.php';
             throw new Zend_Db_Adapter_Exception("LIMIT argument count=$count is not valid");
         }
 
-        $offset = intval($offset);
+        $offset = (int)$offset;
+
         if ($offset < 0) {
             /** @see Zend_Db_Adapter_Exception */
             require_once 'Zend/Db/Adapter/Exception.php';
             throw new Zend_Db_Adapter_Exception("LIMIT argument offset=$offset is not valid");
         }
 
-        $orderby = stristr($sql, 'ORDER BY');
-        if ($orderby !== false) {
-            $sort  = (stripos($orderby, ' desc') !== false) ? 'desc' : 'asc';
-            $order = str_ireplace('ORDER BY', '', $orderby);
-            $order = trim(preg_replace('/\bASC\b|\bDESC\b/i', '', $order));
-        }
+        if ($offset === 0) {
+            $sql = preg_replace('/^SELECT(\s+DISTINCT)?\s/i', 'SELECT$1 TOP ' . $count . ' ', $sql);
+        } else {
+            $orderby = stristr($sql, 'ORDER BY');
 
-        $sql = preg_replace('/^SELECT\s/i', 'SELECT TOP ' . ($count+$offset) . ' ', $sql);
+            if (!$orderby) {
+                $over = 'ORDER BY (SELECT 0)';
+            } else {
+                $over = preg_replace('/\"[^,]*\".\"([^,]*)\"/i', '"inner_tbl"."$1"', $orderby);
+            }
 
-        $sql = 'SELECT * FROM (SELECT TOP ' . $count . ' * FROM (' . $sql . ') AS inner_tbl';
-        if ($orderby !== false) {
-            $sql .= ' ORDER BY ' . $order . ' ';
-            $sql .= (stripos($sort, 'asc') !== false) ? 'DESC' : 'ASC';
-        }
-        $sql .= ') AS outer_tbl';
-        if ($orderby !== false) {
-            $sql .= ' ORDER BY ' . $order . ' ' . $sort;
+            // Remove ORDER BY clause from $sql
+            $sql = preg_replace('/\s+ORDER BY(.*)/', '', $sql);
+
+            // Add ORDER BY clause as an argument for ROW_NUMBER()
+            $sql = "SELECT ROW_NUMBER() OVER ($over) AS \"ZEND_DB_ROWNUM\", * FROM ($sql) AS inner_tbl";
+
+            $start = $offset + 1;
+
+            if ($count == PHP_INT_MAX) {
+                $sql = "WITH outer_tbl AS ($sql) SELECT * FROM outer_tbl WHERE \"ZEND_DB_ROWNUM\" >= $start";
+            }
+            else {
+                $end = $offset + $count;
+                $sql = "WITH outer_tbl AS ($sql) SELECT * FROM outer_tbl WHERE \"ZEND_DB_ROWNUM\" BETWEEN $start AND $end";
+            }
         }
 
         return $sql;
@@ -650,10 +669,10 @@ class Zend_Db_Adapter_Sqlsrv extends Zend_Db_Adapter_Abstract
     public function getServerVersion()
     {
         $this->_connect();
-        $version = sqlsrv_client_info($this->_connection);
+        $serverInfo = sqlsrv_server_info($this->_connection);
 
-        if ($version !== false) {
-            return $version['DriverVer'];
+        if ($serverInfo !== false) {
+            return $serverInfo['SQLServerVersion'];
         }
 
         return null;

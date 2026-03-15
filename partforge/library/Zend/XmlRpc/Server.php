@@ -15,9 +15,9 @@
  * @category   Zend
  * @package    Zend_XmlRpc
  * @subpackage Server
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
- * @version    $Id: Server.php 17786 2009-08-23 22:26:33Z lars $
+ * @version    $Id$
  */
 
 /**
@@ -111,11 +111,16 @@ require_once 'Zend/Server/Reflection/Method.php';
  * @category   Zend
  * @package    Zend_XmlRpc
  * @subpackage Server
- * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright  Copyright (c) 2005-2015 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */
 class Zend_XmlRpc_Server extends Zend_Server_Abstract
 {
+    /**
+     * @var mixed|\Zend_XmlRpc_Server_System
+     */
+    protected $_system;
+
     /**
      * Character encoding
      * @var string
@@ -144,31 +149,37 @@ class Zend_XmlRpc_Server extends Zend_Server_Abstract
      * PHP types => XML-RPC types
      * @var array
      */
-    protected $_typeMap = array(
-        'i4'               => 'i4',
-        'int'              => 'int',
-        'integer'          => 'int',
-        'double'           => 'double',
-        'float'            => 'double',
-        'real'             => 'double',
-        'boolean'          => 'boolean',
-        'bool'             => 'boolean',
-        'true'             => 'boolean',
-        'false'            => 'boolean',
-        'string'           => 'string',
-        'str'              => 'string',
-        'base64'           => 'base64',
-        'dateTime.iso8601' => 'dateTime.iso8601',
-        'date'             => 'dateTime.iso8601',
-        'time'             => 'dateTime.iso8601',
-        'time'             => 'dateTime.iso8601',
-        'array'            => 'array',
-        'struct'           => 'struct',
-        'null'             => 'nil',
-        'nil'              => 'nil',
-        'void'             => 'void',
-        'mixed'            => 'struct'
-    );
+    protected $_typeMap = [
+        'i4'                         => 'i4',
+        'int'                        => 'int',
+        'integer'                    => 'int',
+        'Zend_Crypt_Math_BigInteger' => 'i8',
+        'i8'                         => 'i8',
+        'ex:i8'                      => 'i8',
+        'double'                     => 'double',
+        'float'                      => 'double',
+        'real'                       => 'double',
+        'boolean'                    => 'boolean',
+        'bool'                       => 'boolean',
+        'true'                       => 'boolean',
+        'false'                      => 'boolean',
+        'string'                     => 'string',
+        'str'                        => 'string',
+        'base64'                     => 'base64',
+        'dateTime.iso8601'           => 'dateTime.iso8601',
+        'date'                       => 'dateTime.iso8601',
+        'time'                       => 'dateTime.iso8601',
+        'time'                       => 'dateTime.iso8601',
+        'Zend_Date'                  => 'dateTime.iso8601',
+        'DateTime'                   => 'dateTime.iso8601',
+        'array'                      => 'array',
+        'struct'                     => 'struct',
+        'null'                       => 'nil',
+        'nil'                        => 'nil',
+        'ex:nil'                     => 'nil',
+        'void'                       => 'void',
+        'mixed'                      => 'struct',
+    ];
 
     /**
      * Send arguments to all methods or just constructor?
@@ -205,7 +216,7 @@ class Zend_XmlRpc_Server extends Zend_Server_Abstract
             require_once 'Zend/XmlRpc/Server/Exception.php';
             throw new Zend_XmlRpc_Server_Exception('Unknown instance method called on server: ' . $method);
         }
-        return call_user_func_array(array($system, $method), $params);
+        return call_user_func_array([$system, $method], $params);
     }
 
     /**
@@ -272,13 +283,13 @@ class Zend_XmlRpc_Server extends Zend_Server_Abstract
             throw new Zend_XmlRpc_Server_Exception('Invalid method class', 610);
         }
 
-        $argv = null;
+        $args = null;
         if (2 < func_num_args()) {
-            $argv = func_get_args();
-            $argv = array_slice($argv, 2);
+            $args = func_get_args();
+            $args = array_slice($args, 2);
         }
 
-        $dispatchable = Zend_Server_Reflection::reflectClass($class, $argv, $namespace);
+        $dispatchable = Zend_Server_Reflection::reflectClass($class, $args, $namespace);
         foreach ($dispatchable->getMethods() as $reflection) {
             $this->_buildSignature($reflection, $class);
         }
@@ -386,6 +397,7 @@ class Zend_XmlRpc_Server extends Zend_Server_Abstract
     public function setEncoding($encoding)
     {
         $this->_encoding = $encoding;
+        Zend_XmlRpc_Value::setEncoding($encoding);
         return $this;
     }
 
@@ -452,8 +464,8 @@ class Zend_XmlRpc_Server extends Zend_Server_Abstract
      */
     public function setResponseClass($class)
     {
-        if (!class_exists($class) or
-            ($c = new ReflectionClass($class) and !$c->isSubclassOf('Zend_XmlRpc_Response'))) {
+        if (!class_exists($class) ||
+            (($c = new ReflectionClass($class)) && !$c->isSubclassOf('Zend_XmlRpc_Response'))) {
 
             require_once 'Zend/XmlRpc/Server/Exception.php';
             throw new Zend_XmlRpc_Server_Exception('Invalid response class');
@@ -475,7 +487,7 @@ class Zend_XmlRpc_Server extends Zend_Server_Abstract
     /**
      * Retrieve dispatch table
      *
-     * @return array
+     * @return Zend_Server_Definition
      */
     public function getDispatchTable()
     {
@@ -559,7 +571,7 @@ class Zend_XmlRpc_Server extends Zend_Server_Abstract
         $info     = $this->_table->getMethod($method);
         $params   = $request->getParams();
         $argv     = $info->getInvokeArguments();
-        if (0 < count($argv) and $this->sendArgumentsToAllMethods()) {
+        if (0 < count($argv) && $this->sendArgumentsToAllMethods()) {
             $params = array_merge($params, $argv);
         }
 
