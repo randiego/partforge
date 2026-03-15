@@ -63,9 +63,11 @@ function time_to_mysqldate($tm)
     return date('Y-m-d', $tm);
 }
 
-function str_contains($haystack, $needle, $offset = 0)
-{
-    return (strpos($haystack, $needle, $offset) !==false);
+if (!function_exists('str_contains')) {
+    function str_contains($haystack, $needle, $offset = 0)
+    {
+        return (strpos($haystack, $needle, $offset) !==false);
+    }
 }
 
 function extract_column($records, $fieldname)

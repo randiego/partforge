@@ -539,7 +539,7 @@ class DbSchema {   // singleton
         } else if ($dbtype['Type'] == 'date') {
             $quoted_lit = !$is_null_str ? "'".time_to_mysqldate(strtotime($slashes_var))."'" : "DEFAULT";
         } else if (($type_parse[0]=='int')) { // some numeric format, make sure it is set to zero
-            $quoted_lit = !$is_null_str ? "'".round($slashes_var)."'" : ($this->isNotNullType($tablename, $field) ? "'0'" : "NULL");
+            $quoted_lit = !$is_null_str ? (is_numeric($slashes_var) ? "'".round((float)$slashes_var)."'" : "'0'") : ($this->isNotNullType($tablename, $field) ? "'0'" : "NULL");
         } else if (in_array($type_parse[0], array('float','calculated'))) { // some numeric format, make sure it is set to zero
             $quoted_lit = !$is_null_str ? "'".$slashes_var."'" : ($this->isNotNullType($tablename, $field) ? "'0'" : "NULL");
         } else if ($field=='passwd') {
