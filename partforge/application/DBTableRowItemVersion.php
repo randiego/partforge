@@ -1091,9 +1091,11 @@ class DBTableRowItemVersion extends DBTableRow {
 
     /**
      * This will return zero, one or more itemversion records matching the serial number that
-     * correspond to the most current itemversion of an object on the given date.
-     * @param unknown_type $serial_number
-     * @param unknown_type $effective_date
+     * correspond to the most current itemversion of an object on the given date. The typeversion_id
+     * is specified but only used to filter on the corresponding typeobject_id.
+     * @param string $serial_number
+     * @param int $typeversion_id
+     * @param string $effective_date
      */
     static public function getRecordsBySerialNumbers($serial_number, $typeversion_id, $effective_date = null)
     {
@@ -1108,8 +1110,9 @@ class DBTableRowItemVersion extends DBTableRow {
 				FROM itemversion aa_iv
 				WHERE {$date_where}) as aa_date_comp
 			GROUP BY aa_date_comp.aa_itemobject_id) as bb_date_comp ON bb_date_comp.bb_itemobject_id = cc_iv.itemobject_id
+        LEFT JOIN typeversion cc_tv ON cc_tv.typeversion_id=cc_iv.typeversion_id
 		WHERE (bb_date_comp.bb_max_effective_date=cc_iv.effective_date)
-		 and (cc_iv.item_serial_number='".addslashes($serial_number)."') and (cc_iv.typeversion_id='{$typeversion_id}')");
+		 and (cc_iv.item_serial_number='".addslashes($serial_number)."') and (cc_tv.typeobject_id=(SELECT typeobject_id FROM typeversion WHERE typeversion_id='{$typeversion_id}' LIMIT 1))");
         return $records;
     }
 
