@@ -6,7 +6,7 @@ See the [PartForge Guide](https://github.com/randiego/partforge/wiki) for an ove
 
 ## Requirements
 
-Apache 2+, php 7.2 thru 8.2 (extensions: curl, gd2, mysqli, mbstrings, json; helpful settings: memory_limit=256M+, post_max_size=50M+), MySQL 5.7+ or MariaDB 10.2.3+.
+Apache 2+, php 7.2 thru 8.5 (extensions: curl, gd2, mysqli, mbstrings, json; helpful settings: memory_limit=256M+, post_max_size=50M+), MySQL 5.7+ or MariaDB 10.2.3+.
 
 ## LICENSE
 
