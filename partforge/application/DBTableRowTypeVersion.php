@@ -1540,8 +1540,8 @@ class DBTableRowTypeVersion extends DBTableRow {
         if ($this->typecategory_id) {
             if ($editable) {
                 #protect again nulls in the part number and description by treating them as arrays and imploding them with | when we save, and exploding them when we load.  This also makes it easier to add aliases in the future if we want to.
-                $pns = isset($this->type_part_number) ? array() : explode('|', (string) $this->type_part_number);
-                $pds = isset($this->type_description) ? array() : explode('|', (string) $this->type_description);
+                $pns = isset($this->type_part_number) ? explode('|', (string) $this->type_part_number) : array();
+                $pds = isset($this->type_description) ? explode('|', (string) $this->type_description) : array();
                 foreach ($pns as $idx => $pn) {
                     $btns = array();
                     $last_entry = ($idx == count($pns)-1);
