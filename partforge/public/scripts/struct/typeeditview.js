@@ -6,6 +6,7 @@ var typeFormLayoutArray = [];
 var dictEditBuff = {};
 var dictEditBuffsubsubfields = [];
 var compEditBuff = {};
+var dictHashtableOrderPrefix = "__qd_hash_order__";
 
 function htmlEscape(str) {
     return String(str)
@@ -139,6 +140,286 @@ function renderAll() {
 
 function blankIfUndefined(val) {
 	return (typeof val == 'undefined') ? '' : val;
+}
+
+// Builds the internal metadata key used to store hashtable key order per parameter.
+function getHashtableOrderMetaKey(propname) {
+	return dictHashtableOrderPrefix + propname;
+}
+
+// Removes internal order-metadata fields before exporting dictionary data.
+function stripInternalDictMetaKeys(obj) {
+	for (var key in obj) {
+		if (obj.hasOwnProperty(key) && (key.indexOf(dictHashtableOrderPrefix) === 0)) {
+			delete obj[key];
+		}
+	}
+}
+
+// Parses textarea hashtable lines ("key=value") into object value + explicit key order.
+function parseHashtableFromText(rawpropvalue) {
+	var propvalue = {};
+	var orderedKeys = [];
+	var keyIndex = {};
+	var rowpropvaluesplit = rawpropvalue.split("\n");
+	for (var i = 0; i < rowpropvaluesplit.length; i++) {
+		var row = rowpropvaluesplit[i];
+		var rowParts = splitOnce(row, '=');
+		var rowkey = $.trim(rowParts[0]);
+		if (rowkey !== '') {
+			var rowval = rowkey;
+			if ((rowParts.length > 1) && ($.trim(rowParts[1]) !== '')) {
+				rowval = $.trim(rowParts[1]);
+			}
+			propvalue[rowkey] = rowval;
+			// Preserve user-entered key order; if duplicated, last mention wins and is moved to the end.
+			if (typeof keyIndex[rowkey] !== "undefined") {
+				orderedKeys.splice(keyIndex[rowkey], 1);
+				for (var rk = 0; rk < orderedKeys.length; rk++) {
+					keyIndex[orderedKeys[rk]] = rk;
+				}
+			}
+			orderedKeys.push(rowkey);
+			keyIndex[rowkey] = orderedKeys.length - 1;
+		}
+	}
+	return {"propvalue": propvalue, "orderedKeys": orderedKeys};
+}
+
+// Renders a hashtable object to ini-style lines using stored key order metadata first.
+function hashtableToIniLines(entryObj, paramKey, propvalue) {
+	var iniStyleProps = [];
+	var usedKeys = {};
+	var orderMetaKey = getHashtableOrderMetaKey(paramKey);
+	var orderedKeys = [];
+	if ((typeof entryObj[orderMetaKey] == "object") && (entryObj[orderMetaKey] != null)) {
+		orderedKeys = entryObj[orderMetaKey];
+	}
+
+	if ((typeof propvalue != "object") || (propvalue == null)) {
+		return iniStyleProps;
+	}
+
+	for (var i = 0; i < orderedKeys.length; i++) {
+		var orderedKey = orderedKeys[i];
+		if (propvalue.hasOwnProperty(orderedKey)) {
+			iniStyleProps.push(orderedKey + '=' + propvalue[orderedKey]);
+			usedKeys[orderedKey] = true;
+		}
+	}
+	for (var prop in propvalue) {
+		if (propvalue.hasOwnProperty(prop) && !usedKeys[prop]) {
+			iniStyleProps.push(prop + '=' + propvalue[prop]);
+		}
+	}
+	return iniStyleProps;
+}
+
+// Applies hashtable order metadata to one dictionary entry, using optional raw JSON path-order hints.
+function applyHashtableOrderMetaFromEntryAndOrderPaths(entryObj, entryKey, objectKeyOrderPaths) {
+	if ((typeof entryObj != "object") || (entryObj == null)) {
+		return;
+	}
+	var entryType = entryObj['type'];
+	if ((typeof entryType == "undefined") || (typeof typesListing == "undefined") || (typeof typesListing[entryType] == "undefined")) {
+		return;
+	}
+	var params = typesListing[entryType]['parameters'];
+	if (typeof params != "object") {
+		return;
+	}
+	for (var paramKey in params) {
+		if (params.hasOwnProperty(paramKey)) {
+			var paramDef = params[paramKey];
+			if ((typeof paramDef == "object") && (paramDef != null) && (paramDef['type'] == 'hashtable')) {
+				var paramValue = entryObj[paramKey];
+				if ((typeof paramValue == "object") && (paramValue != null) && !$.isArray(paramValue)) {
+					var orderedKeys = [];
+					var orderPathKey = JSON.stringify([entryKey, paramKey]);
+					if ((typeof objectKeyOrderPaths[orderPathKey] == "object") && (objectKeyOrderPaths[orderPathKey] != null)) {
+						orderedKeys = objectKeyOrderPaths[orderPathKey].slice(0);
+					} else {
+						for (var propKey in paramValue) {
+							if (paramValue.hasOwnProperty(propKey)) {
+								orderedKeys.push(propKey);
+							}
+						}
+					}
+					entryObj[getHashtableOrderMetaKey(paramKey)] = orderedKeys;
+				}
+			}
+		}
+	}
+}
+
+// Extracts object key order by JSON path from raw JSON text for deterministic ordering.
+function jsonKeyOrderPaths(jsonText, sourceLabel) {
+	var out = {};
+	var label = (typeof sourceLabel == "string") ? sourceLabel : "unknown source";
+	if (typeof jsonText != "string") {
+		return out;
+	}
+	var text = $.trim(jsonText);
+	if (text === "") {
+		return out;
+	}
+
+	var idx = 0;
+	var len = text.length;
+
+	function skipWhitespace() {
+		while ((idx < len) && /\s/.test(text.charAt(idx))) {
+			idx++;
+		}
+	}
+
+	function parseStringLiteral() {
+		if (text.charAt(idx) !== '"') {
+			throw new Error('expected string at index ' + idx.toString());
+		}
+		var startIdx = idx;
+		idx++; // opening quote
+		var escaped = false;
+		while (idx < len) {
+			var ch = text.charAt(idx);
+			if (escaped) {
+				escaped = false;
+				idx++;
+			} else if (ch === '\\') {
+				escaped = true;
+				idx++;
+			} else if (ch === '"') {
+				idx++; // closing quote
+				return JSON.parse(text.substring(startIdx, idx));
+			} else {
+				idx++;
+			}
+		}
+		throw new Error('unterminated string');
+	}
+
+	function parseNumberLiteral() {
+		var numberMatch = text.substring(idx).match(/^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?/);
+		if (!numberMatch) {
+			throw new Error('invalid number at index ' + idx.toString());
+		}
+		idx += numberMatch[0].length;
+	}
+
+	function parseLiteral(literalText) {
+		if (text.substring(idx, idx + literalText.length) !== literalText) {
+			throw new Error('invalid literal at index ' + idx.toString());
+		}
+		idx += literalText.length;
+	}
+
+	function parseArray(pathParts) {
+		if (text.charAt(idx) !== '[') {
+			throw new Error('expected array at index ' + idx.toString());
+		}
+		idx++; // [
+		skipWhitespace();
+		if (text.charAt(idx) === ']') {
+			idx++;
+			return;
+		}
+		var arrIdx = 0;
+		while (idx < len) {
+			parseValue(pathParts.concat([arrIdx.toString()]));
+			arrIdx++;
+			skipWhitespace();
+			var ch = text.charAt(idx);
+			if (ch === ',') {
+				idx++;
+				skipWhitespace();
+			} else if (ch === ']') {
+				idx++;
+				return;
+			} else {
+				throw new Error('expected , or ] at index ' + idx.toString());
+			}
+		}
+		throw new Error('unterminated array');
+	}
+
+	function parseObject(pathParts) {
+		if (text.charAt(idx) !== '{') {
+			throw new Error('expected object at index ' + idx.toString());
+		}
+		idx++; // {
+		skipWhitespace();
+		var keyOrder = [];
+		if (text.charAt(idx) === '}') {
+			idx++;
+			out[JSON.stringify(pathParts)] = keyOrder;
+			return;
+		}
+		while (idx < len) {
+			var key = parseStringLiteral();
+			keyOrder.push(key);
+			skipWhitespace();
+			if (text.charAt(idx) !== ':') {
+				throw new Error('expected : at index ' + idx.toString());
+			}
+			idx++;
+			skipWhitespace();
+			parseValue(pathParts.concat([key]));
+			skipWhitespace();
+			var ch = text.charAt(idx);
+			if (ch === ',') {
+				idx++;
+				skipWhitespace();
+			} else if (ch === '}') {
+				idx++;
+				out[JSON.stringify(pathParts)] = keyOrder;
+				return;
+			} else {
+				throw new Error('expected , or } at index ' + idx.toString());
+			}
+		}
+		throw new Error('unterminated object');
+	}
+
+	function parseValue(pathParts) {
+		skipWhitespace();
+		var ch = text.charAt(idx);
+		if (ch === '"') {
+			parseStringLiteral();
+			return;
+		}
+		if (ch === '{') {
+			parseObject(pathParts);
+			return;
+		}
+		if (ch === '[') {
+			parseArray(pathParts);
+			return;
+		}
+		if (ch === 't') {
+			parseLiteral('true');
+			return;
+		}
+		if (ch === 'f') {
+			parseLiteral('false');
+			return;
+		}
+		if (ch === 'n') {
+			parseLiteral('null');
+			return;
+		}
+		parseNumberLiteral();
+	}
+
+	try {
+		parseValue([]);
+	} catch (e) {
+		if ((typeof console != "undefined") && (typeof console.warn == "function")) {
+			console.warn('jsonKeyOrderPaths fallback for ' + label + ': ' + e.message);
+		}
+		// fallback: if parse fails, no deterministic order map is available.
+		return {};
+	}
+	return out;
 }
 
 function capitalizeFirstLetter(string)
@@ -341,9 +622,13 @@ function fetchDictItemEditorHtml() {
 			var valueinput = selectHtml('','de-propval', out, propvalue, false);
 		} else if ((typeof propvalue == "object") || (propvaltype=='hashtable')) {
 			var iniStyleProps = [];
-			for(var prop in propvalue) {
-				if (propvalue.hasOwnProperty(prop)) {
-					iniStyleProps.push(prop+'='+propvalue[prop]);
+			if (propvaltype == 'hashtable') {
+				iniStyleProps = hashtableToIniLines(dictEditBuff, paramKey, propvalue);
+			} else {
+				for(var prop in propvalue) {
+					if (propvalue.hasOwnProperty(prop)) {
+						iniStyleProps.push(prop+'='+propvalue[prop]);
+					}
 				}
 			}
 			var valueinput = $('<textarea class="de-propval"></textarea>').text(iniStyleProps.join("\r\n"))[0].outerHTML;
@@ -419,20 +704,9 @@ function saveDictItemEditorToBuff(containerSet,showAlerts,isNew,key) {
 			try {
 				var propType = typesListing[dictEditBuff['type']]['parameters'][propname]['type'];
 				if (propType=='hashtable') {
-					propvalue = {};
-					var rowpropvaluesplit = rawpropvalue.split("\n");
-					for(var i=0; i<rowpropvaluesplit.length; i++) {
-						var row = rowpropvaluesplit[i];
-						var rowParts = splitOnce(row,'=');
-						var rowkey = $.trim(rowParts[0]);
-						if (rowkey!='') {
-							var rowval = rowkey;
-							if ((rowParts.length > 1) && ($.trim(rowParts[1])!='')) {
-								rowval = $.trim(rowParts[1]);
-							}
-							propvalue[rowkey] = rowval;
-						}
-					}
+					var hashtableParse = parseHashtableFromText(rawpropvalue);
+					var propvalue = hashtableParse["propvalue"];
+					dictEditBuff[getHashtableOrderMetaKey(propname)] = hashtableParse["orderedKeys"];
 				//	var propvalue = $.evalJSON(rawpropvalue);
 				} else if (propType=='pickone') {
 					var propvalue = rawpropvalue; // not right
@@ -567,16 +841,108 @@ function renderDictRawEditor(containerSet) {
 /*
  * Turns the dictionary structure passed in by php into a numeric indexed array for processing
  */
-function dictionaryToArray(dictObj, keyname = "name") {
+function dictionaryToArray(dictObj, keyname = "name", objectKeyOrderPaths = {}) {
 	var out = [];
 	for(var key in dictObj) {
 		if (key != undefined) {
-			var props = dictObj[key];
+			var props = $.extend({}, dictObj[key]);
 			props[keyname] = key;
+			if (keyname == "name") {
+				applyHashtableOrderMetaFromEntryAndOrderPaths(props, key, objectKeyOrderPaths);
+			}
 			out.push(props);
 		}
 	}
 	return out;
+}
+
+// Converts a dictionary object to array while preserving hashtable key order from raw JSON.
+function dictionaryObjToArrayWithRawOrder(dictObj, rawJsonStr, keyname = "name", sourceLabel = "dictionary") {
+	if (keyname == "name") {
+		var objectKeyOrderPaths = jsonKeyOrderPaths(rawJsonStr, sourceLabel);
+		return dictionaryToArray(dictObj, keyname, objectKeyOrderPaths);
+	}
+	return dictionaryToArray(dictObj, keyname);
+}
+
+// Checks whether a parameter for a given type is defined as hashtable in typesListing.
+function isHashtableParamForType(entryType, paramKey) {
+	if ((typeof entryType == "undefined") || (typeof typesListing == "undefined") || (typeof typesListing[entryType] == "undefined")) {
+		return false;
+	}
+	var params = typesListing[entryType]['parameters'];
+	if ((typeof params == "object") && (params != null) && (typeof params[paramKey] == "object") && (params[paramKey] != null)) {
+		return params[paramKey]['type'] == 'hashtable';
+	}
+	return false;
+}
+
+// Serializes an object to JSON while enforcing a preferred key order when provided.
+function jsonObjectStrFromValueWithOrder(valueObj, orderedKeys) {
+	if ((typeof valueObj != "object") || (valueObj == null) || $.isArray(valueObj)) {
+		return $.toJSON(valueObj);
+	}
+	var outPairs = [];
+	var usedKeys = {};
+	if ((typeof orderedKeys == "object") && (orderedKeys != null)) {
+		for (var oi = 0; oi < orderedKeys.length; oi++) {
+			var orderedKey = orderedKeys[oi];
+			if (valueObj.hasOwnProperty(orderedKey)) {
+				outPairs.push($.toJSON(orderedKey) + ':' + $.toJSON(valueObj[orderedKey]));
+				usedKeys[orderedKey] = true;
+			}
+		}
+	}
+	for (var key in valueObj) {
+		if (valueObj.hasOwnProperty(key) && !usedKeys[key] && (typeof valueObj[key] != "undefined")) {
+			outPairs.push($.toJSON(key) + ':' + $.toJSON(valueObj[key]));
+		}
+	}
+	return '{' + outPairs.join(',') + '}';
+}
+
+// Serializes one dictionary entry, preserving hashtable parameter key order.
+function dictionaryEntryToOrderedJsonStr(dictentry) {
+	var entryType = dictentry['type'];
+	var outPairs = [];
+	for (var key in dictentry) {
+		if (dictentry.hasOwnProperty(key) && (key != "name") && (key.indexOf(dictHashtableOrderPrefix) !== 0)) {
+			var value = dictentry[key];
+			if (typeof value == "undefined") {
+				continue;
+			}
+			if (isHashtableParamForType(entryType, key)) {
+				var orderedKeys = dictentry[getHashtableOrderMetaKey(key)];
+				outPairs.push($.toJSON(key) + ':' + jsonObjectStrFromValueWithOrder(value, orderedKeys));
+			} else {
+				outPairs.push($.toJSON(key) + ':' + $.toJSON(value));
+			}
+		}
+	}
+	return '{' + outPairs.join(',') + '}';
+}
+
+// Serializes one entry payload (without its name key) for dictionary/raw text output.
+function dictEntryToJsonStr(dictentry, keyname = "name") {
+	if (keyname == "name") {
+		return dictionaryEntryToOrderedJsonStr(dictentry);
+	}
+	var obj = $.extend({},dictentry);  // clone the object
+	delete obj[keyname];
+	stripInternalDictMetaKeys(obj);
+	return $.toJSON(obj);
+}
+
+// Produces [name, json-entry-string] pairs for shared dictionary/raw serializers.
+function dictArrayToNameAndEntryJsonPairs(dictArray, keyname = "name") {
+	var outPairs = [];
+	for(var i=0; i<dictArray.length; i++) {
+		var name = dictArray[i][keyname];
+		if (typeof name != "undefined") {
+			outPairs.push([name, dictEntryToJsonStr(dictArray[i], keyname)]);
+		}
+	}
+	return outPairs;
 }
 
 /*
@@ -584,16 +950,12 @@ function dictionaryToArray(dictObj, keyname = "name") {
  * This one starts with an JS array of objects
  */
 function arrayToDictionaryStr(dictArray) {
-	var obj = {};
-	for(var key=0; key<dictArray.length; key++) {
-		var name = dictArray[key]["name"];
-		var dictentry = $.extend({},dictArray[key]);
-		if (typeof name != "undefined") {
-			obj[name] = dictentry;
-			delete obj[name]["name"];  // added this so we don't have a redundant name (key & field)
-		}
+	var kvPairs = dictArrayToNameAndEntryJsonPairs(dictArray, "name");
+	var outPairs = [];
+	for (var i = 0; i < kvPairs.length; i++) {
+		outPairs.push($.toJSON(kvPairs[i][0]) + ':' + kvPairs[i][1]);
 	}
-	return $.toJSON(obj);
+	return '{' + outPairs.join(',') + '}';
 }
 
 
@@ -641,14 +1003,9 @@ function checkifDictionaryNameOk(name, showAlerts) {
  */
 function dictArrayToKeyValueList(dictArray, keyname = "name") {
 	var strarr = [];
-	for(var key=0; key<dictArray.length; key++) {
-		var name = dictArray[key][keyname];
-		var dictentry = dictArray[key];
-		if (typeof name != "undefined") {
-			var obj = $.extend({},dictentry);  // clone the object
-			delete obj[keyname];
-			strarr.push(name + "=" + $.toJSON(obj));
-		}
+	var kvPairs = dictArrayToNameAndEntryJsonPairs(dictArray, keyname);
+	for (var i = 0; i < kvPairs.length; i++) {
+		strarr.push(kvPairs[i][0] + "=" + kvPairs[i][1]);
 	}
 	return strarr.join("\r\n");
 }
@@ -671,7 +1028,8 @@ function splitOnce(st,ch) {
  * Basically an inverse of dictArrayToKeyValueList()
  */
 function keyValueListToDictArray(keyValStr, keyname = "name") {
-	propvalue = {};
+	var propvalue = {};
+	var rawObjPairs = [];
 	var rowpropvaluesplit = keyValStr.split("\n");
 	for(var i=0; i<rowpropvaluesplit.length; i++) {
 		var row = rowpropvaluesplit[i];
@@ -683,7 +1041,14 @@ function keyValueListToDictArray(keyValStr, keyname = "name") {
 				rowval = rowParts[1].trim();
 			}
 			propvalue[rowkey] = JSON.parse(rowval);
+			if (keyname == "name") {
+				rawObjPairs.push($.toJSON(rowkey) + ":" + rowval);
+			}
 		}
+	}
+	if (keyname == "name") {
+		var rawObjStr = '{' + rawObjPairs.join(',') + '}';
+		return dictionaryObjToArrayWithRawOrder(propvalue, rawObjStr, keyname, "raw dictionary editor");
 	}
 	return dictionaryToArray(propvalue, keyname);
 }
@@ -1900,7 +2265,7 @@ $(document).ready(function() {
 
 	startKeepAliveProcess();
 
-	typeDictionaryArray = dictionaryToArray(typeDataDictionary);
+	typeDictionaryArray = dictionaryObjToArrayWithRawOrder(typeDataDictionary, typeDataDictionaryRaw, "name", "initial type_data_dictionary");
 	typeFormLayoutArray = layoutToFlatArray(typeFormLayout);
 	renderAll();
 

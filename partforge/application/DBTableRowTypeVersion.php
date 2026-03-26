@@ -117,7 +117,7 @@ class DBTableRowTypeVersion extends DBTableRow {
                     ),
                     'help' => 'This data type is used to represent a multiline block of text.'),
             'enum' => array('parameters' => array(
-                    'options' => array('type' => 'hashtable'),
+                    'options' => array('type' => 'hashtable', 'help' => 'Enter the options for the dropdown list.  Each line represents one choice.  The line is in the form Value=Description.  The Value is what is stored in the database, the Description is what is presented to the user in the list.'),
                     'required' => array('type' => 'pickone', 'values' => array('0','1'), 'help' => '1 = warn user if they leave this field blank')
                     ),
                     'help' => 'This data type provides a drop-down selector box where you can select one item from the dropdown.  The options list contains the items the user can select from.  Each line represents one choice.  The line is in the form Value=Description.  The Value is what is stored in the database, the Description is what is presented to the user in the list.'),
