@@ -36,7 +36,8 @@ if ('vem_edit_version'==$this->version_edit_mode) {
 if ('vem_finish_save_record'==$this->version_edit_mode) {
     $edit_action_verb = 'Save';
 }
-if ('vem_new_version'==$this->version_edit_mode) {
+$will_be_saved_as_new_version = ('vem_new_version'==$this->version_edit_mode);
+if ($will_be_saved_as_new_version) {
     $edit_action_verb = Zend_Registry::get('config')->button_new_version_save;
 }
 
@@ -91,7 +92,7 @@ if ($this->edit_buffer_key) {
     					 <col class="table_value_width">
     					 <col class="table_label_width">
     					 <col class="table_value_width"></colgroup>';
-    $html .= $this->dbtable->fetchHeaderEditTableRowsHtml($editable, false);
+    $html .= $this->dbtable->fetchHeaderEditTableRowsHtml($editable, false, $will_be_saved_as_new_version);
     $html .= '</table>';
 
     $html .= '<h2 class="bd-edit-page-headers">Data Dictionary</h2>';

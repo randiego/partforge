@@ -57,11 +57,28 @@ class DBTableRowItemVersion extends DBTableRow {
         if ($merge_params['typeversion_id']) {
             $typeversion_id = $merge_params['typeversion_id'];
         }
+
+        // if typeversion_id has change in the new form submission, then we need to update the type information
+        // but also adjust the partnumber_alias if the currently set part number exists in the new list of
+        // aliases, but is in a different position in the list.
+        $typeversion_has_changed = false;
+        $pn_array = explode('|', $merge_params['tv__type_part_number'] ?? '');
+        $hold_part_number = $pn_array[$merge_params['partnumber_alias'] ?? 0] ?? '';
         if (isset($in_params['typeversion_id'])) {
+            $holding_typeversion_id = $typeversion_id;
             $typeversion_id = $in_params['typeversion_id'];
+            if ($typeversion_id != $holding_typeversion_id) {
+                $typeversion_has_changed = true;
+            }
         }
 
         $this->refreshLoadedTypeVersionFields($typeversion_id);
+        if ($typeversion_has_changed) {
+            $idx = array_search($hold_part_number, explode('|', $this->_typeversion_digest['type_part_number'] ?? ''));
+            if ($idx !== false) {
+                $in_params['partnumber_alias'] = $idx;
+            }
+        }
 
         return parent::assignFromFormSubmission($in_params, $merge_params);
     }

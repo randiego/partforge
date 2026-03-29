@@ -592,6 +592,7 @@ class DBTableRowTypeVersion extends DBTableRow {
         $out['typeversion_id'] = isset($all_typeversion_fields['typeversion_id']) ? $all_typeversion_fields['typeversion_id'] : null;
         $out['typeobject_id'] = isset($all_typeversion_fields['typeobject_id']) ? $all_typeversion_fields['typeobject_id'] : null;
         $out['effective_date'] = isset($all_typeversion_fields['effective_date']) ? $all_typeversion_fields['effective_date'] : null;
+        $out['type_part_number'] = $all_typeversion_fields['type_part_number'] ?? null;
         $out['partnumber_count'] = isset($all_typeversion_fields['partnumber_count']) ? $all_typeversion_fields['partnumber_count'] : null;
         $out['has_a_serial_number'] = $has_a_serial_number;
         $out['has_a_disposition'] = $has_a_disposition;
@@ -1450,27 +1451,41 @@ class DBTableRowTypeVersion extends DBTableRow {
     }
 
     /**
-     * Delete the last alias
+     * Delete alias by index (defaults to last alias for backward compatibility).
      */
-    public function deleteAlias()
+    public function deleteAlias($alias_index = null)
     {
         $pns = explode('|', (string) $this->type_part_number);
         $pds = explode('|', (string) $this->type_description);
+        $pds = array_pad($pds, count($pns), '');
         if (count($pns)>1) {
-            unset($pns[count($pns)-1]);
-            unset($pds[count($pds)-1]);
-            $this->type_part_number = implode('|', $pns);
-            $this->type_description = implode('|', $pds);
+            $idx = is_numeric($alias_index) ? (int) $alias_index : (count($pns)-1);
+            $idx = max(0, min($idx, count($pns)-1));
+            unset($pns[$idx]);
+            unset($pds[$idx]);
+            $this->type_part_number = implode('|', array_values($pns));
+            $this->type_description = implode('|', array_values($pds));
         }
     }
 
     /**
-     * Add a new alias
+     * Add a new blank alias after the specified index (defaults to append).
      */
-    public function addAlias()
+    public function addAlias($insert_after_index = null)
     {
-        $this->type_part_number .= '|';
-        $this->type_description .= '|';
+        $pns = explode('|', (string) $this->type_part_number);
+        $pds = explode('|', (string) $this->type_description);
+        if (count($pns)==0) {
+            $pns = array('');
+        }
+        $pds = array_pad($pds, count($pns), '');
+        $idx = is_numeric($insert_after_index) ? (int) $insert_after_index : (count($pns)-1);
+        $idx = max(-1, min($idx, count($pns)-1));
+        $insert_pos = $idx + 1;
+        array_splice($pns, $insert_pos, 0, array(''));
+        array_splice($pds, $insert_pos, 0, array(''));
+        $this->type_part_number = implode('|', $pns);
+        $this->type_description = implode('|', $pds);
     }
 
     /**
@@ -1531,7 +1546,7 @@ class DBTableRowTypeVersion extends DBTableRow {
      * @param boolean $for_pdf do html that is taylored for rendering to PDF output
      * @return string html of the table
      */
-    public function fetchHeaderEditTableRowsHtml($editable, $for_pdf)
+    public function fetchHeaderEditTableRowsHtml($editable, $for_pdf, $will_be_saved_as_new_version)
     {
         $is_a_part = $this->typecategory_id==2;
         $html = '';
@@ -1542,18 +1557,32 @@ class DBTableRowTypeVersion extends DBTableRow {
                 #protect again nulls in the part number and description by treating them as arrays and imploding them with | when we save, and exploding them when we load.  This also makes it easier to add aliases in the future if we want to.
                 $pns = isset($this->type_part_number) ? explode('|', (string) $this->type_part_number) : array("");
                 $pds = isset($this->type_description) ? explode('|', (string) $this->type_description) : array("");
+                // Alias indexes are stable identifiers. We only allow index-shifting edits after the last in-use alias.
+                $alias_in_use_counts = array();
+                $last_protected_alias_idx = -1;
+                foreach ($pns as $idx => $pn) {
+                    $in_use_count = $will_be_saved_as_new_version ? 0 : self::getNumberOfItemsForTypeVersion($this->typeversion_id, $idx);
+                    $alias_in_use_counts[$idx] = $in_use_count;
+                    if ($in_use_count > 0) {
+                        $last_protected_alias_idx = $idx;
+                    }
+                }
                 foreach ($pns as $idx => $pn) {
                     $btns = array();
-                    $last_entry = ($idx == count($pns)-1);
-                    $can_delete_this_alias = $last_entry && (count($pns)>1) && (self::getNumberOfItemsForTypeVersion($this->typeversion_id, $idx)==0);
-                    if ($last_entry && $is_a_part) {
-                        $btns[] = linkify('#', 'Add alias', 'Add a new alias', 'minibutton2', "document.theform.btnOnChange.value='addalias'; packupFormVars(); $('form').submit(); return false;");
+                    $can_delete_this_alias = (count($pns)>1) && ($idx > $last_protected_alias_idx);
+                    $can_add_after_this_alias = ($idx >= $last_protected_alias_idx);
+                    if ($is_a_part && $can_add_after_this_alias) {
+                        $btns[] = linkify('#', 'Add alias', 'Add a new alias after this row', 'minibutton2', "document.theform.btnOnChange.value='addalias'; document.theform.onChangeParams.value='alias_idx=".$idx."'; packupFormVars(); $('form').submit(); return false;");
                     }
                     if ($can_delete_this_alias) {
-                        $btns[] = linkify('#', 'Delete alias', 'remove this alias', 'minibutton2', "if (confirm('Delete this alias?')) {document.theform.btnOnChange.value='deletealias'; packupFormVars(); $('form').submit();} return false;");
+                        $btns[] = linkify('#', 'Delete alias', 'remove this alias', 'minibutton2', "if (confirm('Delete this alias?')) {document.theform.btnOnChange.value='deletealias'; document.theform.onChangeParams.value='alias_idx=".$idx."'; packupFormVars(); $('form').submit();} return false;");
                     }
-                    if ($last_entry && (count($pns)>1) && !$can_delete_this_alias) {
-                        $btns[] = '<span class="paren">Delete is not an option because this alias is being used.</span>';
+                    if ((count($pns)>1) && !$can_delete_this_alias) {
+                        if (($alias_in_use_counts[$idx] ?? 0) > 0) {
+                            $btns[] = '<span class="paren">Delete not an option. Alias is being used.</span>';
+                        } else {
+                            $btns[] = '<span class="paren">Delete only allowed for aliases after the last one being used.</span>';
+                        }
                     }
 
                     $caption = ($is_a_part ? 'Part Number' : 'Procedure Number').($idx>0 ? ' Alias '.$idx : '');
@@ -1613,7 +1642,7 @@ class DBTableRowTypeVersion extends DBTableRow {
     			<tr><th>Author:</th><td colspan="3">'.$username.'</td></tr>'."\r\n".'
     			<tr><th>Modified By:</th><td colspan="3">'.$mod_username.'</td></tr>'."\r\n".'
     			<tr><th>Modified On:</th><td colspan="3">'.$this->formatPrintField('record_modified').'</td></tr>'."\r\n".
-                        $this->fetchHeaderEditTableRowsHtml(false, $for_pdf).'
+                        $this->fetchHeaderEditTableRowsHtml(false, $for_pdf, false).'
     			<tr><th>Type Version ID:</th><td colspan="3">'.$this->typeversion_id.'</td></tr>'."\r\n".'
     			<tr><th>Type Object ID:</th><td colspan="3">'.$this->typeobject_id.'</td></tr>'."\r\n".'
 	    		<tr><th>Locator:</th><td colspan="3">'.$this->absoluteUrl().'</td></tr>'."\r\n".'

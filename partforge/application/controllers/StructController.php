@@ -615,12 +615,16 @@ class StructController extends DBControllerActionAbstract
             if (($EditRow instanceof DBTableRowTypeVersion)) {  //     $this->params['table']=='typeversion'
                 switch (true) {
                     case isset($this->params['btnOnChange']) && ($this->params['btnOnChange']=='deletealias'):
-                        $EditRow->deleteAlias();
+                        parse_str($this->params['onChangeParams'] ?? '', $sub_params);
+                        $alias_idx = (isset($sub_params['alias_idx']) && is_numeric($sub_params['alias_idx'])) ? (int) $sub_params['alias_idx'] : null;
+                        $EditRow->deleteAlias($alias_idx);
                         $_SESSION[$edit_buffer]['type_part_number'] = $EditRow->type_part_number;
                         $_SESSION[$edit_buffer]['type_description'] = $EditRow->type_description;
                         $this->navigator->jumpToView();
                     case isset($this->params['btnOnChange']) && ($this->params['btnOnChange']=='addalias'):
-                        $EditRow->addAlias();
+                        parse_str($this->params['onChangeParams'] ?? '', $sub_params);
+                        $alias_idx = (isset($sub_params['alias_idx']) && is_numeric($sub_params['alias_idx'])) ? (int) $sub_params['alias_idx'] : null;
+                        $EditRow->addAlias($alias_idx);
                         $_SESSION[$edit_buffer]['type_part_number'] = $EditRow->type_part_number;
                         $_SESSION[$edit_buffer]['type_description'] = $EditRow->type_description;
                         $this->navigator->jumpToView();
