@@ -77,6 +77,8 @@ class DBTableRowItemVersion extends DBTableRow {
             $idx = array_search($hold_part_number, explode('|', $this->_typeversion_digest['type_part_number'] ?? ''));
             if ($idx !== false) {
                 $in_params['partnumber_alias'] = $idx;
+            } else {
+                $in_params['partnumber_alias'] = -1; // this will force edit selector to ask for a part number since this one is not available.
             }
         }
 
@@ -364,6 +366,23 @@ class DBTableRowItemVersion extends DBTableRow {
     {
         $this->refreshLoadedTypeVersionFields($this->typeversion_id);
         return $this->_typeversion_digest['addon_component_subfields'];
+    }
+
+    public function getPartNumberResolved()
+    {
+        $this->refreshLoadedTypeVersionFields($this->typeversion_id);
+        $pn_array = explode('|', $this->_typeversion_digest['type_part_number'] ?? '');
+        return $pn_array[$this->partnumber_alias ?? 0] ?? '';
+    }
+
+    public function setAliasByPartNumber($part_number)
+    {
+        $this->refreshLoadedTypeVersionFields($this->typeversion_id);
+        $pn_array = explode('|', $this->_typeversion_digest['type_part_number'] ?? '');
+        $idx = array_search($part_number, $pn_array);
+        if ($idx !== false) {
+            $this->partnumber_alias = $idx;
+        }
     }
 
     /**

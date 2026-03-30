@@ -829,7 +829,7 @@ class DBTableRowTypeVersion extends DBTableRow {
 
     static function getNumberOfItemsForTypeVersion($typeversion_id, $partnumber_alias = null)
     {
-        // if  $partnumber_alias is specified, we include only those that also have the specific allias
+        // if  $partnumber_alias is specified, we include only those that also have the specific aliases
         $and_where = is_null($partnumber_alias) ? '' : " AND (itemversion.partnumber_alias='{$partnumber_alias}')";
         $query = "SELECT count(*) FROM itemversion
         	WHERE (itemversion.typeversion_id='{$typeversion_id}')".$and_where;
@@ -1554,7 +1554,7 @@ class DBTableRowTypeVersion extends DBTableRow {
         $html .= fetchEditTableTR(array(array('typecategory_id')), $this, '', $editable)."\r\n";
         if ($this->typecategory_id) {
             if ($editable) {
-                #protect again nulls in the part number and description by treating them as arrays and imploding them with | when we save, and exploding them when we load.  This also makes it easier to add aliases in the future if we want to.
+                // protect again nulls in the part number and description by treating them as arrays and imploding them with | when we save, and exploding them when we load.  This also makes it easier to add aliases in the future if we want to.
                 $pns = isset($this->type_part_number) ? explode('|', (string) $this->type_part_number) : array("");
                 $pds = isset($this->type_description) ? explode('|', (string) $this->type_description) : array("");
                 // Alias indexes are stable identifiers. We only allow index-shifting edits after the last in-use alias.
@@ -1587,15 +1587,15 @@ class DBTableRowTypeVersion extends DBTableRow {
 
                     $caption = ($is_a_part ? 'Part Number' : 'Procedure Number').($idx>0 ? ' Alias '.$idx : '');
                     $subcaption = $idx==0 ? ($is_a_part ? make_subcaption_if_defined('typeversion|edit|type_part_number|part') : make_subcaption_if_defined('typeversion|edit|type_part_number|procedure')) : '';
-                    $html .= '<tr class="proc_num_row"><th>'.$caption.'<span class="req_field"> *</span>:'.$subcaption.'</th><td colspan="3">
+                    $html .= '<tr class="proc_num_row"><th>'.$caption.'<span class="req_field"> *</span>:'.$subcaption.'</th><td colspan="2">
                                   <input class="inputboxclass" type="text" maxlength="64" size="50" value="'.$pn.'" name="type_part_numbers['.$idx.']">
-                                  </td></tr>';
+                                  </td><td class="alias_btn_cell" rowspan="2">'.(count($btns)>0 ? implode(' ', $btns) : '&nbsp;').'</td></tr>';
 
                     $caption = ($is_a_part ? 'Part Name' : 'Procedure Name').($idx>0 ? ' Alias '.$idx : '');
                     $subcaption = $idx==0 ? ($is_a_part ? '<br><span class="paren">First Letter Caps</span>' : '<br><span class="paren">First Letter Caps.  Phrase like an action or report name: "Board Calibration" or "Calibration Datasheet"</span>') : '';
-                    $html .= '<tr class="proc_name_row"><th>'.$caption.'<span class="req_field"> *</span>:'.$subcaption.'</th><td colspan="3">
+                    $html .= '<tr class="proc_name_row"><th>'.$caption.'<span class="req_field"> *</span>:'.$subcaption.'</th><td colspan="2">
                                   <input class="inputboxclass" type="text" maxlength="64" size="50" value="'.(isset($pds[$idx]) ? $pds[$idx] : '').'" name="type_descriptions['.$idx.']">
-                                  '.(count($btns)>0 ? '<br />'.implode(' ', $btns) : '&nbsp;').'</td></tr>';
+                                  </td></tr>';
                 }
             } else {
                 $pns = isset($this->type_part_number) ? explode('|', (string) $this->type_part_number) : array("");
@@ -2128,12 +2128,21 @@ class DBTableRowTypeVersion extends DBTableRow {
             }
         }
 
-        /*
-             * Error if part number list of aliases has been shrunken.  (this really should be smarter and actually see what aliases are used.)
-         */
+        // Which part numbers are in use in the source. Let's make sure they are present in the target.
 
-        if (count(explode('|', (string) $TargetTypeVersion->type_part_number))<count(explode('|', (string) $this->type_part_number))) {
-            $fail_msg[] = "There are fewer Part Number Aliases defined in the target than in this version.";
+        $pns_in_use = [];
+        $pns = explode('|', (string) $this->type_part_number);
+        foreach ($pns as $idx => $pn) {
+            $in_use_count = self::getNumberOfItemsForTypeVersion($this->typeversion_id, $idx);
+            if ($in_use_count > 0) {
+                $pns_in_use[] = $pn;
+            }
+        }
+
+        foreach ($pns_in_use as $pn) {
+            if (array_search($pn, explode('|', (string) $TargetTypeVersion->type_part_number)) === false) {
+                $fail_msg[] = "The Part Number Alias '{$pn}' is in use in this version but is not found in the target version.";
+            }
         }
 
         return $fail_msg;
@@ -2147,11 +2156,13 @@ class DBTableRowTypeVersion extends DBTableRow {
         foreach ($records as $itemversion_id => $record) {
             $IV = new DBTableRowItemVersion();
             if ($IV->getRecordById($itemversion_id)) {
+                $hold_part_number = $IV->getPartNumberResolved();
                 $IV->typeversion_id = $to_typeversion_id;
+                $IV->setAliasByPartNumber($hold_part_number);
                 // we are being a little sneaky here: normally this would be called with 'user_id' included so each item would show
                 // that we upgraded the itemversion.  But this is unpleasant because all those versions then appear to be owned by me.
                 //  This is weird, so instead, we leave the original owner's name and just show the change date and version change.
-                $IV->save(array('typeversion_id','record_created'));
+                $IV->save(array('typeversion_id','record_created','partnumber_alias'));
                 $count++;
             }
         }

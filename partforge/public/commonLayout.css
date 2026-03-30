@@ -617,16 +617,19 @@ table.edittable tr.editview_text td .editview_text_div th {
 table.edittable tr.proc_num_row td,
 table.edittable tr.proc_num_row th {
 	border-bottom: 0;
+	border-right: 0;
 	padding-bottom: 3px;
 }
 
-table.edittable tr.proc_num_row td .inputboxclass {
-	width: 215px;
+table.edittable tr.proc_num_row td.alias_btn_cell {
+	border-right: 1px solid#ccc;
 }
+
 
 table.edittable tr.proc_name_row td,
 table.edittable tr.proc_name_row th {
 	border-top: 0;
+	border-right: 0;
 	padding-top: 3px;
 }
 
@@ -716,11 +719,11 @@ table.edittable.defheader {
 }
 
 table.edittable.defheader .table_label_width {
-	width: 40%;
+	width: 30%;
 }
 
 table.edittable.defheader .table_value_width {
-	width: 10%;
+	width: 20%;
 }
 
 .table_value_width .little_float_right {
