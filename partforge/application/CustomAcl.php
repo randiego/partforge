@@ -31,42 +31,41 @@ class CustomAcl extends Zend_Acl
         $global_readonly = Zend_Registry::get('config')->global_readonly;
         $this->_defaultRole = $in_defaultRole;
 
-        // roles
+        // ROLES
+
         $this->addRole(new Zend_Acl_Role($this->_defaultRole)); // this role is for someone clicking a link and then needing to login and be redirected to that link.
         $this->addRole(new Zend_Acl_Role('Guest'));
         $this->addRole(new Zend_Acl_Role('Tech'));
         $this->addRole(new Zend_Acl_Role('DataTerminal'));
         $this->addRole(new Zend_Acl_Role('Eng'));
-        $this->addRole(new Zend_Acl_Role('Supervisor'));
         $this->addRole(new Zend_Acl_Role('Admin'));
 
-        // resources
+        // RESOURCES
 
         // table resources
         $table_list = DbSchema::getInstance()->getTableNames();
         foreach ($table_list as $tablename) {
-            $this->add(new Zend_Acl_Resource('table:'.$tablename));
+            $this->addResource(new Zend_Acl_Resource('table:'.$tablename));
         }
 
 
         // controller resources
-
         $controller_resources = array('db','error','help','index','cron','utils','api','output','settings','struct','user','dash','types_versions','types_objects','items_versions','items_objects','items_comments', 'items_documents', 'types_documents');
         foreach ($controller_resources as $controller_resource) {
-            $this->add(new Zend_Acl_Resource($controller_resource));
+            $this->addResource(new Zend_Acl_Resource($controller_resource));
         }
 
         // user interface resources
-        $this->add(new Zend_Acl_Resource('ui:itemlistview'));
-        $this->add(new Zend_Acl_Resource('ui:itemedit'));
-        $this->add(new Zend_Acl_Resource('ui:logout'));
-        $this->add(new Zend_Acl_Resource('ui:nonterminalbling'));  // this is the extra fluff like spreadsheet export that are not interesting on a dumb terminal
-        $this->add(new Zend_Acl_Resource('ui:caneditdefinitions')); // controls that allow editing of definitions
+        $this->addResource(new Zend_Acl_Resource('ui:itemlistview'));
+        $this->addResource(new Zend_Acl_Resource('ui:itemedit'));
+        $this->addResource(new Zend_Acl_Resource('ui:logout'));
+        $this->addResource(new Zend_Acl_Resource('ui:nonterminalbling'));  // this is the extra fluff like spreadsheet export that are not interesting on a dumb terminal
+        $this->addResource(new Zend_Acl_Resource('ui:caneditdefinitions')); // controls that allow editing of definitions
 
 
 
 
-        // access
+        // ACCESS RULES
 
         /*
           privileges for table:* resources are
@@ -96,12 +95,11 @@ class CustomAcl extends Zend_Acl
                 $this->deny($this->_defaultRole, 'table:'.$tablename);
             }
 
-
             $this->deny('Guest', 'table:'.$tablename, array('add','delete','edit'));
         }
 
 
-        // allow anyone
+        // API access
         if (Zend_Registry::get('config')->enable_open_api) {
             $this->allow(null, 'items_versions');
             $this->allow(null, 'items_objects');
