@@ -903,14 +903,14 @@ function fetchHtmlHeaderIncludes()
 <script type="text/javascript" src="{$baseurl}/jqueryextras/js/jquery-ui-timepicker-addon.js"></script>
 <script type="text/javascript" src="{$baseurl}/jqueryextras/js/jquery-ui-sliderAccess.js"></script>
 <script type="text/javascript" src="{$baseurl}/jqueryextras/js/jquery.watermark.min.js"></script>
-<script language="JavaScript" src="{$baseurl}/scripts/common.js?v={$ver}" type="TEXT/JAVASCRIPT"></script>
-<script language="JavaScript" src="{$baseurl}/scripts/app.js?v={$ver}" type="TEXT/JAVASCRIPT"></script>
 <script language="JavaScript" src="{$baseurl}/jqueryextras/jquery.cookie.js" type="TEXT/JAVASCRIPT"></script>
 <script language="JavaScript" src="{$baseurl}/jqueryextras/jquery.json-2.3.js" type="TEXT/JAVASCRIPT"></script>
 <script language="JavaScript" src="{$baseurl}/scripts/tiny_mce/jquery.tinymce.js" type="TEXT/JAVASCRIPT"></script>
 <script language="JavaScript" src="{$baseurl}/jqueryextras/jquery-custom-combobox/jquery-custom-combobox.js?v=7" type="TEXT/JAVASCRIPT"></script>
 <script language="JavaScript" src="{$baseurl}/jqueryextras/jquery.ui.touch-punch.min.js" type="TEXT/JAVASCRIPT"></script>
 <script language="JavaScript" src="{$baseurl}/jqueryextras/jquery-qrcode/jquery.qrcode.min.js" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="{$baseurl}/scripts/common.js?v={$ver}" type="TEXT/JAVASCRIPT"></script>
+<script language="JavaScript" src="{$baseurl}/scripts/app.js?v={$ver}" type="TEXT/JAVASCRIPT"></script>
 EOD;
 }
 
