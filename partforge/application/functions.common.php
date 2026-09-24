@@ -765,9 +765,12 @@ function format_select_tag($cc_type_array, $field_name, $params, $onchange = '',
     $is_anything_selected = false;
     $in_value = isset($params[$field_name]) ? $params[$field_name] : null;
     // must make sure integer string is compared properly to integer index.  Also make a null on the input equivalent to '' on index
-    $in_value = (is_numeric($in_value) && (intval($in_value)==$in_value )) ? (int)$in_value : ((null==$in_value) ? '' : $in_value);
+    if (!is_numeric($in_value) && (null==$in_value)) {
+        $in_value = '';
+    }
+    $in_value = normalizedArrayKey($in_value);
     foreach ($cc_type_array as $value => $text) {
-        $value = is_numeric($value) && (intval($value)==$value ) ? (int)$value : $value;
+        $value = normalizedArrayKey($value);
         if ($in_value===$value) {
             $selected = ' selected';
             $is_anything_selected = true;
@@ -798,14 +801,14 @@ function format_radio_tags($values, $field_name, $params, $onclick = '', $attrib
     foreach ($values as $value => $text) {
         $in_value = $params[$field_name];
         // must make sure integer string is compared properly to integer index.
-        $in_value = is_numeric($in_value) && (intval($in_value)==$in_value ) ? (int)$in_value : $in_value;
-        $value = is_numeric($value) && (intval($value)==$value ) ? (int)$value : $value;
+        $in_value = normalizedArrayKey($in_value);
+        $value = normalizedArrayKey($value);
         if ($in_value===$value) {
             $selected = ' checked="checked"';
         } else {
             $selected = '';
         }
-        $ii++;
+        $ii++;  
         $idname = $field_name.'_'.$ii;
         $tags[] = '<input class="radioclass" type="radio" name="'.$field_name.'" value="'.$value.'" id="'.$idname.'"'.$attributes.$selected.$onclick_html.' />&nbsp;<label for="'.$idname.'">'.TextToHtml($text).'</label>';
     }
@@ -832,13 +835,22 @@ function callMethodLiteral(TableRow $dbtable, $methodname, $default)
     return $return_value;
 }
 
+function normalizedArrayKey($key)
+{
+    return is_numeric($key) && (intval($key)==$key ) ? (int)$key : $key;
+}
+
 function parseSelectValues($fieldname, TableRow $dbtable)
 {
     $fieldtype = $dbtable->getFieldType($fieldname);
     if (isset($fieldtype['options'])) {
         $select_name = $fieldtype['options'];
         if (is_array($select_name)) {
-            $select_values = $select_name;
+            // make sure a value like "-01" is compared properly to integer -1
+            $select_values = [];
+            foreach ($select_name as $key => $value) {
+                $select_values[normalizedArrayKey($key)] = $value;
+            }
         } else {
             $default = array($dbtable->{$fieldname} => $dbtable->{$fieldname});
             $select_values = callMethodLiteral($dbtable, $select_name, $default);
