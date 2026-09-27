@@ -1230,7 +1230,8 @@ class DBTableRowTypeVersion extends DBTableRow {
         if ($new_object) {
             DBTableRowChangeLog::addedTypeObject($this->typeobject_id, $this->typeversion_id);
         } else {
-            if ((count($fieldnames) == 1) && in_array('versionstatus', $fieldnames) && ($this->versionstatus == 'A')) {
+            // first, check if we are updating versionstatus and the but nothing other than this and possiby effective_date
+            if (in_array('versionstatus', $fieldnames) && empty(array_diff($fieldnames, ['versionstatus', 'effective_date'])) && ($this->versionstatus == 'A')) {
                 DBTableRowChangeLog::releasedTypeVersion($this->typeobject_id, $this->typeversion_id);
             } elseif ((count($fieldnames) == 1) && in_array('versionstatus', $fieldnames) && ($this->versionstatus == 'D')) {
                 DBTableRowChangeLog::revertToDraftTypeVersion($this->typeobject_id, $this->typeversion_id);
