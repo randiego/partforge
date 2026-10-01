@@ -1617,11 +1617,13 @@ class DBTableRowTypeVersion extends DBTableRow {
                 $html .= fetchEditTableTR(array(array('serial_number_type')), $this, '', $editable);
                 $typeversion_digest = $this->getLoadedTypeVersionDigest(true);
                 $SerialNumber = SerialNumberType::typeFactory($typeversion_digest['serial_number_format']);
-                foreach ($SerialNumber->getParamCaptions() as $fieldname => $params) {
-                    if ($params['used']) {
-                        $this->setFieldAttribute($fieldname, 'caption', $params['caption']);
-                        $this->setFieldAttribute($fieldname, 'subcaption', $editable ? $params['subcaption'] : '');
-                        $html .= fetchEditTableTR(array(array($fieldname)), $this, '', $editable)."\r\n";
+                if (!empty($SerialNumber)) {
+                    foreach ($SerialNumber->getParamCaptions() as $fieldname => $params) {
+                        if ($params['used']) {
+                            $this->setFieldAttribute($fieldname, 'caption', $params['caption']);
+                            $this->setFieldAttribute($fieldname, 'subcaption', $editable ? $params['subcaption'] : '');
+                            $html .= fetchEditTableTR(array(array($fieldname)), $this, '', $editable)."\r\n";
+                        }
                     }
                 }
             }
