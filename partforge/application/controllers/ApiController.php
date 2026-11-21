@@ -38,11 +38,88 @@ class ApiController extends Zend_Controller_Action
         die();
     }
 
+    /** Authenticate a client and return a bearer token backed by a PHP session. */
+    public function authenticateAction()
+    {
+        $request = $this->getRequest();
+        $response = $this->getResponse();
+        Zend_Layout::getMvcInstance()->disableLayout();
+        $this->_helper->viewRenderer->setNoRender();
+        $response->setHeader('Content-Type', 'application/json; charset=UTF-8', true);
+        $response->setHeader('Cache-Control', 'no-store', true);
+
+        if (!$request->isPost()) {
+            $response->setHttpResponseCode(405);
+            $response->setHeader('Allow', 'POST', true);
+            $response->setBody(json_encode(array('error' => 'POST required')));
+            return;
+        }
+
+        if (!Zend_Registry::get('config')->local_testing && $request->getScheme() !== 'https') {
+            $response->setHttpResponseCode(403);
+            $response->setBody(json_encode(array('error' => 'HTTPS required')));
+            return;
+        }
+
+        $contentType = (string) $request->getHeader('Content-Type');
+        if (stripos($contentType, 'application/json') !== 0) {
+            $response->setHttpResponseCode(415);
+            $response->setBody(json_encode(array('error' => 'application/json required')));
+            return;
+        }
+        $body = $request->getRawBody();
+        $credentials = strlen($body) <= 8192 ? json_decode($body, true) : null;
+
+        if (!is_array($credentials)
+            || !isset($credentials['login_id'], $credentials['password'])
+            || !is_string($credentials['login_id'])
+            || !is_string($credentials['password'])
+            || $credentials['login_id'] === ''
+            || $credentials['password'] === ''
+            || strlen($credentials['login_id']) > 256
+            || strlen($credentials['password']) > 256) {
+            $response->setHttpResponseCode(400);
+            $response->setBody(json_encode(array('error' => 'login_id and password are required')));
+            return;
+        }
+
+        LoginStatus::getInstance()->setValidUser(false);
+        $_SESSION['account'] = new DBTableRowUser();
+        $account = new DBTableRowUser();
+        if (!$account->login($credentials['login_id'], $credentials['password'])) {
+            $response->setHttpResponseCode(401);
+            $response->setBody(json_encode(array('error' => 'Invalid credentials')));
+            return;
+        }
+
+        if ($account->has_temporary_password) {
+            $response->setHttpResponseCode(403);
+            $response->setBody(json_encode(array('error' => 'Password change required')));
+            return;
+        }
+
+        $_SESSION = array();
+        if (!session_regenerate_id(true)) {
+            $response->setHttpResponseCode(500);
+            $response->setBody(json_encode(array('error' => 'Unable to establish session')));
+            return;
+        }
+        $_SESSION['account'] = $account;
+        $_SESSION['last_page_fetch_time'] = script_time();
+        LoginStatus::getInstance()->setValidUser(true);
+        $response->setBody(json_encode(array(
+            'login_id' => $account->login_id,
+            'access_token' => session_id(),
+            'token_type' => 'Bearer'
+        )));
+    }
+
     public function helpAction()
     {
         $actions = array();
         $h = array();
         $h['getserialnumbers'] = 'returns a list of serial numbers for the specified typeobject_id number.  The second parameter should be something like typeobject_id=35.';
+        $h['authenticate'] = 'POST login_id and password as JSON; returns login_id and a session-backed bearer token.';
         $h['getusers'] = 'returns a list of login IDs for non-guest and non-data-terminal type users.';
         $h['getactivity'] = "returns the system activity/change log.  Usage: /api/getactivity?user_id=123 or /api/getactivity?login_id=username  or /api/getactivity?typeobject_id=123 or /api/getactivity?itemobject_id=123,3,1243&from=-1day&to=now  or /api/getactivity?limit=1";
 

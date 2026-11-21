@@ -16,12 +16,49 @@ ini_set('session.gc_maxlifetime', 36000);
 
 require_once("../application/functions.app.php");
 spl_autoload_register('myAutoloader');
+
+// An API bearer token currently identifies the same server-side PHP session
+// used by browser login. Select it before Zend starts the session.
+$authorization = $_SERVER['HTTP_AUTHORIZATION'] ?? ($_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '');
+if ($authorization === '' && function_exists('getallheaders')) {
+    foreach (getallheaders() as $name => $value) {
+        if (strcasecmp($name, 'Authorization') === 0) {
+            $authorization = $value;
+            break;
+        }
+    }
+}
+$bearerToken = null;
+if (preg_match('/^Bearer\b/i', trim($authorization))) {
+    if (!preg_match('/^Bearer ([A-Za-z0-9,-]{16,256})$/i', trim($authorization), $matches)) {
+        http_response_code(401);
+        header('Content-Type: application/json; charset=UTF-8');
+        header('Cache-Control: no-store');
+        echo json_encode(array('error' => 'Invalid bearer token'));
+        exit;
+    }
+    $bearerToken = $matches[1];
+    ini_set('session.use_strict_mode', '1');
+    session_id($bearerToken);
+}
 Zend_Session::start();
 require_once("../application/init.php");
 
 if (getGlobal('databaseversion') != Zend_Registry::get('config')->databaseversion) {
     LoginStatus::getInstance()->setValidUser(false);
     unset($_SESSION['account']);
+}
+
+if ($bearerToken !== null && (session_id() !== $bearerToken
+    || !LoginStatus::getInstance()->isValidUser()
+    || !isset($_SESSION['account'])
+    || !($_SESSION['account'] instanceof DBTableRowUser)
+    || logout_if_session_timed_out())) {
+    http_response_code(401);
+    header('Content-Type: application/json; charset=UTF-8');
+    header('Cache-Control: no-store');
+    echo json_encode(array('error' => 'Invalid bearer token'));
+    exit;
 }
 
 $frontController = Zend_Controller_Front::getInstance();

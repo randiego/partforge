@@ -110,6 +110,7 @@ class CustomAcl extends Zend_Acl
             $this->allow(null, 'types_documents');
             $this->allow(null, 'api');
         }
+        $this->allow($this->_defaultRole, 'api', 'authenticate');
 
         $this->allow(null, 'utils'); // this has the  DB upgrade function in it, which needs to be accessed while logged out.
         $this->allow(null, 'cron');  // this has only a single update task function and needs to be accessed while logged out.
